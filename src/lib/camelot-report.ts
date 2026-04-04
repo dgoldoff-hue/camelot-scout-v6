@@ -829,6 +829,9 @@ body{background:#fff}
 <div class="meta">${d.borough} &nbsp;|&nbsp; New York</div>
 <div class="meta">${d.units ? d.units + ' Units' : ''} ${d.stories ? '&nbsp;|&nbsp; ' + d.stories + ' Floors' : ''}</div>
 <div class="prepared">Prepared exclusively for the Board of Directors &mdash; ${d.date}</div>
+<div style="position:absolute;bottom:60px;left:0;right:0;text-align:center">
+<div style="background:rgba(0,0,0,0.3);display:inline-block;padding:8px 24px;border-radius:4px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#C5A55A;font-weight:700">RED Awards 2025: Property Management Co. of the Year &nbsp;\u00B7&nbsp; REBNY 2025: David Goldoff Leadership Award</div>
+</div>
 </div>
 
 <!-- PAGE 2: PROPERTY VISUAL & MAP -->
@@ -1231,7 +1234,203 @@ ${isSelfManaged ? `
 </div>
 </div>
 
-<!-- PAGE 17: BACK COVER -->
+<!-- PAGE 17: FINANCIAL OPPORTUNITY ANALYSIS -->
+<div class="section section-cream">
+<div class="section-title">Financial Opportunity Analysis</div>
+<div class="section-sub">Projected annual value creation — based on Camelot portfolio benchmarks</div>
+
+<div class="stats-row">
+<div class="stat-box"><div class="val gold">$${(d.units * 50).toLocaleString()}/mo</div><div class="lbl">Proposed Mgmt Fee</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(d.units * 5750).toLocaleString()}/yr</div><div class="lbl">Est. Retention Savings</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(d.units * 850).toLocaleString()}/yr</div><div class="lbl">Est. Payment Recovery</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(d.buildingArea * 2).toLocaleString()}/yr</div><div class="lbl">Est. Energy Savings</div></div>
+</div>
+
+<table class="invest-table" style="margin-top:16px">
+<thead><tr><th>Opportunity Area</th><th>Est. Annual Impact</th><th>Priority</th><th>Camelot Approach</th></tr></thead>
+<tbody>
+<tr><td>Insurance Portfolio Review</td><td style="color:#16a34a;font-weight:700">$25K–55K/yr</td><td>★★★ High</td><td>Full coverage audit + independent broker market review</td></tr>
+<tr><td>Vendor Contract Rebidding</td><td style="color:#16a34a;font-weight:700">$35K–75K/yr</td><td>★★★ High</td><td>Elevator, cleaning, extermination — competitive 3-bid process via Camelot network</td></tr>
+<tr><td>Energy Optimization (Parity)</td><td style="color:#16a34a;font-weight:700">$15K–35K/yr</td><td>★★ Medium</td><td>HVAC monitoring, demand-side savings, LL97 compliance pathway</td></tr>
+<tr><td>Non-Maintenance Revenue</td><td style="color:#16a34a;font-weight:700">$15K–40K/yr</td><td>★★ Medium</td><td>Laundry, storage, alteration fees, sublet charges, flip tax review</td></tr>
+<tr><td>Resident Retention (Merlin AI)</td><td style="color:#16a34a;font-weight:700">$${Math.round(d.units * 5.75).toLocaleString()}K/yr</td><td>★★★ High</td><td>AI-powered communication reduces turnover — saving 1–2 months rent/unit</td></tr>
+<tr><td>Process &amp; Admin Efficiency</td><td style="color:#16a34a;font-weight:700">$8K–18K/yr</td><td>★ Lower</td><td>Digital document management, automated billing, AI board minutes</td></tr>
+</tbody>
+</table>
+
+<div style="background:#16a34a;color:#fff;border-radius:8px;padding:14px 20px;margin-top:16px;text-align:center">
+<span style="font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:700">Total Year 1 Opportunity: $98,000 – $223,000+</span>
+<span style="display:block;font-size:11px;opacity:0.9;margin-top:4px">In combined cost reduction and revenue improvement — achievable without any maintenance increase</span>
+</div>
+</div>
+
+<!-- PAGE 18: PAIN POINTS → SOLUTIONS -->
+<div class="section section-white">
+<div class="section-title">Your Pain Points. Our Solutions.</div>
+<div class="section-sub">Six critical areas where Camelot delivers measurable improvement</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0">
+
+<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #dc2626;border-radius:0 0 8px 8px;padding:18px">
+<h4 style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:6px">\u26A0 Local Law Compliance (LL97, LL11, FISP, HPD)</h4>
+<p style="font-size:11px;color:#555;line-height:1.6;margin-bottom:8px">${d.buildingArea > 25000 ? `At ${d.buildingArea.toLocaleString()} SF, this building is above the LL97 carbon cap threshold. Non-compliance penalties start at $268/ton CO\u2082.` : 'Compliance with HPD, DOB, and local laws requires proactive tracking and resolution.'}</p>
+<p style="font-size:11px;color:#16a34a;font-weight:600">\u2714 Camelot delivers a FREE LL97 liability model + compliance roadmap within 30 days</p>
+</div>
+
+<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #C5A55A;border-radius:0 0 8px 8px;padding:18px">
+<h4 style="font-size:12px;font-weight:700;color:#3D4F5F;margin-bottom:6px">\uD83D\uDCE1 Communication &amp; Response Time</h4>
+<p style="font-size:11px;color:#555;line-height:1.6;margin-bottom:8px">Residents and board members need timely responses on maintenance, vendor work, and building updates. Traditional management creates communication gaps.</p>
+<p style="font-size:11px;color:#16a34a;font-weight:600">\u2714 ConciergePlus + Camelot AI — 24/7 agent for board, residents, staff, vendors</p>
+</div>
+
+<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #C5A55A;border-radius:0 0 8px 8px;padding:18px">
+<h4 style="font-size:12px;font-weight:700;color:#3D4F5F;margin-bottom:6px">\uD83D\uDCA1 Financial Transparency</h4>
+<p style="font-size:11px;color:#555;line-height:1.6;margin-bottom:8px">Boards often receive late reports with no variance analysis or forward projection. Financial visibility is critical for sound governance.</p>
+<p style="font-size:11px;color:#16a34a;font-weight:600">\u2714 In-house CPA, real-time dashboards, 5-year capital planning, Merlin AI budgeting</p>
+</div>
+
+<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #C5A55A;border-radius:0 0 8px 8px;padding:18px">
+<h4 style="font-size:12px;font-weight:700;color:#3D4F5F;margin-bottom:6px">\uD83C\uDFD7\uFE0F Capital Project Financing</h4>
+<p style="font-size:11px;color:#555;line-height:1.6;margin-bottom:8px">Pre-war buildings face significant capital needs — facade, elevator, boiler. Financing without special assessments is a perennial challenge.</p>
+<p style="font-size:11px;color:#16a34a;font-weight:600">\u2714 In-house licensed mortgage broker — building loans with no shareholder assessment</p>
+</div>
+
+<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #C5A55A;border-radius:0 0 8px 8px;padding:18px">
+<h4 style="font-size:12px;font-weight:700;color:#3D4F5F;margin-bottom:6px">\uD83D\uDD0D On-Site Oversight &amp; Accountability</h4>
+<p style="font-size:11px;color:#555;line-height:1.6;margin-bottom:8px">Many firms rely on reactive visits. Boards have no visibility into what\u2019s happening between incidents.</p>
+<p style="font-size:11px;color:#16a34a;font-weight:600">\u2714 Weekly PM site visits + monthly Facility Manager inspections, documented w/ photos</p>
+</div>
+
+<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #C5A55A;border-radius:0 0 8px 8px;padding:18px">
+<h4 style="font-size:12px;font-weight:700;color:#3D4F5F;margin-bottom:6px">\uD83D\uDCCA Analytical Data &amp; Benchmarking</h4>
+<p style="font-size:11px;color:#555;line-height:1.6;margin-bottom:8px">Without comparative data, boards can\u2019t evaluate costs, vendor performance, or market positioning.</p>
+<p style="font-size:11px;color:#16a34a;font-weight:600">\u2714 SCOUT market intelligence — monthly benchmarks vs. peer buildings + Merlin AI alerts</p>
+</div>
+
+</div>
+</div>
+
+<!-- PAGE 19: TECHNOLOGY PLATFORM -->
+<div class="section section-cream">
+<div class="section-title">Technology Platform</div>
+<div class="section-sub">Proven tools today + next-generation Camelot OS deploying 2026</div>
+
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#C5A55A;text-align:center;margin-bottom:6px;font-weight:600">Current Stack — Active Now</div>
+<table class="compare-table" style="margin-bottom:20px">
+<thead><tr><th style="background:#3D4F5F;color:#fff">Platform</th><th style="background:#3D4F5F;color:#fff">Function</th><th style="background:#3D4F5F;color:#fff">Benefit to ${d.buildingName}</th></tr></thead>
+<tbody>
+<tr><td style="font-weight:700;color:#3D4F5F">AppFolio</td><td>Property Mgmt</td><td>Core accounting, work orders, document management, monthly reporting</td></tr>
+<tr><td style="font-weight:700;color:#3D4F5F">BuildingLink</td><td>Resident Portal</td><td>Maintenance requests, package management, amenity booking</td></tr>
+<tr><td style="font-weight:700;color:#3D4F5F">Zego</td><td>Payments</td><td>ACH, e-check, credit card collection with full audit trail</td></tr>
+<tr><td style="font-weight:700;color:#3D4F5F">Board Packager</td><td>Board Docs</td><td>Secure digital board package management — minutes, financials, 24/7</td></tr>
+</tbody>
+</table>
+
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#C5A55A;text-align:center;margin-bottom:6px;font-weight:600">Camelot OS — Deploying 2026</div>
+<div class="va-grid">
+<div class="va-card" style="border-left-color:#C5A55A"><h5 style="color:#C5A55A">ConciergePlus + Camelot AI</h5><p>24/7 AI concierge for board, residents, RM/Super, vendors, and front desk. Every request logged and tracked.</p></div>
+<div class="va-card" style="border-left-color:#C5A55A"><h5 style="color:#C5A55A">SCOUT</h5><p>Market intelligence — monthly benchmarks, ACRIS data, rental tracking, peer building comparisons.</p></div>
+<div class="va-card" style="border-left-color:#3D4F5F"><h5>Merlin AI</h5><p>Budget forecasting, expense anomaly detection, vendor scoring, pro-forma modeling.</p></div>
+<div class="va-card" style="border-left-color:#C5A55A"><h5 style="color:#C5A55A">Prisma</h5><p>Enhanced ACH billing, real-time collection tracking, 90% NSF reduction via Plaid-linked payments.</p></div>
+<div class="va-card" style="border-left-color:#3D4F5F"><h5>Parity</h5><p>Real-time HVAC and energy monitoring. LL97 liability modeling included. 15–25% utility savings.</p></div>
+<div class="va-card" style="border-left-color:#C5A55A"><h5 style="color:#C5A55A">Camelot Central</h5><p>Unified mobile app — building files, utility tracking, compliance, smart access, all services in one.</p></div>
+</div>
+</div>
+
+<!-- PAGE 20: CAMELOT ADVANTAGE QUANTIFIED -->
+<div class="section section-white">
+<div class="section-title">The Camelot Advantage — Quantified</div>
+<div class="section-sub">Verified outcomes across 42 managed buildings and 196 tracked in SCOUT</div>
+
+<table class="invest-table">
+<thead><tr><th>Value Driver</th><th>Estimated Impact</th><th>Applied to ${d.buildingName}</th></tr></thead>
+<tbody>
+<tr><td>Compliance Management (zero violations)</td><td>+3–8% sale premium on units</td><td style="color:#16a34a;font-weight:600">${d.units > 0 ? `${d.units} units \u00D7 avg value = significant portfolio uplift` : 'Premium positioning for all units'}</td></tr>
+<tr><td>Resident Retention (Merlin AI)</td><td>+$3,500–8,000 per unit/yr</td><td style="color:#16a34a;font-weight:600">${d.units} units \u00D7 $5,750 avg = ~$${Math.round(d.units * 5750).toLocaleString()}/yr saved</td></tr>
+<tr><td>Online Payments (Prisma)</td><td>90% NSF reduction</td><td style="color:#16a34a;font-weight:600">${d.units} units \u00D7 $850 avg = ~$${Math.round(d.units * 850).toLocaleString()}/yr</td></tr>
+<tr><td>Technology Premium (ConciergePlus)</td><td>+$50–150/sqft building value</td><td style="color:#16a34a;font-weight:600">${d.buildingArea > 0 ? `${d.buildingArea.toLocaleString()} SF \u00D7 $100 = ~$${Math.round(d.buildingArea * 100).toLocaleString()}` : 'Measurable value uplift'}</td></tr>
+<tr><td>Energy Optimization (Parity)</td><td>+$1–3/sqft/yr savings</td><td style="color:#16a34a;font-weight:600">${d.buildingArea > 0 ? `${d.buildingArea.toLocaleString()} SF \u00D7 $2 = ~$${Math.round(d.buildingArea * 2).toLocaleString()}/yr` : 'Utility cost reduction'}</td></tr>
+<tr><td>Technology-Enabled Leasing</td><td>20–30% faster absorption</td><td>Fewer vacant months; stronger maintenance fee sustainability</td></tr>
+<tr><td>Camelot Capital Advisory</td><td>+5–15% building value</td><td>Strategic refinancing + capital planning = lower shareholder cost</td></tr>
+</tbody>
+</table>
+
+<div style="font-size:10px;color:#888;margin-top:8px;text-align:center">Source: Camelot Q1 2026 SCOUT Market Report. Impact estimates based on portfolio averages across 42 managed buildings.</div>
+</div>
+
+<!-- PAGE 21: OPERATING COST INTELLIGENCE -->
+${d.neighborhoodMarketData ? `
+<div class="section section-cream">
+<div class="section-title">Operating Cost Intelligence</div>
+<div class="section-sub">${d.neighborhoodName ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'NYC'} Benchmark — SCOUT Q1 2026 Data</div>
+
+<table class="invest-table">
+<thead><tr><th>Cost Category</th><th>SCOUT Range</th><th>Camelot Strategy</th></tr></thead>
+<tbody>
+<tr><td>Real Estate Taxes</td><td>${d.neighborhoodMarketData.opexRange.split('–')[0].replace('$','$')}+/SF/yr</td><td>Fixed — strategic abatement review (J-51, 421-a)</td></tr>
+<tr><td>Insurance</td><td>$1.20–2.80/SF/yr</td><td style="color:#C5A55A;font-weight:600">\u2605 Rebid opportunity: 12–20% savings</td></tr>
+<tr><td>Utilities (Gas/Electric/Water)</td><td>$3–10/SF/yr</td><td style="color:#C5A55A;font-weight:600">\u2605 Parity energy optimization: 15–25% reduction</td></tr>
+<tr><td>Mgmt + Admin</td><td>$3–7/SF/yr</td><td style="color:#16a34a;font-weight:600">\u2714 Camelot competitive + greater scope</td></tr>
+<tr><td>Maintenance &amp; Repairs</td><td>$3–8/SF/yr</td><td style="color:#C5A55A;font-weight:600">\u2605 Vendor rebid: 10–18% reduction</td></tr>
+<tr><td><strong>Total OpEx Benchmark</strong></td><td><strong>${d.neighborhoodMarketData.opexRange}</strong></td><td>${d.buildingArea > 0 ? `Your building: ~$${Math.round(d.buildingArea * 35 / d.buildingArea).toFixed(0)}/SF est.` : 'Within range'}</td></tr>
+</tbody>
+</table>
+
+<div style="background:#FDFBF5;border-left:4px solid #C5A55A;border-radius:0 8px 8px 0;padding:14px 18px;margin-top:14px">
+<p style="font-family:Georgia,serif;font-size:12px;font-style:italic;color:#3D4F5F;line-height:1.7">&ldquo;Location sets the revenue ceiling; management determines what you keep. Camelot\u2019s integrated cost management \u2014 energy optimization (Parity), online payments (Prisma), and compliance automation \u2014 directly lowers the operating cost line across all building types.&rdquo;</p>
+<p style="font-size:10px;color:#C5A55A;font-weight:600;margin-top:6px">\u2014 Camelot Q1 2026 Market Report</p>
+</div>
+</div>
+` : ''}
+
+<!-- PAGE 22: PORTFOLIO REFERENCES + CASE STUDY -->
+<div class="section section-white">
+<div class="section-title">Camelot Portfolio References</div>
+<div class="section-sub">Buildings we manage that serve as operational benchmarks</div>
+
+<table class="compare-table">
+<thead><tr>
+<th style="background:#3D4F5F;color:#fff">Building</th>
+<th style="background:#3D4F5F;color:#fff">Type</th>
+<th style="background:#3D4F5F;color:#fff">Neighborhood</th>
+<th style="background:#3D4F5F;color:#fff">Status</th>
+<th style="background:#3D4F5F;color:#fff">Outcome</th>
+</tr></thead>
+<tbody>
+<tr><td style="font-weight:700">949 Park Avenue</td><td>Condominium</td><td>Carnegie Hill, UES</td><td style="color:#C5A55A;font-weight:600">Active</td><td>$200K saved in one insurance claim</td></tr>
+<tr><td style="font-weight:700">105 E 29th Street</td><td>Co-operative</td><td>NoMad / Midtown South</td><td style="color:#C5A55A;font-weight:600">Active</td><td>Vendor rebid: 14% savings Yr 1</td></tr>
+<tr><td style="font-weight:700">201 E 15th Street</td><td>Co-operative</td><td>Gramercy Park</td><td style="color:#C5A55A;font-weight:600">Active</td><td>Insurance restructure: 18% reduction</td></tr>
+<tr><td style="font-weight:700">165 E 7th Street</td><td>Condominium</td><td>East Village</td><td style="color:#C5A55A;font-weight:600">Active</td><td>LL97 roadmap delivered in 60 days</td></tr>
+<tr><td style="font-weight:700">137 Franklin Street</td><td>Co-operative</td><td>Tribeca</td><td style="color:#C5A55A;font-weight:600">Active</td><td>&ldquo;Best and most knowledgeable PMs&rdquo;</td></tr>
+</tbody>
+</table>
+
+<div style="background:#3D4F5F;border-radius:8px;padding:18px;margin-top:16px;color:#fff">
+<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#C5A55A;font-weight:700;margin-bottom:8px">Case Study: 949 Park Avenue — Camelot in Action</div>
+<p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong>Situation:</strong> A 9th-floor window shattered unexpectedly, triggering FDNY emergency response and creating an immediate pedestrian safety risk on Park Avenue.</p>
+<p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong>Response:</strong> Within hours, Camelot secured the area with a sidewalk bridge, commissioned a professional engineering assessment, and coordinated directly with the insurance carrier.</p>
+<p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong style="color:#C5A55A">Result: 949 Park Avenue saved $200,000.</strong> Full replacement cost covered by insurance. Updated house rules and improved 32BJ staff accountability.</p>
+<div style="border-top:1px solid rgba(197,165,90,0.3);padding-top:8px;margin-top:8px;font-size:10px;color:#C5A55A;text-align:center;letter-spacing:1px">$200,000 SAVED \u00B7 ZERO DISRUPTION TO RESIDENTS \u00B7 PARK AVENUE PORTFOLIO \u2014 CAMELOT ACTIVE</div>
+</div>
+</div>
+
+<!-- PAGE 23: BANKING PARTNER -->
+<div class="section section-cream">
+<div class="section-title">Banking Partnership</div>
+<div class="section-sub">BankUnited — premier banking for property management and co-op associations</div>
+
+<div style="background:#fff;border:2px solid #C5A55A;border-radius:8px;padding:22px;margin:16px 0">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:16px;color:#3D4F5F;font-weight:700;margin-bottom:10px">BankUnited Partnership</div>
+<p style="font-size:12px;color:#555;line-height:1.8">Camelot works exclusively with <strong>BankUnited</strong> \u2014 in our view the premier banking partner for property management companies and co-op associations in New York City. BankUnited offers <strong>no account fees</strong>, competitive interest rate matching, and deep technology integration with our payment systems, vendor payments, and collections workflows. Their automation tools streamline bank reconciliations and management reporting \u2014 reducing errors and improving financial transparency.</p>
+<p style="font-size:12px;color:#C5A55A;font-weight:600;margin-top:10px">This relationship often delivers meaningful financial value from Day 1.</p>
+</div>
+
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#C5A55A;text-align:center;margin-top:16px;font-weight:600">RED Awards 2025: Property Management Company of the Year</div>
+<div style="font-size:11px;color:#888;text-align:center;margin-top:6px">REBNY 2025: David Goldoff Leadership Award &nbsp;\u00B7&nbsp; 42 Properties &nbsp;\u00B7&nbsp; $1.5B+ AUM &nbsp;\u00B7&nbsp; 18+ Years</div>
+<div style="font-size:10px;color:#999;text-align:center;margin-top:8px">Member: REBNY \u00B7 SPONY \u00B7 NYARM \u00B7 IREM \u00B7 BOMA \u00B7 NARPM \u00B7 NY Apartment Association</div>
+</div>
+
+<!-- PAGE 24: BACK COVER -->
 <div class="back-cover">
 <img src="./images/camelot-logo-white.png" alt="Camelot" style="width:100px;margin-bottom:12px;opacity:0.85" onerror="this.style.display='none'">
 <div class="wordmark">C &nbsp;A &nbsp;M &nbsp;E &nbsp;L &nbsp;O &nbsp;T</div>
