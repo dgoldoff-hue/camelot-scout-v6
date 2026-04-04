@@ -864,12 +864,15 @@ body{background:#fff}
 <div class="section-sub">${d.neighborhoodName ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : d.borough || 'New York City'} &mdash; Market Context</div>
 
 <div style="margin-bottom:20px">
-<div style="background:#fff;border:1px solid #E5E3DE;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px">
-<h4 style="font-size:13px;font-weight:700;color:#2C3240;margin-bottom:4px">📍 Camelot Office Proximity</h4>
-<p style="font-size:12px;color:#555">Camelot Realty Group operates from <strong>477 Madison Avenue, 6th Floor</strong> (Midtown Manhattan). Your property at ${d.address} is within Camelot&rsquo;s core service area, ensuring rapid response times and frequent on-site visits.</p>
+<div style="margin-bottom:16px;border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:250px">
+<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=driving" width="100%" height="250" style="border:0" allowfullscreen loading="lazy"></iframe>
 </div>
 <div style="background:#fff;border:1px solid #E5E3DE;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px">
-<h4 style="font-size:13px;font-weight:700;color:#2C3240;margin-bottom:4px">🚇 Transit Access</h4>
+<h4 style="font-size:13px;font-weight:700;color:#2C3240;margin-bottom:4px">\uD83D\uDCCD Camelot Office \u2192 ${d.buildingName}</h4>
+<p style="font-size:12px;color:#555">Camelot Realty Group operates from <strong>477 Madison Avenue, 6th Floor</strong> (Midtown Manhattan). The map above shows the driving route to your property at ${d.address}. Camelot\u2019s senior managers conduct regular on-site inspections \u2014 your building is within our core service area with rapid response times.</p>
+</div>
+<div style="background:#fff;border:1px solid #E5E3DE;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px">
+<h4 style="font-size:13px;font-weight:700;color:#2C3240;margin-bottom:4px">\uD83D\uDE87 Transit Access</h4>
 <p style="font-size:12px;color:#555">New York City subway and bus service provide comprehensive transit coverage to this property. The building is accessible via major subway lines, ensuring convenient access for residents, staff, and management alike.</p>
 </div>
 </div>
@@ -1316,25 +1319,29 @@ ${isSelfManaged ? `
 <div class="section-title">Technology Platform</div>
 <div class="section-sub">Proven tools today + next-generation Camelot OS deploying 2026</div>
 
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:6px;font-weight:600">Current Stack — Active Now</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:6px;font-weight:600">Current Stack \u2014 Active Now</div>
 <table class="compare-table" style="margin-bottom:20px">
 <thead><tr><th style="background:#3A4B5B;color:#fff">Platform</th><th style="background:#3A4B5B;color:#fff">Function</th><th style="background:#3A4B5B;color:#fff">Benefit to ${d.buildingName}</th></tr></thead>
 <tbody>
-<tr><td style="font-weight:700;color:#3A4B5B">AppFolio</td><td>Property Mgmt</td><td>Core accounting, work orders, document management, monthly reporting</td></tr>
+<tr><td style="font-weight:700;color:#3A4B5B">MDS (Multi Data Services)</td><td>Core Management Platform</td><td>Camelot\u2019s primary property management and accounting system \u2014 financials, work orders, reporting, compliance tracking</td></tr>
+<tr><td style="font-weight:700;color:#3A4B5B">AppFolio</td><td>Property Mgmt</td><td>Supplementary accounting, work orders, document management, monthly reporting</td></tr>
 <tr><td style="font-weight:700;color:#3A4B5B">BuildingLink</td><td>Resident Portal</td><td>Maintenance requests, package management, amenity booking</td></tr>
 <tr><td style="font-weight:700;color:#3A4B5B">Zego</td><td>Payments</td><td>ACH, e-check, credit card collection with full audit trail</td></tr>
-<tr><td style="font-weight:700;color:#3A4B5B">Board Packager</td><td>Board Docs</td><td>Secure digital board package management — minutes, financials, 24/7</td></tr>
+<tr><td style="font-weight:700;color:#3A4B5B">Board Packager</td><td>Board Docs</td><td>Secure digital board package management \u2014 minutes, financials, 24/7</td></tr>
+<tr><td style="font-weight:700;color:#3A4B5B">Select</td><td>Leasing &amp; Marketing</td><td>Showing coordination, applicant management, and leasing workflow</td></tr>
+<tr><td style="font-weight:700;color:#3A4B5B">Google Workspace</td><td>Collaboration</td><td>Google Drive, Docs, Sheets \u2014 shared file management and team collaboration</td></tr>
 </tbody>
 </table>
 
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:6px;font-weight:600">Camelot OS — Deploying 2026</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:6px;font-weight:600">Camelot OS \u2014 Deploying 2026</div>
 <div class="va-grid">
-<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">ConciergePlus + Camelot AI</h5><p>24/7 AI concierge for board, residents, RM/Super, vendors, and front desk. Every request logged and tracked.</p></div>
-<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">SCOUT</h5><p>Market intelligence — monthly benchmarks, ACRIS data, rental tracking, peer building comparisons.</p></div>
-<div class="va-card" style="border-left-color:#3A4B5B"><h5>Merlin AI</h5><p>Budget forecasting, expense anomaly detection, vendor scoring, pro-forma modeling.</p></div>
-<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Prisma</h5><p>Enhanced ACH billing, real-time collection tracking, 90% NSF reduction via Plaid-linked payments.</p></div>
-<div class="va-card" style="border-left-color:#3A4B5B"><h5>Parity</h5><p>Real-time HVAC and energy monitoring. LL97 liability modeling included. 15–25% utility savings.</p></div>
-<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Camelot Central</h5><p>Unified mobile app — building files, utility tracking, compliance, smart access, all services in one.</p></div>
+<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">ConciergePlus</h5><p>Personal AI assistant and enhanced resident portal \u2014 powered by Merlin and the Camelot OS system. Dashboard and mobile app for board members, residents, RM/Super, vendors, and front desk. Every request logged, tracked, and AI-assisted 24/7.</p></div>
+<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Merlin AI</h5><p>Camelot\u2019s AI engine powering ConciergePlus, budget forecasting, expense anomaly detection, vendor scoring, pro-forma modeling, and intelligent building operations.</p></div>
+<div class="va-card" style="border-left-color:#3A4B5B"><h5>SCOUT</h5><p>Market intelligence \u2014 monthly benchmarks, ACRIS data, rental tracking, peer building comparisons, lead generation.</p></div>
+<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Jackie</h5><p>AI-powered new business development engine \u2014 generates Property Intelligence Reports, management proposals, email drafts, and cold caller sheets.</p></div>
+<div class="va-card" style="border-left-color:#3A4B5B"><h5>Prisma</h5><p>Enhanced ACH billing, real-time collection tracking, 90% NSF reduction via Plaid-linked payments.</p></div>
+<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Parity</h5><p>Real-time HVAC and energy monitoring. LL97 liability modeling included. 15\u201325% utility savings.</p></div>
+<div class="va-card" style="border-left-color:#3A4B5B"><h5>Camelot Central</h5><p>Unified mobile app \u2014 building files, utility tracking, compliance, smart access, all resident services in one interface.</p></div>
 </div>
 </div>
 
