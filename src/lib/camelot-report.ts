@@ -1331,10 +1331,10 @@ ${isSelfManaged ? `
 <div class="mission-stmt">&ldquo;To protect, enhance, and elevate the value of every property we manage through transparency, precision, and proactive hands-on care.&rdquo;</div>
 <p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:20px">Since 2006, Camelot Realty Group has built a reputation as one of New York\u2019s premier boutique property management firms \u2014 blending hands-on service, financial expertise, and innovative technology. We manage condominiums, cooperatives, multifamily rentals, and mixed-use properties across Manhattan, Brooklyn, Queens, Bronx, Westchester, NJ, CT, and Florida. We are independently owned and operated.</p>
 <div class="about-stats">
-<div class="about-stat"><div class="val">130+</div><div class="lbl">Properties Managed</div></div>
-<div class="about-stat"><div class="val">$500M+</div><div class="lbl">Transactions Closed</div></div>
-<div class="about-stat"><div class="val">20+</div><div class="lbl">Years in Business</div></div>
-<div class="about-stat"><div class="val">1.2M+</div><div class="lbl">Sq Ft Under Mgmt</div></div>
+<div class="about-stat"><div class="val">42</div><div class="lbl">Buildings Managed</div></div>
+<div class="about-stat"><div class="val">$240M+</div><div class="lbl">Assets Under Mgmt</div></div>
+<div class="about-stat"><div class="val">18+</div><div class="lbl">Years in Business</div></div>
+<div class="about-stat"><div class="val">5,351+</div><div class="lbl">Units Tracked</div></div>
 </div>
 <div style="font-size:11px;color:#A89035;text-align:center;margin-top:16px;font-weight:500">\u2B50 RED Awards 2025: Property Management Company of the Year</div>
 <div style="font-size:10px;color:#999;text-align:center;margin-top:8px">Member: REBNY | SPONY | NYARM | IREM | BOMA | NARPM | NY Apartment Association</div>
@@ -1419,14 +1419,114 @@ ${isSelfManaged ? `
 <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#A89035;font-size:13px;margin-top:16px;text-align:center">Our efficiencies effectively pay for our management \u2014 through long-term savings on vendors, compliance penalties, and capital expenditures.</div>
 </div>
 
-<!-- PAGE 16: TESTIMONIALS -->
+<!-- PAGE 16: PROVEN TRACK RECORD -->
 <div class="section section-white">
+<div class="section-title">Proven Track Record</div>
+<div class="section-sub">Case studies and client testimonials</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+<div style="background:#FDFAF3;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:18px">
+<h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">949 Park Avenue Condominium</h4>
+<p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:8px">Emergency response: Mobilized within hours when a 9th-floor window shattered in April 2023. Secured the sidewalk, commissioned engineering, coordinated full insurance coverage from start to finish.</p>
+<p style="font-size:13px;color:#A89035;font-weight:700">$200,000 saved in insurance outcome</p>
+</div>
+<div style="background:#FDFAF3;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:18px">
+<h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">58 White Street</h4>
+<p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:8px">$1.2M deferred maintenance, no reserve fund. Within 18 months: deficit eliminated, $400K reserve funded, LL97 benchmarking filed ahead of deadline.</p>
+<p style="font-size:13px;color:#A89035;font-weight:700">$1.2M turnaround \u00B7 $400K reserve funded</p>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+<div style="background:#FDFAF3;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:18px">
+<h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">105 East 29th Street</h4>
+<p style="font-size:11px;color:#555;line-height:1.7">Vendor contract rebidding yielded <strong>14% savings in Year 1</strong> across elevator, cleaning, and extermination contracts.</p>
+</div>
+<div style="background:#FDFAF3;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:18px">
+<h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">201 East 15th Street</h4>
+<p style="font-size:11px;color:#555;line-height:1.7">Insurance portfolio restructure achieved <strong>18% premium reduction</strong> with improved coverage terms.</p>
+</div>
+</div>
+
+<div style="font-size:11px;color:#A89035;font-weight:600;text-align:center;margin-bottom:16px">Properties: Condominiums &nbsp;|&nbsp; Cooperatives &nbsp;|&nbsp; Multifamily &amp; Rentals<br><span style="color:#888;font-weight:400">Serving: Manhattan, Brooklyn, Queens, Bronx, Westchester, NJ, CT, Florida</span></div>
+</div>
+
+<!-- PAGE 16B: TESTIMONIALS -->
+<div class="section section-cream">
 <div class="section-title">What Our Clients Say</div>
 <div class="section-sub">Real feedback from boards and owners we serve</div>
+
 <div class="testimonial-grid">
-<div class="testimonial"><div class="qm">\u201C</div><p>Camelot has been a helpful agent representing our Co-op since we moved into our new home. We really relied on them for their experience in understanding protocols, building-wide systems, and the business of running a building.</p><div class="author">Brandon Miller</div><div class="author-title">Board President, 137 Franklin Street Apartment Corp</div></div>
-<div class="testimonial"><div class="qm">\u201C</div><p>Valerie and David have been by my side as not only the best and most knowledgeable property managers but as family! Their experience and dedication is limitless and they go far beyond the expected.</p><div class="author">Evee Georgiadis</div><div class="author-title">Owner, 949 Park Avenue Condominium</div></div>
+<div class="testimonial"><div class="qm">\u201C</div><p>Camelot has been a helpful agent representing our Co-op since we moved into our new home. As a new Board President and moving into a new building, we really relied on Camelot for their experience in understanding protocols, building-wide systems, and the business of running a building. The transition from Sponsor to a newly formed Board and dealing with the nuances of a new building settling is not easy without support.</p><div class="author">Brandon Miller</div><div class="author-title">Board President, 137 Franklin Street Apartment Corp</div></div>
+<div class="testimonial"><div class="qm">\u201C</div><p>I have been a client of Camelot Realty Group since buying my apartment in 2012. Valerie and David have been by my side as not only the best and most knowledgeable property managers but as family! Their experience and dedication is limitless and they go far beyond the expected for each and every one of their clients and properties.</p><div class="author">Evee Georgiadis</div><div class="author-title">Owner, 949 Park Avenue Condominium</div></div>
 </div>
+<div class="testimonial-grid" style="margin-top:16px">
+<div class="testimonial"><div class="qm">\u201C</div><p>As an overseas property owner, it is important to have a property manager that is responsive to both our and our tenants needs, knowledgeable and experienced across the lifecycle of ownership, cost efficient and trustworthy. As Camelot\u2019s clients for over three years we have come to appreciate the service, actions and advice the principals have provided \u2014 it is done in a friendly, personalized and professional way and goes the extra mile which has made our life much easier.</p><div class="author">Lawrence Lee</div><div class="author-title">Managing Director, Laureat Hotel Investments Limited</div></div>
+<div class="testimonial"><div class="qm">\u201C</div><p>Camelot had always taken time to truly understand our properties and deliver a management solution that fits our needs. Camelot\u2019s responsiveness to the daily challenge of building property management and creative approaches to problem solving has helped Nexus to grow and gain respect in the NYC real estate market.</p><div class="author">Shaky Cohen</div><div class="author-title">Founder, Nexus Building Development Group</div></div>
+</div>
+</div>
+
+<!-- PAGE 16C: FINANCIAL EXCELLENCE -->
+<div class="section section-white">
+<div class="section-title">Financial Excellence</div>
+<div class="section-sub">Clear answers. On time. Every time. No chasing your management company.</div>
+
+<div style="display:grid;grid-template-columns:3fr 2fr;gap:20px">
+<div>
+<h4 style="font-family:'Playfair Display',Georgia,serif;font-size:16px;color:#3A4B5B;font-weight:700;margin-bottom:10px">In-House CPA Team</h4>
+<p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:14px">We don\u2019t outsource our books. Our in-house CPAs work directly for ${d.buildingName}, ensuring absolute accuracy, clear reporting, and immediate answers to your financial questions.</p>
+<div style="margin-bottom:6px"><span style="color:#A89035;font-size:14px">\u2714</span> <span style="font-size:12px;color:#2C3240">Detailed Books Delivered Monthly \u2014 on schedule</span></div>
+<div style="margin-bottom:6px"><span style="color:#A89035;font-size:14px">\u2714</span> <span style="font-size:12px;color:#2C3240">Real-Time Digital Arrears Tracking</span></div>
+<div style="margin-bottom:6px"><span style="color:#A89035;font-size:14px">\u2714</span> <span style="font-size:12px;color:#2C3240">5-Year Forward Capital Planning</span></div>
+<div style="margin-bottom:6px"><span style="color:#A89035;font-size:14px">\u2714</span> <span style="font-size:12px;color:#2C3240">Zero-Fee Online Payment Platform</span></div>
+<div style="margin-bottom:6px"><span style="color:#A89035;font-size:14px">\u2714</span> <span style="font-size:12px;color:#2C3240">Board-Ready Reports \u2014 no chasing required</span></div>
+<p style="font-size:12px;color:#A89035;font-style:italic;margin-top:12px">Camelot consistently doubles the Manhattan market average for rent growth.</p>
+</div>
+<div>
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:18px;text-align:center;margin-bottom:12px">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#A89035;font-weight:700">10.55%</div>
+<div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px">Avg. YoY Rent Increase<br>vs. 5.20% market</div>
+</div>
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:18px;text-align:center;margin-bottom:12px">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#A89035;font-weight:700">96%</div>
+<div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px">Portfolio Occupancy Rate</div>
+</div>
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:18px;text-align:center">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#A89035;font-weight:700">$500M+</div>
+<div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px">Total Transactions Managed</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- PAGE 16D: SMART SECURITY & SURVEILLANCE -->
+<div class="section section-cream">
+<div class="section-title">Smart Security &amp; Surveillance</div>
+<div class="section-sub">Live remote monitoring, cloud storage, emergency dispatch capability</div>
+
+<div class="va-grid">
+<div class="va-card"><h5 style="color:#A89035">Live Remote Surveillance</h5><p>Cloud-hosted cameras 24/7 \u2014 lobby, elevators, service entrances. Real-time feeds accessible to management.</p></div>
+<div class="va-card"><h5 style="color:#A89035">AI-Powered Monitoring</h5><p>Computer vision flags unauthorized access, package theft, loitering. Automated alerts to management team.</p></div>
+<div class="va-card"><h5 style="color:#A89035">Emergency Dispatch</h5><p>Integrated dispatch \u2014 NYPD, FDNY, EMS contacted directly. Response coordination from incident to resolution.</p></div>
+<div class="va-card"><h5 style="color:#A89035">Cloud Storage &amp; Audit</h5><p>Tamper-proof logs. Evidence retrieval for insurance claims. 90-day cloud retention standard.</p></div>
+<div class="va-card"><h5 style="color:#A89035">Access Control</h5><p>Smart fob, intercom, keyless entry. Visitor logs centralized. Package room monitoring.</p></div>
+<div class="va-card"><h5 style="color:#A89035">Monthly Security Audit</h5><p>Board reports with incident docs, photos, digital signatures. Full accountability trail.</p></div>
+</div>
+</div>
+
+<!-- PAGE 16E: TECHNOLOGY PLATFORM PARTNERS -->
+<div class="section section-white">
+<div class="section-title">Technology Platform Partners</div>
+<div class="section-sub">Best-in-class integrations powering Camelot\u2019s management platform</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;padding:20px 0">
+${['MDS Property Management Software', 'BankUnited', 'Select', 'AppFolio', 'ConciergePlus', 'PropertyShark', 'HubSpot CRM', 'Google Workspace', 'Parity Energy', 'BuildingLink'].map(p => `
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:14px 20px;text-align:center;min-width:140px">
+<div style="font-size:13px;font-weight:700;color:#3A4B5B">${p}</div>
+</div>`).join('')}
+</div>
+
+<div style="text-align:center;font-size:10px;color:#888;margin-top:12px">Powered by: OpenAI NLP &nbsp;|&nbsp; AWS Cloud &nbsp;|&nbsp; AppFolio Sync &nbsp;|&nbsp; HubSpot CRM &nbsp;|&nbsp; RealtyMX &nbsp;|&nbsp; PropertyShark</div>
 </div>
 
 <!-- PAGE 17: FINANCIAL OPPORTUNITY ANALYSIS -->
