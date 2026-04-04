@@ -52,11 +52,20 @@ export function useAuth() {
             .from('scout_team')
             .select('*')
             .eq('is_active', true);
-          if (team) {
+          if (team && team.length > 0) {
             setMembers(team);
             const user = team.find((m) => m.user_id === session.user.id) || team[0];
             setCurrentUser(user);
+          } else {
+            // Supabase connected but team table empty — use defaults
+            setCurrentUser(DEFAULT_USER);
+            setMembers(DEFAULT_TEAM);
           }
+        } else {
+          // No session — use demo mode
+          setCurrentUser(DEFAULT_USER);
+          setMembers(DEFAULT_TEAM);
+          setIsAuthenticated(true);
         }
       } catch (err) {
         console.error('Auth init error:', err);

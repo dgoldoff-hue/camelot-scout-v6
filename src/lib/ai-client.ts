@@ -145,7 +145,7 @@ export function localQueryEngine(
     resp += `Best regards,\n`;
     resp += `David Goldoff\n`;
     resp += `Principal, Camelot Realty Group\n`;
-    resp += `501 Madison Avenue, Suite 1400, New York, NY 10022\n`;
+    resp += `477 Madison Avenue, 6th Fl, New York, NY 10022\n`;
     resp += `dgoldoff@camelot.nyc\n\n`;
     resp += `---\n*You can copy this email or go to **Outreach → Compose** to customize it further.*`;
     return resp;

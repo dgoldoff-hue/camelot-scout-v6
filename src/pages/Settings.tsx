@@ -315,7 +315,7 @@ export default function Settings() {
                     <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Address</label>
                     <input
                       type="text"
-                      defaultValue="501 Madison Avenue, Suite 1400"
+                      defaultValue="477 Madison Avenue, 6th Fl"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
                     />
                   </div>
