@@ -289,10 +289,11 @@ export async function searchByOwnerName(name: string): Promise<any[]> {
     if (contacts.length === 0) return [];
     
     // Get unique registration IDs
-    const regIds = [...new Set(contacts.map((c: any) => c.registrationid))].slice(0, 50);
+    const regIds = [...new Set(contacts.map((c: any) => c.registrationid))] as string[];
+    const limitedRegIds = regIds.slice(0, 50);
     
     // Fetch building info for each registration
-    const regQuery = regIds.map((id: string) => `registrationid='${id}'`).join(' OR ');
+    const regQuery = limitedRegIds.map((id) => `registrationid='${id}'`).join(' OR ');
     const buildingsUrl = `${ENDPOINTS.hpdRegistration}?$limit=200&$where=${encodeURIComponent(regQuery)}`;
     const buildingsRes = await fetch(buildingsUrl);
     const buildings = buildingsRes.ok ? await buildingsRes.json() : [];
