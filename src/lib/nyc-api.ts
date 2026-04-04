@@ -292,6 +292,7 @@ export async function searchByOwnerName(name: string): Promise<any[]> {
 
 /**
  * Search by address + unit number for unit-specific data
+ * Returns enriched building context alongside unit-specific violations
  */
 export async function searchByUnit(address: string, unit: string): Promise<any> {
   try {
@@ -306,16 +307,25 @@ export async function searchByUnit(address: string, unit: string): Promise<any> 
       violationsUrl += ` AND upper(streetname) like '%25${encodeURIComponent(street.split(' ').slice(0, 2).join(' '))}%25'`;
     }
 
-    const violationsRes = await fetch(violationsUrl);
-    const violations: HPDViolation[] = violationsRes.ok ? await violationsRes.json() : [];
+    // Fetch unit violations, building DOF data, and registration in parallel
+    const [violationsRes, dofData, regData] = await Promise.all([
+      fetch(violationsUrl).then((r) => (r.ok ? r.json() : [])).catch(() => []),
+      fetchDOFProperty(address),
+      fetchHPDRegistration(address),
+    ]);
 
+    const violations: HPDViolation[] = violationsRes;
     const openViolations = violations.filter(
       (v) => v.currentstatus !== 'CLOSE' && v.violationstatus !== 'Close'
     );
 
-    // Also fetch building-level DOF data for context
-    const dofData = await fetchDOFProperty(address);
     const dof = dofData[0];
+    const reg = regData[0];
+
+    // Determine building type from building class
+    const bldgClass = dof?.bldgcl || '';
+    const isCondo = bldgClass.startsWith('R') || bldgClass === 'R4' || bldgClass === 'R9';
+    const isCoop = bldgClass === 'D4' || bldgClass === 'D0' || bldgClass.startsWith('D');
 
     return {
       unit: upperUnit,
@@ -331,15 +341,37 @@ export async function searchByUnit(address: string, unit: string): Promise<any> 
             bbl: dof.bbl,
             owner: dof.owner,
             marketValue: parseFloat(dof.fullval) || 0,
+            assessedValue: parseFloat(dof.avtot) || 0,
+            landValue: parseFloat(dof.avland) || 0,
             yearBuilt: parseInt(dof.yearbuilt) || 0,
             units: parseInt(dof.unitsres) || parseInt(dof.unitstotal) || 0,
+            stories: parseInt(dof.numfloors) || 0,
+            lotArea: parseFloat(dof.lotarea) || 0,
+            buildingArea: parseFloat(dof.bldgarea) || 0,
             buildingClass: dof.bldgcl,
+            taxClass: dof.taxclass,
           }
         : null,
+      registration: reg
+        ? {
+            owner: reg.corporationname
+              || `${reg.ownerfirstname || ''} ${reg.ownerlastname || ''}`.trim()
+              || null,
+            managementCompany: reg.managementcompany || null,
+          }
+        : null,
+      buildingType: isCondo ? 'condo' : isCoop ? 'co-op' : 'rental',
+      isCondo,
+      isCoop,
     };
   } catch (err) {
     console.error('Unit search error:', err);
-    return { unit, address, violations: { total: 0, open: 0, items: [] }, dof: null };
+    return {
+      unit, address,
+      violations: { total: 0, open: 0, items: [] },
+      dof: null, registration: null,
+      buildingType: 'unknown', isCondo: false, isCoop: false,
+    };
   }
 }
 

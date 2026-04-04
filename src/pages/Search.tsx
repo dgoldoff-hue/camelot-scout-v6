@@ -456,6 +456,19 @@ export default function Search() {
                 </div>
               </div>
 
+              {/* Google Maps Embed for address report */}
+              <div className="mb-5 rounded-xl overflow-hidden border border-white/10">
+                <iframe
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(quickAddress + ', New York, NY')}&output=embed&z=17`}
+                  className="w-full h-[180px]"
+                  style={{ border: 0, filter: 'brightness(0.85) contrast(1.1)' }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Building location"
+                  allowFullScreen
+                />
+              </div>
+
               {/* Score */}
               {reportData.score && (
                 <div className="flex items-center gap-4 mb-6 p-4 bg-white/5 rounded-xl border border-white/10">
@@ -607,7 +620,7 @@ export default function Search() {
             </div>
           )}
 
-          {/* Unit Lookup Results */}
+          {/* Unit Lookup Results — Enhanced */}
           {unitData && (
             <div className="mt-6 bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-6 animate-slide-in">
               <div className="flex items-center justify-between mb-4">
@@ -617,6 +630,8 @@ export default function Search() {
                   </h3>
                   <p className="text-sm text-gray-400">
                     {unitData.violations.total} violation(s) · {unitData.violations.open} open
+                    {unitData.isCondo && <span className="ml-2 text-xs bg-blue-900/40 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/30">Condo</span>}
+                    {unitData.isCoop && <span className="ml-2 text-xs bg-purple-900/40 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30">Co-op</span>}
                   </p>
                 </div>
                 <button onClick={clearResults} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
@@ -624,6 +639,20 @@ export default function Search() {
                 </button>
               </div>
 
+              {/* Google Maps Embed */}
+              <div className="mb-4 rounded-xl overflow-hidden border border-white/10">
+                <iframe
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(unitAddress + ', New York, NY')}&output=embed&z=17`}
+                  className="w-full h-[200px]"
+                  style={{ border: 0, filter: 'brightness(0.85) contrast(1.1)' }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Building location"
+                  allowFullScreen
+                />
+              </div>
+
+              {/* Building Info Card */}
               {unitData.dof && (
                 <div className="grid grid-cols-4 gap-3 mb-4">
                   <div className="bg-white/5 rounded-xl p-3 border border-white/10">
@@ -631,8 +660,8 @@ export default function Search() {
                     <p className="text-sm font-medium text-white truncate">{unitData.dof.owner || '—'}</p>
                   </div>
                   <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                    <p className="text-[10px] text-gray-400 uppercase">Year Built</p>
-                    <p className="text-sm font-medium text-white">{unitData.dof.yearBuilt || '—'}</p>
+                    <p className="text-[10px] text-gray-400 uppercase">BBL</p>
+                    <p className="text-sm font-medium text-white font-mono">{unitData.dof.bbl || '—'}</p>
                   </div>
                   <div className="bg-white/5 rounded-xl p-3 border border-white/10">
                     <p className="text-[10px] text-gray-400 uppercase">Total Units</p>
@@ -642,9 +671,45 @@ export default function Search() {
                     <p className="text-[10px] text-gray-400 uppercase">Market Value</p>
                     <p className="text-sm font-medium text-white">{unitData.dof.marketValue ? formatCurrency(unitData.dof.marketValue) : '—'}</p>
                   </div>
+                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-[10px] text-gray-400 uppercase">Year Built</p>
+                    <p className="text-sm font-medium text-white">{unitData.dof.yearBuilt || '—'}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-[10px] text-gray-400 uppercase">Stories</p>
+                    <p className="text-sm font-medium text-white">{unitData.dof.stories || '—'}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-[10px] text-gray-400 uppercase">Building Class</p>
+                    <p className="text-sm font-medium text-white">{unitData.dof.buildingClass || '—'}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-[10px] text-gray-400 uppercase">Management</p>
+                    <p className="text-sm font-medium text-white truncate">{unitData.registration?.managementCompany || '—'}</p>
+                  </div>
                 </div>
               )}
 
+              {/* Condo/Co-op note */}
+              {unitData.isCondo && (
+                <div className="mb-4 px-4 py-2.5 bg-blue-900/20 border border-blue-500/20 rounded-xl">
+                  <p className="text-xs text-blue-300">
+                    🏢 <strong>Condo unit</strong> — Individual lot/BBL may be available via <a href="https://a836-acris.nyc.gov/DS/DocumentSearch/Index" target="_blank" rel="noopener" className="underline hover:text-blue-200">ACRIS</a>. Each condo unit has its own tax lot.
+                  </p>
+                </div>
+              )}
+              {unitData.isCoop && (
+                <div className="mb-4 px-4 py-2.5 bg-purple-900/20 border border-purple-500/20 rounded-xl">
+                  <p className="text-xs text-purple-300">
+                    🏠 <strong>Co-op unit</strong> — Ownership is via stock shares and proprietary lease. The entire building shares one BBL ({unitData.dof?.bbl || 'N/A'}).
+                  </p>
+                </div>
+              )}
+
+              {/* Unit Violations */}
+              <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1">
+                <AlertTriangle size={12} className="text-camelot-gold" /> Unit {unitData.unit} Violations
+              </h4>
               {unitData.violations.items.length > 0 ? (
                 <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
                   {unitData.violations.items.map((v: any, i: number) => (

@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Search, LayoutGrid, Bookmark, Upload, GitBranch, Mail, MessageSquare,
   Archive, Download, Bot, Settings, ChevronLeft, ChevronRight, Castle,
+  BookOpen, HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/lib/store';
@@ -12,6 +13,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: ReactNode;
+  tourId?: string;
 }
 
 interface NavSection {
@@ -23,32 +25,43 @@ const navigation: NavSection[] = [
   {
     title: 'Discover',
     items: [
-      { label: 'Search', href: '/', icon: <Search size={18} /> },
-      { label: 'Results', href: '/results', icon: <LayoutGrid size={18} /> },
+      { label: 'Search', href: '/', icon: <Search size={18} />, tourId: 'search' },
+      { label: 'Results', href: '/results', icon: <LayoutGrid size={18} />, tourId: 'results' },
       { label: 'Saved', href: '/saved', icon: <Bookmark size={18} /> },
-      { label: 'Import', href: '/import', icon: <Upload size={18} /> },
+      { label: 'Import', href: '/import', icon: <Upload size={18} />, tourId: 'import' },
     ],
   },
   {
     title: 'Kill Chain',
     items: [
-      { label: 'Pipeline', href: '/pipeline', icon: <GitBranch size={18} /> },
-      { label: 'Outreach', href: '/outreach', icon: <Mail size={18} /> },
-      { label: 'Scout AI', href: '/chat', icon: <MessageSquare size={18} /> },
+      { label: 'Pipeline', href: '/pipeline', icon: <GitBranch size={18} />, tourId: 'pipeline' },
+      { label: 'Outreach', href: '/outreach', icon: <Mail size={18} />, tourId: 'outreach' },
+      { label: 'Scout AI', href: '/chat', icon: <MessageSquare size={18} />, tourId: 'scout-ai' },
     ],
   },
   {
     title: 'Manage',
     items: [
       { label: 'Archive', href: '/archive', icon: <Archive size={18} /> },
-      { label: 'Export', href: '/export', icon: <Download size={18} /> },
+      { label: 'Export', href: '/export', icon: <Download size={18} />, tourId: 'export' },
       { label: 'AI Bots', href: '/bots', icon: <Bot size={18} /> },
-      { label: 'Settings', href: '/settings', icon: <Settings size={18} /> },
+      { label: 'Settings', href: '/settings', icon: <Settings size={18} />, tourId: 'settings' },
+    ],
+  },
+  {
+    title: 'Learn',
+    items: [
+      { label: 'Tutorials', href: '/tutorials', icon: <BookOpen size={18} /> },
     ],
   },
 ];
 
-export default function Layout({ children }: { children: ReactNode }) {
+interface LayoutProps {
+  children: ReactNode;
+  onStartTour?: () => void;
+}
+
+export default function Layout({ children, onStartTour }: LayoutProps) {
   const location = useLocation();
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { currentUser } = useAuth();
@@ -68,12 +81,34 @@ export default function Layout({ children }: { children: ReactNode }) {
             <Castle size={18} className="text-camelot-navy" />
           </div>
           {!sidebarCollapsed && (
-            <div>
-              <h1 className="font-bold text-sm tracking-wider">CAMELOT SCOUT</h1>
-              <p className="text-[10px] text-gray-400 tracking-widest">v6 • PROPERTY INTELLIGENCE</p>
+            <div className="flex-1 flex items-center justify-between">
+              <div>
+                <h1 className="font-bold text-sm tracking-wider">CAMELOT SCOUT</h1>
+                <p className="text-[10px] text-gray-400 tracking-widest">v6 • PROPERTY INTELLIGENCE</p>
+              </div>
+              {onStartTour && (
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onStartTour(); }}
+                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-camelot-gold/30 flex items-center justify-center transition-colors"
+                  title="Restart guided tour"
+                >
+                  <HelpCircle size={14} className="text-camelot-gold" />
+                </button>
+              )}
             </div>
           )}
         </Link>
+
+        {/* Help button when collapsed */}
+        {sidebarCollapsed && onStartTour && (
+          <button
+            onClick={onStartTour}
+            className="flex items-center justify-center py-2 text-gray-500 hover:text-camelot-gold transition-colors"
+            title="Restart guided tour"
+          >
+            <HelpCircle size={16} />
+          </button>
+        )}
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 sidebar-scroll">
@@ -93,6 +128,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                   <Link
                     key={item.href}
                     to={item.href}
+                    data-tour={item.tourId}
                     className={cn(
                       'flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-sm transition-all',
                       isActive

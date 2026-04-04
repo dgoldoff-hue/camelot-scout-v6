@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import Layout from '@/components/Layout';
+import GuidedTour, { useTour } from '@/components/GuidedTour';
 import Search from '@/pages/Search';
 import Results from '@/pages/Results';
 import Saved from '@/pages/Saved';
@@ -13,12 +14,14 @@ import Archive from '@/pages/Archive';
 import Export from '@/pages/Export';
 import Bots from '@/pages/Bots';
 import Settings from '@/pages/Settings';
+import Tutorials from '@/pages/Tutorials';
 import { useAuth } from '@/hooks/useAuth';
 import { useBuildings } from '@/hooks/useBuildings';
 
 export default function App() {
   const { isAuthenticated, isLoading } = useAuth();
   const { loadBuildings } = useBuildings();
+  const { isOpen: isTourOpen, startTour, closeTour } = useTour();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -50,7 +53,8 @@ export default function App() {
           },
         }}
       />
-      <Layout>
+      <GuidedTour isOpen={isTourOpen} onClose={closeTour} />
+      <Layout onStartTour={startTour}>
         <Routes>
           <Route path="/" element={<Search />} />
           <Route path="/results" element={<Results />} />
@@ -63,6 +67,7 @@ export default function App() {
           <Route path="/export" element={<Export />} />
           <Route path="/bots" element={<Bots />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/tutorials" element={<Tutorials />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

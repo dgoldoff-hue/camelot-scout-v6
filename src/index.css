@@ -114,6 +114,15 @@
   @apply h-full rounded-full transition-all duration-500;
 }
 
+/* Guided Tour highlight ring pulse */
+.tour-highlight-ring {
+  animation: tour-pulse 2s ease-in-out infinite;
+}
+@keyframes tour-pulse {
+  0%, 100% { box-shadow: 0 0 0 4000px rgba(0,0,0,0.6), 0 0 0 3px #C5A55A, 0 0 20px rgba(197,165,90,0.4); }
+  50% { box-shadow: 0 0 0 4000px rgba(0,0,0,0.6), 0 0 0 5px #C5A55A, 0 0 30px rgba(197,165,90,0.6); }
+}
+
 /* Property detail tabs */
 .tab-content {
   @apply animate-fade-in;

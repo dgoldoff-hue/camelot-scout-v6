@@ -253,6 +253,20 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6 tab-content">
           {activeTab === 'overview' && (
+            <div>
+              {/* Google Maps Embed */}
+              <div className="mb-6 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                <iframe
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(building.address + (building.borough ? ', ' + building.borough + ', NY' : ', New York, NY'))}&output=embed&z=17`}
+                  className="w-full h-[200px]"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title={`Map of ${building.address}`}
+                  allowFullScreen
+                />
+              </div>
+
             <div className="grid grid-cols-2 gap-6">
               {/* Building Info */}
               <div>
@@ -331,6 +345,7 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
                   </div>
                 </div>
               </div>
+            </div>
             </div>
           )}
 
