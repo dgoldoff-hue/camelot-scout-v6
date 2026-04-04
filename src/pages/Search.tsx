@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import {
   Search as SearchIcon, MapPin, ChevronDown, ChevronRight, Building2,
   Loader2, Zap, AlertTriangle, DollarSign, Calendar, X, Filter,
-  Activity, TrendingUp, Users, Award, User, Home, Landmark, ExternalLink,
+  Activity, TrendingUp, Users, Award, User, Home, Landmark, ExternalLink, FileText,
 } from 'lucide-react';
 import { detectBuildingOperations, getDoormanLabel, getFrontDeskLabel } from '@/lib/building-ops';
 
@@ -320,12 +320,48 @@ export default function Search() {
         hasResults ? 'pb-8' : 'py-10'
       )}>
         <div className="max-w-5xl mx-auto pt-10">
-          <h1 className="text-3xl font-bold mb-2">
-            🏰 Property Intelligence
-          </h1>
-          <p className="text-gray-400 mb-6">
-            Search any NYC address for instant building reports, or scan entire regions for leads.
-          </p>
+          {/* Camelot Logo + Scout Branding */}
+          <div className="flex items-center gap-4 mb-6">
+            <img
+              src="/images/camelot-logo-white.png"
+              alt="Camelot Realty Group"
+              className="h-10 object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+            <div className="h-8 w-px bg-white/20" />
+            <div>
+              <h1 className="text-2xl font-heading font-bold tracking-wide text-camelot-gold">
+                SCOUT
+              </h1>
+              <p className="text-[10px] text-gray-400 tracking-[0.2em] uppercase font-body">Property Intelligence &amp; Lead Generation</p>
+            </div>
+          </div>
+
+          {/* Value proposition */}
+          {!hasResults && (
+            <div className="mb-8 max-w-2xl">
+              <h2 className="text-xl font-heading text-white/90 leading-relaxed mb-3">
+                Find, analyze, and win new management contracts — powered by live NYC building data.
+              </h2>
+              <p className="text-gray-400 font-body leading-relaxed mb-4">
+                Scout pulls real-time data from 14 NYC agencies — HPD violations, DOB permits, DOF assessments, LL97 energy compliance, ACRIS ownership records, ECB fines, housing litigation, and more — and packages it into ready-to-send management proposals, cold caller scripts, and compliance alerts.
+              </p>
+              <div className="flex flex-wrap gap-4 text-sm font-body">
+                <div className="flex items-center gap-2 text-camelot-gold">
+                  <SearchIcon size={14} />
+                  <span>Search individual buildings</span>
+                </div>
+                <div className="flex items-center gap-2 text-camelot-gold">
+                  <Users size={14} />
+                  <span>Bulk pull by region or owner</span>
+                </div>
+                <div className="flex items-center gap-2 text-camelot-gold">
+                  <FileText size={14} />
+                  <span>Generate branded reports &amp; proposals</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Search Tabs */}
           <div className="flex gap-2 mb-4">

@@ -2,8 +2,8 @@ import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Search, LayoutGrid, Bookmark, Upload, GitBranch, Mail, MessageSquare,
-  Archive, Download, Bot, Settings, ChevronLeft, ChevronRight, Castle,
-  BookOpen, HelpCircle, ShieldCheck, Bell, FileText, Swords, TrendingDown, Map, Crown,
+  Archive, Download, Bot, Settings, ChevronLeft, ChevronRight,
+  BookOpen, HelpCircle, ShieldCheck, Bell, FileText, Swords, Crown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/lib/store';
@@ -78,7 +78,7 @@ export default function Layout({ children, onStartTour }: LayoutProps) {
   const { currentUser } = useAuth();
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden font-body">
       {/* Sidebar */}
       <aside
         className={cn(
@@ -86,16 +86,22 @@ export default function Layout({ children, onStartTour }: LayoutProps) {
           sidebarCollapsed ? 'w-16' : 'w-64'
         )}
       >
-        {/* Logo — links to home */}
+        {/* Logo */}
         <Link to="/" className="flex items-center gap-3 px-4 py-5 border-b border-white/10 hover:bg-white/5 transition-colors cursor-pointer">
-          <div className="flex-shrink-0 w-8 h-8 bg-camelot-gold rounded-lg flex items-center justify-center">
-            <Castle size={18} className="text-camelot-navy" />
-          </div>
+          <img
+            src="/images/camelot-logo-white.png"
+            alt="Camelot"
+            className={cn('flex-shrink-0 transition-all', sidebarCollapsed ? 'w-8 h-8 object-contain' : 'h-8 object-contain')}
+            onError={(e) => {
+              // Fallback if logo doesn't load
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
           {!sidebarCollapsed && (
             <div className="flex-1 flex items-center justify-between">
               <div>
-                <h1 className="font-bold text-sm tracking-wider">CAMELOT SCOUT</h1>
-                <p className="text-[10px] text-gray-400 tracking-widest">v6 • PROPERTY INTELLIGENCE</p>
+                <h1 className="font-heading font-bold text-sm tracking-wider text-camelot-gold">SCOUT</h1>
+                <p className="text-[10px] text-gray-400 tracking-widest">PROPERTY INTELLIGENCE</p>
               </div>
               {onStartTour && (
                 <button
@@ -126,7 +132,7 @@ export default function Layout({ children, onStartTour }: LayoutProps) {
           {navigation.map((section) => (
             <div key={section.title} className="mb-6">
               {!sidebarCollapsed && (
-                <p className="px-4 mb-2 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+                <p className="px-4 mb-2 text-[10px] font-semibold text-gray-500 uppercase tracking-wider font-body">
                   {section.title}
                 </p>
               )}
@@ -141,7 +147,7 @@ export default function Layout({ children, onStartTour }: LayoutProps) {
                     to={item.href}
                     data-tour={item.tourId}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-sm transition-all',
+                      'flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-sm transition-all font-body',
                       isActive
                         ? 'bg-camelot-gold/20 text-camelot-gold font-medium'
                         : 'text-gray-400 hover:text-white hover:bg-white/5'
@@ -169,14 +175,14 @@ export default function Layout({ children, onStartTour }: LayoutProps) {
         {currentUser && (
           <div className={cn('p-4 border-t border-white/10', sidebarCollapsed && 'px-2')}>
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-9 h-9 bg-camelot-gold rounded-full flex items-center justify-center text-camelot-navy font-bold text-xs">
+              <div className="flex-shrink-0 w-9 h-9 bg-camelot-gold rounded-full flex items-center justify-center text-camelot-navy font-bold text-xs font-body">
                 {currentUser.initials}
               </div>
               {!sidebarCollapsed && (
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{currentUser.name}</p>
+                  <p className="text-sm font-medium truncate font-body">{currentUser.name}</p>
                   <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
-                  <p className="text-[10px] text-camelot-gold capitalize">{currentUser.role.replace('_', ' ')}</p>
+                  <p className="text-[10px] text-camelot-gold capitalize font-body">{currentUser.role.replace('_', ' ')}</p>
                 </div>
               )}
             </div>
@@ -185,7 +191,7 @@ export default function Layout({ children, onStartTour }: LayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-gray-50">
+      <main className="flex-1 overflow-y-auto bg-camelot-cream">
         {children}
       </main>
     </div>

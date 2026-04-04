@@ -4,15 +4,22 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        heading: ['"Cardo"', 'Georgia', 'serif'],
+        body: ['"Abel"', '"Helvetica Narrow"', '"Arial Narrow"', 'Tahoma', 'Arial', 'sans-serif'],
+      },
       colors: {
         camelot: {
-          gold: '#C5A55A',
-          'gold-light': '#D4BA78',
-          'gold-dark': '#A68B3E',
-          navy: '#1a1f36',
-          'navy-light': '#252b48',
-          'navy-lighter': '#2f3659',
-          dark: '#0f1225',
+          gold: '#dbba2e',
+          'gold-light': '#e8cc5a',
+          'gold-dark': '#b89b1e',
+          navy: '#2a2a2a',
+          'navy-light': '#3D4F5F',
+          'navy-lighter': '#4a5568',
+          dark: '#1a1a1a',
+          charcoal: '#333333',
+          cream: '#FAF8F5',
+          accent: '#dbba2e',
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
