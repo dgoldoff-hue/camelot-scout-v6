@@ -17,7 +17,7 @@ const NYC_BASE = 'https://data.cityofnewyork.us/resource';
 const ENDPOINTS = {
   hpdViolations: `${NYC_BASE}/wvxf-dwi5.json`,
   hpdRegistration: `${NYC_BASE}/tesw-yqqr.json`,
-  dobPermits: `${NYC_BASE}/ipu4-2vj7.json`,
+  dobPermits: `${NYC_BASE}/ic3t-wcy2.json`,
   dofProperty: `${NYC_BASE}/64uk-42ks.json`,
   ll97Energy: `${NYC_BASE}/7x5e-2fxh.json`,
   acrisLegals: `${NYC_BASE}/8h5j-fqxa.json`,

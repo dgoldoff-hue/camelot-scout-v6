@@ -312,9 +312,9 @@ export default function Search() {
           return {
             id: crypto.randomUUID(),
             address: r.address,
-            name: r.address,
-            borough: r.borough || '',
-            region: r.borough || '',
+            name: r.ownername ? `${r.address} (${r.ownername})` : r.address,
+            borough: ({ MN: 'Manhattan', BK: 'Brooklyn', QN: 'Queens', BX: 'Bronx', SI: 'Staten Island' } as Record<string, string>)[r.borough] || r.borough || '',
+            region: ({ MN: 'Manhattan', BK: 'Brooklyn', QN: 'Queens', BX: 'Bronx', SI: 'Staten Island' } as Record<string, string>)[r.borough] || r.borough || '',
             units,
             type: (r.bldgcl?.startsWith('R') ? 'condo' : r.bldgcl?.startsWith('D') ? 'co-op' : 'rental') as BuildingType,
             year_built: yearBuilt,
