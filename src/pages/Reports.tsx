@@ -171,36 +171,32 @@ export default function Reports() {
             </div>
           </div>
 
-          {/* Report Data Summary */}
+          {/* Property Overview */}
           <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-            {reportData.dof && (
-              <>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 uppercase font-medium">Market Value</p>
-                  <p className="text-xl font-bold text-gray-900">${(reportData.dof.marketValue / 1e6).toFixed(1)}M</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 uppercase font-medium">Units</p>
-                  <p className="text-xl font-bold text-gray-900">{reportData.dof.units || 'N/A'}</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 uppercase font-medium">Year Built</p>
-                  <p className="text-xl font-bold text-gray-900">{reportData.dof.yearBuilt || 'N/A'}</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 uppercase font-medium">Stories</p>
-                  <p className="text-xl font-bold text-gray-900">{reportData.dof.stories || 'N/A'}</p>
-                </div>
-              </>
-            )}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-xs text-gray-500 uppercase font-medium">Market Value</p>
+              <p className="text-xl font-bold text-gray-900">{reportData.dof ? `$${(reportData.dof.marketValue / 1e6).toFixed(1)}M` : 'N/A'}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-xs text-gray-500 uppercase font-medium">Units</p>
+              <p className="text-xl font-bold text-gray-900">{reportData.dof?.units || 'N/A'}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-xs text-gray-500 uppercase font-medium">Year Built</p>
+              <p className="text-xl font-bold text-gray-900">{reportData.dof?.yearBuilt || 'N/A'}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-xs text-gray-500 uppercase font-medium">Stories</p>
+              <p className="text-xl font-bold text-gray-900">{reportData.dof?.stories || 'N/A'}</p>
+            </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-xs text-gray-500 uppercase font-medium">HPD Violations</p>
-              <p className="text-xl font-bold text-red-600">{reportData.violations.total}</p>
+              <p className={`text-xl font-bold ${reportData.violations.total > 10 ? 'text-red-600' : reportData.violations.total > 0 ? 'text-orange-500' : 'text-green-600'}`}>{reportData.violations.total}</p>
               <p className="text-xs text-gray-400">{reportData.violations.open} open</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-xs text-gray-500 uppercase font-medium">ECB Violations</p>
-              <p className="text-xl font-bold text-orange-600">{reportData.ecb.count}</p>
+              <p className={`text-xl font-bold ${reportData.ecb.count > 0 ? 'text-orange-600' : 'text-green-600'}`}>{reportData.ecb.count}</p>
               <p className="text-xs text-gray-400">${reportData.ecb.totalPenaltyBalance.toLocaleString()} penalties</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
@@ -211,6 +207,34 @@ export default function Reports() {
               <p className="text-xs text-gray-500 uppercase font-medium">Energy Star</p>
               <p className="text-xl font-bold text-green-600">{reportData.energy?.energyStarScore ?? 'N/A'}</p>
             </div>
+          </div>
+
+          {/* Registration & Building Details */}
+          <div className="px-6 pb-4 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            {reportData.registration?.owner && (
+              <div><span className="text-gray-400">Owner:</span> <span className="font-medium">{reportData.registration.owner}</span></div>
+            )}
+            {reportData.registration?.managementCompany && (
+              <div><span className="text-gray-400">Management:</span> <span className="font-medium">{reportData.registration.managementCompany}</span></div>
+            )}
+            {reportData.dof?.owner && (
+              <div><span className="text-gray-400">DOF Owner:</span> <span className="font-medium">{reportData.dof.owner}</span></div>
+            )}
+            {reportData.dof?.bbl && (
+              <div><span className="text-gray-400">BBL:</span> <span className="font-medium">{reportData.dof.bbl}</span></div>
+            )}
+            {reportData.dof?.buildingClass && (
+              <div><span className="text-gray-400">Building Class:</span> <span className="font-medium">{reportData.dof.buildingClass}</span></div>
+            )}
+            {reportData.dof?.taxClass && (
+              <div><span className="text-gray-400">Tax Class:</span> <span className="font-medium">{reportData.dof.taxClass}</span></div>
+            )}
+            {reportData.rentStabilization?.isStabilized && (
+              <div className="col-span-2"><span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">📋 Rent Stabilized</span></div>
+            )}
+            {reportData.litigation?.hasActive && (
+              <div className="col-span-2"><span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-semibold">⚖️ Active Housing Litigation — {reportData.litigation.count} case(s)</span></div>
+            )}
           </div>
 
           {/* Ownership */}
@@ -267,7 +291,7 @@ export default function Reports() {
                   <p className="text-xs text-gray-400">{new Date(r.generatedAt).toLocaleString()}</p>
                 </div>
                 <button
-                  onClick={() => { setReportData(r.data); setReportAddress(r.address); }}
+                  onClick={() => { setReportData(r.data); setReportAddress(r.address); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   className="text-sm text-[#C5A55A] hover:text-[#b8983f] font-medium flex items-center gap-1"
                 >
                   <Eye className="w-4 h-4" /> View
