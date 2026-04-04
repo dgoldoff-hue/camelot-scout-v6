@@ -820,10 +820,7 @@ body{background:#fff}
 
 <!-- PAGE 1: COVER -->
 <div class="cover">
-<img src="./images/camelot-logo-white.png" alt="Camelot" style="width:96px;margin-bottom:16px;opacity:0.9" onerror="this.style.display='none'">
-<div class="badge">CAMELOT<br>REALTY GROUP</div>
-<div class="wordmark">C &nbsp;A &nbsp;M &nbsp;E &nbsp;L &nbsp;O &nbsp;T</div>
-<div class="pm-sub">Property Management</div>
+<img src="./images/camelot-logo-white.png" alt="Camelot Realty Group" style="width:140px;margin-bottom:32px;opacity:0.95" onerror="this.style.display='none'">
 <h1>${d.buildingName}</h1>
 <div class="proposal-sub">Property Intelligence Report &amp; Management Proposal</div>
 <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-top:4px">Powered by Jackie &nbsp;\u00B7&nbsp; Camelot OS &nbsp;\u00B7&nbsp; SCOUT Market Intelligence</div>
@@ -841,7 +838,7 @@ body{background:#fff}
 <div class="section-sub">${d.address} &mdash; ${d.propertyType}</div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0">
 <div style="border-radius:10px;overflow:hidden;border:1px solid #E5E3DE;height:280px">
-<iframe src="https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${encodedAddr}&fov=60&pitch=10" width="100%" height="280" style="border:0" allowfullscreen loading="lazy"></iframe>
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=18&maptype=satellite" width="100%" height="280" style="border:0" allowfullscreen loading="lazy"></iframe>
 </div>
 <div style="border-radius:10px;overflow:hidden;border:1px solid #E5E3DE;height:280px">
 <iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=16" width="100%" height="280" style="border:0" allowfullscreen loading="lazy"></iframe>
