@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Search, FileText, Download, Mail, Phone, Table2, Link2, Loader2, Eye, Copy, Check, X } from 'lucide-react';
 import { buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, type MasterReportData } from '@/lib/camelot-report';
 import { openBrochureForPrint, downloadAsHTML, triggerCSVDownload, copyToClipboard } from '@/lib/pdf-generator';
+import toast from 'react-hot-toast';
 
 type EmailType = 'intro' | 'followup' | 'proposal' | 'compliance';
 
@@ -221,7 +222,47 @@ export default function ReportCenter() {
               <button onClick={handleCSV} className="px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex flex-col items-center gap-1 text-sm">
                 <Table2 className="w-5 h-5" /> CSV Export
               </button>
-              <button onClick={() => { navigator.clipboard.writeText(JSON.stringify(data, null, 2)); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium flex flex-col items-center gap-1 text-sm">
+              <button onClick={async () => {
+                const apiKey = import.meta.env.VITE_HUBSPOT_API_KEY || '';
+                if (!apiKey) {
+                  toast.error('HubSpot API key not configured. Go to Settings → Integrations or set VITE_HUBSPOT_API_KEY in Render environment.');
+                  return;
+                }
+                try {
+                  toast.loading('Pushing to HubSpot...');
+                  const contactRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+                    body: JSON.stringify({ properties: {
+                      company: data.buildingName || data.address,
+                      address: data.address,
+                      city: 'New York',
+                      state: data.borough || 'NY',
+                      hs_lead_status: 'NEW',
+                      notes_last_contacted: `Scout Grade: ${data.scoutGrade} (${data.scoutScore}/100) | Units: ${data.units} | Violations: ${data.violationsTotal} (${data.violationsOpen} open) | Mgmt: ${data.managementCompany || 'Unknown'} | Market Value: $${data.marketValue.toLocaleString()} | Proposed Fee: $${data.monthlyFee}/mo`,
+                    }}),
+                  });
+                  if (!contactRes.ok) { const err = await contactRes.json(); throw new Error(err.message || contactRes.statusText); }
+                  const contact = await contactRes.json();
+                  const dealRes = await fetch('https://api.hubapi.com/crm/v3/objects/deals', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+                    body: JSON.stringify({ properties: {
+                      dealname: `Camelot Management — ${data.buildingName || data.address}`,
+                      pipeline: 'default',
+                      dealstage: 'appointmentscheduled',
+                      amount: String(data.annualFee),
+                      description: `${data.units} units | ${data.propertyType} | ${data.address} | Grade: ${data.scoutGrade} | Violations: ${data.violationsOpen} open | Distress: ${data.distressLevel}`,
+                    }, associations: [{ to: { id: contact.id }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }] }] }),
+                  });
+                  if (!dealRes.ok) { const err = await dealRes.json(); throw new Error(err.message || dealRes.statusText); }
+                  toast.dismiss();
+                  toast.success(`Pushed to HubSpot — Contact #${contact.id} + Deal created`);
+                } catch (err: any) {
+                  toast.dismiss();
+                  toast.error(`HubSpot error: ${err.message || 'Unknown error'}`);
+                }
+              }} className="px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium flex flex-col items-center gap-1 text-sm">
                 <Link2 className="w-5 h-5" /> Push to HubSpot
               </button>
             </div>
