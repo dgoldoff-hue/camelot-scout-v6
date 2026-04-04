@@ -354,8 +354,10 @@ export default function Search() {
     setIsScanning(false);
     setScanProgress('');
 
+    // Clear region filters so Results page shows ALL scanned buildings
+    // (scanned buildings store borough codes like 'MN', not area names like 'Upper East Side')
     setFilters({
-      regions: selectedRegions,
+      regions: [],
       buildingTypes,
       minUnits: minUnits ? parseInt(minUnits) : undefined,
       maxUnits: maxUnits ? parseInt(maxUnits) : undefined,
@@ -442,7 +444,7 @@ export default function Search() {
             <img
               src="/images/camelot-logo-white.png"
               alt="Camelot Realty Group"
-              className="h-10 object-contain"
+              className="h-8 object-contain"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
             <div className="h-8 w-px bg-white/20" />
@@ -592,10 +594,10 @@ export default function Search() {
           {/* Stats Bar */}
           <div className="grid grid-cols-4 gap-4 mt-6">
             {[
-              { icon: Building2, label: 'Properties', value: '130+' },
-              { icon: DollarSign, label: 'Transactions', value: '$500M+' },
-              { icon: Calendar, label: 'Years', value: '20+' },
-              { icon: TrendingUp, label: 'AUM', value: '$1.5B+' },
+              { icon: Building2, label: 'Properties', value: '42' },
+              { icon: DollarSign, label: 'AUM', value: '$240M+' },
+              { icon: Calendar, label: 'Years', value: '18+' },
+              { icon: TrendingUp, label: 'Units Tracked', value: '5,351+' },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="text-center bg-white/5 rounded-xl p-3 border border-white/10">
                 <Icon size={20} className="mx-auto text-camelot-gold mb-1" />

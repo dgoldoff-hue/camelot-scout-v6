@@ -91,7 +91,7 @@ export default function Layout({ children, onStartTour }: LayoutProps) {
           <img
             src="/images/camelot-logo-white.png"
             alt="Camelot"
-            className={cn('flex-shrink-0 transition-all', sidebarCollapsed ? 'w-8 h-8 object-contain' : 'h-8 object-contain')}
+            className={cn('flex-shrink-0 transition-all', sidebarCollapsed ? 'w-6 h-6 object-contain' : 'h-6 object-contain')}
             onError={(e) => {
               // Fallback if logo doesn't load
               (e.target as HTMLImageElement).style.display = 'none';
