@@ -62,8 +62,8 @@ export default function Layout({ children }: { children: ReactNode }) {
           sidebarCollapsed ? 'w-16' : 'w-64'
         )}
       >
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
+        {/* Logo — links to home */}
+        <Link to="/" className="flex items-center gap-3 px-4 py-5 border-b border-white/10 hover:bg-white/5 transition-colors cursor-pointer">
           <div className="flex-shrink-0 w-8 h-8 bg-camelot-gold rounded-lg flex items-center justify-center">
             <Castle size={18} className="text-camelot-navy" />
           </div>
@@ -73,7 +73,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               <p className="text-[10px] text-gray-400 tracking-widest">v6 • PROPERTY INTELLIGENCE</p>
             </div>
           )}
-        </div>
+        </Link>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 sidebar-scroll">

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { REGIONS, isFloridaArea, getFloridaAreas } from '@/lib/regions';
-import { fetchFullBuildingReport } from '@/lib/nyc-api';
+import { fetchFullBuildingReport, searchByOwnerName, searchByUnit } from '@/lib/nyc-api';
 import { generateFloridaBuildings } from '@/lib/florida-data';
 import { calculateScore } from '@/lib/scoring';
 import { useBuildingsStore } from '@/lib/store';
@@ -11,25 +11,40 @@ import toast from 'react-hot-toast';
 import {
   Search as SearchIcon, MapPin, ChevronDown, ChevronRight, Building2,
   Loader2, Zap, AlertTriangle, DollarSign, Calendar, X, Filter,
-  Activity, TrendingUp, Users, Award,
+  Activity, TrendingUp, Users, Award, User, Home,
 } from 'lucide-react';
+
+type SearchTab = 'address' | 'owner' | 'unit';
 
 export default function Search() {
   const navigate = useNavigate();
   const addBuildings = useBuildingsStore((s) => s.addBuildings);
   const setFilters = useBuildingsStore((s) => s.setFilters);
 
-  // Quick report state
+  // Search tab state
+  const [activeTab, setActiveTab] = useState<SearchTab>('address');
+
+  // Quick report state (address search)
   const [quickAddress, setQuickAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
+
+  // Owner search state
+  const [ownerName, setOwnerName] = useState('');
+  const [ownerResults, setOwnerResults] = useState<any[]>([]);
+  const [isOwnerSearching, setIsOwnerSearching] = useState(false);
+
+  // Unit search state
+  const [unitAddress, setUnitAddress] = useState('');
+  const [unitNumber, setUnitNumber] = useState('');
+  const [unitData, setUnitData] = useState<any>(null);
+  const [isUnitSearching, setIsUnitSearching] = useState(false);
 
   // Region selection
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   // Advanced filters
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [buildingTypes, setBuildingTypes] = useState<BuildingType[]>([]);
   const [minUnits, setMinUnits] = useState('');
   const [maxUnits, setMaxUnits] = useState('');
@@ -37,16 +52,15 @@ export default function Search() {
   const [yearBuiltMax, setYearBuiltMax] = useState('');
   const [violationThreshold, setViolationThreshold] = useState('');
 
-  // Quick Building Report
+  // Quick Building Report (address search)
   const handleQuickReport = async () => {
     if (!quickAddress.trim()) return;
     setIsSearching(true);
     setReportData(null);
+    setOwnerResults([]);
+    setUnitData(null);
     try {
       const data = await fetchFullBuildingReport(quickAddress.trim());
-      setReportData(data);
-
-      // Calculate score
       const score = calculateScore({
         violations_count: data.violations.total,
         open_violations_count: data.violations.open,
@@ -58,13 +72,89 @@ export default function Search() {
         site_eui: data.energy?.siteEUI ?? undefined,
       });
       setReportData({ ...data, score });
-
       toast.success('Building report generated');
     } catch (err) {
       toast.error('Failed to fetch building data');
       console.error(err);
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  // Owner name search
+  const handleOwnerSearch = async () => {
+    if (!ownerName.trim()) return;
+    setIsOwnerSearching(true);
+    setOwnerResults([]);
+    setReportData(null);
+    setUnitData(null);
+    try {
+      const results = await searchByOwnerName(ownerName.trim());
+      setOwnerResults(results);
+      if (results.length === 0) {
+        toast('No buildings found for that owner name', { icon: '🔍' });
+      } else {
+        toast.success(`Found ${results.length} building(s)`);
+      }
+    } catch (err) {
+      toast.error('Owner search failed');
+      console.error(err);
+    } finally {
+      setIsOwnerSearching(false);
+    }
+  };
+
+  // Click an owner result → run full building report
+  const handleOwnerResultClick = async (row: any) => {
+    const addr = `${row.housenumber} ${row.streetname}`.trim();
+    if (!addr) return;
+    setActiveTab('address');
+    setQuickAddress(addr);
+    setOwnerResults([]);
+    setIsSearching(true);
+    setReportData(null);
+    try {
+      const data = await fetchFullBuildingReport(addr);
+      const score = calculateScore({
+        violations_count: data.violations.total,
+        open_violations_count: data.violations.open,
+        units: data.dof?.units,
+        current_management: data.registration?.managementCompany,
+        year_built: data.dof?.yearBuilt,
+        has_recent_permits: data.permits.hasRecent,
+        energy_star_score: data.energy?.energyStarScore ?? undefined,
+        site_eui: data.energy?.siteEUI ?? undefined,
+      });
+      setReportData({ ...data, score });
+      toast.success('Building report generated');
+    } catch (err) {
+      toast.error('Failed to fetch building data');
+      console.error(err);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Unit lookup
+  const handleUnitSearch = async () => {
+    if (!unitAddress.trim() || !unitNumber.trim()) return;
+    setIsUnitSearching(true);
+    setUnitData(null);
+    setReportData(null);
+    setOwnerResults([]);
+    try {
+      const data = await searchByUnit(unitAddress.trim(), unitNumber.trim());
+      setUnitData(data);
+      if (data.violations.total === 0) {
+        toast('No unit-specific violations found', { icon: '🔍' });
+      } else {
+        toast.success(`Found ${data.violations.total} violation(s) for unit ${unitNumber.toUpperCase()}`);
+      }
+    } catch (err) {
+      toast.error('Unit lookup failed');
+      console.error(err);
+    } finally {
+      setIsUnitSearching(false);
     }
   };
 
@@ -105,16 +195,12 @@ export default function Search() {
 
   // Run Scan
   const handleScan = async () => {
-    // Separate Florida areas from non-Florida areas
     const floridaAreas = selectedRegions.filter((a) => isFloridaArea(a));
     const otherAreas = selectedRegions.filter((a) => !isFloridaArea(a));
 
-    // If Florida areas are selected, generate Florida buildings
     if (floridaAreas.length > 0) {
       setIsScanning(true);
       setScanProgress(`Scanning ${floridaAreas.length} Florida area(s)...`);
-
-      // Simulate scan delay for realism
       await new Promise((resolve) => setTimeout(resolve, 800));
       setScanProgress('Researching property records...');
       await new Promise((resolve) => setTimeout(resolve, 600));
@@ -122,17 +208,14 @@ export default function Search() {
       await new Promise((resolve) => setTimeout(resolve, 400));
 
       const floridaBuildings = generateFloridaBuildings(floridaAreas);
-
       if (floridaBuildings.length > 0) {
         addBuildings(floridaBuildings);
         toast.success(`🌴 Found ${floridaBuildings.length} buildings in Florida`);
       }
-
       setIsScanning(false);
       setScanProgress('');
     }
 
-    // Set filters (for both Florida and non-Florida)
     setFilters({
       regions: selectedRegions,
       buildingTypes,
@@ -192,15 +275,29 @@ export default function Search() {
       updated_at: new Date().toISOString(),
     };
     addBuildings([building as Building]);
+    // Clear region filters so the Results page shows ALL buildings (including newly added ones)
+    setFilters({ regions: [], buildingTypes: [], grades: [] });
     toast.success('Building added to Scout database');
     navigate('/results');
   };
 
+  // Clear all search results
+  const clearResults = () => {
+    setReportData(null);
+    setOwnerResults([]);
+    setUnitData(null);
+  };
+
+  const hasResults = reportData || ownerResults.length > 0 || unitData;
+
   return (
     <div className="min-h-screen">
-      {/* Hero */}
-      <div className="bg-camelot-navy text-white px-8 py-10">
-        <div className="max-w-5xl mx-auto">
+      {/* Hero with integrated search */}
+      <div className={cn(
+        "bg-camelot-navy text-white px-8 transition-all duration-500",
+        hasResults ? 'pb-8' : 'py-10'
+      )}>
+        <div className="max-w-5xl mx-auto pt-10">
           <h1 className="text-3xl font-bold mb-2">
             🏰 Property Intelligence
           </h1>
@@ -208,33 +305,114 @@ export default function Search() {
             Search any NYC address for instant building reports, or scan entire regions for leads.
           </p>
 
-          {/* Quick Building Report */}
-          <div className="bg-white/5 backdrop-blur rounded-xl p-5 border border-white/10">
-            <h2 className="text-sm font-semibold text-camelot-gold uppercase tracking-wider mb-3">
-              Quick Building Report
-            </h2>
+          {/* Search Tabs */}
+          <div className="flex gap-2 mb-4">
+            {([
+              { key: 'address' as SearchTab, icon: MapPin, label: 'Address' },
+              { key: 'owner' as SearchTab, icon: User, label: 'Owner Name' },
+              { key: 'unit' as SearchTab, icon: Home, label: 'Unit Lookup' },
+            ]).map(({ key, icon: Icon, label }) => (
+              <button
+                key={key}
+                onClick={() => { setActiveTab(key); clearResults(); }}
+                className={cn(
+                  'flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200',
+                  activeTab === key
+                    ? 'bg-camelot-gold text-camelot-navy shadow-lg shadow-camelot-gold/20'
+                    : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white border border-white/10'
+                )}
+              >
+                <Icon size={15} />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Address Search */}
+          {activeTab === 'address' && (
             <div className="flex gap-3">
               <div className="flex-1 relative">
-                <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   value={quickAddress}
                   onChange={(e) => setQuickAddress(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleQuickReport()}
                   placeholder="Enter any NYC address (e.g., 301 East 79th Street)"
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-camelot-gold/50 focus:border-camelot-gold"
+                  className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-camelot-gold/60 focus:border-camelot-gold transition-all"
                 />
               </div>
               <button
                 onClick={handleQuickReport}
                 disabled={!quickAddress.trim() || isSearching}
-                className="bg-camelot-gold text-camelot-navy px-6 py-3 rounded-xl font-semibold hover:bg-camelot-gold-light transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="bg-camelot-gold text-camelot-navy px-8 py-4 rounded-2xl font-bold text-lg hover:bg-camelot-gold-light transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-camelot-gold/20"
               >
-                {isSearching ? <Loader2 size={16} className="animate-spin" /> : <SearchIcon size={16} />}
+                {isSearching ? <Loader2 size={20} className="animate-spin" /> : <SearchIcon size={20} />}
                 Search
               </button>
             </div>
-          </div>
+          )}
+
+          {/* Owner Name Search */}
+          {activeTab === 'owner' && (
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={ownerName}
+                  onChange={(e) => setOwnerName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleOwnerSearch()}
+                  placeholder="Enter owner or company name (e.g., Silverstein Properties)"
+                  className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-camelot-gold/60 focus:border-camelot-gold transition-all"
+                />
+              </div>
+              <button
+                onClick={handleOwnerSearch}
+                disabled={!ownerName.trim() || isOwnerSearching}
+                className="bg-camelot-gold text-camelot-navy px-8 py-4 rounded-2xl font-bold text-lg hover:bg-camelot-gold-light transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-camelot-gold/20"
+              >
+                {isOwnerSearching ? <Loader2 size={20} className="animate-spin" /> : <SearchIcon size={20} />}
+                Search
+              </button>
+            </div>
+          )}
+
+          {/* Unit Lookup */}
+          {activeTab === 'unit' && (
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={unitAddress}
+                  onChange={(e) => setUnitAddress(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUnitSearch()}
+                  placeholder="Building address (e.g., 301 East 79th Street)"
+                  className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-camelot-gold/60 focus:border-camelot-gold transition-all"
+                />
+              </div>
+              <div className="w-40 relative">
+                <Home size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={unitNumber}
+                  onChange={(e) => setUnitNumber(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUnitSearch()}
+                  placeholder="Unit #"
+                  className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-camelot-gold/60 focus:border-camelot-gold transition-all"
+                />
+              </div>
+              <button
+                onClick={handleUnitSearch}
+                disabled={!unitAddress.trim() || !unitNumber.trim() || isUnitSearching}
+                className="bg-camelot-gold text-camelot-navy px-8 py-4 rounded-2xl font-bold text-lg hover:bg-camelot-gold-light transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-camelot-gold/20"
+              >
+                {isUnitSearching ? <Loader2 size={20} className="animate-spin" /> : <SearchIcon size={20} />}
+                Search
+              </button>
+            </div>
+          )}
 
           {/* Stats Bar */}
           <div className="grid grid-cols-4 gap-4 mt-6">
@@ -251,134 +429,264 @@ export default function Search() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* Quick Report Results */}
-      {reportData && (
-        <div className="max-w-5xl mx-auto px-8 -mt-4">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 animate-slide-in">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-bold">Building Report: {quickAddress}</h3>
-                {reportData.energy?.propertyName && (
-                  <p className="text-sm text-gray-500">{reportData.energy.propertyName}</p>
-                )}
+          {/* ====== INLINE RESULTS (dark theme, inside hero) ====== */}
+
+          {/* Address Report Results */}
+          {reportData && (
+            <div className="mt-6 bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-6 animate-slide-in">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-white">Building Report: {quickAddress}</h3>
+                  {reportData.energy?.propertyName && (
+                    <p className="text-sm text-gray-400">{reportData.energy.propertyName}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleAddToScout}
+                    className="bg-camelot-gold text-camelot-navy px-6 py-3 rounded-xl text-sm font-bold hover:bg-camelot-gold-light transition-all shadow-lg shadow-camelot-gold/20 flex items-center gap-2"
+                  >
+                    <Award size={16} />
+                    Add to Scout
+                  </button>
+                  <button onClick={clearResults} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
+                    <X size={18} className="text-gray-400" />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleAddToScout}
-                  className="bg-camelot-gold text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-camelot-gold-dark transition-colors"
-                >
-                  + Add to Scout
-                </button>
-                <button onClick={() => setReportData(null)} className="p-1 hover:bg-gray-100 rounded-lg">
+
+              {/* Score */}
+              {reportData.score && (
+                <div className="flex items-center gap-4 mb-6 p-4 bg-white/5 rounded-xl border border-white/10">
+                  <div className={cn(
+                    'w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold border-2',
+                    reportData.score.grade === 'A' ? 'bg-green-900/30 text-green-400 border-green-500/30' :
+                    reportData.score.grade === 'B' ? 'bg-yellow-900/30 text-yellow-400 border-yellow-500/30' :
+                    'bg-gray-800/30 text-gray-400 border-gray-500/30'
+                  )}>
+                    {reportData.score.grade}
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Lead Score</p>
+                    <p className="text-2xl font-bold text-white">{reportData.score.total}/100</p>
+                  </div>
+                  <div className="ml-auto flex flex-wrap gap-1 max-w-md">
+                    {reportData.score.signals.map((s: string, i: number) => (
+                      <span key={i} className="text-xs bg-camelot-gold/20 text-camelot-gold px-2 py-0.5 rounded-full border border-camelot-gold/30">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Data Grid */}
+              <div className="grid grid-cols-3 gap-6">
+                {/* DOF Data */}
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <DollarSign size={12} className="text-camelot-gold" /> Property Assessment
+                  </h4>
+                  <div className="space-y-1.5">
+                    {reportData.dof ? (
+                      <>
+                        <DarkInfoRow label="Owner" value={reportData.dof.owner || '—'} />
+                        <DarkInfoRow label="Market Value" value={formatCurrency(reportData.dof.marketValue)} />
+                        <DarkInfoRow label="Assessed Value" value={formatCurrency(reportData.dof.assessedValue)} />
+                        <DarkInfoRow label="Land Value" value={formatCurrency(reportData.dof.landValue)} />
+                        <DarkInfoRow label="Year Built" value={String(reportData.dof.yearBuilt || '—')} />
+                        <DarkInfoRow label="Units" value={String(reportData.dof.units || '—')} />
+                        <DarkInfoRow label="Lot Area" value={reportData.dof.lotArea ? `${formatNumber(reportData.dof.lotArea)} sf` : '—'} />
+                        <DarkInfoRow label="Tax Class" value={reportData.dof.taxClass || '—'} />
+                      </>
+                    ) : (
+                      <p className="text-xs text-gray-500">No DOF data found</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Violations */}
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <AlertTriangle size={12} className="text-camelot-gold" /> HPD Violations
+                  </h4>
+                  <div className="space-y-1.5">
+                    <DarkInfoRow label="Total" value={String(reportData.violations.total)} highlight={reportData.violations.total > 20} />
+                    <DarkInfoRow label="Open" value={String(reportData.violations.open)} highlight={reportData.violations.open > 5} />
+                    <DarkInfoRow label="Last Violation" value={reportData.violations.lastDate ? new Date(reportData.violations.lastDate).toLocaleDateString() : '—'} />
+                  </div>
+                  {reportData.registration && (
+                    <div className="mt-3">
+                      <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <Users size={12} className="text-camelot-gold" /> Registration
+                      </h4>
+                      <DarkInfoRow label="Owner" value={reportData.registration.owner || '—'} />
+                      <DarkInfoRow label="Management" value={reportData.registration.managementCompany || '—'} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Energy & Permits */}
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <Zap size={12} className="text-camelot-gold" /> Energy / LL97
+                  </h4>
+                  <div className="space-y-1.5">
+                    {reportData.energy ? (
+                      <>
+                        <DarkInfoRow label="Energy Star" value={String(reportData.energy.energyStarScore ?? '—')} />
+                        <DarkInfoRow label="Site EUI" value={reportData.energy.siteEUI ? `${reportData.energy.siteEUI} kBtu/ft²` : '—'} />
+                        <DarkInfoRow label="GHG Emissions" value={reportData.energy.ghgEmissions ? `${reportData.energy.ghgEmissions} MT` : '—'} />
+                      </>
+                    ) : (
+                      <p className="text-xs text-gray-500">No energy data found</p>
+                    )}
+                  </div>
+                  <div className="mt-3">
+                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                      <Activity size={12} className="text-camelot-gold" /> DOB Permits
+                    </h4>
+                    <DarkInfoRow label="Total Permits" value={String(reportData.permits.count)} />
+                    <DarkInfoRow label="Recent Activity" value={reportData.permits.hasRecent ? 'Yes' : 'No'} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Owner Search Results */}
+          {ownerResults.length > 0 && (
+            <div className="mt-6 bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-6 animate-slide-in">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-white">
+                  Owner Results: "{ownerName}" — {ownerResults.length} building(s)
+                </h3>
+                <button onClick={clearResults} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
                   <X size={18} className="text-gray-400" />
                 </button>
               </div>
+              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+                {ownerResults.map((row, i) => {
+                  const addr = `${row.housenumber || ''} ${row.streetname || ''}`.trim();
+                  const ownerDisplay = row.corporationname
+                    || `${row.ownerfirstname || ''} ${row.ownerlastname || ''}`.trim()
+                    || '—';
+                  const boroughNames: Record<string, string> = { '1': 'Manhattan', '2': 'Bronx', '3': 'Brooklyn', '4': 'Queens', '5': 'Staten Island' };
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => handleOwnerResultClick(row)}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all text-left group"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white group-hover:text-camelot-gold transition-colors truncate">
+                          {addr || 'Unknown address'}
+                        </p>
+                        <p className="text-xs text-gray-400 truncate">
+                          {boroughNames[row.boroid] || ''} · Owner: {ownerDisplay}
+                        </p>
+                        {row.managementcompany && (
+                          <p className="text-xs text-gray-500 truncate">
+                            Mgmt: {row.managementcompany}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                        {row.buildingid && (
+                          <span className="text-[10px] bg-white/10 text-gray-400 px-2 py-0.5 rounded-full">
+                            ID: {row.buildingid}
+                          </span>
+                        )}
+                        <ChevronRight size={16} className="text-gray-500 group-hover:text-camelot-gold transition-colors" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+          )}
 
-            {/* Score */}
-            {reportData.score && (
-              <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-xl">
-                <div className={cn(
-                  'w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold border-2',
-                  reportData.score.grade === 'A' ? 'bg-green-50 text-green-600 border-green-200' :
-                  reportData.score.grade === 'B' ? 'bg-yellow-50 text-yellow-600 border-yellow-200' :
-                  'bg-gray-50 text-gray-600 border-gray-200'
-                )}>
-                  {reportData.score.grade}
-                </div>
+          {/* Unit Lookup Results */}
+          {unitData && (
+            <div className="mt-6 bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-6 animate-slide-in">
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-sm text-gray-500">Lead Score</p>
-                  <p className="text-2xl font-bold">{reportData.score.total}/100</p>
+                  <h3 className="text-lg font-bold text-white">
+                    Unit {unitData.unit} — {unitAddress}
+                  </h3>
+                  <p className="text-sm text-gray-400">
+                    {unitData.violations.total} violation(s) · {unitData.violations.open} open
+                  </p>
                 </div>
-                <div className="ml-auto flex flex-wrap gap-1 max-w-md">
-                  {reportData.score.signals.map((s: string, i: number) => (
-                    <span key={i} className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
-                      {s}
-                    </span>
+                <button onClick={clearResults} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
+                  <X size={18} className="text-gray-400" />
+                </button>
+              </div>
+
+              {unitData.dof && (
+                <div className="grid grid-cols-4 gap-3 mb-4">
+                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-[10px] text-gray-400 uppercase">Owner</p>
+                    <p className="text-sm font-medium text-white truncate">{unitData.dof.owner || '—'}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-[10px] text-gray-400 uppercase">Year Built</p>
+                    <p className="text-sm font-medium text-white">{unitData.dof.yearBuilt || '—'}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-[10px] text-gray-400 uppercase">Total Units</p>
+                    <p className="text-sm font-medium text-white">{unitData.dof.units || '—'}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-[10px] text-gray-400 uppercase">Market Value</p>
+                    <p className="text-sm font-medium text-white">{unitData.dof.marketValue ? formatCurrency(unitData.dof.marketValue) : '—'}</p>
+                  </div>
+                </div>
+              )}
+
+              {unitData.violations.items.length > 0 ? (
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                  {unitData.violations.items.map((v: any, i: number) => (
+                    <div key={i} className="flex items-start gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
+                      <div className={cn(
+                        'w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5',
+                        v.class === 'C' ? 'bg-red-900/40 text-red-400 border border-red-500/30' :
+                        v.class === 'B' ? 'bg-orange-900/40 text-orange-400 border border-orange-500/30' :
+                        'bg-yellow-900/40 text-yellow-400 border border-yellow-500/30'
+                      )}>
+                        {v.class || '?'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-white leading-relaxed">{v.novdescription || 'No description'}</p>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-[10px] text-gray-500">
+                            {v.inspectiondate ? new Date(v.inspectiondate).toLocaleDateString() : '—'}
+                          </span>
+                          <span className={cn(
+                            'text-[10px] px-1.5 py-0.5 rounded-full',
+                            (v.currentstatus === 'CLOSE' || v.violationstatus === 'Close')
+                              ? 'bg-green-900/30 text-green-400'
+                              : 'bg-red-900/30 text-red-400'
+                          )}>
+                            {(v.currentstatus === 'CLOSE' || v.violationstatus === 'Close') ? 'Closed' : 'Open'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Data Grid */}
-            <div className="grid grid-cols-3 gap-6">
-              {/* DOF Data */}
-              <div>
-                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                  <DollarSign size={12} /> Property Assessment
-                </h4>
-                <div className="space-y-1.5">
-                  {reportData.dof ? (
-                    <>
-                      <InfoRow label="Owner" value={reportData.dof.owner || '—'} />
-                      <InfoRow label="Market Value" value={formatCurrency(reportData.dof.marketValue)} />
-                      <InfoRow label="Assessed Value" value={formatCurrency(reportData.dof.assessedValue)} />
-                      <InfoRow label="Land Value" value={formatCurrency(reportData.dof.landValue)} />
-                      <InfoRow label="Year Built" value={reportData.dof.yearBuilt || '—'} />
-                      <InfoRow label="Units" value={reportData.dof.units || '—'} />
-                      <InfoRow label="Lot Area" value={reportData.dof.lotArea ? `${formatNumber(reportData.dof.lotArea)} sf` : '—'} />
-                      <InfoRow label="Tax Class" value={reportData.dof.taxClass || '—'} />
-                    </>
-                  ) : (
-                    <p className="text-xs text-gray-400">No DOF data found</p>
-                  )}
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 text-sm">No violations found for unit {unitData.unit}</p>
                 </div>
-              </div>
-
-              {/* Violations */}
-              <div>
-                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                  <AlertTriangle size={12} /> HPD Violations
-                </h4>
-                <div className="space-y-1.5">
-                  <InfoRow label="Total" value={String(reportData.violations.total)} highlight={reportData.violations.total > 20} />
-                  <InfoRow label="Open" value={String(reportData.violations.open)} highlight={reportData.violations.open > 5} />
-                  <InfoRow label="Last Violation" value={reportData.violations.lastDate ? new Date(reportData.violations.lastDate).toLocaleDateString() : '—'} />
-                </div>
-                {reportData.registration && (
-                  <div className="mt-3">
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                      <Users size={12} /> Registration
-                    </h4>
-                    <InfoRow label="Owner" value={reportData.registration.owner || '—'} />
-                    <InfoRow label="Management" value={reportData.registration.managementCompany || '—'} />
-                  </div>
-                )}
-              </div>
-
-              {/* Energy & Permits */}
-              <div>
-                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                  <Zap size={12} /> Energy / LL97
-                </h4>
-                <div className="space-y-1.5">
-                  {reportData.energy ? (
-                    <>
-                      <InfoRow label="Energy Star" value={String(reportData.energy.energyStarScore ?? '—')} />
-                      <InfoRow label="Site EUI" value={reportData.energy.siteEUI ? `${reportData.energy.siteEUI} kBtu/ft²` : '—'} />
-                      <InfoRow label="GHG Emissions" value={reportData.energy.ghgEmissions ? `${reportData.energy.ghgEmissions} MT` : '—'} />
-                    </>
-                  ) : (
-                    <p className="text-xs text-gray-400">No energy data found</p>
-                  )}
-                </div>
-                <div className="mt-3">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                    <Activity size={12} /> DOB Permits
-                  </h4>
-                  <InfoRow label="Total Permits" value={String(reportData.permits.count)} />
-                  <InfoRow label="Recent Activity" value={reportData.permits.hasRecent ? 'Yes' : 'No'} />
-                </div>
-              </div>
+              )}
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Region Selector + Filters */}
+      {/* Region Selector + Filters (below hero, white area) */}
       <div className="max-w-5xl mx-auto px-8 py-8">
         <div className="grid grid-cols-3 gap-8">
           {/* Region Selector - takes 2 columns */}
@@ -606,11 +914,11 @@ export default function Search() {
   );
 }
 
-function InfoRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function DarkInfoRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className="flex justify-between py-1 text-xs">
       <span className="text-gray-500">{label}</span>
-      <span className={cn('font-medium', highlight && 'text-red-600 font-bold')}>{value}</span>
+      <span className={cn('font-medium text-gray-200', highlight && 'text-red-400 font-bold')}>{value}</span>
     </div>
   );
 }

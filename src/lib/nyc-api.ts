@@ -261,6 +261,89 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
 }
 
 /**
+ * Search HPD Building Registration by owner name
+ */
+export async function searchByOwnerName(name: string): Promise<any[]> {
+  try {
+    const upperName = name.toUpperCase().replace(/'/g, "''");
+    const encoded = encodeURIComponent(upperName);
+    const url = `${ENDPOINTS.hpdRegistration}?$limit=100&$where=upper(ownerfirstname) like '%25${encoded}%25' OR upper(ownerlastname) like '%25${encoded}%25' OR upper(corporationname) like '%25${encoded}%25'`;
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HPD Registration API error: ${res.status}`);
+    const data = await res.json();
+
+    // Deduplicate by buildingid
+    const seen = new Set<string>();
+    const unique: any[] = [];
+    for (const row of data) {
+      const key = row.buildingid || `${row.housenumber}-${row.streetname}-${row.boroid}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(row);
+      }
+    }
+    return unique;
+  } catch (err) {
+    console.error('Owner name search error:', err);
+    return [];
+  }
+}
+
+/**
+ * Search by address + unit number for unit-specific data
+ */
+export async function searchByUnit(address: string, unit: string): Promise<any> {
+  try {
+    const { number, street } = parseAddress(address);
+    const upperUnit = unit.toUpperCase().replace(/'/g, "''");
+
+    // HPD Violations for this specific unit
+    let violationsUrl = `${ENDPOINTS.hpdViolations}?$limit=200`;
+    if (number) {
+      violationsUrl += `&$where=upper(apartment)='${encodeURIComponent(upperUnit)}'`;
+      violationsUrl += ` AND housenumber='${number}'`;
+      violationsUrl += ` AND upper(streetname) like '%25${encodeURIComponent(street.split(' ').slice(0, 2).join(' '))}%25'`;
+    }
+
+    const violationsRes = await fetch(violationsUrl);
+    const violations: HPDViolation[] = violationsRes.ok ? await violationsRes.json() : [];
+
+    const openViolations = violations.filter(
+      (v) => v.currentstatus !== 'CLOSE' && v.violationstatus !== 'Close'
+    );
+
+    // Also fetch building-level DOF data for context
+    const dofData = await fetchDOFProperty(address);
+    const dof = dofData[0];
+
+    return {
+      unit: upperUnit,
+      address,
+      violations: {
+        total: violations.length,
+        open: openViolations.length,
+        items: violations.slice(0, 50),
+        lastDate: violations[0]?.inspectiondate,
+      },
+      dof: dof
+        ? {
+            bbl: dof.bbl,
+            owner: dof.owner,
+            marketValue: parseFloat(dof.fullval) || 0,
+            yearBuilt: parseInt(dof.yearbuilt) || 0,
+            units: parseInt(dof.unitsres) || parseInt(dof.unitstotal) || 0,
+            buildingClass: dof.bldgcl,
+          }
+        : null,
+    };
+  } catch (err) {
+    console.error('Unit search error:', err);
+    return { unit, address, violations: { total: 0, open: 0, items: [] }, dof: null };
+  }
+}
+
+/**
  * Search buildings by region using NYC Open Data
  * This searches PLUTO for buildings matching criteria
  */

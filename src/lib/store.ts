@@ -46,7 +46,7 @@ export const useBuildingsStore = create<BuildingsState>((set, get) => ({
   setBuildings: (buildings) => set({ buildings }),
   addBuildings: (newBuildings) =>
     set((state) => ({
-      buildings: [...state.buildings, ...newBuildings],
+      buildings: [...newBuildings, ...state.buildings],
     })),
   updateBuilding: (id, data) =>
     set((state) => ({
