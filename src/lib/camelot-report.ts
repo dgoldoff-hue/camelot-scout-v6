@@ -836,22 +836,40 @@ body{background:#fff}
 <!-- PAGE 2: PROPERTY VISUAL & MAP -->
 <div class="section section-white" style="padding-top:20px">
 <div class="section-title">The Property</div>
-<div class="section-sub">${d.address} &mdash; ${d.propertyType}</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0">
-<div style="border-radius:10px;overflow:hidden;border:1px solid #E5E3DE;height:280px">
-<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=18&maptype=satellite" width="100%" height="280" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div class="section-sub">${d.address} \u2014 ${d.propertyType}</div>
+
+<!-- Hero property image — full width Google Maps street-level -->
+<div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:320px;margin-bottom:16px;position:relative">
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=19&maptype=satellite" width="100%" height="320" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(58,75,91,0.85));padding:16px 20px 12px;color:#fff">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:700">${d.buildingName}</div>
+<div style="font-size:11px;opacity:0.8">${d.address} \u00B7 ${d.propertyType} \u00B7 ${d.units ? d.units + ' Units' : ''} ${d.stories ? '\u00B7 ' + d.stories + ' Floors' : ''} ${d.yearBuilt ? '\u00B7 Built ' + d.yearBuilt : ''}</div>
 </div>
-<div style="border-radius:10px;overflow:hidden;border:1px solid #E5E3DE;height:280px">
-<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=16" width="100%" height="280" style="border:0" allowfullscreen loading="lazy"></iframe>
+</div>
+
+<!-- Three panels: Street map, Neighborhood area, Directions from Camelot -->
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+<div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=17" width="100%" height="180" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:9px;color:#999;padding:4px">Street Map</div>
+</div>
+<div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=14" width="100%" height="180" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:9px;color:#999;padding:4px">Neighborhood Area</div>
+</div>
+<div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
+<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=driving" width="100%" height="180" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:9px;color:#999;padding:4px">From Camelot HQ \u2014 477 Madison Ave</div>
 </div>
 </div>
+
 <div class="stats-row">
 <div class="stat-box"><div class="val">${d.propertyType}</div><div class="lbl">Property Type</div></div>
 <div class="stat-box"><div class="val">${d.units || 'N/A'}</div><div class="lbl">Units</div></div>
 <div class="stat-box"><div class="val">${d.stories || 'N/A'}</div><div class="lbl">Floors</div></div>
 <div class="stat-box"><div class="val">${d.yearBuilt || 'N/A'}</div><div class="lbl">Year Built</div></div>
 </div>
-<div style="background:#EDE9DF;border:1px solid #E5E3DE;border-radius:8px;padding:20px;margin-top:12px">
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:20px;margin-top:12px">
 <p style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#555;line-height:1.8;text-align:center">${hookLine}</p>
 </div>
 </div>
@@ -1104,8 +1122,80 @@ ${d.buildingArea > 0 ? `
 </div>
 ` : ''}
 
-<div style="background:#EDE9DF;border:1px solid #E5E3DE;border-radius:8px;padding:16px;margin-top:16px">
-<p style="font-size:12px;color:#555;line-height:1.7"><strong style="color:#A89035">Source:</strong> Camelot Q1 2026 Market Report. Data from ACRIS closed sales, StreetEasy leased units, and RealtyMX RLS comparables (Q4 2025 – Q1 2026). Scores are Camelot composite assessments based on market data, public records, census metrics, school ratings, transit access, and crime statistics.</p>
+<!-- Visual Charts — CSS Bar Charts -->
+<div style="margin:20px 0 16px;border-left:4px solid #A89035;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Price Comparison \u2014 $/Sqft by Type</div>
+</div>
+<div style="display:flex;gap:16px;align-items:flex-end;height:160px;margin-bottom:16px;padding:0 20px">
+<div style="flex:1;text-align:center">
+<div style="background:linear-gradient(to top,#A89035,#C4AA6E);height:${Math.round(d.neighborhoodMarketData.condoPSF / 25)}px;max-height:140px;border-radius:6px 6px 0 0;min-height:30px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px"><span style="color:#fff;font-size:10px;font-weight:700">$${d.neighborhoodMarketData.condoPSF}</span></div>
+<div style="font-size:9px;color:#888;margin-top:4px">Condo $/SF</div>
+</div>
+<div style="flex:1;text-align:center">
+<div style="background:linear-gradient(to top,#3A4B5B,#5A6B7B);height:${Math.round(d.neighborhoodMarketData.coopPSF / 25)}px;max-height:140px;border-radius:6px 6px 0 0;min-height:30px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px"><span style="color:#fff;font-size:10px;font-weight:700">$${d.neighborhoodMarketData.coopPSF}</span></div>
+<div style="font-size:9px;color:#888;margin-top:4px">Co-op $/SF</div>
+</div>
+<div style="flex:1;text-align:center">
+<div style="background:linear-gradient(to top,#16a34a,#4ade80);height:${Math.round(d.neighborhoodMarketData.rentalPSFYr * 2)}px;max-height:140px;border-radius:6px 6px 0 0;min-height:30px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px"><span style="color:#fff;font-size:10px;font-weight:700">$${d.neighborhoodMarketData.rentalPSFYr}/yr</span></div>
+<div style="font-size:9px;color:#888;margin-top:4px">Rental $/SF/Yr</div>
+</div>
+<div style="flex:1;text-align:center">
+<div style="background:linear-gradient(to top,#dc2626,#f87171);height:${Math.round(d.neighborhoodMarketData.daysOnMarket * 5)}px;max-height:140px;border-radius:6px 6px 0 0;min-height:30px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px"><span style="color:#fff;font-size:10px;font-weight:700">${d.neighborhoodMarketData.daysOnMarket}d</span></div>
+<div style="font-size:9px;color:#888;margin-top:4px">Avg Days on Mkt</div>
+</div>
+</div>
+
+<!-- Rental Chart -->
+<div style="margin:20px 0 16px;border-left:4px solid #A89035;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Median Rental Rates</div>
+</div>
+<div style="display:flex;gap:20px;margin-bottom:16px;padding:0 20px">
+<div style="flex:1">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+<div style="font-size:11px;color:#888;width:30px">1BR</div>
+<div style="flex:1;background:#E5E3DE;border-radius:4px;height:24px;position:relative">
+<div style="background:linear-gradient(to right,#A89035,#C4AA6E);height:100%;border-radius:4px;width:${Math.min(100, Math.round(d.neighborhoodMarketData.median1BR / 60))}%"></div>
+<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#2C3240">$${d.neighborhoodMarketData.median1BR.toLocaleString()}/mo</span>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:8px">
+<div style="font-size:11px;color:#888;width:30px">2BR</div>
+<div style="flex:1;background:#E5E3DE;border-radius:4px;height:24px;position:relative">
+<div style="background:linear-gradient(to right,#3A4B5B,#5A6B7B);height:100%;border-radius:4px;width:${Math.min(100, Math.round(d.neighborhoodMarketData.median2BR / 90))}%"></div>
+<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#2C3240">$${d.neighborhoodMarketData.median2BR.toLocaleString()}/mo</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Neighborhood Scores Visual -->
+<div style="margin:20px 0 16px;border-left:4px solid #A89035;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Neighborhood Scores (1\u201310)</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;padding:0 20px">
+${[
+  { label: '\uD83D\uDCB0 Investment', score: d.neighborhoodMarketData.investScore },
+  { label: '\uD83C\uDFE0 Livability', score: d.neighborhoodMarketData.liveScore },
+  { label: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67 Family', score: d.neighborhoodMarketData.familyScore },
+  { label: '\uD83D\uDCBC Work Access', score: d.neighborhoodMarketData.workScore },
+].map(s => `
+<div style="display:flex;align-items:center;gap:8px">
+<div style="font-size:11px;color:#555;width:100px">${s.label}</div>
+<div style="flex:1;background:#E5E3DE;border-radius:4px;height:20px;position:relative">
+<div style="background:${s.score >= 8 ? '#16a34a' : s.score >= 6 ? '#A89035' : '#dc2626'};height:100%;border-radius:4px;width:${s.score * 10}%"></div>
+<span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:#2C3240">${s.score}</span>
+</div>
+</div>`).join('')}
+</div>
+
+<!-- Neighborhood Image — Google Maps area overview -->
+<div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:200px;margin-bottom:12px">
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${d.neighborhoodName ? encodeURIComponent(d.neighborhoodName + ', New York, NY') : encodedAddr}&zoom=14&maptype=roadmap" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+</div>
+<div style="text-align:center;font-size:9px;color:#999;margin-bottom:12px">${d.neighborhoodName ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'Neighborhood'} \u2014 Area Overview</div>
+
+<div style="background:#EDE9DF;border:1px solid #E5E3DE;border-radius:8px;padding:16px;margin-top:8px">
+<p style="font-size:12px;color:#555;line-height:1.7"><strong style="color:#A89035">Source:</strong> Camelot Q1 2026 Market Report. Data from ACRIS closed sales, StreetEasy leased units, and RealtyMX RLS comparables (Q4 2025 \u2013 Q1 2026). Scores are Camelot composite assessments based on market data, public records, census metrics, school ratings, transit access, and crime statistics.</p>
 </div>
 </div>` : ''}
 
