@@ -820,7 +820,7 @@ body{background:#fff}
 
 <!-- PAGE 1: COVER -->
 <div class="cover">
-<img src="./images/camelot-logo-white.png" alt="Camelot" style="width:120px;margin-bottom:16px;opacity:0.9" onerror="this.style.display='none'">
+<img src="./images/camelot-logo-white.png" alt="Camelot" style="width:96px;margin-bottom:16px;opacity:0.9" onerror="this.style.display='none'">
 <div class="badge">CAMELOT<br>REALTY GROUP</div>
 <div class="wordmark">C &nbsp;A &nbsp;M &nbsp;E &nbsp;L &nbsp;O &nbsp;T</div>
 <div class="pm-sub">Property Management</div>
@@ -1433,7 +1433,7 @@ ${d.neighborhoodMarketData ? `
 
 <!-- PAGE 24: BACK COVER -->
 <div class="back-cover">
-<img src="./images/camelot-logo-white.png" alt="Camelot" style="width:100px;margin-bottom:12px;opacity:0.85" onerror="this.style.display='none'">
+<img src="./images/camelot-logo-white.png" alt="Camelot" style="width:80px;margin-bottom:12px;opacity:0.85" onerror="this.style.display='none'">
 <div style="font-family:Georgia,'Playfair Display',serif;font-style:italic;font-size:13px;color:rgba(255,255,255,0.5);max-width:500px;line-height:1.8;margin-bottom:20px">&ldquo;Don\u2019t let it be forgot, that once there was a spot, for one brief shining moment, that was known as Camelot.&rdquo;</div>
 <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:24px;letter-spacing:1px">Jacqueline Kennedy &nbsp;\u00B7&nbsp; December 1963</div>
 <div class="wordmark">C &nbsp;A &nbsp;M &nbsp;E &nbsp;L &nbsp;O &nbsp;T</div>
