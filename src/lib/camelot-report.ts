@@ -270,8 +270,8 @@ const CAMELOT = {
   email: 'dgoldoff@camelot.nyc',
   infoEmail: 'info@camelot.nyc',
   web: 'www.camelot.nyc',
-  principal: 'David Goldoff',
-  title: 'Founder & President',
+  principal: 'David A. Goldoff',
+  title: 'President',
   license1: 'Camelot Brokerage Services Corp #10311208308',
   license2: 'Camelot Realty Group LLC #10491200104',
 };
@@ -686,99 +686,99 @@ export function generateBrochureHTML(d: MasterReportData): string {
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
-body{font-family:'Inter',-apple-system,sans-serif;background:#FAF8F5;color:#2C3E50;font-size:13px;line-height:1.6}
+body{font-family:'Inter',-apple-system,sans-serif;background:#F5F0E5;color:#2C3240;font-size:13px;line-height:1.6}
 @media print{@page{margin:0.15in}*{-webkit-print-color-adjust:exact!important}}
 .page{max-width:900px;margin:0 auto}
-a{color:#C5A55A;text-decoration:none}
-.gold{color:#C5A55A}.navy{color:#3D4F5F}
+a{color:#A89035;text-decoration:none}
+.gold{color:#A89035}.navy{color:#3A4B5B}
 
 /* Cover */
-.cover{background:#3D4F5F;color:#fff;padding:60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:600px;page-break-after:always;position:relative}
-.cover .badge{position:absolute;top:28px;right:28px;background:#C5A55A;color:#fff;padding:12px 18px;font-size:9px;letter-spacing:3px;text-transform:uppercase;font-weight:700;line-height:1.4;text-align:center}
+.cover{background:#3A4B5B;color:#fff;padding:60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:600px;page-break-after:always;position:relative}
+.cover .badge{position:absolute;top:28px;right:28px;background:#A89035;color:#fff;padding:12px 18px;font-size:9px;letter-spacing:3px;text-transform:uppercase;font-weight:700;line-height:1.4;text-align:center}
 .cover .wordmark{font-family:'Playfair Display',Georgia,serif;font-size:16px;letter-spacing:12px;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:6px}
-.cover .pm-sub{font-size:12px;color:#C5A55A;letter-spacing:2px;margin-bottom:48px}
-.cover h1{font-family:'Playfair Display',Georgia,serif;font-size:42px;color:#C5A55A;font-weight:700;margin-bottom:8px;line-height:1.2;max-width:700px}
+.cover .pm-sub{font-size:12px;color:#A89035;letter-spacing:2px;margin-bottom:48px}
+.cover h1{font-family:'Playfair Display',Georgia,serif;font-size:42px;color:#A89035;font-weight:700;margin-bottom:8px;line-height:1.2;max-width:700px}
 .cover .proposal-sub{font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:8px;font-weight:300;letter-spacing:1px}
 .cover .meta{font-size:12px;color:rgba(255,255,255,0.5);margin-top:6px}
-.cover .prepared{font-family:'Playfair Display',Georgia,serif;font-size:12px;color:#C5A55A;font-style:italic;margin-top:40px}
+.cover .prepared{font-family:'Playfair Display',Georgia,serif;font-size:12px;color:#A89035;font-style:italic;margin-top:40px}
 
 /* Elevator */
-.elevator{background:#FAF8F5;padding:50px 60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;page-break-after:always;min-height:400px}
-.elevator h2{font-family:'Playfair Display',Georgia,serif;font-size:36px;color:#C5A55A;font-weight:700;margin-bottom:16px;max-width:640px;line-height:1.2}
-.elevator .gold-bar{width:60px;height:3px;background:#C5A55A;margin:0 auto 24px}
+.elevator{background:#F5F0E5;padding:50px 60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;page-break-after:always;min-height:400px}
+.elevator h2{font-family:'Playfair Display',Georgia,serif;font-size:36px;color:#A89035;font-weight:700;margin-bottom:16px;max-width:640px;line-height:1.2}
+.elevator .gold-bar{width:60px;height:3px;background:#A89035;margin:0 auto 24px}
 .elevator p{font-family:Georgia,serif;font-size:15px;color:#555;line-height:1.9;max-width:600px}
 
 /* Sections */
 .section{padding:36px 50px;page-break-after:always}
-.section-cream{background:#FAF8F5}.section-white{background:#fff}
-.section-title{font-family:'Playfair Display',Georgia,serif;font-size:26px;color:#2C3E50;margin-bottom:6px;padding-left:16px;border-left:4px solid #C5A55A;font-weight:700}
+.section-cream{background:#F5F0E5}.section-white{background:#FDFAF3}
+.section-title{font-family:'Playfair Display',Georgia,serif;font-size:26px;color:#A89035;margin-bottom:6px;padding-left:16px;border-left:4px solid #A89035;font-weight:700}
 .section-sub{font-size:12px;color:#888;margin-bottom:28px;padding-left:16px}
 
 /* Stats */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:24px 0}
-.stat-box{background:#fff;border:1px solid #E5E3DE;border-radius:8px;padding:16px;text-align:center}
-.stat-box .val{font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#C5A55A;font-weight:700}
+.stat-box{background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:16px;text-align:center}
+.stat-box .val{font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#A89035;font-weight:700}
 .stat-box .lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
 
 /* Info grid */
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 28px;margin:20px 0}
 .info-grid .label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#999}
-.info-grid .value{font-size:13px;color:#2C3E50;font-weight:500}
+.info-grid .value{font-size:13px;color:#2C3240;font-weight:500}
 
 /* Compare table */
 .compare-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
 .compare-table th{padding:12px 16px;text-align:center;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700}
 .compare-table th:nth-child(1){background:#E5E3DE;color:#666}
-.compare-table th:nth-child(2){background:#C5A55A;color:#fff}
+.compare-table th:nth-child(2){background:#A89035;color:#fff}
 .compare-table th:nth-child(3){background:#E5E3DE;color:#666}
 .compare-table td{padding:10px 16px;border-bottom:1px solid #eee;color:#666;text-align:center}
-.compare-table td:nth-child(2){background:#FDFBF5;font-weight:600;color:#2C3E50}
-.compare-tagline{font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#C5A55A;font-size:14px;text-align:center;margin-top:20px}
+.compare-table td:nth-child(2){background:#EDE9DF;font-weight:600;color:#2C3240}
+.compare-tagline{font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#A89035;font-size:14px;text-align:center;margin-top:20px}
 
 /* Cards */
-.core-svc{background:#fff;border:1px solid #E5E3DE;border-left:4px solid #C5A55A;border-radius:0 8px 8px 0;padding:20px;margin-bottom:16px}
-.core-svc h4{font-size:14px;font-weight:700;color:#2C3E50;margin-bottom:6px}
+.core-svc{background:#FDFAF3;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:20px;margin-bottom:16px}
+.core-svc h4{font-size:14px;font-weight:700;color:#2C3240;margin-bottom:6px}
 .core-svc p{font-size:12px;color:#555;line-height:1.7}
 
 .va-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
-.va-card{background:#fff;border:1px solid #E5E3DE;border-left:3px solid #C5A55A;border-radius:0 8px 8px 0;padding:16px}
-.va-card h5{font-size:12px;font-weight:700;color:#2C3E50;margin-bottom:4px}
+.va-card{background:#FDFAF3;border:1px solid #D5D0C6;border-left:3px solid #A89035;border-radius:0 8px 8px 0;padding:16px}
+.va-card h5{font-size:12px;font-weight:700;color:#2C3240;margin-bottom:4px}
 .va-card p{font-size:11px;color:#888;line-height:1.5}
 
 /* Transition */
 .transition-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:16px 0}
-.trans-card{background:#fff;border:1px solid #E5E3DE;border-top:3px solid #C5A55A;border-radius:0 0 8px 8px;padding:20px}
-.trans-card h4{font-family:'Playfair Display',Georgia,serif;font-size:14px;font-weight:700;color:#C5A55A;margin-bottom:6px}
+.trans-card{background:#fff;border:1px solid #E5E3DE;border-top:3px solid #A89035;border-radius:0 0 8px 8px;padding:20px}
+.trans-card h4{font-family:'Playfair Display',Georgia,serif;font-size:14px;font-weight:700;color:#A89035;margin-bottom:6px}
 .trans-card .sub{font-size:11px;color:#888;margin-bottom:12px;font-style:italic}
 .trans-card ul{list-style:none}.trans-card ul li{font-size:11px;color:#555;padding:4px 0 4px 16px;position:relative}
-.trans-card ul li::before{content:"\u2022";position:absolute;left:0;color:#C5A55A;font-weight:700;font-size:14px}
+.trans-card ul li::before{content:"\u2022";position:absolute;left:0;color:#A89035;font-weight:700;font-size:14px}
 
 /* Pricing table */
 .invest-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
-.invest-table th{background:#C5A55A;color:#fff;padding:12px 16px;text-align:left;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.invest-table th{background:#A89035;color:#fff;padding:12px 16px;text-align:left;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
 .invest-table td{padding:12px 16px;border-bottom:1px solid #eee;color:#444}
-.invest-table tr:nth-child(even){background:#FDFBF5}
-.invest-table td:nth-child(2){font-weight:600;color:#2C3E50}
+.invest-table tr:nth-child(even){background:#EDE9DF}
+.invest-table td:nth-child(2){font-weight:600;color:#2C3240}
 .invest-table .free{color:#16a34a;font-weight:700}
-.invest-table .included{color:#C5A55A;font-weight:600}
+.invest-table .included{color:#A89035;font-weight:600}
 
 /* Testimonials */
 .testimonial-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0}
-.testimonial{background:#fff;border:1px solid #E5E3DE;border-left:4px solid #C5A55A;border-radius:0 8px 8px 0;padding:24px}
-.testimonial .qm{font-family:'Playfair Display',Georgia,serif;font-size:48px;color:#C5A55A;line-height:0.8;margin-bottom:10px}
+.testimonial{background:#fff;border:1px solid #E5E3DE;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:24px}
+.testimonial .qm{font-family:'Playfair Display',Georgia,serif;font-size:48px;color:#A89035;line-height:0.8;margin-bottom:10px}
 .testimonial p{font-family:Georgia,serif;font-size:12px;color:#555;font-style:italic;line-height:1.8;margin-bottom:12px}
-.testimonial .author{font-size:12px;color:#C5A55A;font-weight:600}
+.testimonial .author{font-size:12px;color:#A89035;font-weight:600}
 .testimonial .author-title{font-size:10px;color:#888}
 
 /* Back cover */
-.back-cover{background:#3D4F5F;color:#fff;min-height:400px;padding:60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;page-break-after:always}
+.back-cover{background:#3A4B5B;color:#fff;min-height:400px;padding:60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;page-break-after:always}
 .back-cover .wordmark{font-family:'Playfair Display',Georgia,serif;font-size:14px;letter-spacing:10px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px}
-.back-cover .pm-sub{font-size:11px;color:#C5A55A;margin-bottom:32px;letter-spacing:2px}
-.back-cover h2{font-family:'Playfair Display',Georgia,serif;font-size:32px;color:#C5A55A;margin-bottom:8px;font-weight:700}
+.back-cover .pm-sub{font-size:11px;color:#A89035;margin-bottom:32px;letter-spacing:2px}
+.back-cover h2{font-family:'Playfair Display',Georgia,serif;font-size:32px;color:#A89035;margin-bottom:8px;font-weight:700}
 .back-cover .tagline{font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:32px;line-height:1.8}
-.back-cover .contact-name{font-size:15px;color:#C5A55A;font-weight:600;margin-bottom:4px}
+.back-cover .contact-name{font-size:15px;color:#A89035;font-weight:600;margin-bottom:4px}
 .back-cover .contact-info{font-size:12px;color:rgba(255,255,255,0.6);line-height:2}
-.back-cover .contact-info a{color:#C5A55A}
+.back-cover .contact-info a{color:#A89035}
 .back-cover .address{font-size:11px;color:rgba(255,255,255,0.4);margin-top:16px}
 
 /* Intel section */
@@ -790,26 +790,26 @@ a{color:#C5A55A;text-decoration:none}
 
 .about-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:24px 0}
 .about-stat{background:#fff;border:1px solid #E5E3DE;border-radius:8px;padding:18px;text-align:center}
-.about-stat .val{font-family:'Playfair Display',Georgia,serif;font-size:24px;color:#C5A55A;font-weight:700}
+.about-stat .val{font-family:'Playfair Display',Georgia,serif;font-size:24px;color:#A89035;font-weight:700}
 .about-stat .lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
 
 .compliance-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:16px 0}
-.compliance-card{background:#fff;border:1px solid #E5E3DE;border-top:3px solid #C5A55A;border-radius:0 0 8px 8px;padding:16px;text-align:center}
-.compliance-card .month{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#C5A55A;font-weight:700;margin-bottom:6px}
-.compliance-card h5{font-size:12px;color:#2C3E50;font-weight:700;margin-bottom:4px}
+.compliance-card{background:#fff;border:1px solid #E5E3DE;border-top:3px solid #A89035;border-radius:0 0 8px 8px;padding:16px;text-align:center}
+.compliance-card .month{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#A89035;font-weight:700;margin-bottom:6px}
+.compliance-card h5{font-size:12px;color:#2C3240;font-weight:700;margin-bottom:4px}
 .compliance-card p{font-size:10px;color:#888;line-height:1.4}
 
 .tech-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0}
-.tech-col{background:#FDFBF5;border:1px solid #E5E3DE;border-radius:8px;padding:22px}
-.tech-col h4{font-family:'Playfair Display',Georgia,serif;font-size:16px;color:#2C3E50;margin-bottom:14px;font-weight:700}
+.tech-col{background:#EDE9DF;border:1px solid #E5E3DE;border-radius:8px;padding:22px}
+.tech-col h4{font-family:'Playfair Display',Georgia,serif;font-size:16px;color:#2C3240;margin-bottom:14px;font-weight:700}
 .tech-col ul{list-style:none}.tech-col ul li{font-size:12px;color:#555;padding:5px 0 5px 22px;position:relative}
-.tech-col ul li::before{content:"\u2714";position:absolute;left:0;color:#C5A55A;font-size:14px;font-weight:700}
+.tech-col ul li::before{content:"\u2714";position:absolute;left:0;color:#A89035;font-size:14px;font-weight:700}
 
-.mission-stmt{font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#C5A55A;font-size:15px;text-align:center;margin-bottom:20px;line-height:1.6;font-weight:600;max-width:700px;margin-left:auto;margin-right:auto}
+.mission-stmt{font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#A89035;font-size:15px;text-align:center;margin-bottom:20px;line-height:1.6;font-weight:600;max-width:700px;margin-left:auto;margin-right:auto}
 
 @media print{
 body{background:#fff}
-.cover,.back-cover{background:#3D4F5F!important}
+.cover,.back-cover{background:#3A4B5B!important}
 .section,.elevator{page-break-after:always}
 .section{break-inside:avoid}
 }
@@ -830,7 +830,7 @@ body{background:#fff}
 <div class="meta">${d.units ? d.units + ' Units' : ''} ${d.stories ? '&nbsp;|&nbsp; ' + d.stories + ' Floors' : ''}</div>
 <div class="prepared">Prepared exclusively for the Board of Directors &mdash; ${d.date}</div>
 <div style="position:absolute;bottom:60px;left:0;right:0;text-align:center">
-<div style="background:rgba(0,0,0,0.3);display:inline-block;padding:8px 24px;border-radius:4px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#C5A55A;font-weight:700">RED Awards 2025: Property Management Co. of the Year &nbsp;\u00B7&nbsp; REBNY 2025: David Goldoff Leadership Award</div>
+<div style="background:rgba(0,0,0,0.3);display:inline-block;padding:8px 24px;border-radius:4px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#A89035;font-weight:700">RED Awards 2025: Property Management Co. of the Year &nbsp;\u00B7&nbsp; REBNY 2025: David Goldoff Leadership Award</div>
 </div>
 </div>
 
@@ -852,7 +852,7 @@ body{background:#fff}
 <div class="stat-box"><div class="val">${d.stories || 'N/A'}</div><div class="lbl">Floors</div></div>
 <div class="stat-box"><div class="val">${d.yearBuilt || 'N/A'}</div><div class="lbl">Year Built</div></div>
 </div>
-<div style="background:#FDFBF5;border:1px solid #E5E3DE;border-radius:8px;padding:20px;margin-top:12px">
+<div style="background:#EDE9DF;border:1px solid #E5E3DE;border-radius:8px;padding:20px;margin-top:12px">
 <p style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#555;line-height:1.8;text-align:center">${hookLine}</p>
 </div>
 </div>
@@ -863,19 +863,19 @@ body{background:#fff}
 <div class="section-sub">${d.neighborhoodName ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : d.borough || 'New York City'} &mdash; Market Context</div>
 
 <div style="margin-bottom:20px">
-<div style="background:#fff;border:1px solid #E5E3DE;border-left:4px solid #C5A55A;border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px">
-<h4 style="font-size:13px;font-weight:700;color:#2C3E50;margin-bottom:4px">📍 Camelot Office Proximity</h4>
+<div style="background:#fff;border:1px solid #E5E3DE;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px">
+<h4 style="font-size:13px;font-weight:700;color:#2C3240;margin-bottom:4px">📍 Camelot Office Proximity</h4>
 <p style="font-size:12px;color:#555">Camelot Realty Group operates from <strong>477 Madison Avenue, 6th Floor</strong> (Midtown Manhattan). Your property at ${d.address} is within Camelot&rsquo;s core service area, ensuring rapid response times and frequent on-site visits.</p>
 </div>
-<div style="background:#fff;border:1px solid #E5E3DE;border-left:4px solid #C5A55A;border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px">
-<h4 style="font-size:13px;font-weight:700;color:#2C3E50;margin-bottom:4px">🚇 Transit Access</h4>
+<div style="background:#fff;border:1px solid #E5E3DE;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px">
+<h4 style="font-size:13px;font-weight:700;color:#2C3240;margin-bottom:4px">🚇 Transit Access</h4>
 <p style="font-size:12px;color:#555">New York City subway and bus service provide comprehensive transit coverage to this property. The building is accessible via major subway lines, ensuring convenient access for residents, staff, and management alike.</p>
 </div>
 </div>
 
 ${d.neighborhoodMarketData ? `
-<div style="margin-bottom:16px;border-left:4px solid #C5A55A;padding-left:12px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Neighborhood Scores</div>
+<div style="margin-bottom:16px;border-left:4px solid #A89035;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Neighborhood Scores</div>
 </div>
 <div class="stats-row">
 <div class="stat-box"><div class="val gold">${d.neighborhoodMarketData.investScore}</div><div class="lbl">💰 Invest</div></div>
@@ -904,7 +904,7 @@ Price Momentum: <strong style="color:${d.neighborhoodMarketData.momentum === 'Ve
 <div class="info-grid">
 <div><div class="label">Address</div><div class="value">${addr}</div></div>
 <div><div class="label">Current Management</div><div class="value">${d.managementCompany || 'Self-Managed'}</div></div>
-<div><div class="label">Market Value</div><div class="value" style="color:#C5A55A;font-weight:700;font-size:15px">${fmtMoney(d.marketValue)}</div></div>
+<div><div class="label">Market Value</div><div class="value" style="color:#A89035;font-weight:700;font-size:15px">${fmtMoney(d.marketValue)}</div></div>
 <div><div class="label">Assessed Value</div><div class="value">${fmtMoney(d.assessedValue)}</div></div>
 <div><div class="label">Year Built</div><div class="value">${d.yearBuilt || 'N/A'}</div></div>
 <div><div class="label">Building Class</div><div class="value">${d.buildingClass || 'N/A'}</div></div>
@@ -912,8 +912,8 @@ Price Momentum: <strong style="color:${d.neighborhoodMarketData.momentum === 'Ve
 <div><div class="label">BBL</div><div class="value">${d.bbl || 'N/A'}</div></div>
 </div>
 ${d.energyStarScore != null ? `
-<div style="margin-top:16px;border-left:4px solid #C5A55A;padding-left:12px;margin-bottom:8px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Energy &amp; LL97 Compliance</div>
+<div style="margin-top:16px;border-left:4px solid #A89035;padding-left:12px;margin-bottom:8px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Energy &amp; LL97 Compliance</div>
 </div>
 <div class="stats-row">
 <div class="stat-box"><div class="val" style="color:${d.energyStarScore >= 75 ? '#16a34a' : d.energyStarScore >= 50 ? '#ca8a04' : '#dc2626'}">${d.energyStarScore}</div><div class="lbl">Energy Star</div></div>
@@ -940,7 +940,7 @@ ${d.occupancy ? `<div class="stat-box"><div class="val">${d.occupancy}%</div><di
 <div><div class="label">Active Litigation</div><div class="value" style="color:${d.hasActiveLitigation ? '#dc2626' : '#16a34a'};font-weight:600">${d.hasActiveLitigation ? '\u26A0\uFE0F YES' : '\u2714 None'}</div></div>
 <div><div class="label">Rent Stabilized</div><div class="value">${d.isRentStabilized ? '\uD83D\uDCCB Yes' : 'No'}</div></div>
 <div><div class="label">DOB Permits</div><div class="value">${d.permitsCount}</div></div>
-<div><div class="label">Distress Level</div><div class="value" style="color:${d.distressLevel === 'critical' || d.distressLevel === 'distressed' ? '#dc2626' : d.distressLevel === 'stressed' ? '#ea580c' : '#2C3E50'};font-weight:600">${d.distressLevel.toUpperCase()} (${d.distressScore}/100)</div></div>
+<div><div class="label">Distress Level</div><div class="value" style="color:${d.distressLevel === 'critical' || d.distressLevel === 'distressed' ? '#dc2626' : d.distressLevel === 'stressed' ? '#ea580c' : '#2C3240'};font-weight:600">${d.distressLevel.toUpperCase()} (${d.distressScore}/100)</div></div>
 </div>
 ${d.distressSignals.length > 0 ? `
 <div style="margin-top:16px;border-left:4px solid #dc2626;padding-left:12px;margin-bottom:8px">
@@ -955,7 +955,7 @@ ${d.distressSignals.length > 0 ? `
 <div class="section-sub">ACRIS deed and mortgage records</div>
 <div class="info-grid">
 <div><div class="label">Last Sale Date</div><div class="value">${d.lastSaleDate ? new Date(d.lastSaleDate).toLocaleDateString() : 'N/A'}</div></div>
-<div><div class="label">Last Sale Price</div><div class="value" style="font-weight:700;color:#C5A55A">${d.lastSalePrice ? fmtMoney(d.lastSalePrice) : 'N/A'}</div></div>
+<div><div class="label">Last Sale Price</div><div class="value" style="font-weight:700;color:#A89035">${d.lastSalePrice ? fmtMoney(d.lastSalePrice) : 'N/A'}</div></div>
 <div><div class="label">Buyer</div><div class="value">${d.lastSaleBuyer || 'N/A'}</div></div>
 <div><div class="label">Seller</div><div class="value">${d.lastSaleSeller || 'N/A'}</div></div>
 <div><div class="label">Deeds on Record</div><div class="value">${d.deedCount}</div></div>
@@ -970,8 +970,8 @@ ${d.distressSignals.length > 0 ? `
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0">
 <div>
-<div style="margin-bottom:16px;border-left:4px solid #C5A55A;padding-left:12px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Ownership &amp; Governance</div>
+<div style="margin-bottom:16px;border-left:4px solid #A89035;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Ownership &amp; Governance</div>
 </div>
 <div class="info-grid" style="grid-template-columns:1fr">
 <div><div class="label">DOF Owner</div><div class="value">${d.dofOwner || 'N/A'}</div></div>
@@ -980,18 +980,18 @@ ${d.distressSignals.length > 0 ? `
 </div>
 ${d.boardMembers.length > 0 ? `
 <div style="margin-top:14px;margin-bottom:8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#999">Board / Officers</div>
-${d.boardMembers.map(b => `<div style="background:#FDFBF5;border:1px solid #E5E3DE;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:12px"><strong>${b.name}</strong> <span style="color:#888;font-size:11px">&mdash; ${b.title}</span></div>`).join('')}
+${d.boardMembers.map(b => `<div style="background:#EDE9DF;border:1px solid #E5E3DE;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:12px"><strong>${b.name}</strong> <span style="color:#888;font-size:11px">&mdash; ${b.title}</span></div>`).join('')}
 ` : '<div style="font-size:11px;color:#888;margin-top:12px">Board member information not available from public records</div>'}
 </div>
 
 <div>
-<div style="margin-bottom:16px;border-left:4px solid #C5A55A;padding-left:12px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Building Staff</div>
+<div style="margin-bottom:16px;border-left:4px solid #A89035;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Building Staff</div>
 </div>
-${d.buildingStaff.length > 0 ? d.buildingStaff.map(s => `<div style="background:#FDFBF5;border:1px solid #E5E3DE;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:12px"><strong>${s.name}</strong> <span style="color:#888;font-size:11px">&mdash; ${s.role}</span></div>`).join('') : '<div style="font-size:11px;color:#888">Staff information not available from public records. Typically includes: Superintendent, Resident Manager, Front Desk.</div>'}
+${d.buildingStaff.length > 0 ? d.buildingStaff.map(s => `<div style="background:#EDE9DF;border:1px solid #E5E3DE;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:12px"><strong>${s.name}</strong> <span style="color:#888;font-size:11px">&mdash; ${s.role}</span></div>`).join('') : '<div style="font-size:11px;color:#888">Staff information not available from public records. Typically includes: Superintendent, Resident Manager, Front Desk.</div>'}
 
-<div style="margin-top:20px;margin-bottom:16px;border-left:4px solid #C5A55A;padding-left:12px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Professional Services</div>
+<div style="margin-top:20px;margin-bottom:16px;border-left:4px solid #A89035;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Professional Services</div>
 </div>
 <div class="info-grid" style="grid-template-columns:1fr">
 <div><div class="label">Law Firm</div><div class="value">${d.professionals.lawFirm || 'Information available upon engagement'}</div></div>
@@ -1013,7 +1013,7 @@ ${d.buildingStaff.length > 0 ? d.buildingStaff.map(s => `<div style="background:
 <span style="font-family:'Playfair Display',Georgia,serif;font-size:48px;font-weight:700;color:#fff">${d.managementGrade}</span>
 </div>
 <div>
-<div style="font-size:16px;font-weight:700;color:#2C3E50;margin-bottom:4px">Overall Management Grade: ${d.managementGrade}</div>
+<div style="font-size:16px;font-weight:700;color:#2C3240;margin-bottom:4px">Overall Management Grade: ${d.managementGrade}</div>
 <div style="font-size:12px;color:#555;line-height:1.6">Based on HPD violations, ECB compliance, DOB permits, litigation status, and financial indicators. ${d.managementGrade === 'A' ? 'This building is well-maintained.' : d.managementGrade === 'B' ? 'There is room for meaningful improvement.' : 'Significant management issues detected &mdash; this building would benefit from professional management.'}</div>
 </div>
 </div>
@@ -1026,7 +1026,7 @@ ${d.buildingStaff.length > 0 ? d.buildingStaff.map(s => `<div style="background:
 </div>
 
 <div style="margin-top:16px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600;margin-bottom:10px;padding-left:16px;border-left:4px solid #C5A55A">Key Findings</div>
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600;margin-bottom:10px;padding-left:16px;border-left:4px solid #A89035">Key Findings</div>
 <div style="display:flex;flex-wrap:wrap;gap:8px">
 ${d.violationsOpen > 0 ? `<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">⚠️ ${d.violationsOpen} Open HPD Violations</span>` : '<span style="display:inline-block;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);color:#166534;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">✅ No Open HPD Violations</span>'}
 ${d.ecbPenaltyBalance > 0 ? `<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">💰 $${d.ecbPenaltyBalance.toLocaleString()} ECB Penalties Outstanding</span>` : '<span style="display:inline-block;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);color:#166534;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">✅ No ECB Penalties</span>'}
@@ -1042,8 +1042,8 @@ ${d.neighborhoodMarketData ? `
 <div class="section-title">Market Context &amp; Benchmarks</div>
 <div class="section-sub">${d.neighborhoodName ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'Local Market'} &mdash; Q1 2026 Data</div>
 
-<div style="margin-bottom:16px;border-left:4px solid #C5A55A;padding-left:12px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Sale Price Benchmarks</div>
+<div style="margin-bottom:16px;border-left:4px solid #A89035;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Sale Price Benchmarks</div>
 </div>
 <div class="stats-row">
 <div class="stat-box"><div class="val gold">$${d.neighborhoodMarketData.condoPSF.toLocaleString()}</div><div class="lbl">Condo $/Sqft</div></div>
@@ -1052,8 +1052,8 @@ ${d.neighborhoodMarketData ? `
 <div class="stat-box"><div class="val gold">${d.neighborhoodMarketData.daysOnMarket}</div><div class="lbl">Avg Days on Market</div></div>
 </div>
 
-<div style="margin:20px 0 16px;border-left:4px solid #C5A55A;padding-left:12px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Rental Market</div>
+<div style="margin:20px 0 16px;border-left:4px solid #A89035;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Rental Market</div>
 </div>
 <div class="stats-row" style="grid-template-columns:1fr 1fr 1fr">
 <div class="stat-box"><div class="val gold">$${d.neighborhoodMarketData.median1BR.toLocaleString()}</div><div class="lbl">Median 1BR Rent/Mo</div></div>
@@ -1062,19 +1062,19 @@ ${d.neighborhoodMarketData ? `
 </div>
 
 ${d.buildingArea > 0 ? `
-<div style="margin:20px 0 16px;border-left:4px solid #C5A55A;padding-left:12px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Your Building vs. Market</div>
+<div style="margin:20px 0 16px;border-left:4px solid #A89035;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Your Building vs. Market</div>
 </div>
 <div class="info-grid">
 <div><div class="label">Building GFA</div><div class="value">${d.buildingArea.toLocaleString()} sqft</div></div>
-<div><div class="label">Est. Value (at neighborhood $/sqft)</div><div class="value" style="color:#C5A55A;font-weight:700">${fmtMoney(d.buildingArea * (d.propertyType.toLowerCase().includes('co-op') ? d.neighborhoodMarketData.coopPSF : d.neighborhoodMarketData.condoPSF))}</div></div>
-<div><div class="label">Est. Annual Rental Potential</div><div class="value" style="color:#C5A55A;font-weight:700">${fmtMoney(d.buildingArea * d.neighborhoodMarketData.rentalPSFYr)}</div></div>
+<div><div class="label">Est. Value (at neighborhood $/sqft)</div><div class="value" style="color:#A89035;font-weight:700">${fmtMoney(d.buildingArea * (d.propertyType.toLowerCase().includes('co-op') ? d.neighborhoodMarketData.coopPSF : d.neighborhoodMarketData.condoPSF))}</div></div>
+<div><div class="label">Est. Annual Rental Potential</div><div class="value" style="color:#A89035;font-weight:700">${fmtMoney(d.buildingArea * d.neighborhoodMarketData.rentalPSFYr)}</div></div>
 <div><div class="label">Est. Gross Yield</div><div class="value">${((d.neighborhoodMarketData.rentalPSFYr / (d.propertyType.toLowerCase().includes('co-op') ? d.neighborhoodMarketData.coopPSF : d.neighborhoodMarketData.condoPSF)) * 100).toFixed(1)}%</div></div>
 </div>
 ` : ''}
 
-<div style="background:#FDFBF5;border:1px solid #E5E3DE;border-radius:8px;padding:16px;margin-top:16px">
-<p style="font-size:12px;color:#555;line-height:1.7"><strong style="color:#C5A55A">Source:</strong> Camelot Q1 2026 Market Report. Data from ACRIS closed sales, StreetEasy leased units, and RealtyMX RLS comparables (Q4 2025 – Q1 2026). Scores are Camelot composite assessments based on market data, public records, census metrics, school ratings, transit access, and crime statistics.</p>
+<div style="background:#EDE9DF;border:1px solid #E5E3DE;border-radius:8px;padding:16px;margin-top:16px">
+<p style="font-size:12px;color:#555;line-height:1.7"><strong style="color:#A89035">Source:</strong> Camelot Q1 2026 Market Report. Data from ACRIS closed sales, StreetEasy leased units, and RealtyMX RLS comparables (Q4 2025 – Q1 2026). Scores are Camelot composite assessments based on market data, public records, census metrics, school ratings, transit access, and crime statistics.</p>
 </div>
 </div>` : ''}
 
@@ -1141,7 +1141,7 @@ ${isSelfManaged ? `
 <div class="about-stat"><div class="val">20+</div><div class="lbl">Years in Business</div></div>
 <div class="about-stat"><div class="val">1.2M+</div><div class="lbl">Sq Ft Under Mgmt</div></div>
 </div>
-<div style="font-size:11px;color:#C5A55A;text-align:center;margin-top:16px;font-weight:500">\u2B50 RED Awards 2025: Property Management Company of the Year</div>
+<div style="font-size:11px;color:#A89035;text-align:center;margin-top:16px;font-weight:500">\u2B50 RED Awards 2025: Property Management Company of the Year</div>
 <div style="font-size:10px;color:#999;text-align:center;margin-top:8px">Member: REBNY | SPONY | NYARM | IREM | BOMA | NARPM | NY Apartment Association</div>
 </div>
 
@@ -1186,7 +1186,7 @@ ${isSelfManaged ? `
 <div class="section section-cream">
 <div class="section-title">Technology Platform</div>
 <div class="section-sub">Proprietary tools connecting data, intelligence, and operations</div>
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#C5A55A;text-align:center;margin-bottom:20px;font-weight:600">Merlin AI &nbsp;+&nbsp; Camelot Central &nbsp;+&nbsp; ConciergePlus</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:20px;font-weight:600">Merlin AI &nbsp;+&nbsp; Camelot Central &nbsp;+&nbsp; ConciergePlus</div>
 <div class="tech-cols">
 <div class="tech-col"><h4>For Board &amp; Management</h4><ul><li>Group and individual messaging</li><li>Utility usage tracking</li><li>Building files &amp; documents</li><li>Compliance status updates</li><li>AI-powered meeting minutes</li><li>Real-time financial dashboards</li></ul></div>
 <div class="tech-col"><h4>For Residents</h4><ul><li>ConciergePlus portal + mobile app</li><li>Pay maintenance \u2014 zero bank fees</li><li>AI chatbot support 24/7</li><li>Book amenities &amp; download docs</li><li>Direct staff contact</li><li>Work order tracking &amp; updates</li></ul></div>
@@ -1221,7 +1221,7 @@ ${isSelfManaged ? `
 <tr><td>In-House Attorney &amp; Engineer</td><td class="free">Free Advisory</td></tr>
 </tbody>
 </table>
-<div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#C5A55A;font-size:13px;margin-top:16px;text-align:center">Our efficiencies effectively pay for our management \u2014 through long-term savings on vendors, compliance penalties, and capital expenditures.</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#A89035;font-size:13px;margin-top:16px;text-align:center">Our efficiencies effectively pay for our management \u2014 through long-term savings on vendors, compliance penalties, and capital expenditures.</div>
 </div>
 
 <!-- PAGE 16: TESTIMONIALS -->
@@ -1277,32 +1277,32 @@ ${isSelfManaged ? `
 <p style="font-size:11px;color:#16a34a;font-weight:600">\u2714 Camelot delivers a FREE LL97 liability model + compliance roadmap within 30 days</p>
 </div>
 
-<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #C5A55A;border-radius:0 0 8px 8px;padding:18px">
-<h4 style="font-size:12px;font-weight:700;color:#3D4F5F;margin-bottom:6px">\uD83D\uDCE1 Communication &amp; Response Time</h4>
+<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #A89035;border-radius:0 0 8px 8px;padding:18px">
+<h4 style="font-size:12px;font-weight:700;color:#3A4B5B;margin-bottom:6px">\uD83D\uDCE1 Communication &amp; Response Time</h4>
 <p style="font-size:11px;color:#555;line-height:1.6;margin-bottom:8px">Residents and board members need timely responses on maintenance, vendor work, and building updates. Traditional management creates communication gaps.</p>
 <p style="font-size:11px;color:#16a34a;font-weight:600">\u2714 ConciergePlus + Camelot AI — 24/7 agent for board, residents, staff, vendors</p>
 </div>
 
-<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #C5A55A;border-radius:0 0 8px 8px;padding:18px">
-<h4 style="font-size:12px;font-weight:700;color:#3D4F5F;margin-bottom:6px">\uD83D\uDCA1 Financial Transparency</h4>
+<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #A89035;border-radius:0 0 8px 8px;padding:18px">
+<h4 style="font-size:12px;font-weight:700;color:#3A4B5B;margin-bottom:6px">\uD83D\uDCA1 Financial Transparency</h4>
 <p style="font-size:11px;color:#555;line-height:1.6;margin-bottom:8px">Boards often receive late reports with no variance analysis or forward projection. Financial visibility is critical for sound governance.</p>
 <p style="font-size:11px;color:#16a34a;font-weight:600">\u2714 In-house CPA, real-time dashboards, 5-year capital planning, Merlin AI budgeting</p>
 </div>
 
-<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #C5A55A;border-radius:0 0 8px 8px;padding:18px">
-<h4 style="font-size:12px;font-weight:700;color:#3D4F5F;margin-bottom:6px">\uD83C\uDFD7\uFE0F Capital Project Financing</h4>
+<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #A89035;border-radius:0 0 8px 8px;padding:18px">
+<h4 style="font-size:12px;font-weight:700;color:#3A4B5B;margin-bottom:6px">\uD83C\uDFD7\uFE0F Capital Project Financing</h4>
 <p style="font-size:11px;color:#555;line-height:1.6;margin-bottom:8px">Pre-war buildings face significant capital needs — facade, elevator, boiler. Financing without special assessments is a perennial challenge.</p>
 <p style="font-size:11px;color:#16a34a;font-weight:600">\u2714 In-house licensed mortgage broker — building loans with no shareholder assessment</p>
 </div>
 
-<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #C5A55A;border-radius:0 0 8px 8px;padding:18px">
-<h4 style="font-size:12px;font-weight:700;color:#3D4F5F;margin-bottom:6px">\uD83D\uDD0D On-Site Oversight &amp; Accountability</h4>
+<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #A89035;border-radius:0 0 8px 8px;padding:18px">
+<h4 style="font-size:12px;font-weight:700;color:#3A4B5B;margin-bottom:6px">\uD83D\uDD0D On-Site Oversight &amp; Accountability</h4>
 <p style="font-size:11px;color:#555;line-height:1.6;margin-bottom:8px">Many firms rely on reactive visits. Boards have no visibility into what\u2019s happening between incidents.</p>
 <p style="font-size:11px;color:#16a34a;font-weight:600">\u2714 Weekly PM site visits + monthly Facility Manager inspections, documented w/ photos</p>
 </div>
 
-<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #C5A55A;border-radius:0 0 8px 8px;padding:18px">
-<h4 style="font-size:12px;font-weight:700;color:#3D4F5F;margin-bottom:6px">\uD83D\uDCCA Analytical Data &amp; Benchmarking</h4>
+<div style="background:#fff;border:1px solid #E5E3DE;border-top:3px solid #A89035;border-radius:0 0 8px 8px;padding:18px">
+<h4 style="font-size:12px;font-weight:700;color:#3A4B5B;margin-bottom:6px">\uD83D\uDCCA Analytical Data &amp; Benchmarking</h4>
 <p style="font-size:11px;color:#555;line-height:1.6;margin-bottom:8px">Without comparative data, boards can\u2019t evaluate costs, vendor performance, or market positioning.</p>
 <p style="font-size:11px;color:#16a34a;font-weight:600">\u2714 SCOUT market intelligence — monthly benchmarks vs. peer buildings + Merlin AI alerts</p>
 </div>
@@ -1315,25 +1315,25 @@ ${isSelfManaged ? `
 <div class="section-title">Technology Platform</div>
 <div class="section-sub">Proven tools today + next-generation Camelot OS deploying 2026</div>
 
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#C5A55A;text-align:center;margin-bottom:6px;font-weight:600">Current Stack — Active Now</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:6px;font-weight:600">Current Stack — Active Now</div>
 <table class="compare-table" style="margin-bottom:20px">
-<thead><tr><th style="background:#3D4F5F;color:#fff">Platform</th><th style="background:#3D4F5F;color:#fff">Function</th><th style="background:#3D4F5F;color:#fff">Benefit to ${d.buildingName}</th></tr></thead>
+<thead><tr><th style="background:#3A4B5B;color:#fff">Platform</th><th style="background:#3A4B5B;color:#fff">Function</th><th style="background:#3A4B5B;color:#fff">Benefit to ${d.buildingName}</th></tr></thead>
 <tbody>
-<tr><td style="font-weight:700;color:#3D4F5F">AppFolio</td><td>Property Mgmt</td><td>Core accounting, work orders, document management, monthly reporting</td></tr>
-<tr><td style="font-weight:700;color:#3D4F5F">BuildingLink</td><td>Resident Portal</td><td>Maintenance requests, package management, amenity booking</td></tr>
-<tr><td style="font-weight:700;color:#3D4F5F">Zego</td><td>Payments</td><td>ACH, e-check, credit card collection with full audit trail</td></tr>
-<tr><td style="font-weight:700;color:#3D4F5F">Board Packager</td><td>Board Docs</td><td>Secure digital board package management — minutes, financials, 24/7</td></tr>
+<tr><td style="font-weight:700;color:#3A4B5B">AppFolio</td><td>Property Mgmt</td><td>Core accounting, work orders, document management, monthly reporting</td></tr>
+<tr><td style="font-weight:700;color:#3A4B5B">BuildingLink</td><td>Resident Portal</td><td>Maintenance requests, package management, amenity booking</td></tr>
+<tr><td style="font-weight:700;color:#3A4B5B">Zego</td><td>Payments</td><td>ACH, e-check, credit card collection with full audit trail</td></tr>
+<tr><td style="font-weight:700;color:#3A4B5B">Board Packager</td><td>Board Docs</td><td>Secure digital board package management — minutes, financials, 24/7</td></tr>
 </tbody>
 </table>
 
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#C5A55A;text-align:center;margin-bottom:6px;font-weight:600">Camelot OS — Deploying 2026</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:6px;font-weight:600">Camelot OS — Deploying 2026</div>
 <div class="va-grid">
-<div class="va-card" style="border-left-color:#C5A55A"><h5 style="color:#C5A55A">ConciergePlus + Camelot AI</h5><p>24/7 AI concierge for board, residents, RM/Super, vendors, and front desk. Every request logged and tracked.</p></div>
-<div class="va-card" style="border-left-color:#C5A55A"><h5 style="color:#C5A55A">SCOUT</h5><p>Market intelligence — monthly benchmarks, ACRIS data, rental tracking, peer building comparisons.</p></div>
-<div class="va-card" style="border-left-color:#3D4F5F"><h5>Merlin AI</h5><p>Budget forecasting, expense anomaly detection, vendor scoring, pro-forma modeling.</p></div>
-<div class="va-card" style="border-left-color:#C5A55A"><h5 style="color:#C5A55A">Prisma</h5><p>Enhanced ACH billing, real-time collection tracking, 90% NSF reduction via Plaid-linked payments.</p></div>
-<div class="va-card" style="border-left-color:#3D4F5F"><h5>Parity</h5><p>Real-time HVAC and energy monitoring. LL97 liability modeling included. 15–25% utility savings.</p></div>
-<div class="va-card" style="border-left-color:#C5A55A"><h5 style="color:#C5A55A">Camelot Central</h5><p>Unified mobile app — building files, utility tracking, compliance, smart access, all services in one.</p></div>
+<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">ConciergePlus + Camelot AI</h5><p>24/7 AI concierge for board, residents, RM/Super, vendors, and front desk. Every request logged and tracked.</p></div>
+<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">SCOUT</h5><p>Market intelligence — monthly benchmarks, ACRIS data, rental tracking, peer building comparisons.</p></div>
+<div class="va-card" style="border-left-color:#3A4B5B"><h5>Merlin AI</h5><p>Budget forecasting, expense anomaly detection, vendor scoring, pro-forma modeling.</p></div>
+<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Prisma</h5><p>Enhanced ACH billing, real-time collection tracking, 90% NSF reduction via Plaid-linked payments.</p></div>
+<div class="va-card" style="border-left-color:#3A4B5B"><h5>Parity</h5><p>Real-time HVAC and energy monitoring. LL97 liability modeling included. 15–25% utility savings.</p></div>
+<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Camelot Central</h5><p>Unified mobile app — building files, utility tracking, compliance, smart access, all services in one.</p></div>
 </div>
 </div>
 
@@ -1368,17 +1368,17 @@ ${d.neighborhoodMarketData ? `
 <thead><tr><th>Cost Category</th><th>SCOUT Range</th><th>Camelot Strategy</th></tr></thead>
 <tbody>
 <tr><td>Real Estate Taxes</td><td>${d.neighborhoodMarketData.opexRange.split('–')[0].replace('$','$')}+/SF/yr</td><td>Fixed — strategic abatement review (J-51, 421-a)</td></tr>
-<tr><td>Insurance</td><td>$1.20–2.80/SF/yr</td><td style="color:#C5A55A;font-weight:600">\u2605 Rebid opportunity: 12–20% savings</td></tr>
-<tr><td>Utilities (Gas/Electric/Water)</td><td>$3–10/SF/yr</td><td style="color:#C5A55A;font-weight:600">\u2605 Parity energy optimization: 15–25% reduction</td></tr>
+<tr><td>Insurance</td><td>$1.20–2.80/SF/yr</td><td style="color:#A89035;font-weight:600">\u2605 Rebid opportunity: 12–20% savings</td></tr>
+<tr><td>Utilities (Gas/Electric/Water)</td><td>$3–10/SF/yr</td><td style="color:#A89035;font-weight:600">\u2605 Parity energy optimization: 15–25% reduction</td></tr>
 <tr><td>Mgmt + Admin</td><td>$3–7/SF/yr</td><td style="color:#16a34a;font-weight:600">\u2714 Camelot competitive + greater scope</td></tr>
-<tr><td>Maintenance &amp; Repairs</td><td>$3–8/SF/yr</td><td style="color:#C5A55A;font-weight:600">\u2605 Vendor rebid: 10–18% reduction</td></tr>
+<tr><td>Maintenance &amp; Repairs</td><td>$3–8/SF/yr</td><td style="color:#A89035;font-weight:600">\u2605 Vendor rebid: 10–18% reduction</td></tr>
 <tr><td><strong>Total OpEx Benchmark</strong></td><td><strong>${d.neighborhoodMarketData.opexRange}</strong></td><td>${d.buildingArea > 0 ? `Your building: ~$${Math.round(d.buildingArea * 35 / d.buildingArea).toFixed(0)}/SF est.` : 'Within range'}</td></tr>
 </tbody>
 </table>
 
-<div style="background:#FDFBF5;border-left:4px solid #C5A55A;border-radius:0 8px 8px 0;padding:14px 18px;margin-top:14px">
-<p style="font-family:Georgia,serif;font-size:12px;font-style:italic;color:#3D4F5F;line-height:1.7">&ldquo;Location sets the revenue ceiling; management determines what you keep. Camelot\u2019s integrated cost management \u2014 energy optimization (Parity), online payments (Prisma), and compliance automation \u2014 directly lowers the operating cost line across all building types.&rdquo;</p>
-<p style="font-size:10px;color:#C5A55A;font-weight:600;margin-top:6px">\u2014 Camelot Q1 2026 Market Report</p>
+<div style="background:#EDE9DF;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:14px 18px;margin-top:14px">
+<p style="font-family:Georgia,serif;font-size:12px;font-style:italic;color:#3A4B5B;line-height:1.7">&ldquo;Location sets the revenue ceiling; management determines what you keep. Camelot\u2019s integrated cost management \u2014 energy optimization (Parity), online payments (Prisma), and compliance automation \u2014 directly lowers the operating cost line across all building types.&rdquo;</p>
+<p style="font-size:10px;color:#A89035;font-weight:600;margin-top:6px">\u2014 Camelot Q1 2026 Market Report</p>
 </div>
 </div>
 ` : ''}
@@ -1390,27 +1390,27 @@ ${d.neighborhoodMarketData ? `
 
 <table class="compare-table">
 <thead><tr>
-<th style="background:#3D4F5F;color:#fff">Building</th>
-<th style="background:#3D4F5F;color:#fff">Type</th>
-<th style="background:#3D4F5F;color:#fff">Neighborhood</th>
-<th style="background:#3D4F5F;color:#fff">Status</th>
-<th style="background:#3D4F5F;color:#fff">Outcome</th>
+<th style="background:#3A4B5B;color:#fff">Building</th>
+<th style="background:#3A4B5B;color:#fff">Type</th>
+<th style="background:#3A4B5B;color:#fff">Neighborhood</th>
+<th style="background:#3A4B5B;color:#fff">Status</th>
+<th style="background:#3A4B5B;color:#fff">Outcome</th>
 </tr></thead>
 <tbody>
-<tr><td style="font-weight:700">949 Park Avenue</td><td>Condominium</td><td>Carnegie Hill, UES</td><td style="color:#C5A55A;font-weight:600">Active</td><td>$200K saved in one insurance claim</td></tr>
-<tr><td style="font-weight:700">105 E 29th Street</td><td>Co-operative</td><td>NoMad / Midtown South</td><td style="color:#C5A55A;font-weight:600">Active</td><td>Vendor rebid: 14% savings Yr 1</td></tr>
-<tr><td style="font-weight:700">201 E 15th Street</td><td>Co-operative</td><td>Gramercy Park</td><td style="color:#C5A55A;font-weight:600">Active</td><td>Insurance restructure: 18% reduction</td></tr>
-<tr><td style="font-weight:700">165 E 7th Street</td><td>Condominium</td><td>East Village</td><td style="color:#C5A55A;font-weight:600">Active</td><td>LL97 roadmap delivered in 60 days</td></tr>
-<tr><td style="font-weight:700">137 Franklin Street</td><td>Co-operative</td><td>Tribeca</td><td style="color:#C5A55A;font-weight:600">Active</td><td>&ldquo;Best and most knowledgeable PMs&rdquo;</td></tr>
+<tr><td style="font-weight:700">949 Park Avenue</td><td>Condominium</td><td>Carnegie Hill, UES</td><td style="color:#A89035;font-weight:600">Active</td><td>$200K saved in one insurance claim</td></tr>
+<tr><td style="font-weight:700">105 E 29th Street</td><td>Co-operative</td><td>NoMad / Midtown South</td><td style="color:#A89035;font-weight:600">Active</td><td>Vendor rebid: 14% savings Yr 1</td></tr>
+<tr><td style="font-weight:700">201 E 15th Street</td><td>Co-operative</td><td>Gramercy Park</td><td style="color:#A89035;font-weight:600">Active</td><td>Insurance restructure: 18% reduction</td></tr>
+<tr><td style="font-weight:700">165 E 7th Street</td><td>Condominium</td><td>East Village</td><td style="color:#A89035;font-weight:600">Active</td><td>LL97 roadmap delivered in 60 days</td></tr>
+<tr><td style="font-weight:700">137 Franklin Street</td><td>Co-operative</td><td>Tribeca</td><td style="color:#A89035;font-weight:600">Active</td><td>&ldquo;Best and most knowledgeable PMs&rdquo;</td></tr>
 </tbody>
 </table>
 
-<div style="background:#3D4F5F;border-radius:8px;padding:18px;margin-top:16px;color:#fff">
-<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#C5A55A;font-weight:700;margin-bottom:8px">Case Study: 949 Park Avenue — Camelot in Action</div>
+<div style="background:#3A4B5B;border-radius:8px;padding:18px;margin-top:16px;color:#fff">
+<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#A89035;font-weight:700;margin-bottom:8px">Case Study: 949 Park Avenue — Camelot in Action</div>
 <p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong>Situation:</strong> A 9th-floor window shattered unexpectedly, triggering FDNY emergency response and creating an immediate pedestrian safety risk on Park Avenue.</p>
 <p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong>Response:</strong> Within hours, Camelot secured the area with a sidewalk bridge, commissioned a professional engineering assessment, and coordinated directly with the insurance carrier.</p>
-<p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong style="color:#C5A55A">Result: 949 Park Avenue saved $200,000.</strong> Full replacement cost covered by insurance. Updated house rules and improved 32BJ staff accountability.</p>
-<div style="border-top:1px solid rgba(197,165,90,0.3);padding-top:8px;margin-top:8px;font-size:10px;color:#C5A55A;text-align:center;letter-spacing:1px">$200,000 SAVED \u00B7 ZERO DISRUPTION TO RESIDENTS \u00B7 PARK AVENUE PORTFOLIO \u2014 CAMELOT ACTIVE</div>
+<p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong style="color:#A89035">Result: 949 Park Avenue saved $200,000.</strong> Full replacement cost covered by insurance. Updated house rules and improved 32BJ staff accountability.</p>
+<div style="border-top:1px solid rgba(197,165,90,0.3);padding-top:8px;margin-top:8px;font-size:10px;color:#A89035;text-align:center;letter-spacing:1px">$200,000 SAVED \u00B7 ZERO DISRUPTION TO RESIDENTS \u00B7 PARK AVENUE PORTFOLIO \u2014 CAMELOT ACTIVE</div>
 </div>
 </div>
 
@@ -1419,13 +1419,13 @@ ${d.neighborhoodMarketData ? `
 <div class="section-title">Banking Partnership</div>
 <div class="section-sub">BankUnited — premier banking for property management and co-op associations</div>
 
-<div style="background:#fff;border:2px solid #C5A55A;border-radius:8px;padding:22px;margin:16px 0">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:16px;color:#3D4F5F;font-weight:700;margin-bottom:10px">BankUnited Partnership</div>
+<div style="background:#fff;border:2px solid #A89035;border-radius:8px;padding:22px;margin:16px 0">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:16px;color:#3A4B5B;font-weight:700;margin-bottom:10px">BankUnited Partnership</div>
 <p style="font-size:12px;color:#555;line-height:1.8">Camelot works exclusively with <strong>BankUnited</strong> \u2014 in our view the premier banking partner for property management companies and co-op associations in New York City. BankUnited offers <strong>no account fees</strong>, competitive interest rate matching, and deep technology integration with our payment systems, vendor payments, and collections workflows. Their automation tools streamline bank reconciliations and management reporting \u2014 reducing errors and improving financial transparency.</p>
-<p style="font-size:12px;color:#C5A55A;font-weight:600;margin-top:10px">This relationship often delivers meaningful financial value from Day 1.</p>
+<p style="font-size:12px;color:#A89035;font-weight:600;margin-top:10px">This relationship often delivers meaningful financial value from Day 1.</p>
 </div>
 
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#C5A55A;text-align:center;margin-top:16px;font-weight:600">RED Awards 2025: Property Management Company of the Year</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-top:16px;font-weight:600">RED Awards 2025: Property Management Company of the Year</div>
 <div style="font-size:11px;color:#888;text-align:center;margin-top:6px">REBNY 2025: David Goldoff Leadership Award &nbsp;\u00B7&nbsp; 42 Properties &nbsp;\u00B7&nbsp; $1.5B+ AUM &nbsp;\u00B7&nbsp; 18+ Years</div>
 <div style="font-size:10px;color:#999;text-align:center;margin-top:8px">Member: REBNY \u00B7 SPONY \u00B7 NYARM \u00B7 IREM \u00B7 BOMA \u00B7 NARPM \u00B7 NY Apartment Association</div>
 </div>
