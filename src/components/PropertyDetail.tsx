@@ -273,10 +273,35 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
   const handleReportPDF = async () => {
     setReportLoading(true);
     try {
-      // Dynamically import Jackie's full report generator
       const { buildMasterReport, generateBrochureHTML } = await import('@/lib/camelot-report');
       toast.success('Generating Jackie report...');
       const data = await buildMasterReport(building.address, building.borough || undefined);
+
+      // Merge property card contacts into the report (these are richer than HPD data)
+      const cardContacts = building.contacts || [];
+      if (cardContacts.length > 0) {
+        const boardFromCard = cardContacts
+          .filter((c: any) => ['board_president','board_treasurer','board_secretary','board_member','owner','landlord','developer','investor'].includes(c.role))
+          .map((c: any) => ({ name: c.name || 'N/A', title: ROLE_LABELS[c.role as keyof typeof ROLE_LABELS] || c.role || 'Contact' }));
+        const staffFromCard = cardContacts
+          .filter((c: any) => ['resident_manager','super','front_desk','doorman','managing_agent'].includes(c.role))
+          .map((c: any) => ({ role: ROLE_LABELS[c.role as keyof typeof ROLE_LABELS] || c.role || 'Staff', name: c.name || 'N/A' }));
+        if (boardFromCard.length > 0) data.boardMembers = boardFromCard;
+        if (staffFromCard.length > 0) data.buildingStaff = staffFromCard;
+
+        // Extract professionals
+        const lawyer = cardContacts.find((c: any) => c.role === 'attorney' || c.company?.toLowerCase().includes('law'));
+        const accountant = cardContacts.find((c: any) => c.role === 'accountant' || c.company?.toLowerCase().includes('cpa') || c.company?.toLowerCase().includes('accounting'));
+        const engineer = cardContacts.find((c: any) => c.role === 'engineer' || c.company?.toLowerCase().includes('engineer'));
+        if (lawyer) data.professionals.lawFirm = lawyer.company || lawyer.name || null;
+        if (accountant) data.professionals.accountingFirm = accountant.company || accountant.name || null;
+        if (engineer) data.professionals.engineer = engineer.company || engineer.name || null;
+      }
+
+      // Also merge enriched data fields the property card has
+      if (building.current_management) data.managementCompany = building.current_management;
+      if (building.enriched_data?.dof?.owner) data.dofOwner = building.enriched_data.dof.owner;
+
       const html = generateBrochureHTML(data);
       const w = window.open('', '_blank');
       if (!w) { toast.error('Pop-up blocked — allow pop-ups for this site'); return; }

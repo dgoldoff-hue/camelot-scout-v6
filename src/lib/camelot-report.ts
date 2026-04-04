@@ -968,40 +968,69 @@ ${d.distressSignals.length > 0 ? `
 <!-- PAGE 5B: BUILDING CONTACTS & STAKEHOLDERS -->
 <div class="section section-white">
 <div class="section-title">Building Contacts &amp; Stakeholders</div>
-<div class="section-sub">Key personnel, governance, and professional services</div>
+<div class="section-sub">Key decision-makers, personnel, governance, and professional services for ${d.buildingName}</div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0">
-<div>
-<div style="margin-bottom:16px;border-left:4px solid #A89035;padding-left:12px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Ownership &amp; Governance</div>
-</div>
-<div class="info-grid" style="grid-template-columns:1fr">
-<div><div class="label">DOF Owner</div><div class="value">${d.dofOwner || 'N/A'}</div></div>
-<div><div class="label">Registration Owner</div><div class="value">${d.registrationOwner || 'N/A'}</div></div>
-<div><div class="label">Management Company</div><div class="value">${d.managementCompany || 'Self-Managed'}</div></div>
-</div>
-${d.boardMembers.length > 0 ? `
-<div style="margin-top:14px;margin-bottom:8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#999">Board / Officers</div>
-${d.boardMembers.map(b => `<div style="background:#EDE9DF;border:1px solid #E5E3DE;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:12px"><strong>${b.name}</strong> <span style="color:#888;font-size:11px">&mdash; ${b.title}</span></div>`).join('')}
-` : '<div style="font-size:11px;color:#888;margin-top:12px">Board member information not available from public records</div>'}
+<!-- BOARD / OWNERSHIP — Most Important -->
+<div style="background:#3A4B5B;border-radius:8px;padding:18px;margin-bottom:16px;color:#fff">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:10px">\uD83C\uDFDB\uFE0F Board of Directors / Ownership</div>
+<table style="width:100%;border-collapse:collapse">
+<thead><tr>
+<th style="text-align:left;padding:8px 12px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:1px solid rgba(168,144,53,0.3)">Name</th>
+<th style="text-align:left;padding:8px 12px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:1px solid rgba(168,144,53,0.3)">Role / Title</th>
+</tr></thead>
+<tbody>
+<tr><td style="padding:8px 12px;font-size:12px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1)">${d.dofOwner || 'N/A'}</td><td style="padding:8px 12px;font-size:12px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.1)">Owner (NYC DOF Record)</td></tr>
+${d.registrationOwner ? `<tr><td style="padding:8px 12px;font-size:12px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1)">${d.registrationOwner}</td><td style="padding:8px 12px;font-size:12px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.1)">Registration Owner (HPD)</td></tr>` : ''}
+${d.boardMembers.map(b => `<tr><td style="padding:8px 12px;font-size:12px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:600">${b.name}</td><td style="padding:8px 12px;font-size:12px;color:#A89035;border-bottom:1px solid rgba(255,255,255,0.1)">${b.title}</td></tr>`).join('')}
+${d.boardMembers.length === 0 ? '<tr><td colspan="2" style="padding:8px 12px;font-size:11px;color:rgba(255,255,255,0.5)">Additional board members \u2014 available upon engagement or via contact enrichment</td></tr>' : ''}
+</tbody>
+</table>
 </div>
 
-<div>
-<div style="margin-bottom:16px;border-left:4px solid #A89035;padding-left:12px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Building Staff</div>
-</div>
-${d.buildingStaff.length > 0 ? d.buildingStaff.map(s => `<div style="background:#EDE9DF;border:1px solid #E5E3DE;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:12px"><strong>${s.name}</strong> <span style="color:#888;font-size:11px">&mdash; ${s.role}</span></div>`).join('') : '<div style="font-size:11px;color:#888">Staff information not available from public records. Typically includes: Superintendent, Resident Manager, Front Desk.</div>'}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
 
-<div style="margin-top:20px;margin-bottom:16px;border-left:4px solid #A89035;padding-left:12px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600">Professional Services</div>
+<!-- BUILDING STAFF -->
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:16px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:10px">\uD83D\uDC77 Building Staff</div>
+${d.buildingStaff.length > 0 ? `
+<table style="width:100%;border-collapse:collapse">
+${d.buildingStaff.map(s => `<tr><td style="padding:6px 0;font-size:12px;font-weight:600;color:#2C3240">${s.name}</td><td style="padding:6px 0;font-size:11px;color:#888;text-align:right">${s.role}</td></tr>`).join('')}
+</table>` : `
+<div style="font-size:11px;color:#888;line-height:1.6">
+<div style="margin-bottom:4px">\u2022 Superintendent \u2014 <em>To be identified</em></div>
+<div style="margin-bottom:4px">\u2022 Resident Manager \u2014 <em>To be identified</em></div>
+<div style="margin-bottom:4px">\u2022 Front Desk / Doorman \u2014 <em>To be identified</em></div>
+<div style="margin-bottom:4px">\u2022 Porter / Handyman \u2014 <em>To be identified</em></div>
+</div>`}
 </div>
-<div class="info-grid" style="grid-template-columns:1fr">
-<div><div class="label">Law Firm</div><div class="value">${d.professionals.lawFirm || 'Information available upon engagement'}</div></div>
-<div><div class="label">Accounting / Auditor</div><div class="value">${d.professionals.accountingFirm || 'Information available upon engagement'}</div></div>
-<div><div class="label">Licensed Engineer</div><div class="value">${d.professionals.engineer || 'Information available upon engagement'}</div></div>
-<div><div class="label">Architect</div><div class="value">${d.professionals.architect || 'Information available upon engagement'}</div></div>
+
+<!-- MANAGEMENT -->
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:16px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:10px">\uD83C\uDFE2 Current Management</div>
+<div style="font-size:14px;font-weight:700;color:#2C3240;margin-bottom:8px">${d.managementCompany || 'Self-Managed / Unknown'}</div>
+<div style="font-size:11px;color:#888;line-height:1.6">
+<div style="margin-bottom:4px">\u2022 Managing Agent \u2014 <em>${d.managementCompany || 'Not registered'}</em></div>
+${d.managementDuration ? `<div style="margin-bottom:4px">\u2022 Duration \u2014 ~${d.managementDuration}</div>` : ''}
+<div style="margin-bottom:4px">\u2022 Management Grade \u2014 <strong style="color:${d.managementGrade === 'A' ? '#16a34a' : d.managementGrade === 'B' ? '#ca8a04' : '#dc2626'}">${d.managementGrade}</strong> (${d.managementScorecard.overall}/100)</div>
 </div>
 </div>
+</div>
+
+<!-- PROFESSIONAL SERVICES — Critical -->
+<div style="background:#fff;border:2px solid #A89035;border-radius:8px;padding:18px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:12px">\u2696\uFE0F Professional Services</div>
+<table style="width:100%;border-collapse:collapse">
+<thead><tr>
+<th style="text-align:left;padding:8px 12px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:2px solid #A89035;width:40%">Service</th>
+<th style="text-align:left;padding:8px 12px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:2px solid #A89035">Firm / Contact</th>
+</tr></thead>
+<tbody>
+<tr><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240;border-bottom:1px solid #E5E3DE">Law Firm / Attorney</td><td style="padding:10px 12px;font-size:12px;color:#2C3240;border-bottom:1px solid #E5E3DE">${d.professionals.lawFirm || '<em style="color:#999">To be identified</em>'}</td></tr>
+<tr style="background:#EDE9DF"><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240;border-bottom:1px solid #E5E3DE">Accounting / Audit Firm</td><td style="padding:10px 12px;font-size:12px;color:#2C3240;border-bottom:1px solid #E5E3DE">${d.professionals.accountingFirm || '<em style="color:#999">To be identified</em>'}</td></tr>
+<tr><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240;border-bottom:1px solid #E5E3DE">Licensed Engineer</td><td style="padding:10px 12px;font-size:12px;color:#2C3240;border-bottom:1px solid #E5E3DE">${d.professionals.engineer || '<em style="color:#999">To be identified</em>'}</td></tr>
+<tr style="background:#EDE9DF"><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240">Architect</td><td style="padding:10px 12px;font-size:12px;color:#2C3240">${d.professionals.architect || '<em style="color:#999">To be identified</em>'}</td></tr>
+</tbody>
+</table>
 </div>
 </div>
 
