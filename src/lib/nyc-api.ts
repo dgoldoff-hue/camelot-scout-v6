@@ -786,16 +786,21 @@ export async function searchBuildingsByRegion(params: {
 }): Promise<DOFProperty[]> {
   try {
     const limit = params.limit || 100;
-    let where: string[] = [];
+    const where: string[] = [];
 
     if (params.borough) {
-      where.push(`upper(borough)='${params.borough.toUpperCase()}'`);
+      // PLUTO uses 2-letter borough codes: MN, BK, BX, QN, SI
+      const boroCodes: Record<string, string> = {
+        MANHATTAN: 'MN', BROOKLYN: 'BK', QUEENS: 'QN', BRONX: 'BX', 'STATEN ISLAND': 'SI',
+      };
+      const code = boroCodes[params.borough.toUpperCase()] || params.borough;
+      where.push(`borough='${code}'`);
     }
     if (params.minUnits) {
-      where.push(`unitsres >= '${params.minUnits}'`);
+      where.push(`unitsres >= ${params.minUnits}`);
     }
     if (params.maxUnits) {
-      where.push(`unitsres <= '${params.maxUnits}'`);
+      where.push(`unitsres <= ${params.maxUnits}`);
     }
     if (params.yearBuiltMin) {
       where.push(`yearbuilt >= '${params.yearBuiltMin}'`);
@@ -803,15 +808,40 @@ export async function searchBuildingsByRegion(params: {
     if (params.yearBuiltMax) {
       where.push(`yearbuilt <= '${params.yearBuiltMax}'`);
     }
+    // Exclude empty lots and buildings with 0 units
+    where.push(`unitsres > 0`);
 
-    let url = `${ENDPOINTS.dofProperty}?$limit=${limit}&$order=fullval DESC`;
+    // PLUTO dataset uses assesstot (not fullval) and ownername (not owner)
+    let url = `${ENDPOINTS.dofProperty}?$limit=${limit}&$order=assesstot DESC`;
     if (where.length) {
       url += `&$where=${where.join(' AND ')}`;
     }
 
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Search API error: ${res.status}`);
-    return await res.json();
+    const raw: any[] = await res.json();
+
+    // Map PLUTO column names to our DOFProperty interface
+    return raw.map((r) => ({
+      bbl: r.bbl || '',
+      borough: r.borough || '',
+      block: r.block || '',
+      lot: r.lot || '',
+      address: r.address || '',
+      owner: r.ownername || '',
+      bldgcl: r.bldgclass || '',
+      taxclass: r.taxclass || '',
+      fullval: r.assesstot || '0',
+      avland: r.assessland || '0',
+      avtot: r.assesstot || '0',
+      yearbuilt: r.yearbuilt || '',
+      unitsres: r.unitsres || '0',
+      unitstotal: r.unitstotal || '0',
+      lotarea: r.lotarea || '0',
+      bldgarea: r.bldgarea || '0',
+      numfloors: r.numfloors || '0',
+      numbldgs: r.numbldgs || '1',
+    }));
   } catch (err) {
     console.error('Building search error:', err);
     return [];

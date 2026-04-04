@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { REGIONS, isFloridaArea, getFloridaAreas } from '@/lib/regions';
-import { fetchFullBuildingReport, searchByOwnerName, searchByUnit } from '@/lib/nyc-api';
+import { REGIONS, isFloridaArea, getFloridaAreas, getRegionByArea } from '@/lib/regions';
+import { fetchFullBuildingReport, searchByOwnerName, searchByUnit, searchBuildingsByRegion } from '@/lib/nyc-api';
 import { searchNYDOSCorporation, type NYDOSCorporation } from '@/lib/gov-apis';
 import { generateFloridaBuildings } from '@/lib/florida-data';
 import { calculateScore } from '@/lib/scoring';
@@ -216,26 +216,143 @@ export default function Search() {
 
   // Run Scan
   const handleScan = async () => {
+    if (selectedRegions.length === 0) {
+      toast.error('Select at least one area to scan');
+      return;
+    }
+
     const floridaAreas = selectedRegions.filter((a) => isFloridaArea(a));
-    const otherAreas = selectedRegions.filter((a) => !isFloridaArea(a));
+    const nycAreas = selectedRegions.filter((a) => !isFloridaArea(a));
 
+    setIsScanning(true);
+    let totalFound = 0;
+
+    // Florida areas — use pre-built data
     if (floridaAreas.length > 0) {
-      setIsScanning(true);
       setScanProgress(`Scanning ${floridaAreas.length} Florida area(s)...`);
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setScanProgress('Researching property records...');
       await new Promise((resolve) => setTimeout(resolve, 600));
-      setScanProgress('Scoring buildings...');
-      await new Promise((resolve) => setTimeout(resolve, 400));
-
       const floridaBuildings = generateFloridaBuildings(floridaAreas);
       if (floridaBuildings.length > 0) {
         addBuildings(floridaBuildings);
+        totalFound += floridaBuildings.length;
         toast.success(`🌴 Found ${floridaBuildings.length} buildings in Florida`);
       }
-      setIsScanning(false);
-      setScanProgress('');
     }
+
+    // NYC areas — query DOF/PLUTO for real buildings
+    if (nycAreas.length > 0) {
+      setScanProgress(`Querying NYC property records for ${nycAreas.length} area(s)...`);
+
+      // Determine unique boroughs from selected areas
+      const boroughSet = new Set<string>();
+      for (const area of nycAreas) {
+        const region = getRegionByArea(area);
+        if (region) {
+          const name = region.name.toUpperCase();
+          if (['MANHATTAN', 'BROOKLYN', 'QUEENS', 'BRONX', 'STATEN ISLAND'].includes(name)) {
+            boroughSet.add(name);
+          }
+        }
+      }
+
+      const parsedMin = minUnits ? parseInt(minUnits) : undefined;
+      const parsedMax = maxUnits ? parseInt(maxUnits) : undefined;
+      const parsedYearMin = yearBuiltMin ? parseInt(yearBuiltMin) : undefined;
+      const parsedYearMax = yearBuiltMax ? parseInt(yearBuiltMax) : undefined;
+      const boroughs = Array.from(boroughSet);
+
+      // Query each borough (or all if none resolved)
+      const allDofResults: any[] = [];
+      if (boroughs.length > 0) {
+        for (const boro of boroughs) {
+          setScanProgress(`Scanning ${boro}...`);
+          try {
+            const results = await searchBuildingsByRegion({
+              borough: boro,
+              minUnits: parsedMin,
+              maxUnits: parsedMax,
+              yearBuiltMin: parsedYearMin,
+              yearBuiltMax: parsedYearMax,
+              limit: 100,
+            });
+            allDofResults.push(...results);
+          } catch (err) {
+            console.error(`Scan error for ${boro}:`, err);
+          }
+        }
+      } else {
+        // No borough resolved — query without borough filter
+        try {
+          const results = await searchBuildingsByRegion({
+            minUnits: parsedMin,
+            maxUnits: parsedMax,
+            yearBuiltMin: parsedYearMin,
+            yearBuiltMax: parsedYearMax,
+            limit: 200,
+          });
+          allDofResults.push(...results);
+        } catch (err) {
+          console.error('Scan error:', err);
+        }
+      }
+
+      setScanProgress(`Processing ${allDofResults.length} buildings...`);
+
+      // Convert DOF results to Building objects
+      const nycBuildings: Building[] = allDofResults
+        .filter((r) => r.address && r.bbl)
+        .map((r) => {
+          const units = parseInt(r.unitsres) || parseInt(r.unitstotal) || 0;
+          const yearBuilt = parseInt(r.yearbuilt) || 0;
+          const marketValue = parseFloat(r.fullval) || 0;
+          const scoreResult = calculateScore({
+            units,
+            year_built: yearBuilt,
+          });
+          return {
+            id: crypto.randomUUID(),
+            address: r.address,
+            name: r.address,
+            borough: r.borough || '',
+            region: r.borough || '',
+            units,
+            type: (r.bldgcl?.startsWith('R') ? 'condo' : r.bldgcl?.startsWith('D') ? 'co-op' : 'rental') as BuildingType,
+            year_built: yearBuilt,
+            grade: scoreResult.grade,
+            score: scoreResult.total,
+            signals: scoreResult.signals,
+            contacts: [],
+            enriched_data: {},
+            current_management: 'Unknown',
+            source: 'nyc_pluto_scan',
+            status: 'active',
+            tags: [],
+            pipeline_stage: 'discovered' as const,
+            violations_count: 0,
+            open_violations_count: 0,
+            market_value: marketValue,
+            assessed_value: parseFloat(r.avtot) || 0,
+            land_value: parseFloat(r.avland) || 0,
+            tax_class: r.taxclass || '',
+            dof_owner: r.owner || '',
+            bbl: r.bbl,
+            lot_area: parseFloat(r.lotarea) || 0,
+            building_area: parseFloat(r.bldgarea) || 0,
+            stories: parseInt(r.numfloors) || 0,
+            building_class: r.bldgcl || '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          } as Building;
+        });
+
+      if (nycBuildings.length > 0) {
+        addBuildings(nycBuildings);
+        totalFound += nycBuildings.length;
+      }
+    }
+
+    setIsScanning(false);
+    setScanProgress('');
 
     setFilters({
       regions: selectedRegions,
@@ -247,10 +364,10 @@ export default function Search() {
       violationThreshold: violationThreshold ? parseInt(violationThreshold) : undefined,
     } as any);
 
-    if (otherAreas.length > 0 && floridaAreas.length > 0) {
-      toast.success(`Scan complete for ${selectedRegions.length} area(s)`);
-    } else if (otherAreas.length > 0) {
-      toast.success(`Scan started for ${otherAreas.length} area(s)`);
+    if (totalFound > 0) {
+      toast.success(`Found ${totalFound} buildings across ${selectedRegions.length} area(s)`);
+    } else {
+      toast('No buildings found matching your criteria. Try adjusting filters.', { icon: '🔍' });
     }
 
     navigate('/results');
