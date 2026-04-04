@@ -291,7 +291,23 @@ export default function Settings() {
                     <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">DBA</label>
                     <input
                       type="text"
-                      defaultValue="Camelot Realty Group"
+                      defaultValue="Camelot Realty Group LLC"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Brokerage</label>
+                    <input
+                      type="text"
+                      defaultValue="Camelot Brokerage Services Corp"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Brokerage License #</label>
+                    <input
+                      type="text"
+                      defaultValue="10311208308"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
                     />
                   </div>
@@ -299,7 +315,7 @@ export default function Settings() {
                     <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Address</label>
                     <input
                       type="text"
-                      defaultValue="477 Madison Avenue, 6th Floor"
+                      defaultValue="501 Madison Avenue, Suite 1400"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
                     />
                   </div>
@@ -315,7 +331,15 @@ export default function Settings() {
                     <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Phone</label>
                     <input
                       type="tel"
-                      defaultValue="(212) 555-0100"
+                      defaultValue="(212) 206-9939"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Email</label>
+                    <input
+                      type="email"
+                      defaultValue="info@camelot.nyc"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
                     />
                   </div>
@@ -323,7 +347,7 @@ export default function Settings() {
                     <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Website</label>
                     <input
                       type="url"
-                      defaultValue="https://camelotmgt.com"
+                      defaultValue="https://www.camelot.nyc"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
                     />
                   </div>
@@ -336,7 +360,15 @@ export default function Settings() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">License #</label>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Realty Group License #</label>
+                    <input
+                      type="text"
+                      defaultValue="10491200104"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">PM Services License #</label>
                     <input
                       type="text"
                       defaultValue=""

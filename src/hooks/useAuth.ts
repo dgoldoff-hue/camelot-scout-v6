@@ -7,7 +7,7 @@ import type { TeamMember } from '@/types';
 const DEFAULT_USER: TeamMember = {
   id: '1',
   name: 'David Goldoff',
-  email: 'david@camelotmgt.com',
+  email: 'dgoldoff@camelot.nyc',
   role: 'owner',
   initials: 'DG',
   is_active: true,
@@ -17,14 +17,14 @@ const DEFAULT_USER: TeamMember = {
 
 const DEFAULT_TEAM: TeamMember[] = [
   DEFAULT_USER,
-  { id: '2', name: 'Sam Lodge', email: 'sam@camelotmgt.com', role: 'tech_lead', initials: 'SL', is_active: true, created_at: '', updated_at: '' },
-  { id: '3', name: 'Carl', email: 'carl@camelotmgt.com', role: 'cold_caller', initials: 'CA', is_active: true, created_at: '', updated_at: '' },
-  { id: '4', name: 'Luigi', email: 'luigi@camelotmgt.com', role: 'operations', initials: 'LU', is_active: true, created_at: '', updated_at: '' },
-  { id: '5', name: 'Jake', email: 'jake@camelotmgt.com', role: 'team', initials: 'JK', is_active: true, created_at: '', updated_at: '' },
-  { id: '6', name: 'Valerie', email: 'valerie@camelotmgt.com', role: 'team', initials: 'VA', is_active: true, created_at: '', updated_at: '' },
-  { id: '7', name: 'Spencer', email: 'spencer@camelotmgt.com', role: 'team', initials: 'SP', is_active: true, created_at: '', updated_at: '' },
-  { id: '8', name: 'Danielle', email: 'danielle@camelotmgt.com', role: 'team', initials: 'DA', is_active: true, created_at: '', updated_at: '' },
-  { id: '9', name: 'Merlin', email: 'merlin@camelotmgt.com', role: 'tech_lead', initials: 'ME', is_active: true, created_at: '', updated_at: '' },
+  { id: '2', name: 'Sam Lodge', email: 'sam@camelot.nyc', role: 'tech_lead', initials: 'SL', is_active: true, created_at: '', updated_at: '' },
+  { id: '3', name: 'Carl', email: 'carl@camelot.nyc', role: 'cold_caller', initials: 'CA', is_active: true, created_at: '', updated_at: '' },
+  { id: '4', name: 'Luigi', email: 'luigi@camelot.nyc', role: 'operations', initials: 'LU', is_active: true, created_at: '', updated_at: '' },
+  { id: '5', name: 'Jake', email: 'jake@camelot.nyc', role: 'team', initials: 'JK', is_active: true, created_at: '', updated_at: '' },
+  { id: '6', name: 'Valerie', email: 'valerie@camelot.nyc', role: 'team', initials: 'VA', is_active: true, created_at: '', updated_at: '' },
+  { id: '7', name: 'Spencer', email: 'spencer@camelot.nyc', role: 'team', initials: 'SP', is_active: true, created_at: '', updated_at: '' },
+  { id: '8', name: 'Danielle', email: 'danielle@camelot.nyc', role: 'team', initials: 'DA', is_active: true, created_at: '', updated_at: '' },
+  { id: '9', name: 'Merlin', email: 'merlin@camelot.nyc', role: 'tech_lead', initials: 'ME', is_active: true, created_at: '', updated_at: '' },
 ];
 
 export function useAuth() {

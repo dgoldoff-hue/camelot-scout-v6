@@ -369,15 +369,15 @@ CREATE POLICY "Authenticated users can access settings" ON scout_settings
 -- SEED DATA: Default team members
 ------------------------------------------------------------
 INSERT INTO scout_team (name, email, role, initials) VALUES
-  ('David Goldoff', 'david@camelotmgt.com', 'owner', 'DG'),
-  ('Sam Lodge', 'sam@camelotmgt.com', 'tech_lead', 'SL'),
-  ('Carl', 'carl@camelotmgt.com', 'cold_caller', 'CA'),
-  ('Luigi', 'luigi@camelotmgt.com', 'operations', 'LU'),
-  ('Jake', 'jake@camelotmgt.com', 'team', 'JK'),
-  ('Valerie', 'valerie@camelotmgt.com', 'team', 'VA'),
-  ('Spencer', 'spencer@camelotmgt.com', 'team', 'SP'),
-  ('Danielle', 'danielle@camelotmgt.com', 'team', 'DA'),
-  ('Merlin', 'merlin@camelotmgt.com', 'tech_lead', 'ME');
+  ('David Goldoff', 'dgoldoff@camelot.nyc', 'owner', 'DG'),
+  ('Sam Lodge', 'sam@camelot.nyc', 'tech_lead', 'SL'),
+  ('Carl', 'carl@camelot.nyc', 'cold_caller', 'CA'),
+  ('Luigi', 'luigi@camelot.nyc', 'operations', 'LU'),
+  ('Jake', 'jake@camelot.nyc', 'team', 'JK'),
+  ('Valerie', 'valerie@camelot.nyc', 'team', 'VA'),
+  ('Spencer', 'spencer@camelot.nyc', 'team', 'SP'),
+  ('Danielle', 'danielle@camelot.nyc', 'team', 'DA'),
+  ('Merlin', 'merlin@camelot.nyc', 'tech_lead', 'ME');
 
 ------------------------------------------------------------
 -- SEED DATA: Default outreach templates
@@ -386,7 +386,7 @@ INSERT INTO scout_outreach_templates (name, subject, body, category, variables, 
 (
   'Cold Outreach — David''s Template',
   'Property Management Services for {building_name}',
-  E'Dear {contact_name},\n\nMy name is David Goldoff, and I''m the principal of Camelot Realty Group. I''m reaching out because I noticed {building_name} at {address} — a {unit_count}-unit {building_type} in {borough} — and I believe we can provide exceptional management services for your property.\n\nWith {violations_count} open HPD violations on record, I understand the challenges of maintaining a well-run building in New York City. At Camelot, we take a hands-on approach:\n\n• **Personal Attention:** I personally oversee every property in our portfolio\n• **Weekly Inspections:** On-site walkthroughs to catch issues before they become violations\n• **Technology-Forward:** We use ConciergePlus for seamless resident communication\n• **Transparent Financials:** Real-time budget tracking with monthly board reporting\n• **Compliance & Reporting:** Proactive violation resolution and regulatory compliance\n• **Local Resources:** 20+ years of vendor relationships across the tri-state area\n• **Zero Bank Fees:** We never charge bank fees — your money works for your building\n\nI''d love to schedule a 15-minute call to discuss how Camelot can serve {building_name}. Would this week work for you?\n\nBest regards,\nDavid Goldoff\nPrincipal, Camelot Realty Group\n501 Madison Avenue, Suite 1400\nNew York, NY 10022\n(212) 555-0100',
+  E'Dear {contact_name},\n\nMy name is David Goldoff, and I''m the principal of Camelot Realty Group. I''m reaching out because I noticed {building_name} at {address} — a {unit_count}-unit {building_type} in {borough} — and I believe we can provide exceptional management services for your property.\n\nWith {violations_count} open HPD violations on record, I understand the challenges of maintaining a well-run building in New York City. At Camelot, we take a hands-on approach:\n\n• **Personal Attention:** I personally oversee every property in our portfolio\n• **Weekly Inspections:** On-site walkthroughs to catch issues before they become violations\n• **Technology-Forward:** We use ConciergePlus for seamless resident communication\n• **Transparent Financials:** Real-time budget tracking with monthly board reporting\n• **Compliance & Reporting:** Proactive violation resolution and regulatory compliance\n• **Local Resources:** 20+ years of vendor relationships across the tri-state area\n• **Zero Bank Fees:** We never charge bank fees — your money works for your building\n\nI''d love to schedule a 15-minute call to discuss how Camelot can serve {building_name}. Would this week work for you?\n\nBest regards,\nDavid Goldoff\nPrincipal, Camelot Realty Group\n501 Madison Avenue, Suite 1400\nNew York, NY 10022\n(212) 206-9939',
   'cold',
   ARRAY['building_name', 'address', 'unit_count', 'building_type', 'borough', 'violations_count', 'contact_name', 'current_management'],
   true
