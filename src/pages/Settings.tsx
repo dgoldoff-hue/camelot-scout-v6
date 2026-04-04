@@ -298,7 +298,7 @@ export default function Settings() {
                     🏰
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold">Camelot Property Management Services Corp</h3>
+                    <h3 className="text-xl font-bold">Camelot Realty Group</h3>
                     <p className="text-sm text-gray-500">Licensed Real Estate Broker</p>
                   </div>
                 </div>
@@ -308,7 +308,7 @@ export default function Settings() {
                     <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Company Name</label>
                     <input
                       type="text"
-                      defaultValue="Camelot Property Management Services Corp"
+                      defaultValue="Camelot Realty Group"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
                     />
                   </div>

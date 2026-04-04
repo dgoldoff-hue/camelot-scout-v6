@@ -119,7 +119,7 @@ ${penaltyLine} ${exposureLine}${period2Line}${energyStarLine}
 
 Your building currently exceeds its carbon limit by approximately ${data.emissionsOverLimit.toFixed(1)} metric tons of CO2 — and NYC Local Law 97 imposes a penalty of $268 for every metric ton over the cap.
 
-At Camelot Property Management Services Corp, we specialize in helping building owners navigate LL97 compliance. Our services include:
+At Camelot Realty Group, we specialize in helping building owners navigate LL97 compliance. Our services include:
 
   • Comprehensive energy audits and benchmarking analysis
   • Capital improvement planning to reduce emissions
@@ -135,7 +135,7 @@ Would you be available for a brief call this week?
 
 Best regards,
 
-Camelot Property Management Services Corp
+Camelot Realty Group
 477 Madison Avenue, 6th Fl
 New York, NY 10022
 Phone: (212) 206-9939

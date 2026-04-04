@@ -10,7 +10,7 @@ import type { Building, Contact } from '@/types';
 // ============================================================
 
 export const CAMELOT_INFO = {
-  name: 'Camelot Property Management Services Corp',
+  name: 'Camelot Realty Group',
   address: '477 Madison Ave, 6th Fl, New York, NY 10022',
   phone: '(212) 206-9939',
   website: 'www.camelot.nyc',
@@ -19,9 +19,9 @@ export const CAMELOT_INFO = {
     { entity: 'Camelot Realty Group LLC', number: '#10491200104' },
   ],
   portfolio: {
-    buildings: '130+',
+    buildings: '42',
     sqft: '1.2M',
-    description: '130+ building portfolio spanning 1.2M sq ft across NYC',
+    description: '42-building portfolio across Manhattan, Brooklyn, Queens, Bronx, NJ, CT & Florida',
   },
 };
 

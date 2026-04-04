@@ -425,7 +425,7 @@ function ExecutiveSummaryPage({ data }: { data: ProposalData }) {
   const mgmtMsg =
     !data.currentManagement || data.currentManagement === 'Unknown' || data.currentManagement === 'Self-managed'
       ? `Currently ${data.currentManagement === 'Self-managed' ? 'self-managed' : 'without established management'}, ${buildingLabel} would benefit from professional oversight that brings institutional-grade systems while preserving the personal attention boards expect.`
-      : `As the building transitions management, Camelot offers a seamless onboarding process refined over 130+ transitions.`;
+      : `As the building transitions management, Camelot offers a seamless onboarding process refined over 42+ building transitions.`;
 
   return (
     <Page size="LETTER" style={s.page}>
