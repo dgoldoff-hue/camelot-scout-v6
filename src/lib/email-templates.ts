@@ -136,7 +136,7 @@ Would you be available for a brief call this week?
 Best regards,
 
 Camelot Property Management Services Corp
-501 Madison Avenue, Suite 1400
+477 Madison Avenue, 6th Fl
 New York, NY 10022
 Phone: (212) 206-9939
 Web: www.camelot.nyc`;

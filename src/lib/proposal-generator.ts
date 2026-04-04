@@ -11,7 +11,7 @@ import type { Building, Contact } from '@/types';
 
 export const CAMELOT_INFO = {
   name: 'Camelot Property Management Services Corp',
-  address: '501 Madison Ave, Suite 1400, New York, NY 10022',
+  address: '477 Madison Ave, 6th Fl, New York, NY 10022',
   phone: '(212) 206-9939',
   website: 'www.camelot.nyc',
   licenses: [

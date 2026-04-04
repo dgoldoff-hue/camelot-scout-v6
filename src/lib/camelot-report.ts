@@ -96,7 +96,7 @@ export interface MasterReportData {
 const CAMELOT = {
   name: 'Camelot Property Management Services Corp',
   shortName: 'Camelot Realty Group',
-  address: '501 Madison Avenue, Suite 1400, New York, NY 10022',
+  address: '477 Madison Avenue, 6th Fl, New York, NY 10022',
   phone: '(212) 206-9939',
   mobile: '(646) 523-9068',
   email: 'dgoldoff@camelot.nyc',
@@ -269,7 +269,7 @@ MANAGEMENT: ${d.managementCompany || 'Self-Managed / Unknown'}
 ${d.dofOwner ? `OWNER (DOF): ${d.dofOwner}` : ''}
 
 OPENING:
-"Hi, this is [Your Name] calling from Camelot Property Management. We're a boutique management firm based in Manhattan at 501 Madison Avenue. I'm reaching out because we specialize in managing buildings like ${d.buildingName} in your area, and I wanted to introduce our services to the decision makers."
+"Hi, this is [Your Name] calling from Camelot Property Management. We're a boutique management firm based in Manhattan at 477 Madison Avenue, 6th Fl. I'm reaching out because we specialize in managing buildings like ${d.buildingName} in your area, and I wanted to introduce our services to the decision makers."
 
 KEY HOOKS:
 ${d.violationsOpen > 0 ? `• ${d.violationsOpen} OPEN HPD VIOLATIONS — "We noticed your building has ${d.violationsOpen} open HPD violations. We have a proven track record clearing these efficiently."\n` : ''}${d.ecbPenaltyBalance > 0 ? `• $${d.ecbPenaltyBalance.toLocaleString()} ECB PENALTY BALANCE — "Your building has outstanding ECB fines that we can help resolve."\n` : ''}${d.ll97 && d.ll97.period1Penalty > 0 ? `• LL97 PENALTY EXPOSURE: $${d.ll97.period1Penalty.toLocaleString()}/yr — "Under Local Law 97, your building faces estimated annual penalties. We include LL97 compliance at no extra charge."\n` : ''}${d.hasActiveLitigation ? `• ⚖️ ACTIVE HOUSING LITIGATION — "We see your building has active housing court cases. Camelot has experience stabilizing buildings in exactly this situation."\n` : ''}${d.isRentStabilized ? `• RENT STABILIZED — "We specialize in rent-stabilized buildings and understand the regulatory complexity."\n` : ''}${d.distressLevel === 'distressed' || d.distressLevel === 'critical' ? `• FINANCIAL DISTRESS DETECTED (${d.distressLevel.toUpperCase()}) — approach with sensitivity, but this building needs help.\n` : ''}
@@ -304,7 +304,7 @@ export function generateEmailDraft(d: MasterReportData, type: 'intro' | 'followu
       subject: `Introduction — Camelot Property Management | ${d.buildingName}`,
       body: `Dear Board Member,
 
-My name is David Goldoff, and I'm the principal of Camelot Realty Group, a boutique property management firm headquartered at 501 Madison Avenue in New York City.
+My name is David Goldoff, and I'm the principal of Camelot Realty Group, a boutique property management firm headquartered at 477 Madison Avenue, 6th Fl in New York City.
 
 I'm reaching out because we specialize in managing buildings like ${d.buildingName}, and I believe we could bring meaningful value to your ${d.units}-unit property.
 
