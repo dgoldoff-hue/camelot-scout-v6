@@ -5,6 +5,11 @@
 
 import type { HPDViolation, DOFProperty, DOBPermit, LL97Energy, ACRISRecord, ACRISParty, ACRISData } from '@/types';
 import { detectBuildingOperations } from '@/lib/building-ops';
+import {
+  fetchECBViolations, fetchHousingLitigation, fetchRentStabilization,
+  totalECBPenaltyBalance, hasActiveLitigation, isRentStabilized,
+  type ECBViolation, type HousingLitigation, type RentStabilization,
+} from '@/lib/gov-apis';
 
 const NYC_BASE = 'https://data.cityofnewyork.us/resource';
 
@@ -362,16 +367,45 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
     (v) => v.currentstatus !== 'CLOSE' && v.violationstatus !== 'Close'
   );
 
-  // Fetch ACRIS if we have a BBL
+  // Fetch ACRIS + new gov APIs if we have a BBL
   let acris: ACRISData | null = null;
+  let ecbViolations: ECBViolation[] = [];
+  let housingLitigation: HousingLitigation[] = [];
+  let rentStabilization: RentStabilization[] = [];
+
   if (dof?.bbl) {
     const bblParts = parseBBL(dof.bbl);
     if (bblParts) {
-      try {
-        acris = await fetchACRISRecords(bblParts.borough, bblParts.block, bblParts.lot);
-      } catch (err) {
-        console.error('ACRIS fetch in report failed:', err);
-      }
+      // Parse address for litigation query
+      const parsedAddr = parseAddress(address);
+      const boroCode = bblParts.borough;
+
+      // Fetch ACRIS, ECB, Litigation, and Rent Stabilization in parallel
+      const [acrisResult, ecbResult, litigationResult, rentStabResult] = await Promise.all([
+        fetchACRISRecords(bblParts.borough, bblParts.block, bblParts.lot).catch((err) => {
+          console.error('ACRIS fetch in report failed:', err);
+          return null;
+        }),
+        fetchECBViolations(bblParts.borough, bblParts.block, bblParts.lot).catch((err) => {
+          console.error('ECB fetch in report failed:', err);
+          return [] as ECBViolation[];
+        }),
+        parsedAddr.number
+          ? fetchHousingLitigation(boroCode, parsedAddr.number, parsedAddr.street).catch((err) => {
+              console.error('Litigation fetch in report failed:', err);
+              return [] as HousingLitigation[];
+            })
+          : Promise.resolve([] as HousingLitigation[]),
+        fetchRentStabilization(bblParts.borough, bblParts.block, bblParts.lot).catch((err) => {
+          console.error('Rent stabilization fetch in report failed:', err);
+          return [] as RentStabilization[];
+        }),
+      ]);
+
+      acris = acrisResult;
+      ecbViolations = ecbResult;
+      housingLitigation = litigationResult;
+      rentStabilization = rentStabResult;
     }
   }
 
@@ -426,6 +460,20 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
         }
       : null,
     acris,
+    ecb: {
+      violations: ecbViolations,
+      count: ecbViolations.length,
+      totalPenaltyBalance: totalECBPenaltyBalance(ecbViolations),
+    },
+    litigation: {
+      cases: housingLitigation,
+      count: housingLitigation.length,
+      hasActive: hasActiveLitigation(housingLitigation),
+    },
+    rentStabilization: {
+      data: rentStabilization,
+      isStabilized: isRentStabilized(rentStabilization),
+    },
     buildingOps: detectBuildingOperations(
       dof?.bldgcl,
       parseInt(dof?.unitsres || dof?.unitstotal || '0') || 0,

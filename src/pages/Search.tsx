@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { REGIONS, isFloridaArea, getFloridaAreas } from '@/lib/regions';
 import { fetchFullBuildingReport, searchByOwnerName, searchByUnit } from '@/lib/nyc-api';
+import { searchNYDOSCorporation, type NYDOSCorporation } from '@/lib/gov-apis';
 import { generateFloridaBuildings } from '@/lib/florida-data';
 import { calculateScore } from '@/lib/scoring';
 import { useBuildingsStore } from '@/lib/store';
@@ -33,6 +34,7 @@ export default function Search() {
   // Owner search state
   const [ownerName, setOwnerName] = useState('');
   const [ownerResults, setOwnerResults] = useState<any[]>([]);
+  const [dosResults, setDosResults] = useState<NYDOSCorporation[]>([]);
   const [isOwnerSearching, setIsOwnerSearching] = useState(false);
 
   // Unit search state
@@ -71,6 +73,10 @@ export default function Search() {
         has_recent_permits: data.permits.hasRecent,
         energy_star_score: data.energy?.energyStarScore ?? undefined,
         site_eui: data.energy?.siteEUI ?? undefined,
+        ecb_violation_count: data.ecb?.count,
+        ecb_penalty_balance: data.ecb?.totalPenaltyBalance,
+        has_active_litigation: data.litigation?.hasActive,
+        is_rent_stabilized: data.rentStabilization?.isStabilized,
       });
       setReportData({ ...data, score });
       toast.success('Building report generated');
@@ -82,20 +88,30 @@ export default function Search() {
     }
   };
 
-  // Owner name search
+  // Owner name search — also queries NY DOS for corporate filings
   const handleOwnerSearch = async () => {
     if (!ownerName.trim()) return;
     setIsOwnerSearching(true);
     setOwnerResults([]);
+    setDosResults([]);
     setReportData(null);
     setUnitData(null);
     try {
-      const results = await searchByOwnerName(ownerName.trim());
+      // Run HPD owner search and NY DOS search in parallel
+      const [results, dosData] = await Promise.all([
+        searchByOwnerName(ownerName.trim()),
+        searchNYDOSCorporation(ownerName.trim()),
+      ]);
       setOwnerResults(results);
-      if (results.length === 0) {
-        toast('No buildings found for that owner name', { icon: '🔍' });
+      setDosResults(dosData);
+      const totalFound = results.length + dosData.length;
+      if (totalFound === 0) {
+        toast('No buildings or corporate filings found', { icon: '🔍' });
       } else {
-        toast.success(`Found ${results.length} building(s)`);
+        const parts: string[] = [];
+        if (results.length > 0) parts.push(`${results.length} building(s)`);
+        if (dosData.length > 0) parts.push(`${dosData.length} corporate filing(s)`);
+        toast.success(`Found ${parts.join(' + ')}`);
       }
     } catch (err) {
       toast.error('Owner search failed');
@@ -286,10 +302,11 @@ export default function Search() {
   const clearResults = () => {
     setReportData(null);
     setOwnerResults([]);
+    setDosResults([]);
     setUnitData(null);
   };
 
-  const hasResults = reportData || ownerResults.length > 0 || unitData;
+  const hasResults = reportData || ownerResults.length > 0 || dosResults.length > 0 || unitData;
 
   return (
     <div className="min-h-screen">

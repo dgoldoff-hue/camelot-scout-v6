@@ -13,12 +13,13 @@ import { fetchFullBuildingReport } from '@/lib/nyc-api';
 import { enrichBuildingContacts, isEnrichmentConfigured } from '@/lib/enrichment';
 import { calculateScore } from '@/lib/scoring';
 import { detectBuildingOperations, getDoormanLabel, getFrontDeskLabel } from '@/lib/building-ops';
+import { searchNYDOSCorporation, generateExternalLinks, type NYDOSCorporation, type ExternalRecordLink } from '@/lib/gov-apis';
 import toast from 'react-hot-toast';
 import {
   X, MapPin, Building2, AlertTriangle, DollarSign, Zap, FileText,
   Clock, StickyNote, Download, Mail, Phone, Linkedin, Plus,
   ExternalLink, Sparkles, RefreshCw, User, Shield, GitBranch, Loader2,
-  Facebook, Instagram, ChevronDown, ChevronRight, Landmark,
+  Facebook, Instagram, ChevronDown, ChevronRight, Landmark, Scale, Bookmark, Link,
 } from 'lucide-react';
 
 interface PropertyDetailProps {
@@ -476,6 +477,29 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
                 />
               </div>
 
+              {/* Status Badges — Litigation, Rent Stabilization */}
+              <div className="flex flex-wrap items-center gap-2 mb-6">
+                {nycData?.litigation?.hasActive && (
+                  <span className="inline-flex items-center gap-1.5 text-sm font-bold bg-red-100 text-red-700 px-4 py-2 rounded-xl border border-red-300 animate-pulse">
+                    <Scale size={16} /> ⚖️ ACTIVE LITIGATION
+                  </span>
+                )}
+                {nycData?.rentStabilization?.isStabilized && (
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium bg-blue-100 text-blue-700 px-4 py-2 rounded-xl border border-blue-300">
+                    <Bookmark size={16} /> 📋 Rent Stabilized
+                  </span>
+                )}
+                {nycData?.ecb?.count > 0 && (
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium bg-orange-100 text-orange-700 px-3 py-2 rounded-xl border border-orange-300">
+                    <AlertTriangle size={14} /> {nycData.ecb.count} ECB Violation{nycData.ecb.count !== 1 ? 's' : ''}
+                    {nycData.ecb.totalPenaltyBalance > 0 && ` ($${nycData.ecb.totalPenaltyBalance.toLocaleString()})`}
+                  </span>
+                )}
+              </div>
+
+              {/* External Records Links */}
+              <ExternalRecordsSection building={building} nycData={nycData} />
+
             <div className="grid grid-cols-2 gap-6">
               {/* Building Info */}
               <div>
@@ -632,6 +656,69 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
                   No violation data loaded. Click "Refresh NYC Data" to fetch.
                 </p>
               )}
+
+              {/* ECB/OATH Violations Section */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h3 className="font-semibold mb-4 flex items-center gap-2">
+                  ECB/OATH Violations
+                  {nycData?.ecb?.count > 0 && (
+                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                      {nycData.ecb.count}
+                    </span>
+                  )}
+                  {nycData?.ecb?.totalPenaltyBalance > 0 && (
+                    <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
+                      ${nycData.ecb.totalPenaltyBalance.toLocaleString()} penalty
+                    </span>
+                  )}
+                </h3>
+                {isFetchingNYC ? (
+                  <div className="text-center py-6 text-gray-400">
+                    <Loader2 size={20} className="mx-auto animate-spin mb-2" />
+                    <p className="text-sm">Loading ECB violations...</p>
+                  </div>
+                ) : nycData?.ecb?.violations?.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-2 text-gray-500 font-medium">Violation #</th>
+                          <th className="text-left py-2 text-gray-500 font-medium">Type</th>
+                          <th className="text-left py-2 text-gray-500 font-medium">Status</th>
+                          <th className="text-right py-2 text-gray-500 font-medium">Penalty Due</th>
+                          <th className="text-left py-2 text-gray-500 font-medium">Hearing Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {nycData.ecb.violations.slice(0, 30).map((v: any, i: number) => (
+                          <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
+                            <td className="py-2 text-xs font-mono">{v.ecb_violation_number || '—'}</td>
+                            <td className="py-2 text-xs">{v.violation_type || '—'}</td>
+                            <td className="py-2">
+                              <span className={cn(
+                                'text-xs px-1.5 py-0.5 rounded font-medium',
+                                v.ecb_violation_status?.toLowerCase() === 'resolve' || v.ecb_violation_status?.toLowerCase() === 'paid'
+                                  ? 'bg-green-100 text-green-700'
+                                  : 'bg-orange-100 text-orange-700'
+                              )}>
+                                {v.ecb_violation_status || '—'}
+                              </span>
+                            </td>
+                            <td className="py-2 text-xs text-right font-medium">
+                              {v.penalty_balance_due ? `$${Number(v.penalty_balance_due).toLocaleString()}` : '—'}
+                            </td>
+                            <td className="py-2 text-xs">{v.hearing_date ? new Date(v.hearing_date).toLocaleDateString() : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-center py-6 text-gray-400 text-sm">
+                    No ECB/OATH violations found for this property.
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
@@ -983,6 +1070,9 @@ function ContactsTab({
           })}
         </div>
       )}
+
+      {/* NY DOS Corporate Filings for Management Company */}
+      <NYDOSSection managementCompany={building.current_management || nycData?.registration?.managementCompany} />
     </div>
   );
 }
@@ -1281,7 +1371,7 @@ function BuildingOperationsCard({
         </div>
 
         {/* Elevator */}
-        <div className="flex justify-between items-center py-1.5">
+        <div className="flex justify-between items-center py-1.5 border-b border-gray-200">
           <span className="text-sm text-gray-500">Elevator</span>
           <span className={cn(
             'text-xs px-2 py-0.5 rounded-full font-medium',
@@ -1290,7 +1380,173 @@ function BuildingOperationsCard({
             {ops.hasElevator ? '🛗 Yes' : 'No'}
           </span>
         </div>
+
+        {/* Rent Stabilization */}
+        <div className="flex justify-between items-center py-1.5">
+          <span className="text-sm text-gray-500">Rent Stabilization</span>
+          <span className={cn(
+            'text-xs px-2 py-0.5 rounded-full font-medium',
+            nycData?.rentStabilization?.isStabilized ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500',
+          )}>
+            {nycData?.rentStabilization?.isStabilized ? '📋 Rent Stabilized' : 'Not Stabilized'}
+          </span>
+        </div>
       </div>
+    </div>
+  );
+}
+
+// ========================================
+// ExternalRecordsSection — deep links to FL/NJ/CT portals + NY DOS
+// ========================================
+
+function ExternalRecordsSection({
+  building,
+  nycData,
+}: {
+  building: Building;
+  nycData: any;
+}) {
+  const ownerName = building.dof_owner || nycData?.dof?.owner || building.current_management || '';
+  const links = generateExternalLinks({
+    ownerName,
+    address: building.address,
+    state: building.region?.includes('Florida') || building.region?.includes('Miami') ? 'FL' :
+           building.region?.includes('Jersey') ? 'NJ' :
+           building.region?.includes('Connecticut') ? 'CT' : 'NY',
+    region: building.region || building.borough || '',
+  });
+
+  // Always show NY DOS link for NYC properties
+  const hasNYC = building.borough || building.bbl;
+  const allLinks = hasNYC ? [
+    {
+      label: 'NY DOS',
+      url: `https://appext20.dos.ny.gov/corp_public/CORPSEARCH.ENTITY_SEARCH_ENTRY`,
+      icon: '🏛️',
+      state: 'NY',
+    },
+    {
+      label: 'ACRIS',
+      url: building.bbl ? buildACRISUrl(building.bbl) : 'https://a836-acris.nyc.gov/DS/DocumentSearch/Index',
+      icon: '📜',
+      state: 'NY',
+    },
+    ...links.filter(l => l.label !== 'NY DOS'),
+  ] : links;
+
+  if (allLinks.length === 0) return null;
+
+  return (
+    <div className="mb-6">
+      <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+        <Link size={14} className="text-camelot-gold" />
+        External Records
+      </h3>
+      <div className="flex flex-wrap gap-2">
+        {allLinks.map((link, i) => (
+          <a
+            key={i}
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-lg border border-gray-200 transition-colors"
+          >
+            <span>{link.icon}</span>
+            <span className="font-medium">🔗 {link.label}</span>
+            <ExternalLink size={12} className="text-gray-400" />
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ========================================
+// NYDOSSection — Corporate filings for Contacts tab
+// ========================================
+
+function NYDOSSection({ managementCompany }: { managementCompany?: string }) {
+  const [dosResults, setDosResults] = useState<NYDOSCorporation[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searched, setSearched] = useState(false);
+
+  const handleSearch = async () => {
+    if (!managementCompany) return;
+    setIsSearching(true);
+    try {
+      const results = await searchNYDOSCorporation(managementCompany);
+      setDosResults(results);
+      setSearched(true);
+    } catch {
+      toast.error('NY DOS search failed');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Auto-search on mount if management company is known
+  useEffect(() => {
+    if (managementCompany && managementCompany !== 'Unknown' && !searched) {
+      handleSearch();
+    }
+  }, [managementCompany]);
+
+  if (!managementCompany || managementCompany === 'Unknown') return null;
+
+  return (
+    <div className="mt-6 pt-4 border-t border-gray-200">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+          🏛️ NY Secretary of State — Corporate Filings
+        </h4>
+        {!searched && (
+          <button
+            onClick={handleSearch}
+            disabled={isSearching}
+            className="text-xs text-camelot-gold hover:underline flex items-center gap-1"
+          >
+            {isSearching ? <Loader2 size={12} className="animate-spin" /> : null}
+            Search "{managementCompany}"
+          </button>
+        )}
+      </div>
+
+      {isSearching && (
+        <div className="text-center py-4 text-gray-400">
+          <Loader2 size={16} className="mx-auto animate-spin mb-1" />
+          <p className="text-xs">Searching NY DOS...</p>
+        </div>
+      )}
+
+      {searched && dosResults.length === 0 && !isSearching && (
+        <p className="text-xs text-gray-400">No corporate filings found for "{managementCompany}"</p>
+      )}
+
+      {dosResults.length > 0 && (
+        <div className="space-y-2">
+          {dosResults.slice(0, 5).map((corp, i) => (
+            <div key={i} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <p className="text-sm font-medium">{corp.current_entity_name}</p>
+              <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                {corp.dos_id && <p>DOS ID: {corp.dos_id}</p>}
+                {corp.dos_process_name && (
+                  <p className="font-medium text-gray-700">
+                    Process Agent: {corp.dos_process_name}
+                  </p>
+                )}
+                {corp.dos_process_address_1 && (
+                  <p>{corp.dos_process_address_1}{corp.dos_process_address_2 ? `, ${corp.dos_process_address_2}` : ''}</p>
+                )}
+                {corp.entity_formation_date && (
+                  <p>Formed: {new Date(corp.entity_formation_date).toLocaleDateString()}</p>
+                )}
+                {corp.county && <p>County: {corp.county}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

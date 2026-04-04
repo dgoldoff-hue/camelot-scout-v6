@@ -22,6 +22,10 @@ interface ScoreFactors {
   has_recent_permits?: boolean;
   energy_star_score?: number;
   site_eui?: number;
+  ecb_violation_count?: number;
+  ecb_penalty_balance?: number;
+  has_active_litigation?: boolean;
+  is_rent_stabilized?: boolean;
 }
 
 interface ScoreBreakdown {
@@ -190,6 +194,51 @@ export function calculateScore(factors: ScoreFactors): ScoreBreakdown {
     reason: factors.energy_star_score !== undefined
       ? `Energy Star: ${factors.energy_star_score}`
       : 'No data',
+  });
+
+  // 7. ECB/OATH Violations (0-10 points)
+  let ecbScore = 0;
+  const ecbCount = factors.ecb_violation_count || 0;
+  const ecbPenalty = factors.ecb_penalty_balance || 0;
+  if (ecbCount > 0) {
+    ecbScore = 5;
+    breakdown.signals.push(`${ecbCount} ECB/OATH violation(s)`);
+    if (ecbPenalty > 10000) {
+      ecbScore = 10;
+      breakdown.signals.push(`ECB penalty balance: $${ecbPenalty.toLocaleString()} — building in trouble`);
+    }
+  }
+  breakdown.factors.push({
+    name: 'ECB Violations',
+    score: ecbScore,
+    max: 10,
+    reason: ecbCount > 0 ? `${ecbCount} violations, $${ecbPenalty.toLocaleString()} penalty` : 'None',
+  });
+
+  // 8. Housing Litigation (0-15 points)
+  let litigationScore = 0;
+  if (factors.has_active_litigation) {
+    litigationScore = 15;
+    breakdown.signals.push('⚖️ ACTIVE HOUSING LITIGATION — building in crisis');
+  }
+  breakdown.factors.push({
+    name: 'Housing Litigation',
+    score: litigationScore,
+    max: 15,
+    reason: factors.has_active_litigation ? 'Active case(s)' : 'No active litigation',
+  });
+
+  // 9. Rent Stabilization (0-5 points)
+  let rentStabScore = 0;
+  if (factors.is_rent_stabilized) {
+    rentStabScore = 5;
+    breakdown.signals.push('📋 Rent stabilized — complex management opportunity');
+  }
+  breakdown.factors.push({
+    name: 'Rent Stabilization',
+    score: rentStabScore,
+    max: 5,
+    reason: factors.is_rent_stabilized ? 'Rent stabilized' : 'Not stabilized / unknown',
   });
 
   // Calculate total
