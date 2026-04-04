@@ -39,19 +39,19 @@ export default function ReportCenter() {
   const handlePreviewBrochure = () => {
     if (!data) return;
     const html = generateBrochureHTML(data);
-    openBrochureForPrint(html, `Camelot-Proposal-${data.buildingName}`);
+    openBrochureForPrint(html, `Jackie-Report-${data.buildingName}`);
   };
 
   const handleDownloadHTML = () => {
     if (!data) return;
     const html = generateBrochureHTML(data);
-    downloadAsHTML(html, `Camelot-Proposal-${data.buildingName.replace(/[^a-zA-Z0-9]/g, '-')}.html`);
+    downloadAsHTML(html, `Jackie-Report-${data.buildingName.replace(/[^a-zA-Z0-9]/g, '-')}.html`);
   };
 
   const handleCSV = () => {
     if (!data) return;
     const csv = generateCSVExport(data);
-    triggerCSVDownload(csv, `Scout-Report-${data.buildingName.replace(/[^a-zA-Z0-9]/g, '-')}.csv`);
+    triggerCSVDownload(csv, `Jackie-Export-${data.buildingName.replace(/[^a-zA-Z0-9]/g, '-')}.csv`);
   };
 
   const handleCopy = async (text: string) => {
@@ -67,8 +67,8 @@ export default function ReportCenter() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">🏰 Report Center</h1>
-        <p className="text-gray-500 mt-1">Generate complete management proposals with building intelligence — one search, every output format</p>
+        <h1 className="text-2xl font-bold text-gray-900">Jackie</h1>
+        <p className="text-gray-500 mt-1">Camelot&rsquo;s AI pitch engine — Property Intelligence Reports, management proposals, and email drafts. One address, every output.</p>
       </div>
 
       {/* Search */}
@@ -78,10 +78,10 @@ export default function ReportCenter() {
             type="text" placeholder="Enter building address (e.g., 200 E 24th St)"
             value={address} onChange={e => setAddress(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && generate()}
-            className="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C5A55A]/50 focus:border-[#C5A55A]"
+            className="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#A89035]/50 focus:border-[#A89035]"
           />
           <select value={borough} onChange={e => setBorough(e.target.value)}
-            className="px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C5A55A]/50">
+            className="px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#A89035]/50">
             <option value="">Borough</option>
             <option value="manhattan">Manhattan</option>
             <option value="brooklyn">Brooklyn</option>
@@ -90,9 +90,9 @@ export default function ReportCenter() {
             <option value="staten island">Staten Island</option>
           </select>
           <button onClick={generate} disabled={loading || !address.trim()}
-            className="px-6 py-3 bg-[#3D4F5F] text-white rounded-lg hover:bg-[#2d3d4d] disabled:opacity-50 flex items-center gap-2 font-medium">
+            className="px-6 py-3 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] disabled:opacity-50 flex items-center gap-2 font-medium">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            Generate Report
+            Run Jackie
           </button>
         </div>
       </div>
@@ -100,7 +100,7 @@ export default function ReportCenter() {
       {/* Loading */}
       {loading && (
         <div className="bg-white rounded-xl border p-12 shadow-sm flex flex-col items-center justify-center">
-          <Loader2 className="w-12 h-12 animate-spin text-[#C5A55A] mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-[#A89035] mb-4" />
           <p className="text-gray-500 font-medium">{loadingMsg || 'Building your report...'}</p>
           <p className="text-gray-400 text-sm mt-1">HPD • DOB • DOF • LL97 • ACRIS • ECB • Housing Court • Rent Stabilization</p>
         </div>
@@ -113,7 +113,7 @@ export default function ReportCenter() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="bg-white rounded-xl border p-4 shadow-sm text-center">
               <p className="text-xs text-gray-500 uppercase font-medium">Market Value</p>
-              <p className="text-xl font-bold text-[#C5A55A]">{fmtMoney(data.marketValue)}</p>
+              <p className="text-xl font-bold text-[#A89035]">{fmtMoney(data.marketValue)}</p>
             </div>
             <div className="bg-white rounded-xl border p-4 shadow-sm text-center">
               <p className="text-xs text-gray-500 uppercase font-medium">Units</p>
@@ -143,11 +143,11 @@ export default function ReportCenter() {
           <div className="bg-white rounded-xl border p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Output Options</h2>
             <div className="flex flex-wrap gap-3">
-              <button onClick={handlePreviewBrochure} className="px-5 py-2.5 bg-[#C5A55A] text-white rounded-lg hover:bg-[#b8983f] font-medium flex items-center gap-2">
-                <Eye className="w-4 h-4" /> Preview & Print PDF
+              <button onClick={handlePreviewBrochure} className="px-5 py-2.5 bg-[#A89035] text-white rounded-lg hover:bg-[#8A7A2C] font-medium flex items-center gap-2">
+                <Eye className="w-4 h-4" /> Jackie Report — Preview & Print
               </button>
-              <button onClick={handleDownloadHTML} className="px-5 py-2.5 bg-[#3D4F5F] text-white rounded-lg hover:bg-[#2d3d4d] font-medium flex items-center gap-2">
-                <Download className="w-4 h-4" /> Download HTML
+              <button onClick={handleDownloadHTML} className="px-5 py-2.5 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] font-medium flex items-center gap-2">
+                <Download className="w-4 h-4" /> Download Jackie Report
               </button>
               <button onClick={() => setShowEmailModal(true)} className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex items-center gap-2">
                 <Mail className="w-4 h-4" /> Email Draft
@@ -175,7 +175,7 @@ export default function ReportCenter() {
               <div><span className="text-gray-400">Year Built:</span> <span className="font-medium">{data.yearBuilt || 'N/A'}</span></div>
               <div><span className="text-gray-400">ECB Penalties:</span> <span className="font-medium text-orange-600">${data.ecbPenaltyBalance.toLocaleString()}</span></div>
               <div><span className="text-gray-400">Last Sale:</span> <span className="font-medium">{data.lastSaleDate ? new Date(data.lastSaleDate).toLocaleDateString() : 'N/A'} — {data.lastSalePrice ? fmtMoney(data.lastSalePrice) : 'N/A'}</span></div>
-              <div><span className="text-gray-400">Proposed Fee:</span> <span className="font-medium text-[#C5A55A]">${data.monthlyFee.toLocaleString()}/mo</span></div>
+              <div><span className="text-gray-400">Proposed Fee:</span> <span className="font-medium text-[#A89035]">${data.monthlyFee.toLocaleString()}/mo</span></div>
             </div>
           </div>
         </>
@@ -185,8 +185,8 @@ export default function ReportCenter() {
       {!data && !loading && (
         <div className="bg-white rounded-xl border p-12 shadow-sm text-center">
           <FileText className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-500">Enter a building address</h3>
-          <p className="text-gray-400 mt-1">One search generates your full management proposal + building intelligence report</p>
+          <h3 className="text-lg font-semibold text-gray-500">Enter a building address to run Jackie</h3>
+          <p className="text-gray-400 mt-1">Jackie pulls live NYC data, generates your Property Intelligence Report, management proposal, email drafts, and cold caller sheet</p>
         </div>
       )}
 
@@ -202,7 +202,7 @@ export default function ReportCenter() {
               <div className="flex gap-2 mb-4">
                 {(['intro', 'followup', 'proposal', 'compliance'] as EmailType[]).map(t => (
                   <button key={t} onClick={() => setEmailType(t)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${emailType === t ? 'bg-[#C5A55A] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${emailType === t ? 'bg-[#A89035] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                     {t === 'intro' ? 'Introduction' : t === 'followup' ? 'Follow-Up' : t === 'proposal' ? 'Proposal' : 'LL97 Compliance'}
                   </button>
                 ))}
@@ -216,7 +216,7 @@ export default function ReportCenter() {
                 <pre className="text-sm whitespace-pre-wrap font-sans text-gray-700">{emailDraft.body}</pre>
               </div>
               <button onClick={() => handleCopy(`Subject: ${emailDraft.subject}\n\n${emailDraft.body}`)}
-                className="mt-4 px-4 py-2 bg-[#3D4F5F] text-white rounded-lg flex items-center gap-2 font-medium">
+                className="mt-4 px-4 py-2 bg-[#3A4B5B] text-white rounded-lg flex items-center gap-2 font-medium">
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 {copied ? 'Copied!' : 'Copy to Clipboard'}
               </button>
@@ -236,7 +236,7 @@ export default function ReportCenter() {
             <div className="p-4">
               <pre className="bg-gray-50 rounded-lg p-4 text-sm whitespace-pre-wrap font-mono text-gray-700">{callerSheet}</pre>
               <button onClick={() => handleCopy(callerSheet)}
-                className="mt-4 px-4 py-2 bg-[#3D4F5F] text-white rounded-lg flex items-center gap-2 font-medium">
+                className="mt-4 px-4 py-2 bg-[#3A4B5B] text-white rounded-lg flex items-center gap-2 font-medium">
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 {copied ? 'Copied!' : 'Copy to Clipboard'}
               </button>

@@ -681,7 +681,7 @@ export function generateBrochureHTML(d: MasterReportData): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Camelot Management Proposal \u2014 ${d.buildingName}</title>
+<title>Jackie Property Intelligence Report \u2014 ${d.buildingName} | Camelot Realty Group</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -825,7 +825,8 @@ body{background:#fff}
 <div class="wordmark">C &nbsp;A &nbsp;M &nbsp;E &nbsp;L &nbsp;O &nbsp;T</div>
 <div class="pm-sub">Property Management</div>
 <h1>${d.buildingName}</h1>
-<div class="proposal-sub">Management Proposal &amp; Building Intelligence Report</div>
+<div class="proposal-sub">Property Intelligence Report &amp; Management Proposal</div>
+<div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-top:4px">Powered by Jackie &nbsp;\u00B7&nbsp; Camelot OS &nbsp;\u00B7&nbsp; SCOUT Market Intelligence</div>
 <div class="meta">${d.borough} &nbsp;|&nbsp; New York</div>
 <div class="meta">${d.units ? d.units + ' Units' : ''} ${d.stories ? '&nbsp;|&nbsp; ' + d.stories + ' Floors' : ''}</div>
 <div class="prepared">Prepared exclusively for the Board of Directors &mdash; ${d.date}</div>
@@ -1433,6 +1434,8 @@ ${d.neighborhoodMarketData ? `
 <!-- PAGE 24: BACK COVER -->
 <div class="back-cover">
 <img src="./images/camelot-logo-white.png" alt="Camelot" style="width:100px;margin-bottom:12px;opacity:0.85" onerror="this.style.display='none'">
+<div style="font-family:Georgia,'Playfair Display',serif;font-style:italic;font-size:13px;color:rgba(255,255,255,0.5);max-width:500px;line-height:1.8;margin-bottom:20px">&ldquo;Don\u2019t let it be forgot, that once there was a spot, for one brief shining moment, that was known as Camelot.&rdquo;</div>
+<div style="font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:24px;letter-spacing:1px">Jacqueline Kennedy &nbsp;\u00B7&nbsp; December 1963</div>
 <div class="wordmark">C &nbsp;A &nbsp;M &nbsp;E &nbsp;L &nbsp;O &nbsp;T</div>
 <div class="pm-sub">Property Management</div>
 <h2>Next Steps</h2>
