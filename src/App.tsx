@@ -15,6 +15,11 @@ import Export from '@/pages/Export';
 import Bots from '@/pages/Bots';
 import Settings from '@/pages/Settings';
 import Tutorials from '@/pages/Tutorials';
+import Compliance from '@/pages/Compliance';
+import Alerts from '@/pages/Alerts';
+import Proposals from '@/pages/Proposals';
+import Intelligence from '@/pages/Intelligence';
+import Reports from '@/pages/Reports';
 import { useAuth } from '@/hooks/useAuth';
 import { useBuildings } from '@/hooks/useBuildings';
 
@@ -68,6 +73,11 @@ export default function App() {
           <Route path="/bots" element={<Bots />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/tutorials" element={<Tutorials />} />
+          <Route path="/compliance" element={<Compliance />} />
+          <Route path="/alerts" element={<Alerts />} />
+          <Route path="/proposals" element={<Proposals />} />
+          <Route path="/intelligence" element={<Intelligence />} />
+          <Route path="/reports" element={<Reports />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

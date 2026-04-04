@@ -73,6 +73,77 @@ export function renderOutreachEmail(
   };
 }
 
+// ============================================================
+// LL97 Compliance Outreach Email
+// ============================================================
+
+export interface ComplianceEmailData {
+  address: string;
+  annualPenalty: number;
+  tenYearExposure: number;
+  complianceStatus: string;
+  buildingType: string;
+  emissionsOverLimit: number;
+  energyStarScore?: number;
+  period2Penalty?: number;
+}
+
+/**
+ * Generate a professional LL97 compliance outreach email.
+ * Highlights the building's estimated penalty and offers Camelot's services.
+ */
+export function generateComplianceOutreachEmail(data: ComplianceEmailData): { subject: string; body: string } {
+  const subject = `Your Building at ${data.address} — LL97 Compliance Alert`;
+
+  const penaltyLine = data.annualPenalty > 0
+    ? `Based on publicly available NYC benchmarking data, your building at ${data.address} is currently estimated to face an annual LL97 penalty of $${data.annualPenalty.toLocaleString()}.`
+    : `Based on publicly available NYC benchmarking data, your building at ${data.address} is currently close to exceeding its LL97 carbon emission limits.`;
+
+  const exposureLine = data.tenYearExposure > 0
+    ? `Over the compliance period, this translates to a total exposure of approximately $${data.tenYearExposure.toLocaleString()}.`
+    : '';
+
+  const period2Line = data.period2Penalty && data.period2Penalty > 0
+    ? `\n\nImportantly, when Period 2 limits take effect in 2030, the penalty is projected to increase to $${data.period2Penalty.toLocaleString()} per year — making early action critical.`
+    : '';
+
+  const energyStarLine = data.energyStarScore
+    ? `\n\nYour building's Energy Star score of ${data.energyStarScore} ${data.energyStarScore < 50 ? 'suggests significant room for energy efficiency improvements' : 'indicates a solid baseline, but further optimization may still be needed to avoid penalties'}.`
+    : '';
+
+  const body = `Dear Building Owner / Board Member,
+
+I hope this message finds you well. I'm reaching out regarding an important regulatory matter that may impact your property.
+
+${penaltyLine} ${exposureLine}${period2Line}${energyStarLine}
+
+Your building currently exceeds its carbon limit by approximately ${data.emissionsOverLimit.toFixed(1)} metric tons of CO2 — and NYC Local Law 97 imposes a penalty of $268 for every metric ton over the cap.
+
+At Camelot Property Management Services Corp, we specialize in helping building owners navigate LL97 compliance. Our services include:
+
+  • Comprehensive energy audits and benchmarking analysis
+  • Capital improvement planning to reduce emissions
+  • Coordination with engineers, contractors, and utility programs
+  • Full-service property management with sustainability built in
+  • Compliance tracking and reporting to the city
+
+Many of our clients have reduced their projected penalties by 40–60% through strategic energy retrofits and operational improvements.
+
+I'd welcome the opportunity to discuss your building's specific situation and how we can help you reduce or eliminate these penalties entirely.
+
+Would you be available for a brief call this week?
+
+Best regards,
+
+Camelot Property Management Services Corp
+501 Madison Avenue, Suite 1400
+New York, NY 10022
+Phone: (212) 206-9939
+Web: www.camelot.nyc`;
+
+  return { subject, body };
+}
+
 /**
  * Get list of available template variables with descriptions
  */

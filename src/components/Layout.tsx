@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Search, LayoutGrid, Bookmark, Upload, GitBranch, Mail, MessageSquare,
   Archive, Download, Bot, Settings, ChevronLeft, ChevronRight, Castle,
-  BookOpen, HelpCircle,
+  BookOpen, HelpCircle, ShieldCheck, Bell, FileText, Swords, TrendingDown, Map,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/lib/store';
@@ -32,10 +32,20 @@ const navigation: NavSection[] = [
     ],
   },
   {
+    title: 'Intelligence',
+    items: [
+      { label: 'Alerts', href: '/alerts', icon: <Bell size={18} /> },
+      { label: 'LL97 Compliance', href: '/compliance', icon: <ShieldCheck size={18} /> },
+      { label: 'Competitors', href: '/intelligence', icon: <Swords size={18} /> },
+      { label: 'Reports', href: '/reports', icon: <FileText size={18} /> },
+    ],
+  },
+  {
     title: 'Kill Chain',
     items: [
       { label: 'Pipeline', href: '/pipeline', icon: <GitBranch size={18} />, tourId: 'pipeline' },
       { label: 'Outreach', href: '/outreach', icon: <Mail size={18} />, tourId: 'outreach' },
+      { label: 'Proposals', href: '/proposals', icon: <FileText size={18} /> },
       { label: 'Scout AI', href: '/chat', icon: <MessageSquare size={18} />, tourId: 'scout-ai' },
     ],
   },
