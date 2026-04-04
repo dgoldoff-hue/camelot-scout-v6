@@ -85,8 +85,176 @@ export interface MasterReportData {
   pricePerUnit: number;
   monthlyFee: number;
   annualFee: number;
+  // Property classification
+  propertyType: string;
+  neighborhoodName: string;
+  neighborhoodMarketData: NeighborhoodMarketData | null;
+  // Management performance
+  registrationDate: string | null;
+  managementDuration: string | null;
+  managementGrade: string;
+  managementScorecard: { violations: number; compliance: number; financial: number; overall: number };
+  // Building contacts
+  boardMembers: Array<{ name: string; title: string }>;
+  buildingStaff: Array<{ role: string; name: string }>;
+  professionals: { lawFirm: string | null; accountingFirm: string | null; engineer: string | null; architect: string | null };
   // Raw data for advanced usage
   raw: any;
+}
+
+// ============================================================
+// Neighborhood Market Data (Q1 2026 — from Camelot Market Report)
+// ============================================================
+
+export interface NeighborhoodMarketData {
+  condoPSF: number; coopPSF: number; rentalPSFYr: number;
+  median1BR: number; median2BR: number; daysOnMarket: number;
+  investScore: number; liveScore: number; familyScore: number; workScore: number;
+  momentum: string; opexRange: string;
+}
+
+const NEIGHBORHOOD_MARKET_DATA: Record<string, NeighborhoodMarketData> = {
+  'harlem': { condoPSF: 892, coopPSF: 610, rentalPSFYr: 50, median1BR: 2950, median2BR: 3800, daysOnMarket: 18, investScore: 8.2, liveScore: 7.4, familyScore: 6.8, workScore: 7.6, momentum: 'Strong', opexRange: '$19–32/sqft/yr' },
+  'manhattan valley': { condoPSF: 892, coopPSF: 610, rentalPSFYr: 50, median1BR: 2950, median2BR: 3800, daysOnMarket: 18, investScore: 8.2, liveScore: 7.4, familyScore: 6.8, workScore: 7.6, momentum: 'Strong', opexRange: '$19–32/sqft/yr' },
+  'murray hill': { condoPSF: 1380, coopPSF: 980, rentalPSFYr: 75, median1BR: 4200, median2BR: 6100, daysOnMarket: 12, investScore: 7.8, liveScore: 8.2, familyScore: 7.0, workScore: 9.1, momentum: 'Moderate', opexRange: '$27–42/sqft/yr' },
+  'nomad': { condoPSF: 1380, coopPSF: 980, rentalPSFYr: 75, median1BR: 4200, median2BR: 6100, daysOnMarket: 12, investScore: 7.8, liveScore: 8.2, familyScore: 7.0, workScore: 9.1, momentum: 'Moderate', opexRange: '$27–42/sqft/yr' },
+  'stuyvesant': { condoPSF: 1250, coopPSF: 1050, rentalPSFYr: 65, median1BR: 3800, median2BR: 5600, daysOnMarket: 14, investScore: 7.6, liveScore: 8.4, familyScore: 7.5, workScore: 8.8, momentum: 'Moderate', opexRange: '$24–38/sqft/yr' },
+  'gramercy': { condoPSF: 1250, coopPSF: 1050, rentalPSFYr: 65, median1BR: 3800, median2BR: 5600, daysOnMarket: 14, investScore: 7.6, liveScore: 8.4, familyScore: 7.5, workScore: 8.8, momentum: 'Moderate', opexRange: '$24–38/sqft/yr' },
+  'hells kitchen': { condoPSF: 1180, coopPSF: 880, rentalPSFYr: 68, median1BR: 3600, median2BR: 5200, daysOnMarket: 16, investScore: 7.5, liveScore: 7.8, familyScore: 6.2, workScore: 9.0, momentum: 'Stable', opexRange: '$21–36/sqft/yr' },
+  "hell's kitchen": { condoPSF: 1180, coopPSF: 880, rentalPSFYr: 68, median1BR: 3600, median2BR: 5200, daysOnMarket: 16, investScore: 7.5, liveScore: 7.8, familyScore: 6.2, workScore: 9.0, momentum: 'Stable', opexRange: '$21–36/sqft/yr' },
+  'washington heights': { condoPSF: 560, coopPSF: 440, rentalPSFYr: 37, median1BR: 2100, median2BR: 2850, daysOnMarket: 22, investScore: 8.6, liveScore: 7.2, familyScore: 7.8, workScore: 6.4, momentum: 'Very Strong', opexRange: '$15–27/sqft/yr' },
+  'inwood': { condoPSF: 560, coopPSF: 440, rentalPSFYr: 37, median1BR: 2100, median2BR: 2850, daysOnMarket: 22, investScore: 8.6, liveScore: 7.2, familyScore: 7.8, workScore: 6.4, momentum: 'Very Strong', opexRange: '$15–27/sqft/yr' },
+  'sunnyside': { condoPSF: 660, coopPSF: 430, rentalPSFYr: 41, median1BR: 2400, median2BR: 3100, daysOnMarket: 15, investScore: 8.8, liveScore: 7.6, familyScore: 8.2, workScore: 7.2, momentum: 'Very Strong', opexRange: '$13–24/sqft/yr' },
+  'woodside': { condoPSF: 660, coopPSF: 430, rentalPSFYr: 41, median1BR: 2400, median2BR: 3100, daysOnMarket: 15, investScore: 8.8, liveScore: 7.6, familyScore: 8.2, workScore: 7.2, momentum: 'Very Strong', opexRange: '$13–24/sqft/yr' },
+  'greenpoint': { condoPSF: 1020, coopPSF: 720, rentalPSFYr: 55, median1BR: 3200, median2BR: 4400, daysOnMarket: 13, investScore: 8.4, liveScore: 8.6, familyScore: 7.9, workScore: 7.4, momentum: 'Strong', opexRange: '$17–28/sqft/yr' },
+  'long island city': { condoPSF: 1090, coopPSF: 680, rentalPSFYr: 57, median1BR: 3450, median2BR: 4700, daysOnMarket: 11, investScore: 8.7, liveScore: 8.0, familyScore: 7.2, workScore: 8.8, momentum: 'Very Strong', opexRange: '$15–27/sqft/yr' },
+  'lic': { condoPSF: 1090, coopPSF: 680, rentalPSFYr: 57, median1BR: 3450, median2BR: 4700, daysOnMarket: 11, investScore: 8.7, liveScore: 8.0, familyScore: 7.2, workScore: 8.8, momentum: 'Very Strong', opexRange: '$15–27/sqft/yr' },
+  'upper east side': { condoPSF: 1620, coopPSF: 1140, rentalPSFYr: 82, median1BR: 4600, median2BR: 7200, daysOnMarket: 14, investScore: 6.8, liveScore: 8.8, familyScore: 9.2, workScore: 8.4, momentum: 'Stable', opexRange: '$30–50/sqft/yr' },
+  'tribeca': { condoPSF: 2100, coopPSF: 1480, rentalPSFYr: 98, median1BR: 5200, median2BR: 8400, daysOnMarket: 10, investScore: 6.4, liveScore: 9.2, familyScore: 8.4, workScore: 8.6, momentum: 'Stable', opexRange: '$33–56/sqft/yr' },
+  'soho': { condoPSF: 2100, coopPSF: 1480, rentalPSFYr: 98, median1BR: 5200, median2BR: 8400, daysOnMarket: 10, investScore: 6.4, liveScore: 9.2, familyScore: 8.4, workScore: 8.6, momentum: 'Stable', opexRange: '$33–56/sqft/yr' },
+  'brooklyn heights': { condoPSF: 1280, coopPSF: 980, rentalPSFYr: 62, median1BR: 3600, median2BR: 5100, daysOnMarket: 12, investScore: 7.2, liveScore: 9.0, familyScore: 8.8, workScore: 8.2, momentum: 'Stable', opexRange: '$20–34/sqft/yr' },
+  'park slope': { condoPSF: 1150, coopPSF: 820, rentalPSFYr: 53, median1BR: 3100, median2BR: 4600, daysOnMarket: 14, investScore: 7.4, liveScore: 9.1, familyScore: 9.4, workScore: 7.8, momentum: 'Moderate', opexRange: '$18–30/sqft/yr' },
+  'east village': { condoPSF: 1350, coopPSF: 950, rentalPSFYr: 70, median1BR: 3500, median2BR: 5000, daysOnMarket: 11, investScore: 7.0, liveScore: 8.8, familyScore: 6.5, workScore: 8.5, momentum: 'Moderate', opexRange: '$24–38/sqft/yr' },
+  'lower east side': { condoPSF: 1200, coopPSF: 850, rentalPSFYr: 65, median1BR: 3400, median2BR: 4800, daysOnMarket: 13, investScore: 7.5, liveScore: 8.5, familyScore: 6.0, workScore: 8.2, momentum: 'Strong', opexRange: '$22–36/sqft/yr' },
+  'chelsea': { condoPSF: 1500, coopPSF: 1100, rentalPSFYr: 78, median1BR: 4100, median2BR: 6000, daysOnMarket: 12, investScore: 7.2, liveScore: 8.6, familyScore: 6.8, workScore: 9.0, momentum: 'Moderate', opexRange: '$27–42/sqft/yr' },
+  'west village': { condoPSF: 1800, coopPSF: 1300, rentalPSFYr: 90, median1BR: 4800, median2BR: 7500, daysOnMarket: 11, investScore: 6.5, liveScore: 9.3, familyScore: 7.0, workScore: 8.4, momentum: 'Stable', opexRange: '$30–48/sqft/yr' },
+  'astoria': { condoPSF: 700, coopPSF: 480, rentalPSFYr: 44, median1BR: 2500, median2BR: 3300, daysOnMarket: 14, investScore: 8.5, liveScore: 8.0, familyScore: 8.0, workScore: 7.5, momentum: 'Strong', opexRange: '$14–26/sqft/yr' },
+  'midtown': { condoPSF: 1600, coopPSF: 1100, rentalPSFYr: 80, median1BR: 4400, median2BR: 6800, daysOnMarket: 13, investScore: 7.0, liveScore: 7.5, familyScore: 5.5, workScore: 9.5, momentum: 'Stable', opexRange: '$28–45/sqft/yr' },
+  'upper west side': { condoPSF: 1500, coopPSF: 1050, rentalPSFYr: 75, median1BR: 4300, median2BR: 6500, daysOnMarket: 13, investScore: 7.0, liveScore: 8.9, familyScore: 9.0, workScore: 8.0, momentum: 'Stable', opexRange: '$28–44/sqft/yr' },
+  'financial district': { condoPSF: 1400, coopPSF: 1000, rentalPSFYr: 72, median1BR: 4000, median2BR: 5800, daysOnMarket: 12, investScore: 7.3, liveScore: 7.8, familyScore: 6.0, workScore: 9.2, momentum: 'Moderate', opexRange: '$26–42/sqft/yr' },
+  'fidi': { condoPSF: 1400, coopPSF: 1000, rentalPSFYr: 72, median1BR: 4000, median2BR: 5800, daysOnMarket: 12, investScore: 7.3, liveScore: 7.8, familyScore: 6.0, workScore: 9.2, momentum: 'Moderate', opexRange: '$26–42/sqft/yr' },
+  'bushwick': { condoPSF: 580, coopPSF: 400, rentalPSFYr: 38, median1BR: 2200, median2BR: 2900, daysOnMarket: 16, investScore: 8.8, liveScore: 7.5, familyScore: 7.0, workScore: 7.0, momentum: 'Very Strong', opexRange: '$12–22/sqft/yr' },
+  'bed-stuy': { condoPSF: 650, coopPSF: 450, rentalPSFYr: 42, median1BR: 2400, median2BR: 3200, daysOnMarket: 15, investScore: 8.6, liveScore: 7.8, familyScore: 7.5, workScore: 7.2, momentum: 'Strong', opexRange: '$14–25/sqft/yr' },
+  'bedford-stuyvesant': { condoPSF: 650, coopPSF: 450, rentalPSFYr: 42, median1BR: 2400, median2BR: 3200, daysOnMarket: 15, investScore: 8.6, liveScore: 7.8, familyScore: 7.5, workScore: 7.2, momentum: 'Strong', opexRange: '$14–25/sqft/yr' },
+  'williamsburg': { condoPSF: 1100, coopPSF: 780, rentalPSFYr: 60, median1BR: 3400, median2BR: 4800, daysOnMarket: 12, investScore: 7.8, liveScore: 8.8, familyScore: 7.2, workScore: 7.8, momentum: 'Moderate', opexRange: '$20–34/sqft/yr' },
+  'bronx': { condoPSF: 420, coopPSF: 320, rentalPSFYr: 30, median1BR: 1800, median2BR: 2400, daysOnMarket: 20, investScore: 8.5, liveScore: 6.8, familyScore: 7.0, workScore: 6.5, momentum: 'Strong', opexRange: '$12–22/sqft/yr' },
+  'jersey city': { condoPSF: 750, coopPSF: 500, rentalPSFYr: 48, median1BR: 2800, median2BR: 3600, daysOnMarket: 14, investScore: 8.5, liveScore: 8.2, familyScore: 7.8, workScore: 8.5, momentum: 'Strong', opexRange: '$14–26/sqft/yr' },
+  'hoboken': { condoPSF: 850, coopPSF: 600, rentalPSFYr: 52, median1BR: 3000, median2BR: 4000, daysOnMarket: 12, investScore: 8.0, liveScore: 8.5, familyScore: 8.2, workScore: 8.3, momentum: 'Moderate', opexRange: '$16–28/sqft/yr' },
+};
+
+// ============================================================
+// Building Classification
+// ============================================================
+
+function classifyBuildingType(buildingClass: string): string {
+  if (!buildingClass) return 'Residential';
+  const cls = buildingClass.toUpperCase().trim();
+  const first = cls.charAt(0);
+  if (cls.startsWith('R') && cls.length >= 2 && /[0-9]/.test(cls.charAt(1))) return 'Condominium';
+  if (first === 'D') return 'Elevator Apartment';
+  if (first === 'C') return 'Walk-Up Apartment';
+  if (first === 'S') return 'Mixed-Use Residential';
+  if (first === 'A') return 'One-Family Dwelling';
+  if (first === 'B') return 'Two-Family Dwelling';
+  if (first === 'H') return 'Hotel';
+  if (first === 'O') return 'Office';
+  if (first === 'K' || first === 'L') return 'Commercial / Retail';
+  if (first === 'E' || first === 'F' || first === 'G') return 'Industrial / Warehouse';
+  if (first === 'M') return 'Religious';
+  if (first === 'N') return 'Asylum / Home';
+  if (first === 'P') return 'Outdoor Recreation';
+  if (first === 'Q') return 'Outdoor Recreation';
+  if (first === 'W') return 'Educational';
+  return 'Residential';
+}
+
+function detectNeighborhood(address: string, borough: string): string {
+  const addr = (address + ' ' + borough).toLowerCase();
+  // Try to match known neighborhoods from address keywords
+  const patterns: [string, RegExp][] = [
+    ['harlem', /harlem|w\s*1[12][0-9]|e\s*1[12][0-9]|adam clayton|frederic/i],
+    ['washington heights', /washington\s*h|w\s*1[4-9][0-9]|w\s*[12][0-9]{2}/i],
+    ['murray hill', /murray|e\s*3[2-9]|park\s*ave.*3[2-9]/i],
+    ['gramercy', /gramercy|irving|e\s*2[0-3]/i],
+    ['stuyvesant', /stuyvesant|stuyves/i],
+    ['chelsea', /chelsea|w\s*1[4-9]\s|w\s*2[0-6]/i],
+    ['east village', /east\s*vill|e\s*[2-9]\s/i],
+    ['west village', /west\s*vill|w\s*[4-9]\s|bleecker|christopher/i],
+    ['lower east side', /lower\s*east|les\b|rivington|delancey|orchard/i],
+    ['soho', /soho|spring\s*st|prince\s*st|broome\s*st/i],
+    ['tribeca', /tribeca|franklin\s*st|leonard\s*st|hudson\s*st/i],
+    ["hell's kitchen", /hell.?s?\s*kitchen|w\s*[3-5][0-9].*(?:10|11)\s*av/i],
+    ['midtown', /midtown|w\s*[3-5][0-9]|e\s*[3-5][0-9]/i],
+    ['upper east side', /upper\s*east|e\s*[6-9][0-9]|york\s*ave/i],
+    ['upper west side', /upper\s*west|w\s*[6-9][0-9]|central\s*park\s*w|columbus|amsterdam/i],
+    ['financial district', /financial|fidi|wall\s*st|broad\s*st|water\s*st/i],
+    ['greenpoint', /greenpoint|green\s*point/i],
+    ['williamsburg', /williamsburg/i],
+    ['park slope', /park\s*slope/i],
+    ['brooklyn heights', /brooklyn\s*heights/i],
+    ['bed-stuy', /bed.?stuy|bedford.?stuyves/i],
+    ['bushwick', /bushwick/i],
+    ['sunnyside', /sunnyside/i],
+    ['woodside', /woodside/i],
+    ['astoria', /astoria/i],
+    ['long island city', /long\s*island\s*city|lic\b/i],
+    ['jersey city', /jersey\s*city/i],
+    ['hoboken', /hoboken/i],
+  ];
+  for (const [name, re] of patterns) {
+    if (re.test(addr)) return name;
+  }
+  // Fallback: use borough
+  const b = borough.toLowerCase();
+  if (b.includes('manhattan')) return 'midtown';
+  if (b.includes('brooklyn')) return 'brooklyn heights';
+  if (b.includes('queens')) return 'astoria';
+  if (b.includes('bronx')) return 'bronx';
+  return '';
+}
+
+function lookupNeighborhoodData(neighborhood: string): NeighborhoodMarketData | null {
+  if (!neighborhood) return null;
+  const key = neighborhood.toLowerCase();
+  return NEIGHBORHOOD_MARKET_DATA[key] || null;
+}
+
+function gradeManagement(d: { violationsOpen: number; ecbPenaltyBalance: number; hasActiveLitigation: boolean; permitsCount: number; violationsTotal: number }): { grade: string; scorecard: { violations: number; compliance: number; financial: number; overall: number } } {
+  // Violations score: fewer = better (out of 100)
+  let violScore = 100;
+  if (d.violationsOpen > 50) violScore = 15;
+  else if (d.violationsOpen > 20) violScore = 30;
+  else if (d.violationsOpen > 10) violScore = 50;
+  else if (d.violationsOpen > 5) violScore = 65;
+  else if (d.violationsOpen > 0) violScore = 80;
+
+  // Compliance score
+  let compScore = 100;
+  if (d.ecbPenaltyBalance > 50000) compScore = 20;
+  else if (d.ecbPenaltyBalance > 20000) compScore = 40;
+  else if (d.ecbPenaltyBalance > 5000) compScore = 60;
+  else if (d.ecbPenaltyBalance > 0) compScore = 80;
+
+  // Financial score (litigation + penalties)
+  let finScore = 100;
+  if (d.hasActiveLitigation) finScore -= 30;
+  if (d.ecbPenaltyBalance > 10000) finScore -= 20;
+  if (d.violationsTotal > 50) finScore -= 15;
+
+  const overall = Math.round((violScore * 0.4) + (compScore * 0.35) + (finScore * 0.25));
+  const grade = overall >= 85 ? 'A' : overall >= 70 ? 'B' : overall >= 55 ? 'C' : overall >= 40 ? 'D' : 'F';
+
+  return { grade, scorecard: { violations: violScore, compliance: compScore, financial: Math.max(0, finScore), overall } };
 }
 
 // ============================================================
@@ -94,7 +262,7 @@ export interface MasterReportData {
 // ============================================================
 
 const CAMELOT = {
-  name: 'Camelot Property Management Services Corp',
+  name: 'Camelot Realty Group',
   shortName: 'Camelot Realty Group',
   address: '477 Madison Avenue, 6th Fl, New York, NY 10022',
   phone: '(212) 206-9939',
@@ -247,6 +415,33 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     scoutScore: score,
     scoutGrade: grade,
     complaint311Count: 0,
+    propertyType: classifyBuildingType(dof?.buildingClass || ''),
+    neighborhoodName: detectNeighborhood(address, borough || ''),
+    neighborhoodMarketData: lookupNeighborhoodData(detectNeighborhood(address, borough || '')),
+    registrationDate: raw.registration?.registrationId ? null : null,
+    managementDuration: null,
+    managementGrade: gradeManagement({
+      violationsOpen: raw.violations?.open || 0,
+      ecbPenaltyBalance: raw.ecb?.totalPenaltyBalance || 0,
+      hasActiveLitigation: raw.litigation?.hasActive || false,
+      permitsCount: raw.permits?.count || 0,
+      violationsTotal: raw.violations?.total || 0,
+    }).grade,
+    managementScorecard: gradeManagement({
+      violationsOpen: raw.violations?.open || 0,
+      ecbPenaltyBalance: raw.ecb?.totalPenaltyBalance || 0,
+      hasActiveLitigation: raw.litigation?.hasActive || false,
+      permitsCount: raw.permits?.count || 0,
+      violationsTotal: raw.violations?.total || 0,
+    }).scorecard,
+    boardMembers: raw.registration?.owner ? [{ name: raw.registration.owner, title: 'Registered Owner' }] : [],
+    buildingStaff: [],
+    professionals: {
+      lawFirm: null,
+      accountingFirm: null,
+      engineer: raw.permits?.items?.[0]?.owner_s_first_name ? `${raw.permits.items[0].owner_s_first_name} ${raw.permits.items[0].owner_s_last_name || ''}`.trim() : null,
+      architect: null,
+    },
     pricePerUnit,
     monthlyFee,
     annualFee,
@@ -449,6 +644,15 @@ export function generateCSVExport(d: MasterReportData): string {
     ['Distress Level', d.distressLevel],
     ['Scout Score', String(d.scoutScore)],
     ['Scout Grade', d.scoutGrade],
+    ['Property Type', d.propertyType],
+    ['Neighborhood', d.neighborhoodName],
+    ['Management Grade', d.managementGrade],
+    ['Management Duration', d.managementDuration || 'N/A'],
+    ['Neighborhood Condo $/Sqft', d.neighborhoodMarketData ? `$${d.neighborhoodMarketData.condoPSF}` : 'N/A'],
+    ['Neighborhood Co-op $/Sqft', d.neighborhoodMarketData ? `$${d.neighborhoodMarketData.coopPSF}` : 'N/A'],
+    ['Neighborhood Median 1BR Rent', d.neighborhoodMarketData ? `$${d.neighborhoodMarketData.median1BR}` : 'N/A'],
+    ['Neighborhood Median 2BR Rent', d.neighborhoodMarketData ? `$${d.neighborhoodMarketData.median2BR}` : 'N/A'],
+    ['Neighborhood Invest Score', d.neighborhoodMarketData ? String(d.neighborhoodMarketData.investScore) : 'N/A'],
     ['Proposed Price/Unit', `$${d.pricePerUnit}`],
     ['Proposed Monthly Fee', `$${d.monthlyFee.toLocaleString()}`],
     ['Proposed Annual Fee', `$${d.annualFee.toLocaleString()}`],
@@ -616,6 +820,7 @@ body{background:#fff}
 
 <!-- PAGE 1: COVER -->
 <div class="cover">
+<img src="./images/camelot-logo-white.png" alt="Camelot" style="width:120px;margin-bottom:16px;opacity:0.9" onerror="this.style.display='none'">
 <div class="badge">CAMELOT<br>REALTY GROUP</div>
 <div class="wordmark">C &nbsp;A &nbsp;M &nbsp;E &nbsp;L &nbsp;O &nbsp;T</div>
 <div class="pm-sub">Property Management</div>
@@ -626,11 +831,61 @@ body{background:#fff}
 <div class="prepared">Prepared exclusively for the Board of Directors &mdash; ${d.date}</div>
 </div>
 
-<!-- PAGE 2: ELEVATOR PITCH -->
-<div class="elevator">
-<h2>Elevating ${d.buildingName}</h2>
-<div class="gold-bar"></div>
-<p>${hookLine}</p>
+<!-- PAGE 2: PROPERTY VISUAL & MAP -->
+<div class="section section-white" style="padding-top:20px">
+<div class="section-title">The Property</div>
+<div class="section-sub">${d.address} &mdash; ${d.propertyType}</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0">
+<div style="border-radius:10px;overflow:hidden;border:1px solid #E5E3DE;height:280px">
+<iframe src="https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${encodedAddr}&fov=60&pitch=10" width="100%" height="280" style="border:0" allowfullscreen loading="lazy"></iframe>
+</div>
+<div style="border-radius:10px;overflow:hidden;border:1px solid #E5E3DE;height:280px">
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=16" width="100%" height="280" style="border:0" allowfullscreen loading="lazy"></iframe>
+</div>
+</div>
+<div class="stats-row">
+<div class="stat-box"><div class="val">${d.propertyType}</div><div class="lbl">Property Type</div></div>
+<div class="stat-box"><div class="val">${d.units || 'N/A'}</div><div class="lbl">Units</div></div>
+<div class="stat-box"><div class="val">${d.stories || 'N/A'}</div><div class="lbl">Floors</div></div>
+<div class="stat-box"><div class="val">${d.yearBuilt || 'N/A'}</div><div class="lbl">Year Built</div></div>
+</div>
+<div style="background:#FDFBF5;border:1px solid #E5E3DE;border-radius:8px;padding:20px;margin-top:12px">
+<p style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#555;line-height:1.8;text-align:center">${hookLine}</p>
+</div>
+</div>
+
+<!-- PAGE 2B: NEIGHBORHOOD INTELLIGENCE -->
+<div class="section section-cream">
+<div class="section-title">Neighborhood Intelligence</div>
+<div class="section-sub">${d.neighborhoodName ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : d.borough || 'New York City'} &mdash; Market Context</div>
+
+<div style="margin-bottom:20px">
+<div style="background:#fff;border:1px solid #E5E3DE;border-left:4px solid #C5A55A;border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px">
+<h4 style="font-size:13px;font-weight:700;color:#2C3E50;margin-bottom:4px">📍 Camelot Office Proximity</h4>
+<p style="font-size:12px;color:#555">Camelot Realty Group operates from <strong>477 Madison Avenue, 6th Floor</strong> (Midtown Manhattan). Your property at ${d.address} is within Camelot&rsquo;s core service area, ensuring rapid response times and frequent on-site visits.</p>
+</div>
+<div style="background:#fff;border:1px solid #E5E3DE;border-left:4px solid #C5A55A;border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px">
+<h4 style="font-size:13px;font-weight:700;color:#2C3E50;margin-bottom:4px">🚇 Transit Access</h4>
+<p style="font-size:12px;color:#555">New York City subway and bus service provide comprehensive transit coverage to this property. The building is accessible via major subway lines, ensuring convenient access for residents, staff, and management alike.</p>
+</div>
+</div>
+
+${d.neighborhoodMarketData ? `
+<div style="margin-bottom:16px;border-left:4px solid #C5A55A;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Neighborhood Scores</div>
+</div>
+<div class="stats-row">
+<div class="stat-box"><div class="val gold">${d.neighborhoodMarketData.investScore}</div><div class="lbl">💰 Invest</div></div>
+<div class="stat-box"><div class="val gold">${d.neighborhoodMarketData.liveScore}</div><div class="lbl">🏠 Live</div></div>
+<div class="stat-box"><div class="val gold">${d.neighborhoodMarketData.familyScore}</div><div class="lbl">👨‍👩‍👧 Family</div></div>
+<div class="stat-box"><div class="val gold">${d.neighborhoodMarketData.workScore}</div><div class="lbl">💼 Work</div></div>
+</div>
+<div style="text-align:center;font-size:12px;color:#555;margin-top:8px">
+Price Momentum: <strong style="color:${d.neighborhoodMarketData.momentum === 'Very Strong' ? '#16a34a' : d.neighborhoodMarketData.momentum === 'Strong' ? '#16a34a' : '#ca8a04'}">${d.neighborhoodMarketData.momentum} ↑</strong>
+&nbsp;&nbsp;|&nbsp;&nbsp;Avg Days on Market: <strong>${d.neighborhoodMarketData.daysOnMarket} days</strong>
+&nbsp;&nbsp;|&nbsp;&nbsp;Operating Costs: <strong>${d.neighborhoodMarketData.opexRange}</strong>
+</div>
+` : ''}
 </div>
 
 <!-- PAGE 3: PROPERTY OVERVIEW -->
@@ -704,6 +959,121 @@ ${d.distressSignals.length > 0 ? `
 <div><div class="label">Mortgages on Record</div><div class="value">${d.mortgageCount}</div></div>
 </div>
 </div>
+
+<!-- PAGE 5B: BUILDING CONTACTS & STAKEHOLDERS -->
+<div class="section section-white">
+<div class="section-title">Building Contacts &amp; Stakeholders</div>
+<div class="section-sub">Key personnel, governance, and professional services</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0">
+<div>
+<div style="margin-bottom:16px;border-left:4px solid #C5A55A;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Ownership &amp; Governance</div>
+</div>
+<div class="info-grid" style="grid-template-columns:1fr">
+<div><div class="label">DOF Owner</div><div class="value">${d.dofOwner || 'N/A'}</div></div>
+<div><div class="label">Registration Owner</div><div class="value">${d.registrationOwner || 'N/A'}</div></div>
+<div><div class="label">Management Company</div><div class="value">${d.managementCompany || 'Self-Managed'}</div></div>
+</div>
+${d.boardMembers.length > 0 ? `
+<div style="margin-top:14px;margin-bottom:8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#999">Board / Officers</div>
+${d.boardMembers.map(b => `<div style="background:#FDFBF5;border:1px solid #E5E3DE;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:12px"><strong>${b.name}</strong> <span style="color:#888;font-size:11px">&mdash; ${b.title}</span></div>`).join('')}
+` : '<div style="font-size:11px;color:#888;margin-top:12px">Board member information not available from public records</div>'}
+</div>
+
+<div>
+<div style="margin-bottom:16px;border-left:4px solid #C5A55A;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Building Staff</div>
+</div>
+${d.buildingStaff.length > 0 ? d.buildingStaff.map(s => `<div style="background:#FDFBF5;border:1px solid #E5E3DE;border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:12px"><strong>${s.name}</strong> <span style="color:#888;font-size:11px">&mdash; ${s.role}</span></div>`).join('') : '<div style="font-size:11px;color:#888">Staff information not available from public records. Typically includes: Superintendent, Resident Manager, Front Desk.</div>'}
+
+<div style="margin-top:20px;margin-bottom:16px;border-left:4px solid #C5A55A;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Professional Services</div>
+</div>
+<div class="info-grid" style="grid-template-columns:1fr">
+<div><div class="label">Law Firm</div><div class="value">${d.professionals.lawFirm || 'Information available upon engagement'}</div></div>
+<div><div class="label">Accounting / Auditor</div><div class="value">${d.professionals.accountingFirm || 'Information available upon engagement'}</div></div>
+<div><div class="label">Licensed Engineer</div><div class="value">${d.professionals.engineer || 'Information available upon engagement'}</div></div>
+<div><div class="label">Architect</div><div class="value">${d.professionals.architect || 'Information available upon engagement'}</div></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- PAGE 5C: CURRENT MANAGEMENT PERFORMANCE -->
+<div class="section section-cream">
+<div class="section-title">Current Management Performance</div>
+<div class="section-sub">${d.managementCompany ? `Analysis of ${d.managementCompany}` : 'Building management assessment'} ${d.managementDuration ? `&mdash; Managing for ~${d.managementDuration}` : ''}</div>
+
+<div style="display:flex;align-items:center;gap:24px;margin:20px 0">
+<div style="width:100px;height:100px;border-radius:50%;background:${d.managementGrade === 'A' ? '#16a34a' : d.managementGrade === 'B' ? '#ca8a04' : d.managementGrade === 'C' ? '#ea580c' : '#dc2626'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+<span style="font-family:'Playfair Display',Georgia,serif;font-size:48px;font-weight:700;color:#fff">${d.managementGrade}</span>
+</div>
+<div>
+<div style="font-size:16px;font-weight:700;color:#2C3E50;margin-bottom:4px">Overall Management Grade: ${d.managementGrade}</div>
+<div style="font-size:12px;color:#555;line-height:1.6">Based on HPD violations, ECB compliance, DOB permits, litigation status, and financial indicators. ${d.managementGrade === 'A' ? 'This building is well-maintained.' : d.managementGrade === 'B' ? 'There is room for meaningful improvement.' : 'Significant management issues detected &mdash; this building would benefit from professional management.'}</div>
+</div>
+</div>
+
+<div class="stats-row">
+<div class="stat-box"><div class="val" style="color:${d.managementScorecard.violations >= 70 ? '#16a34a' : d.managementScorecard.violations >= 50 ? '#ca8a04' : '#dc2626'}">${d.managementScorecard.violations}</div><div class="lbl">Violations Score</div></div>
+<div class="stat-box"><div class="val" style="color:${d.managementScorecard.compliance >= 70 ? '#16a34a' : d.managementScorecard.compliance >= 50 ? '#ca8a04' : '#dc2626'}">${d.managementScorecard.compliance}</div><div class="lbl">Compliance Score</div></div>
+<div class="stat-box"><div class="val" style="color:${d.managementScorecard.financial >= 70 ? '#16a34a' : d.managementScorecard.financial >= 50 ? '#ca8a04' : '#dc2626'}">${d.managementScorecard.financial}</div><div class="lbl">Financial Score</div></div>
+<div class="stat-box"><div class="val" style="color:${d.managementScorecard.overall >= 70 ? '#16a34a' : d.managementScorecard.overall >= 50 ? '#ca8a04' : '#dc2626'}">${d.managementScorecard.overall}</div><div class="lbl">Overall Score</div></div>
+</div>
+
+<div style="margin-top:16px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600;margin-bottom:10px;padding-left:16px;border-left:4px solid #C5A55A">Key Findings</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+${d.violationsOpen > 0 ? `<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">⚠️ ${d.violationsOpen} Open HPD Violations</span>` : '<span style="display:inline-block;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);color:#166534;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">✅ No Open HPD Violations</span>'}
+${d.ecbPenaltyBalance > 0 ? `<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">💰 $${d.ecbPenaltyBalance.toLocaleString()} ECB Penalties Outstanding</span>` : '<span style="display:inline-block;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);color:#166534;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">✅ No ECB Penalties</span>'}
+${d.hasActiveLitigation ? '<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">⚖️ Active Litigation</span>' : '<span style="display:inline-block;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);color:#166534;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">✅ No Active Litigation</span>'}
+${d.hasRecentPermits ? '<span style="display:inline-block;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);color:#166534;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">🔨 Recent DOB Permits Active</span>' : '<span style="display:inline-block;background:rgba(202,138,4,0.08);border:1px solid rgba(202,138,4,0.25);color:#854d0e;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">📋 No Recent Permits</span>'}
+</div>
+</div>
+</div>
+
+<!-- PAGE 5D: MARKET CONTEXT & BENCHMARKS -->
+${d.neighborhoodMarketData ? `
+<div class="section section-white">
+<div class="section-title">Market Context &amp; Benchmarks</div>
+<div class="section-sub">${d.neighborhoodName ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'Local Market'} &mdash; Q1 2026 Data</div>
+
+<div style="margin-bottom:16px;border-left:4px solid #C5A55A;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Sale Price Benchmarks</div>
+</div>
+<div class="stats-row">
+<div class="stat-box"><div class="val gold">$${d.neighborhoodMarketData.condoPSF.toLocaleString()}</div><div class="lbl">Condo $/Sqft</div></div>
+<div class="stat-box"><div class="val gold">$${d.neighborhoodMarketData.coopPSF.toLocaleString()}</div><div class="lbl">Co-op $/Sqft</div></div>
+<div class="stat-box"><div class="val gold">$${d.neighborhoodMarketData.rentalPSFYr}</div><div class="lbl">Rental $/Sqft/Yr</div></div>
+<div class="stat-box"><div class="val gold">${d.neighborhoodMarketData.daysOnMarket}</div><div class="lbl">Avg Days on Market</div></div>
+</div>
+
+<div style="margin:20px 0 16px;border-left:4px solid #C5A55A;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Rental Market</div>
+</div>
+<div class="stats-row" style="grid-template-columns:1fr 1fr 1fr">
+<div class="stat-box"><div class="val gold">$${d.neighborhoodMarketData.median1BR.toLocaleString()}</div><div class="lbl">Median 1BR Rent/Mo</div></div>
+<div class="stat-box"><div class="val gold">$${d.neighborhoodMarketData.median2BR.toLocaleString()}</div><div class="lbl">Median 2BR Rent/Mo</div></div>
+<div class="stat-box"><div class="val">${d.neighborhoodMarketData.opexRange}</div><div class="lbl">Operating Costs Range</div></div>
+</div>
+
+${d.buildingArea > 0 ? `
+<div style="margin:20px 0 16px;border-left:4px solid #C5A55A;padding-left:12px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#C5A55A;font-weight:600">Your Building vs. Market</div>
+</div>
+<div class="info-grid">
+<div><div class="label">Building GFA</div><div class="value">${d.buildingArea.toLocaleString()} sqft</div></div>
+<div><div class="label">Est. Value (at neighborhood $/sqft)</div><div class="value" style="color:#C5A55A;font-weight:700">${fmtMoney(d.buildingArea * (d.propertyType.toLowerCase().includes('co-op') ? d.neighborhoodMarketData.coopPSF : d.neighborhoodMarketData.condoPSF))}</div></div>
+<div><div class="label">Est. Annual Rental Potential</div><div class="value" style="color:#C5A55A;font-weight:700">${fmtMoney(d.buildingArea * d.neighborhoodMarketData.rentalPSFYr)}</div></div>
+<div><div class="label">Est. Gross Yield</div><div class="value">${((d.neighborhoodMarketData.rentalPSFYr / (d.propertyType.toLowerCase().includes('co-op') ? d.neighborhoodMarketData.coopPSF : d.neighborhoodMarketData.condoPSF)) * 100).toFixed(1)}%</div></div>
+</div>
+` : ''}
+
+<div style="background:#FDFBF5;border:1px solid #E5E3DE;border-radius:8px;padding:16px;margin-top:16px">
+<p style="font-size:12px;color:#555;line-height:1.7"><strong style="color:#C5A55A">Source:</strong> Camelot Q1 2026 Market Report. Data from ACRIS closed sales, StreetEasy leased units, and RealtyMX RLS comparables (Q4 2025 – Q1 2026). Scores are Camelot composite assessments based on market data, public records, census metrics, school ratings, transit access, and crime statistics.</p>
+</div>
+</div>` : ''}
 
 <!-- PAGE 6: LL97 -->
 ${d.ll97 ? `
@@ -863,6 +1233,7 @@ ${isSelfManaged ? `
 
 <!-- PAGE 17: BACK COVER -->
 <div class="back-cover">
+<img src="./images/camelot-logo-white.png" alt="Camelot" style="width:100px;margin-bottom:12px;opacity:0.85" onerror="this.style.display='none'">
 <div class="wordmark">C &nbsp;A &nbsp;M &nbsp;E &nbsp;L &nbsp;O &nbsp;T</div>
 <div class="pm-sub">Property Management</div>
 <h2>Next Steps</h2>
