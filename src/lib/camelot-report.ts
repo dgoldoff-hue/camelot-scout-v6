@@ -1492,8 +1492,8 @@ ${isSelfManaged ? `
 <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px">Portfolio Occupancy Rate</div>
 </div>
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:18px;text-align:center">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#A89035;font-weight:700">$500M+</div>
-<div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px">Total Transactions Managed</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#A89035;font-weight:700"></div>
+<div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px"></div>
 </div>
 </div>
 </div>
@@ -1725,7 +1725,7 @@ ${d.neighborhoodMarketData ? `
 </div>
 
 <div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-top:16px;font-weight:600">RED Awards 2025: Property Management Company of the Year</div>
-<div style="font-size:11px;color:#888;text-align:center;margin-top:6px">REBNY 2025: David Goldoff Leadership Award &nbsp;\u00B7&nbsp; 42 Properties &nbsp;\u00B7&nbsp; $1.5B+ AUM &nbsp;\u00B7&nbsp; 18+ Years</div>
+<div style="font-size:11px;color:#888;text-align:center;margin-top:6px">REBNY 2025: David Goldoff Leadership Award &nbsp;\u00B7&nbsp; 42 Properties &nbsp;\u00B7&nbsp; $240M+ AUM &nbsp;\u00B7&nbsp; 18+ Years</div>
 <div style="font-size:10px;color:#999;text-align:center;margin-top:8px">Member: REBNY \u00B7 SPONY \u00B7 NYARM \u00B7 IREM \u00B7 BOMA \u00B7 NARPM \u00B7 NY Apartment Association</div>
 </div>
 
