@@ -33,10 +33,174 @@ The team includes: David Goldoff (Owner/Principal), Sam Lodge (Tech Lead), Carl 
 Be concise, data-driven, and actionable. Use specific numbers when available. Format responses with markdown for readability.`;
 
 /**
- * Check if AI is configured
+ * Check if AI is configured (external API)
  */
 export function isAIConfigured(): boolean {
   return !!(getAIConfig().apiUrl && getAIConfig().apiKey);
+}
+
+/**
+ * Local query engine — handles quick actions without an external AI API.
+ * Returns null if the query doesn't match a known local command.
+ */
+export function localQueryEngine(
+  query: string,
+  buildings: { 
+    address: string; name?: string; score: number; grade: string; 
+    pipeline_stage: string; pipeline_moved_at?: string; status: string;
+    units?: number; violations_count: number; open_violations_count: number;
+    current_management?: string; contacts: { name: string; role: string; email?: string; phone?: string }[];
+    borough?: string; region?: string; type: string;
+  }[]
+): string | null {
+  const q = query.toLowerCase();
+  const active = buildings.filter((b) => b.status === 'active');
+
+  // Pipeline Summary
+  if (q.includes('pipeline') && (q.includes('summary') || q.includes('status') || q.includes('how many'))) {
+    const byStage: Record<string, number> = {};
+    active.forEach((b) => { byStage[b.pipeline_stage] = (byStage[b.pipeline_stage] || 0) + 1; });
+    const avgScore = active.length ? Math.round(active.reduce((s, b) => s + b.score, 0) / active.length) : 0;
+    const totalUnits = active.reduce((s, b) => s + (b.units || 0), 0);
+    const totalOpenViol = active.reduce((s, b) => s + (b.open_violations_count || 0), 0);
+
+    let resp = `## 📊 Pipeline Summary\n\n`;
+    resp += `**${active.length} active buildings** across ${Object.keys(byStage).length} pipeline stages:\n\n`;
+    const stageOrder = ['discovered', 'scored', 'contacted', 'nurture', 'proposal', 'negotiation', 'won', 'lost'];
+    stageOrder.forEach((s) => {
+      if (byStage[s]) resp += `- **${s.charAt(0).toUpperCase() + s.slice(1)}:** ${byStage[s]} buildings\n`;
+    });
+    resp += `\n**Key Metrics:**\n`;
+    resp += `- Average Score: **${avgScore}/100**\n`;
+    resp += `- Total Units: **${totalUnits.toLocaleString()}**\n`;
+    resp += `- Open Violations: **${totalOpenViol}**\n\n`;
+
+    const gradeA = active.filter((b) => b.grade === 'A').length;
+    const gradeB = active.filter((b) => b.grade === 'B').length;
+    resp += `**Grade Distribution:** A: ${gradeA}, B: ${gradeB}, C: ${active.length - gradeA - gradeB}\n\n`;
+
+    // Recommendations
+    const discovered = active.filter((b) => b.pipeline_stage === 'discovered');
+    if (discovered.length > 0) {
+      resp += `💡 **Action Item:** ${discovered.length} buildings still in "Discovered" — review and score them to move the pipeline forward.`;
+    }
+    return resp;
+  }
+
+  // Top Leads
+  if (q.includes('top') && (q.includes('lead') || q.includes('build') || q.includes('score'))) {
+    const countMatch = q.match(/top\s+(\d+)/);
+    const count = countMatch ? Math.min(parseInt(countMatch[1]), 20) : 10;
+    const sorted = [...active].sort((a, b) => b.score - a.score).slice(0, count);
+
+    let resp = `## 🎯 Top ${sorted.length} Leads by Score\n\n`;
+    sorted.forEach((b, i) => {
+      resp += `**${i + 1}. ${b.name || b.address}** — Score: **${b.score}** (Grade ${b.grade})\n`;
+      resp += `   📍 ${b.address}${b.borough ? ' • ' + b.borough : ''}\n`;
+      resp += `   🏢 ${b.units || '?'} units • ${b.type} • Stage: ${b.pipeline_stage}\n`;
+      resp += `   ⚠️ ${b.open_violations_count} open / ${b.violations_count} total violations\n`;
+      resp += `   🏗️ Mgmt: ${b.current_management || 'Unknown'}\n`;
+      if (b.contacts?.length > 0) {
+        resp += `   👤 ${b.contacts[0].name} (${b.contacts[0].role})${b.contacts[0].email ? ' — ' + b.contacts[0].email : ''}\n`;
+      }
+      resp += `\n`;
+    });
+    return resp;
+  }
+
+  // Draft Email
+  if (q.includes('draft') && q.includes('email')) {
+    // Find the building: either named in query or highest-scored untouched one
+    let target = active.find((b) => {
+      const bName = (b.name || '').toLowerCase();
+      const bAddr = b.address.toLowerCase();
+      return q.includes(bName) || q.includes(bAddr);
+    });
+    if (!target) {
+      // Highest-scored building not yet contacted
+      target = [...active]
+        .filter((b) => b.pipeline_stage === 'discovered' || b.pipeline_stage === 'scored')
+        .sort((a, b) => b.score - a.score)[0] || active[0];
+    }
+    if (!target) return 'No buildings in the database to draft an email for.';
+
+    const contact = target.contacts?.[0];
+    const contactName = contact?.name || 'Board Member';
+
+    let resp = `## ✉️ Draft Email for ${target.name || target.address}\n\n`;
+    resp += `**To:** ${contact?.email || '(no email on file)'}\n`;
+    resp += `**Subject:** Property Management Services for ${target.name || target.address}\n\n`;
+    resp += `---\n\n`;
+    resp += `Dear ${contactName},\n\n`;
+    resp += `My name is David Goldoff, and I'm the principal of Camelot Realty Group. I'm reaching out because I noticed ${target.name || target.address} at ${target.address} — a ${target.units || ''}-unit ${target.type} in ${target.borough || 'NYC'} — and I believe we can provide exceptional management services for your property.\n\n`;
+    if (target.open_violations_count > 0) {
+      resp += `With ${target.open_violations_count} open HPD violations on record, I understand the challenges of maintaining a well-run building. At Camelot, we take a hands-on approach with weekly inspections and proactive violation resolution.\n\n`;
+    }
+    resp += `Our key differentiators:\n`;
+    resp += `• **Personal Attention** — I personally oversee every property\n`;
+    resp += `• **Weekly Inspections** — On-site walkthroughs to catch issues early\n`;
+    resp += `• **Zero Bank Fees** — Your money works for your building\n`;
+    resp += `• **Transparent Financials** — Real-time budget tracking\n\n`;
+    resp += `I'd love to schedule a 15-minute call to discuss how Camelot can serve ${target.name || target.address}. Would this week work?\n\n`;
+    resp += `Best regards,\n`;
+    resp += `David Goldoff\n`;
+    resp += `Principal, Camelot Realty Group\n`;
+    resp += `501 Madison Avenue, Suite 1400, New York, NY 10022\n`;
+    resp += `dgoldoff@camelot.nyc\n\n`;
+    resp += `---\n*You can copy this email or go to **Outreach → Compose** to customize it further.*`;
+    return resp;
+  }
+
+  // Untouched Leads
+  if (q.includes('untouched') || (q.includes('discovered') && (q.includes('no') || q.includes('without') || q.includes('contact')))) {
+    const untouched = active.filter((b) => b.pipeline_stage === 'discovered');
+    if (untouched.length === 0) return '✅ No untouched leads — every building has been moved past the "Discovered" stage.';
+
+    const sorted = [...untouched].sort((a, b) => b.score - a.score);
+    let resp = `## 🔍 Untouched Leads (${sorted.length} buildings in "Discovered")\n\n`;
+    resp += `These buildings haven't been scored or contacted yet:\n\n`;
+    sorted.forEach((b, i) => {
+      const daysSince = b.pipeline_moved_at
+        ? Math.floor((Date.now() - new Date(b.pipeline_moved_at).getTime()) / 86400000)
+        : 0;
+      resp += `**${i + 1}. ${b.name || b.address}** — Score: ${b.score}, Grade ${b.grade}\n`;
+      resp += `   ${b.address} • ${b.units || '?'} units • ${b.open_violations_count} open violations\n`;
+      resp += `   In "Discovered" for **${daysSince} day${daysSince !== 1 ? 's' : ''}**\n`;
+      if (b.contacts?.length > 0) {
+        resp += `   Contact: ${b.contacts[0].name} (${b.contacts[0].role})\n`;
+      } else {
+        resp += `   ⚠️ No contacts on file — consider enrichment\n`;
+      }
+      resp += `\n`;
+    });
+    resp += `💡 **Recommendation:** Start with the highest-scored buildings and enrich contacts where missing.`;
+    return resp;
+  }
+
+  // Competitive analysis
+  if (q.includes('competitive') || q.includes('competition') || q.includes('landscape')) {
+    const mgmtCounts: Record<string, number> = {};
+    active.forEach((b) => {
+      const mgmt = b.current_management || 'Unknown';
+      mgmtCounts[mgmt] = (mgmtCounts[mgmt] || 0) + 1;
+    });
+    const sorted = Object.entries(mgmtCounts).sort(([, a], [, b]) => b - a);
+
+    let resp = `## 🏢 Competitive Landscape (from Scout database)\n\n`;
+    resp += `**Management companies across ${active.length} tracked buildings:**\n\n`;
+    sorted.forEach(([mgmt, count]) => {
+      resp += `- **${mgmt}:** ${count} building${count > 1 ? 's' : ''}\n`;
+    });
+    resp += `\n**Key observations:**\n`;
+    const selfManaged = active.filter((b) => b.current_management?.toLowerCase().includes('self') || b.current_management?.toLowerCase() === 'unknown').length;
+    resp += `- ${selfManaged} buildings are self-managed or have unknown management — prime targets\n`;
+    resp += `- Focus outreach on buildings with high violation counts + weak management\n\n`;
+    resp += `*For deeper competitive intel, configure the AI backend in Settings.*`;
+    return resp;
+  }
+
+  // No match — return null (will show fallback message)
+  return null;
 }
 
 /**

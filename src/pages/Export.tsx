@@ -85,9 +85,127 @@ export default function Export() {
       URL.revokeObjectURL(url);
       toast.success(`Exported ${toExport.length} buildings as CSV`);
     } else if (exportFormat === 'pdf') {
-      toast.success('PDF export would generate a formatted report (requires @react-pdf/renderer)');
+      // Open formatted PDF report in new window with print dialog (same approach as PropertyDetail)
+      const w = window.open('', '_blank');
+      if (!w) { toast.error('Pop-up blocked — allow pop-ups for this site'); setIsExporting(false); return; }
+
+      const buildingRows = toExport.map((b) => `
+        <tr>
+          <td>${b.name || b.address}</td>
+          <td>${b.address}</td>
+          <td>${b.borough || '—'}</td>
+          <td>${b.units || '—'}</td>
+          <td><span class="grade grade-${b.grade}">${b.grade}</span></td>
+          <td><strong>${b.score}</strong>/100</td>
+          <td style="color:#dc2626">${b.open_violations_count || 0}</td>
+          <td>${b.violations_count || 0}</td>
+          <td>${b.current_management || 'Unknown'}</td>
+          <td>${b.market_value ? '$' + (b.market_value / 1000000).toFixed(1) + 'M' : '—'}</td>
+          <td class="stage">${b.pipeline_stage}</td>
+          <td>${(b.contacts || []).map((c) => c.name).join(', ') || '—'}</td>
+        </tr>
+      `).join('');
+
+      const stageCounts: Record<string, number> = {};
+      toExport.forEach((b) => { stageCounts[b.pipeline_stage] = (stageCounts[b.pipeline_stage] || 0) + 1; });
+      const avgScore = toExport.length ? Math.round(toExport.reduce((s, b) => s + b.score, 0) / toExport.length) : 0;
+      const totalUnits = toExport.reduce((s, b) => s + (b.units || 0), 0);
+      const totalOpenViolations = toExport.reduce((s, b) => s + (b.open_violations_count || 0), 0);
+      const gradeA = toExport.filter((b) => b.grade === 'A').length;
+      const gradeB = toExport.filter((b) => b.grade === 'B').length;
+      const gradeC = toExport.filter((b) => b.grade === 'C').length;
+
+      w.document.write(`<!DOCTYPE html><html><head><title>Camelot Scout Export — ${toExport.length} Buildings</title>
+        <style>
+          body{font-family:'Inter',system-ui,sans-serif;max-width:1100px;margin:40px auto;padding:0 20px;color:#1a1f36;font-size:13px}
+          h1{color:#1a1f36;border-bottom:3px solid #C5A55A;padding-bottom:10px}
+          h2{color:#C5A55A;margin-top:30px}
+          .logo{color:#C5A55A;font-size:12px;letter-spacing:2px;margin-bottom:4px}
+          .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+          .summary-card{background:#f9fafb;border-radius:10px;padding:14px;text-align:center}
+          .summary-card .value{font-size:24px;font-weight:700;color:#1a1f36}
+          .summary-card .label{font-size:11px;color:#6b7280;margin-top:2px}
+          table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
+          td,th{text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb}
+          th{background:#f9fafb;font-weight:600;white-space:nowrap}
+          .grade{display:inline-block;padding:2px 10px;border-radius:12px;font-weight:700;font-size:11px;color:#fff}
+          .grade-A{background:#22c55e}.grade-B{background:#eab308}.grade-C{background:#9ca3af}
+          .stage{text-transform:capitalize;font-size:11px}
+          @media print{body{margin:20px;font-size:11px}}
+        </style></head><body>
+        <div class="logo">CAMELOT SCOUT • PROPERTY INTELLIGENCE</div>
+        <h1>Pipeline Export Report — ${toExport.length} Buildings</h1>
+        <p style="color:#6b7280">Generated ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+
+        <div class="summary-grid">
+          <div class="summary-card"><div class="value">${toExport.length}</div><div class="label">Buildings</div></div>
+          <div class="summary-card"><div class="value">${totalUnits.toLocaleString()}</div><div class="label">Total Units</div></div>
+          <div class="summary-card"><div class="value">${avgScore}</div><div class="label">Avg Score</div></div>
+          <div class="summary-card"><div class="value" style="color:#dc2626">${totalOpenViolations}</div><div class="label">Open Violations</div></div>
+        </div>
+
+        <h2>Pipeline Distribution</h2>
+        <p>${Object.entries(stageCounts).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join(' &nbsp;•&nbsp; ')}</p>
+        <p>Grades: <strong>A:</strong> ${gradeA} &nbsp;•&nbsp; <strong>B:</strong> ${gradeB} &nbsp;•&nbsp; <strong>C:</strong> ${gradeC}</p>
+
+        <h2>Building Details</h2>
+        <table>
+          <thead><tr><th>Name</th><th>Address</th><th>Borough</th><th>Units</th><th>Grade</th><th>Score</th><th>Open Viol.</th><th>Total Viol.</th><th>Management</th><th>Market Val</th><th>Stage</th><th>Contacts</th></tr></thead>
+          <tbody>${buildingRows}</tbody>
+        </table>
+
+        <hr style="margin-top:40px;border-color:#C5A55A">
+        <p style="font-size:10px;color:#9ca3af">Generated by Camelot Scout v6 • Camelot Property Management Services Corp • 501 Madison Avenue, Suite 1400, NYC 10022</p>
+      </body></html>`);
+      w.document.close();
+      setTimeout(() => w.print(), 500);
+      toast.success(`PDF report generated for ${toExport.length} buildings`);
     } else if (exportFormat === 'email') {
-      toast.success('Email report would be sent to: David, Sam, Carl, Luigi');
+      // Open mailto: to team with formatted summary
+      const recipients = 'dgoldoff@camelot.nyc,sam@camelot.nyc,carl@camelot.nyc,luigi@camelot.nyc';
+      const subject = encodeURIComponent(`Camelot Scout Export — ${toExport.length} Buildings (${new Date().toLocaleDateString()})`);
+
+      const stageCounts: Record<string, number> = {};
+      toExport.forEach((b) => { stageCounts[b.pipeline_stage] = (stageCounts[b.pipeline_stage] || 0) + 1; });
+      const avgScore = toExport.length ? Math.round(toExport.reduce((s, b) => s + b.score, 0) / toExport.length) : 0;
+      const totalUnits = toExport.reduce((s, b) => s + (b.units || 0), 0);
+      const totalOpenViolations = toExport.reduce((s, b) => s + (b.open_violations_count || 0), 0);
+
+      let bodyText = `Camelot Scout Pipeline Export\n`;
+      bodyText += `Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}\n`;
+      bodyText += `═══════════════════════════════════\n\n`;
+      bodyText += `SUMMARY\n`;
+      bodyText += `• Buildings: ${toExport.length}\n`;
+      bodyText += `• Total Units: ${totalUnits.toLocaleString()}\n`;
+      bodyText += `• Average Score: ${avgScore}/100\n`;
+      bodyText += `• Open Violations: ${totalOpenViolations}\n`;
+      bodyText += `• Pipeline: ${Object.entries(stageCounts).map(([k, v]) => `${k}: ${v}`).join(', ')}\n\n`;
+      bodyText += `═══════════════════════════════════\n\n`;
+      bodyText += `TOP BUILDINGS\n\n`;
+
+      const sorted = [...toExport].sort((a, b) => b.score - a.score);
+      sorted.slice(0, 15).forEach((b, i) => {
+        bodyText += `${i + 1}. ${b.name || b.address}\n`;
+        bodyText += `   ${b.address}${b.borough ? ' — ' + b.borough : ''}\n`;
+        bodyText += `   Grade: ${b.grade} | Score: ${b.score} | Units: ${b.units || '?'} | Stage: ${b.pipeline_stage}\n`;
+        bodyText += `   Violations: ${b.open_violations_count || 0} open / ${b.violations_count || 0} total\n`;
+        bodyText += `   Management: ${b.current_management || 'Unknown'}\n`;
+        if (b.contacts?.length) {
+          bodyText += `   Contacts: ${b.contacts.map((c) => `${c.name} (${c.role})`).join(', ')}\n`;
+        }
+        bodyText += `\n`;
+      });
+
+      if (sorted.length > 15) {
+        bodyText += `... and ${sorted.length - 15} more buildings\n\n`;
+      }
+
+      bodyText += `═══════════════════════════════════\n`;
+      bodyText += `Camelot Scout v6 • Camelot Property Management Services Corp`;
+
+      const body = encodeURIComponent(bodyText);
+      window.open(`mailto:${recipients}?subject=${subject}&body=${body}`, '_self');
+      toast.success(`Email report opened for ${toExport.length} buildings → David, Sam, Carl, Luigi`);
     }
 
     setIsExporting(false);

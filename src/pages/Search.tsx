@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { REGIONS } from '@/lib/regions';
+import { REGIONS, isFloridaArea, getFloridaAreas } from '@/lib/regions';
 import { fetchFullBuildingReport } from '@/lib/nyc-api';
+import { generateFloridaBuildings } from '@/lib/florida-data';
 import { calculateScore } from '@/lib/scoring';
 import { useBuildingsStore } from '@/lib/store';
 import { cn, formatCurrency, formatNumber } from '@/lib/utils';
@@ -98,9 +99,40 @@ export default function Search() {
     );
   };
 
+  // Scanning state
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState('');
+
   // Run Scan
-  const handleScan = () => {
-    // Set filters and navigate to results
+  const handleScan = async () => {
+    // Separate Florida areas from non-Florida areas
+    const floridaAreas = selectedRegions.filter((a) => isFloridaArea(a));
+    const otherAreas = selectedRegions.filter((a) => !isFloridaArea(a));
+
+    // If Florida areas are selected, generate Florida buildings
+    if (floridaAreas.length > 0) {
+      setIsScanning(true);
+      setScanProgress(`Scanning ${floridaAreas.length} Florida area(s)...`);
+
+      // Simulate scan delay for realism
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      setScanProgress('Researching property records...');
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      setScanProgress('Scoring buildings...');
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      const floridaBuildings = generateFloridaBuildings(floridaAreas);
+
+      if (floridaBuildings.length > 0) {
+        addBuildings(floridaBuildings);
+        toast.success(`🌴 Found ${floridaBuildings.length} buildings in Florida`);
+      }
+
+      setIsScanning(false);
+      setScanProgress('');
+    }
+
+    // Set filters (for both Florida and non-Florida)
     setFilters({
       regions: selectedRegions,
       buildingTypes,
@@ -110,7 +142,13 @@ export default function Search() {
       yearBuiltMax: yearBuiltMax ? parseInt(yearBuiltMax) : undefined,
       violationThreshold: violationThreshold ? parseInt(violationThreshold) : undefined,
     } as any);
-    toast.success(`Scan started for ${selectedRegions.length} area(s)`);
+
+    if (otherAreas.length > 0 && floridaAreas.length > 0) {
+      toast.success(`Scan complete for ${selectedRegions.length} area(s)`);
+    } else if (otherAreas.length > 0) {
+      toast.success(`Scan started for ${otherAreas.length} area(s)`);
+    }
+
     navigate('/results');
   };
 
@@ -537,14 +575,29 @@ export default function Search() {
             {/* Scan Button */}
             <button
               onClick={handleScan}
-              disabled={selectedRegions.length === 0}
+              disabled={selectedRegions.length === 0 || isScanning}
               className="w-full bg-camelot-gold text-white py-3 rounded-xl font-semibold hover:bg-camelot-gold-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <SearchIcon size={18} />
-              Scan {selectedRegions.length} Area{selectedRegions.length !== 1 ? 's' : ''}
+              {isScanning ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Scanning...
+                </>
+              ) : (
+                <>
+                  <SearchIcon size={18} />
+                  Scan {selectedRegions.length} Area{selectedRegions.length !== 1 ? 's' : ''}
+                </>
+              )}
             </button>
-            {selectedRegions.length === 0 && (
+            {isScanning && scanProgress && (
+              <p className="text-xs text-camelot-gold text-center mt-2 animate-pulse">{scanProgress}</p>
+            )}
+            {selectedRegions.length === 0 && !isScanning && (
               <p className="text-xs text-gray-400 text-center mt-2">Select at least one area to scan</p>
+            )}
+            {selectedRegions.filter((a) => isFloridaArea(a)).length > 0 && !isScanning && (
+              <p className="text-xs text-amber-600 text-center mt-2">🌴 Florida areas use AI-researched data</p>
             )}
           </div>
         </div>

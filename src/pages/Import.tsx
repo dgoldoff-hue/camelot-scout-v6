@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Upload, FileSpreadsheet, ArrowRight, Check, AlertCircle, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useBuildings } from '@/hooks/useBuildings';
@@ -28,6 +29,7 @@ const SCOUT_FIELDS = [
 ];
 
 export default function Import() {
+  const navigate = useNavigate();
   const { saveBuildingToSupabase } = useBuildings();
   const addBuildings = useBuildingsStore((s) => s.addBuildings);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -163,7 +165,12 @@ export default function Import() {
     setImportedCount(buildings.length);
     setStep('complete');
     setIsImporting(false);
-    toast.success(`Imported ${buildings.length} buildings`);
+    toast.success(`Imported ${buildings.length} buildings! Redirecting to Results...`);
+
+    // Auto-redirect to Results after a brief delay so user sees the success state
+    setTimeout(() => {
+      navigate('/results');
+    }, 2000);
   };
 
   return (
@@ -362,9 +369,12 @@ export default function Import() {
               >
                 Import More
               </button>
-              <a href="/results" className="bg-camelot-gold text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-camelot-gold-dark">
+              <button
+                onClick={() => navigate('/results')}
+                className="bg-camelot-gold text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-camelot-gold-dark"
+              >
                 View Results →
-              </a>
+              </button>
             </div>
           </div>
         )}

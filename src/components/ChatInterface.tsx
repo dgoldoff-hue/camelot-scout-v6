@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { isAIConfigured, chatCompletion, chatCompletionStream, type AIChatMessage } from '@/lib/ai-client';
+import { isAIConfigured, chatCompletion, chatCompletionStream, localQueryEngine, type AIChatMessage } from '@/lib/ai-client';
 import { useBuildingsStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import {
-  Send, Bot, User, Settings, Sparkles, BarChart3, Mail,
+  Send, Bot, User, Sparkles, BarChart3, Mail,
   Target, AlertCircle, Loader2, Zap, RefreshCw,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 interface ChatMsg {
   id: string;
@@ -25,7 +24,6 @@ const QUICK_ACTIONS = [
 ];
 
 export default function ChatInterface() {
-  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -75,16 +73,44 @@ export default function ChatInterface() {
     setInput('');
     setIsLoading(true);
 
-    // Build the messages array for the API
-    const contextMsg: AIChatMessage = { role: 'user', content: buildContext() };
-    const historyMsgs: AIChatMessage[] = messages.slice(-10).map((m) => ({
-      role: m.role,
-      content: m.content,
-    }));
-
     const assistantMsgId = crypto.randomUUID();
 
     try {
+      // Try local query engine first (works without AI backend)
+      const localResult = localQueryEngine(content.trim(), buildings as any);
+
+      if (localResult !== null) {
+        // Local engine handled it — show result immediately
+        setMessages((prev) => [
+          ...prev,
+          { id: assistantMsgId, role: 'assistant', content: localResult, timestamp: new Date() },
+        ]);
+        setIsLoading(false);
+        return;
+      }
+
+      // No local match — try external AI if configured
+      if (!aiConfigured) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            role: 'assistant',
+            content: '🤖 AI backend not configured. Use the **quick actions** above for pipeline summaries, top leads, email drafts, and more — they work offline.\n\nFor free-text questions, set `VITE_AI_API_URL` in **Settings** (any OpenAI-compatible API works).',
+            timestamp: new Date(),
+          },
+        ]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Build the messages array for the API
+      const contextMsg: AIChatMessage = { role: 'user', content: buildContext() };
+      const historyMsgs: AIChatMessage[] = messages.slice(-10).map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
       // Try streaming first
       let fullText = '';
       setMessages((prev) => [
@@ -134,7 +160,7 @@ export default function ChatInterface() {
 
       let errorContent = 'Sorry, I encountered an error. Please try again.';
       if (err.message === 'AI_NOT_CONFIGURED') {
-        errorContent = '⚠️ AI backend is not configured. Go to **Settings** to set up your AI API endpoint (any OpenAI-compatible API works — OpenAI, OpenRouter, local LLMs, etc.)';
+        errorContent = '🤖 AI backend not configured. Use the **quick actions** above for pipeline summaries, top leads, email drafts, and more — they work offline.\n\nFor free-text questions, set `VITE_AI_API_URL` in **Settings**.';
       } else if (err.message === 'AI_AUTH_FAILED') {
         errorContent = '⚠️ AI authentication failed. Please check your API key in **Settings**.';
       } else if (err.message === 'AI_RATE_LIMITED') {
@@ -157,55 +183,6 @@ export default function ChatInterface() {
     }
   };
 
-  if (!aiConfigured) {
-    return (
-      <div className="h-full flex flex-col">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-camelot-gold/20 rounded-xl flex items-center justify-center">
-              <Bot size={20} className="text-camelot-gold" />
-            </div>
-            <div>
-              <h2 className="font-bold text-lg">Scout AI</h2>
-              <p className="text-xs text-gray-500">Intelligent property analysis assistant</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Not Configured State */}
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center max-w-md">
-            <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Settings size={32} className="text-amber-600" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">Configure AI Backend</h3>
-            <p className="text-gray-500 mb-4">
-              Scout AI needs an OpenAI-compatible API endpoint to work. This can be OpenAI, OpenRouter, Anthropic (via proxy), a local LLM, or any other compatible provider.
-            </p>
-            <div className="bg-gray-50 rounded-xl p-4 text-left text-sm mb-4">
-              <p className="font-medium mb-2">Required environment variables:</p>
-              <code className="text-xs block bg-white p-3 rounded-lg border">
-                VITE_AI_API_URL=https://api.openai.com/v1/chat/completions<br />
-                VITE_AI_API_KEY=sk-...<br />
-                VITE_AI_MODEL=gpt-4o
-              </code>
-            </div>
-            <p className="text-xs text-gray-400 mb-4">
-              All other Scout features (NYC data, scoring, pipeline, outreach) work without AI configured.
-            </p>
-            <button
-              onClick={() => navigate('/settings')}
-              className="bg-camelot-gold text-white px-6 py-2.5 rounded-lg font-medium hover:bg-camelot-gold-dark transition-colors"
-            >
-              Go to Settings
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -217,9 +194,15 @@ export default function ChatInterface() {
             </div>
             <div>
               <h2 className="font-bold text-lg">Scout AI</h2>
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Connected
-              </p>
+              {aiConfigured ? (
+                <p className="text-xs text-green-600 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Connected
+                </p>
+              ) : (
+                <p className="text-xs text-amber-600 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" /> Local Mode — Quick actions available
+                </p>
+              )}
             </div>
           </div>
           <button

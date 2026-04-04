@@ -5,7 +5,7 @@ import type { OutreachTemplate, Building, Contact } from '@/types';
 import { cn, formatDate } from '@/lib/utils';
 import {
   Mail, FileText, Clock, Plus, Send, Eye, Edit, Copy,
-  Building2, User, Sparkles, ChevronDown, Search, Loader2,
+  Building2, User, Sparkles, ChevronDown, Search, Loader2, Phone, X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -81,12 +81,65 @@ Camelot Realty Group`,
 
 type Tab = 'templates' | 'compose' | 'activity';
 
+// Demo outreach log with various statuses for Activity tab + Hot Leads
+const DEMO_OUTREACH_LOG = [
+  {
+    id: 'ol-1', building_id: '3', building_name: 'Lincoln Towers', contact_name: 'Susan Katz',
+    contact_email: 'skatz@gmail.com', contact_phone: '(212) 555-0301', contact_role: 'Board President',
+    subject: 'Property Management Services for Lincoln Towers', status: 'opened' as const,
+    sent_at: '2026-04-02T10:30:00Z', opened_at: '2026-04-02T14:15:00Z', template_name: "Cold Outreach — David's Template",
+  },
+  {
+    id: 'ol-2', building_id: '6', building_name: 'The Trafalgar', contact_name: 'Helen Ng',
+    contact_email: 'hng@gmail.com', contact_phone: '(212) 555-0601', contact_role: 'Board President',
+    subject: 'Property Management Services for The Trafalgar', status: 'opened' as const,
+    sent_at: '2026-04-01T09:00:00Z', opened_at: '2026-04-03T11:22:00Z', template_name: "Cold Outreach — David's Template",
+  },
+  {
+    id: 'ol-3', building_id: '4', building_name: 'Worldwide Plaza', contact_name: 'James Wilson',
+    contact_email: 'jwilson@finance.com', contact_phone: undefined, contact_role: 'Board President',
+    subject: 'Complimentary Property Evaluation — Worldwide Plaza', status: 'delivered' as const,
+    sent_at: '2026-04-03T08:45:00Z', opened_at: undefined, template_name: '30-Day Complimentary Service',
+  },
+  {
+    id: 'ol-4', building_id: '1', building_name: 'The Bromley', contact_name: 'Margaret Chen',
+    contact_email: 'mchen@gmail.com', contact_phone: '(212) 555-0101', contact_role: 'Board President',
+    subject: 'Property Management Services for The Bromley', status: 'sent' as const,
+    sent_at: '2026-04-03T14:00:00Z', opened_at: undefined, template_name: "Cold Outreach — David's Template",
+  },
+  {
+    id: 'ol-5', building_id: '2', building_name: 'The Horizon', contact_name: 'David Park',
+    contact_email: 'dpark@yahoo.com', contact_phone: undefined, contact_role: 'Board President',
+    subject: 'Following Up — The Horizon Management', status: 'opened' as const,
+    sent_at: '2026-03-30T11:00:00Z', opened_at: '2026-04-01T08:05:00Z', template_name: 'Follow-Up Nurture',
+  },
+  {
+    id: 'ol-6', building_id: '7', building_name: 'Beekman Tower', contact_name: 'info@beekman.com',
+    contact_email: 'info@beekman.com', contact_phone: undefined, contact_role: 'General',
+    subject: 'Property Management Services for Beekman Tower', status: 'bounced' as const,
+    sent_at: '2026-04-01T15:30:00Z', opened_at: undefined, template_name: "Cold Outreach — David's Template",
+  },
+  {
+    id: 'ol-7', building_id: '9', building_name: '785 Park Avenue Corp', contact_name: 'Elizabeth Warren',
+    contact_email: 'ewarren@gmail.com', contact_phone: undefined, contact_role: 'Board President',
+    subject: 'Following Up — 785 Park Avenue Corp Management', status: 'replied' as const,
+    sent_at: '2026-03-28T09:00:00Z', opened_at: '2026-03-28T10:30:00Z', template_name: 'Follow-Up Nurture',
+  },
+];
+
 export default function Outreach() {
   const { buildings } = useBuildings();
   const [activeTab, setActiveTab] = useState<Tab>('templates');
-  const [templates] = useState(DEFAULT_TEMPLATES);
+  const [templates, setTemplates] = useState(DEFAULT_TEMPLATES);
   const [selectedTemplate, setSelectedTemplate] = useState<OutreachTemplate | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<OutreachTemplate | null>(null);
+
+  // New Template modal state
+  const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [newTemplateCategory, setNewTemplateCategory] = useState<string>('cold');
+  const [newTemplateSubject, setNewTemplateSubject] = useState('');
+  const [newTemplateBody, setNewTemplateBody] = useState('');
 
   // Compose state
   const [selectedBuildingId, setSelectedBuildingId] = useState('');
@@ -135,14 +188,62 @@ export default function Outreach() {
     toast.success('Email saved as draft (email sending requires backend configuration)');
   };
 
-  // Demo activity log
-  const activityLog = [
-    { date: '2026-04-03', action: 'Email sent', building: 'The Bromley', contact: 'Margaret Chen', status: 'sent' },
-    { date: '2026-04-02', action: 'Email opened', building: 'Lincoln Towers', contact: 'Susan Katz', status: 'opened' },
-    { date: '2026-04-01', action: 'Email bounced', building: 'Beekman Tower', contact: 'info@beekman.com', status: 'bounced' },
-    { date: '2026-03-30', action: 'Reply received', building: '785 Park Avenue', contact: 'Elizabeth Warren', status: 'replied' },
-    { date: '2026-03-28', action: 'Email sent', building: 'The Horizon', contact: 'David Park', status: 'sent' },
-  ];
+  // Hot leads: opened or delivered emails
+  const hotLeads = DEMO_OUTREACH_LOG.filter((e) => e.status === 'opened' || e.status === 'delivered');
+
+  // Build activity log from outreach log entries
+  const activityLog = [...DEMO_OUTREACH_LOG]
+    .sort((a, b) => new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime())
+    .map((entry) => ({
+      date: new Date(entry.sent_at).toISOString().slice(0, 10),
+      action:
+        entry.status === 'opened' ? 'Email opened' :
+        entry.status === 'replied' ? 'Reply received' :
+        entry.status === 'bounced' ? 'Email bounced' :
+        entry.status === 'delivered' ? 'Email delivered' :
+        'Email sent',
+      building: entry.building_name,
+      contact: entry.contact_name,
+      status: entry.status,
+      email: entry.contact_email,
+      phone: entry.contact_phone,
+    }));
+
+  const handleSaveNewTemplate = () => {
+    if (!newTemplateName.trim() || !newTemplateSubject.trim() || !newTemplateBody.trim()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    const variableMatches = (newTemplateSubject + ' ' + newTemplateBody).match(/\{(\w+)\}/g) || [];
+    const variables = [...new Set(variableMatches.map((m) => m.replace(/[{}]/g, '')))];
+    const newTemplate: OutreachTemplate = {
+      id: String(Date.now()),
+      name: newTemplateName.trim(),
+      subject: newTemplateSubject.trim(),
+      body: newTemplateBody.trim(),
+      category: newTemplateCategory,
+      variables,
+      is_default: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    setTemplates((prev) => [...prev, newTemplate]);
+    setShowNewTemplateModal(false);
+    setNewTemplateName('');
+    setNewTemplateCategory('cold');
+    setNewTemplateSubject('');
+    setNewTemplateBody('');
+    toast.success(`Template "${newTemplate.name}" created`);
+  };
+
+  const handleFollowUp = (entry: typeof DEMO_OUTREACH_LOG[0]) => {
+    const subject = encodeURIComponent(`Re: ${entry.subject}`);
+    const body = encodeURIComponent(
+      `Hi ${entry.contact_name.split(' ')[0]},\n\nI wanted to follow up on my recent email about ${entry.building_name}. I'd love to find 15 minutes to discuss how Camelot can help with your property management needs.\n\nWe offer a complimentary 30-day property evaluation at no cost and no obligation — it's our way of demonstrating value upfront.\n\nWould this week work for a quick call?\n\nBest regards,\nDavid Goldoff\nPrincipal, Camelot Realty Group\n501 Madison Avenue, Suite 1400\nNew York, NY 10022\ndgoldoff@camelot.nyc\n212-206-9939 ext. 701`
+    );
+    window.open(`mailto:${entry.contact_email}?subject=${subject}&body=${body}`, '_self');
+    toast.success(`Follow-up email opened for ${entry.contact_name}`);
+  };
 
   return (
     <div className="min-h-screen">
@@ -184,7 +285,10 @@ export default function Outreach() {
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-lg font-bold">Email Templates</h2>
-              <button className="flex items-center gap-2 bg-camelot-gold text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-camelot-gold-dark">
+              <button
+                onClick={() => setShowNewTemplateModal(true)}
+                className="flex items-center gap-2 bg-camelot-gold text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-camelot-gold-dark"
+              >
                 <Plus size={14} /> New Template
               </button>
             </div>
@@ -358,7 +462,65 @@ export default function Outreach() {
         {/* Activity Tab */}
         {activeTab === 'activity' && (
           <div>
-            <h2 className="text-lg font-bold mb-4">Outreach Activity Log</h2>
+            {/* Hot Leads Section */}
+            {hotLeads.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+                  🔥 Hot Leads — Opened Emails
+                </h2>
+                <p className="text-xs text-gray-500 mb-4">
+                  These contacts opened your email — prioritize follow-up calls and messages.
+                </p>
+                <div className="space-y-3">
+                  {hotLeads.map((entry) => (
+                    <div key={entry.id} className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-bold text-orange-800">{entry.building_name}</span>
+                            <span className={cn(
+                              'text-[10px] px-2 py-0.5 rounded-full font-medium',
+                              entry.status === 'opened' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700',
+                            )}>
+                              {entry.status === 'opened' ? '👁 Opened' : '✉️ Delivered'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-700">
+                            <span className="font-medium">{entry.contact_name}</span>
+                            <span className="text-gray-400"> — {entry.contact_role}</span>
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">Subject: {entry.subject}</p>
+                          {entry.opened_at && (
+                            <p className="text-xs text-orange-600 mt-1">
+                              Opened {new Date(entry.opened_at).toLocaleDateString()} at {new Date(entry.opened_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                          {entry.contact_phone && (
+                            <a
+                              href={`tel:${entry.contact_phone}`}
+                              className="flex items-center gap-1.5 text-xs font-medium bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                            >
+                              <Phone size={13} /> Call Now
+                            </a>
+                          )}
+                          <button
+                            onClick={() => handleFollowUp(entry)}
+                            className="flex items-center gap-1.5 text-xs font-medium bg-camelot-gold text-white px-3 py-2 rounded-lg hover:bg-camelot-gold-dark transition-colors"
+                          >
+                            <Send size={13} /> Send Follow-Up
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Full Activity Log */}
+            <h2 className="text-lg font-bold mb-4">All Outreach Activity</h2>
             <div className="space-y-3">
               {activityLog.map((item, i) => (
                 <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200">
@@ -366,6 +528,7 @@ export default function Outreach() {
                     'w-2 h-2 rounded-full flex-shrink-0',
                     item.status === 'sent' && 'bg-blue-500',
                     item.status === 'opened' && 'bg-green-500',
+                    item.status === 'delivered' && 'bg-cyan-500',
                     item.status === 'bounced' && 'bg-red-500',
                     item.status === 'replied' && 'bg-purple-500',
                   )} />
@@ -379,6 +542,7 @@ export default function Outreach() {
                     'text-xs px-2 py-1 rounded-full capitalize',
                     item.status === 'sent' && 'bg-blue-50 text-blue-600',
                     item.status === 'opened' && 'bg-green-50 text-green-600',
+                    item.status === 'delivered' && 'bg-cyan-50 text-cyan-600',
                     item.status === 'bounced' && 'bg-red-50 text-red-600',
                     item.status === 'replied' && 'bg-purple-50 text-purple-600',
                   )}>
@@ -391,6 +555,107 @@ export default function Outreach() {
           </div>
         )}
       </div>
+
+      {/* New Template Modal */}
+      {showNewTemplateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowNewTemplateModal(false)}>
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-bold">Create New Template</h3>
+              <button onClick={() => setShowNewTemplateModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              {/* Template Name */}
+              <div>
+                <label className="text-sm font-medium mb-1 block">Template Name *</label>
+                <input
+                  type="text"
+                  value={newTemplateName}
+                  onChange={(e) => setNewTemplateName(e.target.value)}
+                  placeholder="e.g. Board Meeting Follow-Up"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                />
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="text-sm font-medium mb-1 block">Category</label>
+                <select
+                  value={newTemplateCategory}
+                  onChange={(e) => setNewTemplateCategory(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm"
+                >
+                  <option value="cold">Cold Outreach</option>
+                  <option value="complimentary">Complimentary Service</option>
+                  <option value="nurture">Nurture / Follow-Up</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </div>
+
+              {/* Subject */}
+              <div>
+                <label className="text-sm font-medium mb-1 block">Subject Line *</label>
+                <input
+                  type="text"
+                  value={newTemplateSubject}
+                  onChange={(e) => setNewTemplateSubject(e.target.value)}
+                  placeholder="e.g. Property Management Services for {building_name}"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                />
+              </div>
+
+              {/* Body */}
+              <div>
+                <label className="text-sm font-medium mb-1 block">Body *</label>
+                <textarea
+                  value={newTemplateBody}
+                  onChange={(e) => setNewTemplateBody(e.target.value)}
+                  rows={12}
+                  placeholder={`Dear {contact_name},\n\nI'm reaching out about {building_name} at {address}...\n\nBest regards,\nDavid Goldoff\nCamelot Realty Group`}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50 resize-none"
+                />
+              </div>
+
+              {/* Variable hints */}
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs font-medium text-gray-500 mb-1.5">Available variables (click to insert):</p>
+                <div className="flex flex-wrap gap-1">
+                  {getAvailableVariables().map((v) => (
+                    <button
+                      key={v.key}
+                      onClick={() => setNewTemplateBody((prev) => prev + `{${v.key}}`)}
+                      className="text-[10px] bg-white border border-gray-200 text-gray-600 px-2 py-0.5 rounded hover:border-camelot-gold hover:text-camelot-gold"
+                      title={v.description}
+                    >
+                      {'{'}{v.key}{'}'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200">
+              <button
+                onClick={() => setShowNewTemplateModal(false)}
+                className="px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveNewTemplate}
+                className="bg-camelot-gold text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-camelot-gold-dark flex items-center gap-2"
+              >
+                <Plus size={14} /> Save Template
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

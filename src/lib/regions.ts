@@ -164,3 +164,21 @@ export function getAllAreas(): string[] {
 export function getNYCBoroughs(): string[] {
   return ['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'];
 }
+
+const FLORIDA_REGION_NAMES = ['Miami', 'Miami Beach', 'North Miami', 'Fort Lauderdale', 'Boca Raton / Delray', 'Palm Beach'];
+
+export function isFloridaRegion(regionName: string): boolean {
+  return FLORIDA_REGION_NAMES.includes(regionName);
+}
+
+export function isFloridaArea(area: string): boolean {
+  return REGIONS
+    .filter((r) => FLORIDA_REGION_NAMES.includes(r.name))
+    .some((r) => r.areas.includes(area));
+}
+
+export function getFloridaAreas(): string[] {
+  return REGIONS
+    .filter((r) => FLORIDA_REGION_NAMES.includes(r.name))
+    .flatMap((r) => r.areas);
+}
