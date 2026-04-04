@@ -34,23 +34,72 @@ const BOROUGH_CODES: Record<string, string> = {
   'staten island': '5',
 };
 
+// ---- Named-number avenue mapping ----
+const NAMED_AVENUE_MAP: Record<string, string> = {
+  FIRST: '1',
+  SECOND: '2',
+  THIRD: '3',
+  FOURTH: '4',
+  FIFTH: '5',
+  SIXTH: '6',
+  SEVENTH: '7',
+  EIGHTH: '8',
+  NINTH: '9',
+  TENTH: '10',
+  ELEVENTH: '11',
+  TWELFTH: '12',
+};
+
 /**
- * Normalize an address for API queries
+ * Strip ordinal suffixes: "79TH" → "79", "1ST" → "1", "2ND" → "2", "3RD" → "3", "21ST" → "21"
  */
-function normalizeAddress(address: string): string {
-  return address
-    .toUpperCase()
-    .replace(/\bAVE\b/, 'AVENUE')
-    .replace(/\bST\b/, 'STREET')
-    .replace(/\bBLVD\b/, 'BOULEVARD')
-    .replace(/\bPL\b/, 'PLACE')
-    .replace(/\bDR\b/, 'DRIVE')
-    .replace(/\bRD\b/, 'ROAD')
-    .trim();
+function stripOrdinal(word: string): string {
+  return word.replace(/(\d+)\s*(ST|ND|RD|TH)\b/gi, '$1');
 }
 
 /**
- * Parse an address into number and street
+ * Normalize an address for API queries.
+ *
+ * NYC Open Data stores addresses in various formats:
+ *   HPD:  "EAST  79 STREET" (no ordinal, sometimes double-spaces)
+ *   DOF:  "301 EAST 79 STREET" or composite address field
+ *   DOB:  "EAST 79 STREET" in street_name, house number separate
+ *
+ * This function produces a normalized form suitable for building
+ * flexible LIKE queries rather than exact matches.
+ */
+function normalizeAddress(address: string): string {
+  let norm = address.toUpperCase().trim();
+
+  // Expand common abbreviations
+  norm = norm.replace(/\bAVE\b/g, 'AVENUE');
+  norm = norm.replace(/\bST\b/g, 'STREET');
+  norm = norm.replace(/\bBLVD\b/g, 'BOULEVARD');
+  norm = norm.replace(/\bPL\b/g, 'PLACE');
+  norm = norm.replace(/\bDR\b/g, 'DRIVE');
+  norm = norm.replace(/\bRD\b/g, 'ROAD');
+  norm = norm.replace(/\bCT\b/g, 'COURT');
+  norm = norm.replace(/\bLN\b/g, 'LANE');
+
+  // Convert named avenues: "FIFTH AVENUE" → "5 AVENUE"
+  for (const [word, num] of Object.entries(NAMED_AVENUE_MAP)) {
+    norm = norm.replace(new RegExp(`\\b${word}\\s+(AVENUE|AVE)\\b`, 'g'), `${num} AVENUE`);
+  }
+
+  // Strip ordinal suffixes: "79TH" → "79", "1ST" → "1" etc.
+  norm = stripOrdinal(norm);
+
+  // Remove street type suffixes — we'll search without them for broader matching
+  // Keep them in the normalized form but they'll be stripped when building search keys
+  // Collapse multiple spaces
+  norm = norm.replace(/\s{2,}/g, ' ').trim();
+
+  return norm;
+}
+
+/**
+ * Parse an address into number and street components.
+ * The street portion has ordinals stripped and named avenues converted.
  */
 function parseAddress(address: string): { number: string; street: string } {
   const normalized = normalizeAddress(address);
@@ -62,28 +111,70 @@ function parseAddress(address: string): { number: string; street: string } {
 }
 
 /**
- * Fetch HPD Violations for an address
+ * Build the key search tokens from a street name for LIKE queries.
+ * Strips street-type suffixes (STREET, AVENUE, etc.) and returns
+ * the essential words that NYC databases are most likely to contain.
+ *
+ * "EAST 79 STREET" → ["EAST", "79"]
+ * "5 AVENUE"       → ["5", "AVENUE"]   (keep AVENUE for numbered avenues)
+ * "PARK AVENUE"    → ["PARK", "AVENUE"]
+ */
+function streetSearchTokens(street: string): string[] {
+  const STREET_SUFFIXES = ['STREET', 'BOULEVARD', 'PLACE', 'DRIVE', 'ROAD', 'COURT', 'LANE', 'TERRACE', 'WAY'];
+  const words = street.split(/\s+/).filter(Boolean);
+
+  // For numbered avenues like "5 AVENUE", keep AVENUE since it's meaningful
+  // For directional + number + STREET patterns, drop STREET
+  const isNumberedAvenue = words.length === 2 && /^\d+$/.test(words[0]) && words[1] === 'AVENUE';
+  if (isNumberedAvenue) return words;
+
+  // Drop trailing street-type suffix
+  const filtered = words.filter((w) => !STREET_SUFFIXES.includes(w));
+  return filtered.length > 0 ? filtered : words;
+}
+
+/**
+ * Build a flexible LIKE pattern from tokens for Socrata $where queries.
+ * Joins tokens with '%' wildcards so "EAST 79" becomes "%EAST%79%".
+ * This handles double spaces and varied formatting in NYC data.
+ */
+function buildLikePattern(tokens: string[]): string {
+  return '%' + tokens.join('%') + '%';
+}
+
+/**
+ * Fetch HPD Violations for an address.
+ * Uses flexible LIKE matching to handle HPD's formatting (double spaces, no ordinals).
  */
 export async function fetchHPDViolations(address: string, borough?: string): Promise<HPDViolation[]> {
   try {
     const { number, street } = parseAddress(address);
-    let url = `${ENDPOINTS.hpdViolations}?$limit=200`;
+    const tokens = streetSearchTokens(street);
+    const pattern = buildLikePattern(tokens);
 
+    let where = `upper(streetname) like '${encodeURIComponent(pattern)}'`;
     if (number) {
-      url += `&$where=upper(streetname) like '%25${encodeURIComponent(street.split(' ').slice(0, 2).join(' '))}%25'`;
-      url += ` AND housenumber='${number}'`;
-    } else {
-      url += `&$where=upper(streetname) like '%25${encodeURIComponent(street)}%25'`;
+      where += ` AND housenumber='${number}'`;
     }
-
     if (borough) {
       const code = BOROUGH_CODES[borough.toLowerCase()];
-      if (code) url += ` AND boroid='${code}'`;
+      if (code) where += ` AND boroid='${code}'`;
     }
 
+    let url = `${ENDPOINTS.hpdViolations}?$limit=200&$where=${where}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HPD API error: ${res.status}`);
-    return await res.json();
+    const results: HPDViolation[] = await res.json();
+
+    // Fallback: if no results and we have a number, try broader match with just the number
+    if (results.length === 0 && number && tokens.length > 1) {
+      const fallbackWhere = `housenumber='${number}' AND upper(streetname) like '%25${encodeURIComponent(tokens[tokens.length - 1])}%25'`;
+      const fallbackUrl = `${ENDPOINTS.hpdViolations}?$limit=200&$where=${fallbackWhere}`;
+      const fallbackRes = await fetch(fallbackUrl);
+      if (fallbackRes.ok) return await fallbackRes.json();
+    }
+
+    return results;
   } catch (err) {
     console.error('HPD Violations fetch error:', err);
     return [];
@@ -96,23 +187,32 @@ export async function fetchHPDViolations(address: string, borough?: string): Pro
 export async function fetchHPDRegistration(address: string, borough?: string): Promise<any[]> {
   try {
     const { number, street } = parseAddress(address);
-    let url = `${ENDPOINTS.hpdRegistration}?$limit=50`;
+    const tokens = streetSearchTokens(street);
+    const pattern = buildLikePattern(tokens);
 
+    let where = `upper(streetname) like '${encodeURIComponent(pattern)}'`;
     if (number) {
-      url += `&$where=upper(streetname) like '%25${encodeURIComponent(street.split(' ').slice(0, 2).join(' '))}%25'`;
-      url += ` AND housenumber='${number}'`;
-    } else {
-      url += `&$where=upper(streetname) like '%25${encodeURIComponent(street)}%25'`;
+      where += ` AND housenumber='${number}'`;
     }
-
     if (borough) {
       const code = BOROUGH_CODES[borough.toLowerCase()];
-      if (code) url += ` AND boroid='${code}'`;
+      if (code) where += ` AND boroid='${code}'`;
     }
 
+    let url = `${ENDPOINTS.hpdRegistration}?$limit=50&$where=${where}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HPD Registration API error: ${res.status}`);
-    return await res.json();
+    const results = await res.json();
+
+    // Fallback with just the number + last token
+    if (results.length === 0 && number && tokens.length > 1) {
+      const fallbackWhere = `housenumber='${number}' AND upper(streetname) like '%25${encodeURIComponent(tokens[tokens.length - 1])}%25'`;
+      const fallbackUrl = `${ENDPOINTS.hpdRegistration}?$limit=50&$where=${fallbackWhere}`;
+      const fallbackRes = await fetch(fallbackUrl);
+      if (fallbackRes.ok) return await fallbackRes.json();
+    }
+
+    return results;
   } catch (err) {
     console.error('HPD Registration fetch error:', err);
     return [];
@@ -120,28 +220,52 @@ export async function fetchHPDRegistration(address: string, borough?: string): P
 }
 
 /**
- * Fetch DOF Property Assessment (PLUTO data)
+ * Fetch DOF Property Assessment (PLUTO data).
+ * DOF/PLUTO stores addresses in a single "address" field with varying formats.
+ * We try multiple strategies: full pattern, then number + key tokens, then just number.
  */
 export async function fetchDOFProperty(address: string, borough?: string): Promise<DOFProperty[]> {
   try {
     const { number, street } = parseAddress(address);
-    let url = `${ENDPOINTS.dofProperty}?$limit=10`;
+    const tokens = streetSearchTokens(street);
 
-    if (number && street) {
-      url += `&$where=upper(address) like '%25${encodeURIComponent(number + ' ' + street.split(' ').slice(0, 2).join(' '))}%25'`;
+    // Strategy 1: broad LIKE with number + key tokens → "%301%EAST%79%"
+    let pattern: string;
+    if (number) {
+      pattern = buildLikePattern([number, ...tokens]);
     } else {
-      url += `&$where=upper(address) like '%25${encodeURIComponent(street)}%25'`;
+      pattern = buildLikePattern(tokens);
     }
 
+    let where = `upper(address) like '${encodeURIComponent(pattern)}'`;
     if (borough) {
-      const boroughUpper = borough.toUpperCase();
-      // PLUTO may use different borough field names
-      url += ` AND upper(borough)='${boroughUpper}'`;
+      where += ` AND upper(borough)='${borough.toUpperCase()}'`;
     }
 
+    let url = `${ENDPOINTS.dofProperty}?$limit=10&$where=${where}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`DOF API error: ${res.status}`);
-    return await res.json();
+    const results: DOFProperty[] = await res.json();
+
+    if (results.length > 0) return results;
+
+    // Strategy 2: just number + street number (for "301 ... 79 ...")
+    if (number && tokens.length > 0) {
+      // Find numeric tokens in the street part (e.g. "79" from "EAST 79")
+      const numericTokens = tokens.filter((t) => /^\d+$/.test(t));
+      if (numericTokens.length > 0) {
+        const fallbackPattern = buildLikePattern([number, ...numericTokens]);
+        let fallbackWhere = `upper(address) like '${encodeURIComponent(fallbackPattern)}'`;
+        if (borough) fallbackWhere += ` AND upper(borough)='${borough.toUpperCase()}'`;
+        const fb = await fetch(`${ENDPOINTS.dofProperty}?$limit=10&$where=${fallbackWhere}`);
+        if (fb.ok) {
+          const fbResults: DOFProperty[] = await fb.json();
+          if (fbResults.length > 0) return fbResults;
+        }
+      }
+    }
+
+    return results;
   } catch (err) {
     console.error('DOF Property fetch error:', err);
     return [];
@@ -149,18 +273,24 @@ export async function fetchDOFProperty(address: string, borough?: string): Promi
 }
 
 /**
- * Fetch DOB Permits
+ * Fetch DOB Permits.
+ * DOB stores house number in "house__" and street name in "street_name".
  */
 export async function fetchDOBPermits(address: string, borough?: string): Promise<DOBPermit[]> {
   try {
     const { number, street } = parseAddress(address);
-    let url = `${ENDPOINTS.dobPermits}?$limit=50&$order=filing_date DESC`;
+    const tokens = streetSearchTokens(street);
+    const pattern = buildLikePattern(tokens);
 
+    let where = '';
     if (number) {
-      url += `&$where=upper(house__) like '%25${encodeURIComponent(number)}%25'`;
-      url += ` AND upper(street_name) like '%25${encodeURIComponent(street.split(' ')[0])}%25'`;
+      where = `upper(house__) like '%25${encodeURIComponent(number)}%25'`;
+      where += ` AND upper(street_name) like '${encodeURIComponent(pattern)}'`;
+    } else {
+      where = `upper(street_name) like '${encodeURIComponent(pattern)}'`;
     }
 
+    let url = `${ENDPOINTS.dobPermits}?$limit=50&$order=filing_date DESC&$where=${where}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`DOB API error: ${res.status}`);
     return await res.json();
@@ -176,14 +306,16 @@ export async function fetchDOBPermits(address: string, borough?: string): Promis
 export async function fetchLL97Energy(address: string): Promise<LL97Energy[]> {
   try {
     const { number, street } = parseAddress(address);
-    let url = `${ENDPOINTS.ll97Energy}?$limit=10`;
+    const tokens = streetSearchTokens(street);
 
+    let pattern: string;
     if (number) {
-      url += `&$where=upper(address_1) like '%25${encodeURIComponent(number + ' ' + street.split(' ').slice(0, 2).join(' '))}%25'`;
+      pattern = buildLikePattern([number, ...tokens]);
     } else {
-      url += `&$where=upper(address_1) like '%25${encodeURIComponent(street)}%25'`;
+      pattern = buildLikePattern(tokens);
     }
 
+    let url = `${ENDPOINTS.ll97Energy}?$limit=10&$where=upper(address_1) like '${encodeURIComponent(pattern)}'`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`LL97 API error: ${res.status}`);
     return await res.json();
@@ -562,11 +694,13 @@ export async function searchByUnit(address: string, unit: string): Promise<any> 
     const upperUnit = unit.toUpperCase().replace(/'/g, "''");
 
     // HPD Violations for this specific unit
+    const tokens = streetSearchTokens(street);
+    const pattern = buildLikePattern(tokens);
     let violationsUrl = `${ENDPOINTS.hpdViolations}?$limit=200`;
     if (number) {
       violationsUrl += `&$where=upper(apartment)='${encodeURIComponent(upperUnit)}'`;
       violationsUrl += ` AND housenumber='${number}'`;
-      violationsUrl += ` AND upper(streetname) like '%25${encodeURIComponent(street.split(' ').slice(0, 2).join(' '))}%25'`;
+      violationsUrl += ` AND upper(streetname) like '${encodeURIComponent(pattern)}'`;
     }
 
     // Fetch unit violations, building DOF data, and registration in parallel

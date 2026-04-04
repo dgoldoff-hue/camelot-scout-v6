@@ -20,7 +20,7 @@ export default function Settings() {
   const { members } = useAuth();
   const [activeSection, setActiveSection] = useState<'status' | 'api' | 'team' | 'company'>('status');
 
-  // Check service statuses
+  // Check service statuses — each API listed individually
   const services: ServiceStatus[] = [
     {
       name: 'Supabase Database',
@@ -28,31 +28,56 @@ export default function Settings() {
       details: isSupabaseConfigured() ? 'Connected' : 'Using demo mode — set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY',
     },
     {
-      name: 'AI Chat Backend',
-      configured: isAIConfigured(),
-      details: isAIConfigured()
-        ? `Model: ${getAIConfig().model}`
-        : 'Not configured — set VITE_AI_API_URL, VITE_AI_API_KEY, VITE_AI_MODEL. Supports any OpenAI-compatible API.',
+      name: 'NYC Open Data (HPD, DOF, DOB, LL97)',
+      configured: true,
+      details: 'HPD Violations ✅ · HPD Registration ✅ · DOF/PLUTO Assessment ✅ · DOB Permits ✅ · LL97 Energy ✅ — no API key required',
+    },
+    {
+      name: 'NYC ACRIS',
+      configured: true,
+      details: 'Deed transfers, mortgages, and property transaction records — no API key required',
+    },
+    {
+      name: 'NYC ECB/OATH',
+      configured: true,
+      details: 'Environmental Control Board violations and penalty tracking — no API key required',
+    },
+    {
+      name: 'NYC Housing Court',
+      configured: true,
+      details: 'Housing litigation cases and court filings — no API key required',
+    },
+    {
+      name: 'NYC Rent Stabilization',
+      configured: true,
+      details: 'Rent stabilized building registry — no API key required',
+    },
+    {
+      name: 'NY Secretary of State (DOS)',
+      configured: true,
+      details: 'Active Corporations and LLC search — no API key required',
     },
     {
       name: 'Apollo.io',
       configured: isEnrichmentConfigured().apollo,
-      details: isEnrichmentConfigured().apollo ? 'API key set' : 'Set VITE_APOLLO_API_KEY for contact enrichment',
+      details: isEnrichmentConfigured().apollo ? 'API key set — contact enrichment active' : 'Set VITE_APOLLO_API_KEY for contact enrichment',
     },
     {
       name: 'Prospeo',
       configured: isEnrichmentConfigured().prospeo,
-      details: isEnrichmentConfigured().prospeo ? 'API key set' : 'Set VITE_PROSPEO_API_KEY for email verification fallback',
+      details: isEnrichmentConfigured().prospeo ? 'API key set — email verification active' : 'Set VITE_PROSPEO_API_KEY for email verification fallback',
     },
     {
       name: 'HubSpot CRM',
       configured: !!(import.meta.env.VITE_HUBSPOT_API_KEY || ''),
-      details: import.meta.env.VITE_HUBSPOT_API_KEY ? 'API key set' : 'Set VITE_HUBSPOT_API_KEY for CRM sync',
+      details: import.meta.env.VITE_HUBSPOT_API_KEY ? 'API key set — CRM sync active' : 'Set VITE_HUBSPOT_API_KEY for CRM sync',
     },
     {
-      name: 'NYC Open Data APIs',
-      configured: true,
-      details: 'Always available — no API key required (HPD, DOF, DOB, LL97)',
+      name: 'AI Chat',
+      configured: isAIConfigured(),
+      details: isAIConfigured()
+        ? `Connected — Model: ${getAIConfig().model}`
+        : 'Not configured — set VITE_AI_API_URL, VITE_AI_API_KEY, VITE_AI_MODEL. Supports any OpenAI-compatible API.',
     },
   ];
 

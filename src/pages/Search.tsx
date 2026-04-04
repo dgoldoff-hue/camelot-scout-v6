@@ -141,6 +141,10 @@ export default function Search() {
         has_recent_permits: data.permits.hasRecent,
         energy_star_score: data.energy?.energyStarScore ?? undefined,
         site_eui: data.energy?.siteEUI ?? undefined,
+        ecb_violation_count: data.ecb?.count,
+        ecb_penalty_balance: data.ecb?.totalPenaltyBalance,
+        has_active_litigation: data.litigation?.hasActive,
+        is_rent_stabilized: data.rentStabilization?.isStabilized,
       });
       setReportData({ ...data, score });
       toast.success('Building report generated');
@@ -546,6 +550,22 @@ export default function Search() {
                       {reportData.buildingOps.buildingClass}: {reportData.buildingOps.buildingClassDescription}
                     </span>
                   )}
+                  {reportData.litigation?.hasActive && (
+                    <span className="text-xs px-2.5 py-1 rounded-full font-bold border bg-red-900/40 text-red-300 border-red-500/40 animate-pulse">
+                      ⚖️ ACTIVE LITIGATION
+                    </span>
+                  )}
+                  {reportData.rentStabilization?.isStabilized && (
+                    <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-blue-900/30 text-blue-300 border-blue-500/30">
+                      📋 Rent Stabilized
+                    </span>
+                  )}
+                  {reportData.ecb?.count > 0 && (
+                    <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-orange-900/30 text-orange-300 border-orange-500/30">
+                      ⚠️ {reportData.ecb.count} ECB Violation{reportData.ecb.count !== 1 ? 's' : ''}
+                      {reportData.ecb.totalPenaltyBalance > 0 && ` ($${reportData.ecb.totalPenaltyBalance.toLocaleString()})`}
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -689,54 +709,95 @@ export default function Search() {
           )}
 
           {/* Owner Search Results */}
-          {ownerResults.length > 0 && (
+          {(ownerResults.length > 0 || dosResults.length > 0) && (
             <div className="mt-6 bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-6 animate-slide-in">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-white">
                   Owner Results: "{ownerName}" — {ownerResults.length} building(s)
+                  {dosResults.length > 0 && `, ${dosResults.length} corporate filing(s)`}
                 </h3>
                 <button onClick={clearResults} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
                   <X size={18} className="text-gray-400" />
                 </button>
               </div>
-              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
-                {ownerResults.map((row, i) => {
-                  const addr = `${row.housenumber || ''} ${row.streetname || ''}`.trim();
-                  const ownerDisplay = row.corporationname
-                    || `${row.ownerfirstname || ''} ${row.ownerlastname || ''}`.trim()
-                    || '—';
-                  const boroughNames: Record<string, string> = { '1': 'Manhattan', '2': 'Bronx', '3': 'Brooklyn', '4': 'Queens', '5': 'Staten Island' };
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => handleOwnerResultClick(row)}
-                      className="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all text-left group"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white group-hover:text-camelot-gold transition-colors truncate">
-                          {addr || 'Unknown address'}
-                        </p>
-                        <p className="text-xs text-gray-400 truncate">
-                          {boroughNames[row.boroid] || ''} · Owner: {ownerDisplay}
-                        </p>
-                        {row.managementcompany && (
-                          <p className="text-xs text-gray-500 truncate">
-                            Mgmt: {row.managementcompany}
-                          </p>
-                        )}
+
+              {/* NY DOS Corporate Filings */}
+              {dosResults.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    🏛️ NY Secretary of State — Corporate Filings
+                  </h4>
+                  <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 mb-4">
+                    {dosResults.slice(0, 10).map((corp, i) => (
+                      <div key={i} className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
+                        <p className="text-sm font-semibold text-white">{corp.current_entity_name}</p>
+                        <div className="text-xs text-gray-400 mt-1 space-y-0.5">
+                          {corp.dos_id && <span className="mr-3">DOS ID: {corp.dos_id}</span>}
+                          {corp.dos_process_name && (
+                            <p className="text-camelot-gold font-medium">
+                              Process Agent: {corp.dos_process_name}
+                            </p>
+                          )}
+                          {corp.dos_process_address_1 && (
+                            <p>{corp.dos_process_address_1}{corp.dos_process_address_2 ? `, ${corp.dos_process_address_2}` : ''}</p>
+                          )}
+                          {corp.entity_formation_date && (
+                            <span className="mr-3">Formed: {new Date(corp.entity_formation_date).toLocaleDateString()}</span>
+                          )}
+                          {corp.county && <span>County: {corp.county}</span>}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 ml-3 flex-shrink-0">
-                        {row.buildingid && (
-                          <span className="text-[10px] bg-white/10 text-gray-400 px-2 py-0.5 rounded-full">
-                            ID: {row.buildingid}
-                          </span>
-                        )}
-                        <ChevronRight size={16} className="text-gray-500 group-hover:text-camelot-gold transition-colors" />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* HPD Building Results */}
+              {ownerResults.length > 0 && (
+                <>
+                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    🏢 HPD Building Registrations
+                  </h4>
+                  <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+                    {ownerResults.map((row, i) => {
+                      const addr = `${row.housenumber || ''} ${row.streetname || ''}`.trim();
+                      const ownerDisplay = row.corporationname
+                        || `${row.ownerfirstname || ''} ${row.ownerlastname || ''}`.trim()
+                        || '—';
+                      const boroughNames: Record<string, string> = { '1': 'Manhattan', '2': 'Bronx', '3': 'Brooklyn', '4': 'Queens', '5': 'Staten Island' };
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => handleOwnerResultClick(row)}
+                          className="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all text-left group"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-white group-hover:text-camelot-gold transition-colors truncate">
+                              {addr || 'Unknown address'}
+                            </p>
+                            <p className="text-xs text-gray-400 truncate">
+                              {boroughNames[row.boroid] || ''} · Owner: {ownerDisplay}
+                            </p>
+                            {row.managementcompany && (
+                              <p className="text-xs text-gray-500 truncate">
+                                Mgmt: {row.managementcompany}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                            {row.buildingid && (
+                              <span className="text-[10px] bg-white/10 text-gray-400 px-2 py-0.5 rounded-full">
+                                ID: {row.buildingid}
+                              </span>
+                            )}
+                            <ChevronRight size={16} className="text-gray-500 group-hover:text-camelot-gold transition-colors" />
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           )}
 
