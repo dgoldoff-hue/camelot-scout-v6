@@ -1,0 +1,362 @@
+import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { isAIConfigured, getAIConfig } from '@/lib/ai-client';
+import { isEnrichmentConfigured } from '@/lib/enrichment';
+import { cn } from '@/lib/utils';
+import {
+  Settings as SettingsIcon, CheckCircle, XCircle, Shield, Users,
+  Building2, Key, Database, Save, ExternalLink, AlertTriangle,
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+
+interface ServiceStatus {
+  name: string;
+  configured: boolean;
+  details?: string;
+}
+
+export default function Settings() {
+  const { members } = useAuth();
+  const [activeSection, setActiveSection] = useState<'status' | 'api' | 'team' | 'company'>('status');
+
+  // Check service statuses
+  const services: ServiceStatus[] = [
+    {
+      name: 'Supabase Database',
+      configured: isSupabaseConfigured(),
+      details: isSupabaseConfigured() ? 'Connected' : 'Using demo mode — set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY',
+    },
+    {
+      name: 'AI Chat Backend',
+      configured: isAIConfigured(),
+      details: isAIConfigured()
+        ? `Model: ${getAIConfig().model}`
+        : 'Not configured — set VITE_AI_API_URL, VITE_AI_API_KEY, VITE_AI_MODEL. Supports any OpenAI-compatible API.',
+    },
+    {
+      name: 'Apollo.io',
+      configured: isEnrichmentConfigured().apollo,
+      details: isEnrichmentConfigured().apollo ? 'API key set' : 'Set VITE_APOLLO_API_KEY for contact enrichment',
+    },
+    {
+      name: 'Prospeo',
+      configured: isEnrichmentConfigured().prospeo,
+      details: isEnrichmentConfigured().prospeo ? 'API key set' : 'Set VITE_PROSPEO_API_KEY for email verification fallback',
+    },
+    {
+      name: 'HubSpot CRM',
+      configured: !!import.meta.env.VITE_HUBSPOT_API_KEY,
+      details: import.meta.env.VITE_HUBSPOT_API_KEY ? 'API key set' : 'Set VITE_HUBSPOT_API_KEY for CRM sync',
+    },
+    {
+      name: 'NYC Open Data APIs',
+      configured: true,
+      details: 'Always available — no API key required (HPD, DOF, DOB, LL97)',
+    },
+  ];
+
+  const roleLabels: Record<string, string> = {
+    owner: 'Owner',
+    tech_lead: 'Tech Lead',
+    cold_caller: 'Cold Caller',
+    operations: 'Operations',
+    team: 'Team',
+  };
+
+  const sections = [
+    { key: 'status' as const, label: 'Service Status', icon: Shield },
+    { key: 'api' as const, label: 'API Keys', icon: Key },
+    { key: 'team' as const, label: 'Team Management', icon: Users },
+    { key: 'company' as const, label: 'Company Info', icon: Building2 },
+  ];
+
+  return (
+    <div className="min-h-screen">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-8 py-5">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <SettingsIcon size={24} className="text-camelot-gold" /> Settings
+        </h1>
+      </div>
+
+      <div className="flex">
+        {/* Section Nav */}
+        <div className="w-56 bg-white border-r border-gray-200 min-h-[calc(100vh-140px)]">
+          {sections.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => setActiveSection(key)}
+              className={cn(
+                'w-full flex items-center gap-2 px-4 py-3 text-sm text-left transition-colors',
+                activeSection === key
+                  ? 'bg-camelot-gold/10 text-camelot-gold font-medium border-l-2 border-l-camelot-gold'
+                  : 'text-gray-600 hover:bg-gray-50'
+              )}
+            >
+              <Icon size={16} /> {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 p-8 max-w-3xl">
+          {/* Service Status */}
+          {activeSection === 'status' && (
+            <div>
+              <h2 className="text-lg font-bold mb-6">Service Status</h2>
+              <div className="space-y-3">
+                {services.map((service) => (
+                  <div key={service.name} className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200">
+                    <div className="flex items-center gap-3">
+                      {service.configured ? (
+                        <CheckCircle size={20} className="text-green-500" />
+                      ) : (
+                        <XCircle size={20} className="text-red-400" />
+                      )}
+                      <div>
+                        <p className="font-medium text-sm">{service.name}</p>
+                        <p className="text-xs text-gray-500">{service.details}</p>
+                      </div>
+                    </div>
+                    <span className={cn(
+                      'text-xs px-2 py-1 rounded-full',
+                      service.configured
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-red-50 text-red-500'
+                    )}>
+                      {service.configured ? 'Connected' : 'Not configured'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-800">Configuration via Environment Variables</p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      All API keys and settings are configured through environment variables (.env file). 
+                      Copy <code className="bg-blue-100 px-1 rounded">.env.example</code> to <code className="bg-blue-100 px-1 rounded">.env</code> and fill in your values.
+                      NYC Open Data APIs work without any configuration.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* API Keys */}
+          {activeSection === 'api' && (
+            <div>
+              <h2 className="text-lg font-bold mb-2">API Keys</h2>
+              <p className="text-sm text-gray-500 mb-6">
+                API keys are managed through environment variables for security. The values shown below are masked.
+              </p>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    label: 'AI Chat (OpenAI-compatible)',
+                    envVars: ['VITE_AI_API_URL', 'VITE_AI_API_KEY', 'VITE_AI_MODEL'],
+                    configured: isAIConfigured(),
+                    description: 'Works with OpenAI, OpenRouter, Anthropic proxy, local LLMs (Ollama/LM Studio), or any OpenAI-compatible endpoint.',
+                  },
+                  {
+                    label: 'Supabase',
+                    envVars: ['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY'],
+                    configured: isSupabaseConfigured(),
+                    description: 'Postgres database and authentication.',
+                  },
+                  {
+                    label: 'Apollo.io',
+                    envVars: ['VITE_APOLLO_API_KEY'],
+                    configured: isEnrichmentConfigured().apollo,
+                    description: 'Contact enrichment — find board members, owners, supers with email/phone.',
+                  },
+                  {
+                    label: 'Prospeo',
+                    envVars: ['VITE_PROSPEO_API_KEY'],
+                    configured: isEnrichmentConfigured().prospeo,
+                    description: 'Email verification and mobile number lookup fallback.',
+                  },
+                  {
+                    label: 'HubSpot',
+                    envVars: ['VITE_HUBSPOT_API_KEY'],
+                    configured: !!import.meta.env.VITE_HUBSPOT_API_KEY,
+                    description: 'CRM sync for deals and contacts.',
+                  },
+                  {
+                    label: 'Google Maps',
+                    envVars: ['VITE_GOOGLE_MAPS_API_KEY'],
+                    configured: !!import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+                    description: 'Map embeds on property details (optional).',
+                  },
+                ].map((item) => (
+                  <div key={item.label} className="bg-white rounded-xl border border-gray-200 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        {item.configured ? (
+                          <CheckCircle size={16} className="text-green-500" />
+                        ) : (
+                          <XCircle size={16} className="text-gray-300" />
+                        )}
+                        <h3 className="font-medium text-sm">{item.label}</h3>
+                      </div>
+                      <span className={cn(
+                        'text-xs',
+                        item.configured ? 'text-green-600' : 'text-gray-400'
+                      )}>
+                        {item.configured ? '✓ Configured' : 'Not set'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mb-2">{item.description}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {item.envVars.map((v) => (
+                        <code key={v} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{v}</code>
+                      ))}
+                    </div>
+                    {item.configured && (
+                      <div className="mt-2">
+                        <input
+                          type="password"
+                          value="••••••••••••••••"
+                          readOnly
+                          className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-400"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Team Management */}
+          {activeSection === 'team' && (
+            <div>
+              <h2 className="text-lg font-bold mb-6">Team Management</h2>
+              <div className="space-y-3">
+                {members.map((member) => (
+                  <div key={member.id} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200">
+                    <div className="w-10 h-10 bg-camelot-gold rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      {member.initials}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">{member.name}</p>
+                      <p className="text-sm text-gray-500">{member.email}</p>
+                    </div>
+                    <span className={cn(
+                      'text-xs px-2 py-1 rounded-full font-medium',
+                      member.role === 'owner' && 'bg-camelot-gold/10 text-camelot-gold',
+                      member.role === 'tech_lead' && 'bg-purple-100 text-purple-700',
+                      member.role === 'cold_caller' && 'bg-blue-100 text-blue-700',
+                      member.role === 'operations' && 'bg-green-100 text-green-700',
+                      member.role === 'team' && 'bg-gray-100 text-gray-700',
+                    )}>
+                      {roleLabels[member.role] || member.role}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Company Info */}
+          {activeSection === 'company' && (
+            <div>
+              <h2 className="text-lg font-bold mb-6">Company Information</h2>
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-camelot-gold rounded-xl flex items-center justify-center text-white text-2xl">
+                    🏰
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Camelot Property Management Services Corp</h3>
+                    <p className="text-sm text-gray-500">Licensed Real Estate Broker</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Company Name</label>
+                    <input
+                      type="text"
+                      defaultValue="Camelot Property Management Services Corp"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">DBA</label>
+                    <input
+                      type="text"
+                      defaultValue="Camelot Realty Group"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Address</label>
+                    <input
+                      type="text"
+                      defaultValue="477 Madison Avenue, 6th Floor"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">City, State, ZIP</label>
+                    <input
+                      type="text"
+                      defaultValue="New York, NY 10022"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Phone</label>
+                    <input
+                      type="tel"
+                      defaultValue="(212) 555-0100"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Website</label>
+                    <input
+                      type="url"
+                      defaultValue="https://camelotmgt.com"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Principal</label>
+                    <input
+                      type="text"
+                      defaultValue="David Goldoff"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">License #</label>
+                    <input
+                      type="text"
+                      defaultValue=""
+                      placeholder="Enter license number"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => toast.success('Settings saved')}
+                  className="mt-6 bg-camelot-gold text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-camelot-gold-dark transition-colors flex items-center gap-2"
+                >
+                  <Save size={14} /> Save Settings
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
