@@ -857,10 +857,10 @@ body{background:#fff}
 <div class="section-title">The Property</div>
 <div class="section-sub">${d.address} \u2014 ${d.propertyType}</div>
 
-<!-- Hero: Google Street View of the actual building -->
+<!-- Hero: Google Street View PHOTO of the actual building -->
 ${d.latitude && d.longitude ? `
 <div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:340px;margin-bottom:16px;position:relative">
-<iframe src="https://www.google.com/maps/embed?pb=!4v1!6m8!1m7!1sCAoSLEFGMVFpcE0${Date.now()}!2m2!1d${d.latitude}!2d${d.longitude}!3f0!4f5!5f0.7820865974627469" width="100%" height="340" style="border:0" allowfullscreen loading="lazy"></iframe>
+<iframe src="https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${d.latitude},${d.longitude}&heading=0&pitch=5&fov=80" width="100%" height="340" style="border:0" allowfullscreen loading="lazy"></iframe>
 <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(58,75,91,0.9));padding:16px 20px 12px;color:#fff">
 <div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700">${d.buildingName}</div>
 <div style="font-size:11px;opacity:0.8">${d.address} \u00B7 ${d.propertyType} \u00B7 ${d.units ? d.units + ' Units' : ''} ${d.stories ? '\u00B7 ' + d.stories + ' Floors' : ''} ${d.yearBuilt ? '\u00B7 Built ' + d.yearBuilt : ''}</div>
@@ -880,8 +880,8 @@ ${d.latitude && d.longitude ? `
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
 ${d.latitude && d.longitude ? `
 <div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
-<iframe src="https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${d.latitude},${d.longitude}&heading=0&pitch=5&fov=80" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
-<div style="text-align:center;font-size:9px;color:#999;padding:4px">\uD83D\uDCF7 Building Street View</div>
+<iframe src="https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${d.latitude},${d.longitude}&heading=180&pitch=5&fov=80" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:9px;color:#999;padding:4px">\uD83D\uDCF7 Building \u2014 Alternate View</div>
 </div>
 ` : `
 <div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">

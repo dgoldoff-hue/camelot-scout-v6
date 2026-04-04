@@ -143,7 +143,7 @@ export default function ReportCenter() {
           {/* Property Visual — Image + Map + Travel */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-              <iframe src={`https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${encodeURIComponent(data.address)}&fov=60&pitch=10`} width="100%" height="220" style={{border:0}} allowFullScreen loading="lazy" title="Street View" />
+              <iframe src={data.latitude && data.longitude ? `https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${data.latitude},${data.longitude}&heading=0&pitch=5&fov=80` : `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(data.address)}&zoom=18`} width="100%" height="220" style={{border:0}} allowFullScreen loading="lazy" title="Street View" />
               <div className="p-2 text-center text-xs text-gray-400">Street View — {data.address}</div>
             </div>
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
