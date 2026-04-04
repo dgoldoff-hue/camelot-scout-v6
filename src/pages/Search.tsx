@@ -4,6 +4,7 @@ import { REGIONS, isFloridaArea, getFloridaAreas, getRegionByArea } from '@/lib/
 import { fetchFullBuildingReport, searchByOwnerName, searchByUnit, searchBuildingsByRegion } from '@/lib/nyc-api';
 import { searchNYDOSCorporation, type NYDOSCorporation } from '@/lib/gov-apis';
 import { generateFloridaBuildings } from '@/lib/florida-data';
+import { generateTriStateBuildings, isTriStateArea } from '@/lib/tristate-data';
 import { calculateScore } from '@/lib/scoring';
 import { useBuildingsStore } from '@/lib/store';
 import { cn, formatCurrency, formatNumber } from '@/lib/utils';
@@ -362,18 +363,24 @@ export default function Search() {
 
     // Non-NYC, non-Florida areas (Westchester, NJ, CT, Long Island, Hamptons)
     if (otherAreas.length > 0) {
-      for (const area of otherAreas) {
-        const region = getRegionByArea(area);
-        const regionName = region?.name || 'Unknown';
-        setScanProgress(`Researching ${area}, ${regionName}...`);
-        await new Promise((resolve) => setTimeout(resolve, 400));
+      const triStateAreas = otherAreas.filter((a) => isTriStateArea(a));
+      const unknownAreas = otherAreas.filter((a) => !isTriStateArea(a));
 
-        // Generate a placeholder indicating this area needs AI research
-        toast(`${area} (${regionName}): AI-powered research — results will appear as leads are identified`, { icon: '🔍', duration: 4000 });
+      if (triStateAreas.length > 0) {
+        setScanProgress(`Researching ${triStateAreas.length} tri-state area(s)...`);
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        const triStateBuildings = generateTriStateBuildings(triStateAreas);
+        if (triStateBuildings.length > 0) {
+          addBuildings(triStateBuildings);
+          totalFound += triStateBuildings.length;
+          toast.success(`🏘️ Found ${triStateBuildings.length} buildings in ${[...new Set(triStateAreas.map(a => getRegionByArea(a)?.name || ''))].join(', ')}`);
+        }
       }
-      // For now, show a clear message that non-NYC areas use a different data pipeline
-      if (nycAreas.length === 0 && floridaAreas.length === 0) {
-        toast(`${otherAreas.length} area(s) in ${[...new Set(otherAreas.map(a => getRegionByArea(a)?.name || ''))].join(', ')} queued for AI-powered research. NYC boroughs use live government data.`, { icon: '📋', duration: 5000 });
+
+      if (unknownAreas.length > 0) {
+        for (const area of unknownAreas) {
+          toast(`${area}: AI-powered research queued — no pre-built data yet for this area`, { icon: '🔍', duration: 4000 });
+        }
       }
     }
 
