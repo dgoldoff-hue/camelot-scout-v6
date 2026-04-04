@@ -18,7 +18,7 @@ import {
   X, MapPin, Building2, AlertTriangle, DollarSign, Zap, FileText,
   Clock, StickyNote, Download, Mail, Phone, Linkedin, Plus,
   ExternalLink, Sparkles, RefreshCw, User, Shield, GitBranch, Loader2,
-  Facebook, Instagram, ChevronDown, ChevronRight,
+  Facebook, Instagram, ChevronDown, ChevronRight, Landmark,
 } from 'lucide-react';
 
 interface PropertyDetailProps {
@@ -27,13 +27,14 @@ interface PropertyDetailProps {
   onUpdate?: (id: string, data: Partial<Building>) => void;
 }
 
-type Tab = 'overview' | 'contacts' | 'violations' | 'financials' | 'energy' | 'permits' | 'activity' | 'notes';
+type Tab = 'overview' | 'contacts' | 'violations' | 'financials' | 'ownership' | 'energy' | 'permits' | 'activity' | 'notes';
 
 const TABS: { key: Tab; label: string; icon: any }[] = [
   { key: 'overview', label: 'Overview', icon: Building2 },
   { key: 'contacts', label: 'Contacts', icon: User },
   { key: 'violations', label: 'Violations', icon: AlertTriangle },
   { key: 'financials', label: 'Financials', icon: DollarSign },
+  { key: 'ownership', label: 'Ownership / ACRIS', icon: Landmark },
   { key: 'energy', label: 'Energy/LL97', icon: Zap },
   { key: 'permits', label: 'Permits', icon: FileText },
   { key: 'activity', label: 'Activity', icon: Clock },
@@ -655,6 +656,10 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
             </div>
           )}
 
+          {activeTab === 'ownership' && (
+            <OwnershipACRISTab building={building} nycData={nycData} isFetchingNYC={isFetchingNYC} />
+          )}
+
           {activeTab === 'energy' && (
             <div>
               <h3 className="font-semibold mb-4">Energy & LL97 Benchmarking</h3>
@@ -980,6 +985,234 @@ function ContactsTab({
       )}
     </div>
   );
+}
+
+// ========================================
+// OwnershipACRISTab — ACRIS deed & mortgage records
+// ========================================
+
+function OwnershipACRISTab({
+  building,
+  nycData,
+  isFetchingNYC,
+}: {
+  building: Building;
+  nycData: any;
+  isFetchingNYC: boolean;
+}) {
+  const acris = nycData?.acris;
+  const dof = nycData?.dof;
+  const buildingClass = building.building_class || dof?.buildingClass || '';
+  const isCondo = buildingClass.startsWith('R');
+  const isCoop = buildingClass.startsWith('D');
+
+  return (
+    <div>
+      {/* Current Owner */}
+      <div className="mb-6">
+        <h3 className="font-semibold mb-3">Current Owner</h3>
+        <div className="bg-gray-50 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-camelot-gold/20 rounded-full flex items-center justify-center">
+              <User size={18} className="text-camelot-gold" />
+            </div>
+            <div>
+              <p className="font-medium">
+                {building.dof_owner || dof?.owner || nycData?.registration?.owner || '—'}
+              </p>
+              <p className="text-xs text-gray-500">
+                DOF Record • BBL: {building.bbl || dof?.bbl || '—'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Condo / Co-op notes */}
+      {isCondo && (
+        <div className="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl">
+          <p className="text-sm text-blue-700">
+            🏢 <strong>Condo Building</strong> — Individual unit ownership records available.
+            Search by unit BBL in ACRIS for unit-level deed transfers.
+          </p>
+        </div>
+      )}
+      {isCoop && (
+        <div className="mb-4 px-4 py-3 bg-purple-50 border border-purple-200 rounded-xl">
+          <p className="text-sm text-purple-700">
+            🏠 <strong>Co-op Building</strong> — Co-op shares are transferred via proprietary lease
+            (not recorded in ACRIS per unit). Records below are for the entire building entity.
+          </p>
+        </div>
+      )}
+
+      {isFetchingNYC ? (
+        <div className="text-center py-8 text-gray-400">
+          <Loader2 size={24} className="mx-auto animate-spin mb-2" />
+          <p className="text-sm">Loading ACRIS records...</p>
+        </div>
+      ) : !acris || acris.records.length === 0 ? (
+        <div className="text-center py-8 text-gray-400">
+          <Landmark size={48} className="mx-auto mb-3 opacity-50" />
+          <p className="font-medium">No ACRIS records found</p>
+          <p className="text-sm mt-1">
+            Click "Refresh NYC Data" to fetch, or the property may not have recent deed activity.
+          </p>
+          {(building.bbl || dof?.bbl) && (
+            <a
+              href={buildACRISUrl(building.bbl || dof?.bbl)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-camelot-gold hover:underline mt-3"
+            >
+              <ExternalLink size={14} /> Search ACRIS directly
+            </a>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* Last Sale Summary */}
+          {acris.lastSaleDate && (
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="bg-green-50 rounded-xl p-4 text-center">
+                <p className="text-lg font-bold text-green-700">
+                  {acris.lastSalePrice ? `$${Number(acris.lastSalePrice).toLocaleString()}` : '—'}
+                </p>
+                <p className="text-xs text-green-600 mt-1">Last Sale Price</p>
+              </div>
+              <div className="bg-blue-50 rounded-xl p-4 text-center">
+                <p className="text-sm font-bold text-blue-700">
+                  {acris.lastSaleDate ? new Date(acris.lastSaleDate).toLocaleDateString() : '—'}
+                </p>
+                <p className="text-xs text-blue-600 mt-1">Last Sale Date</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 text-center">
+                <p className="text-sm font-bold text-gray-700 truncate">
+                  {acris.lastSaleBuyer || '—'}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">Last Buyer</p>
+              </div>
+            </div>
+          )}
+
+          {/* Transfer History (Deeds) */}
+          {acris.deeds.length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                Transfer History
+                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{acris.deeds.length}</span>
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 text-gray-500 font-medium">Date</th>
+                      <th className="text-left py-2 text-gray-500 font-medium">Type</th>
+                      <th className="text-right py-2 text-gray-500 font-medium">Amount</th>
+                      <th className="text-left py-2 text-gray-500 font-medium">Buyer</th>
+                      <th className="text-left py-2 text-gray-500 font-medium">Seller</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {acris.deeds.map((r: any, i: number) => {
+                      const buyer = r.parties?.find((p: any) => p.type === 'buyer');
+                      const seller = r.parties?.find((p: any) => p.type === 'seller');
+                      return (
+                        <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
+                          <td className="py-2 text-xs">{r.date ? new Date(r.date).toLocaleDateString() : '—'}</td>
+                          <td className="py-2">
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">
+                              {r.documentTypeLabel || r.documentType}
+                            </span>
+                          </td>
+                          <td className="py-2 text-xs text-right font-medium">
+                            {r.amount ? `$${Number(r.amount).toLocaleString()}` : '—'}
+                          </td>
+                          <td className="py-2 text-xs max-w-[160px] truncate">{buyer?.name || '—'}</td>
+                          <td className="py-2 text-xs max-w-[160px] truncate">{seller?.name || '—'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Mortgage Records */}
+          {acris.mortgages.length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                Mortgage Records
+                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{acris.mortgages.length}</span>
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 text-gray-500 font-medium">Date</th>
+                      <th className="text-left py-2 text-gray-500 font-medium">Type</th>
+                      <th className="text-right py-2 text-gray-500 font-medium">Amount</th>
+                      <th className="text-left py-2 text-gray-500 font-medium">Lender / Party</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {acris.mortgages.map((r: any, i: number) => {
+                      const lender = r.parties?.find((p: any) => p.type === 'buyer') || r.parties?.[0];
+                      return (
+                        <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
+                          <td className="py-2 text-xs">{r.date ? new Date(r.date).toLocaleDateString() : '—'}</td>
+                          <td className="py-2">
+                            <span className={cn(
+                              'text-xs px-1.5 py-0.5 rounded font-medium',
+                              r.documentType === 'SAT' ? 'bg-gray-100 text-gray-600' :
+                              r.documentType === 'ASST' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-blue-100 text-blue-700'
+                            )}>
+                              {r.documentTypeLabel || r.documentType}
+                            </span>
+                          </td>
+                          <td className="py-2 text-xs text-right font-medium">
+                            {r.amount ? `$${Number(r.amount).toLocaleString()}` : '—'}
+                          </td>
+                          <td className="py-2 text-xs max-w-[200px] truncate">{lender?.name || '—'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Link to full ACRIS */}
+          <div className="mt-4 text-center">
+            <a
+              href={acris.acrisUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-camelot-gold hover:underline font-medium"
+            >
+              <ExternalLink size={14} /> View full ACRIS record on NYC.gov
+            </a>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Build ACRIS URL from a BBL string
+ */
+function buildACRISUrl(bbl?: string): string {
+  if (!bbl) return 'https://a836-acris.nyc.gov/DS/DocumentSearch/Index';
+  const clean = bbl.replace(/\D/g, '');
+  if (clean.length < 10) return 'https://a836-acris.nyc.gov/DS/DocumentSearch/Index';
+  const borough = clean.substring(0, 1);
+  const block = clean.substring(1, 6);
+  const lot = clean.substring(6, 10);
+  return `https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borough=${borough}&Block=${block}&Lot=${lot}`;
 }
 
 // ========================================

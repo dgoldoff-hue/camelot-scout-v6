@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 import {
   Search as SearchIcon, MapPin, ChevronDown, ChevronRight, Building2,
   Loader2, Zap, AlertTriangle, DollarSign, Calendar, X, Filter,
-  Activity, TrendingUp, Users, Award, User, Home,
+  Activity, TrendingUp, Users, Award, User, Home, Landmark, ExternalLink,
 } from 'lucide-react';
 import { detectBuildingOperations, getDoormanLabel, getFrontDeskLabel } from '@/lib/building-ops';
 
@@ -603,6 +603,71 @@ export default function Search() {
                   </div>
                 </div>
               </div>
+
+              {/* Ownership / ACRIS Section */}
+              {reportData.acris && reportData.acris.records.length > 0 && (
+                <div className="mt-6 pt-5 border-t border-white/10">
+                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1">
+                    <Landmark size={12} className="text-camelot-gold" /> Ownership / ACRIS
+                  </h4>
+                  <div className="grid grid-cols-3 gap-4 mb-3">
+                    <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                      <p className="text-[10px] text-gray-400 uppercase">Last Sale Price</p>
+                      <p className="text-sm font-medium text-white">
+                        {reportData.acris.lastSalePrice
+                          ? `$${Number(reportData.acris.lastSalePrice).toLocaleString()}`
+                          : '—'}
+                      </p>
+                    </div>
+                    <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                      <p className="text-[10px] text-gray-400 uppercase">Last Sale Date</p>
+                      <p className="text-sm font-medium text-white">
+                        {reportData.acris.lastSaleDate
+                          ? new Date(reportData.acris.lastSaleDate).toLocaleDateString()
+                          : '—'}
+                      </p>
+                    </div>
+                    <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                      <p className="text-[10px] text-gray-400 uppercase">Last Buyer</p>
+                      <p className="text-sm font-medium text-white truncate">
+                        {reportData.acris.lastSaleBuyer || '—'}
+                      </p>
+                    </div>
+                  </div>
+                  {reportData.acris.deeds.length > 0 && (
+                    <div className="space-y-1 mb-3">
+                      {reportData.acris.deeds.slice(0, 3).map((d: any, i: number) => {
+                        const buyer = d.parties?.find((p: any) => p.type === 'buyer');
+                        const seller = d.parties?.find((p: any) => p.type === 'seller');
+                        return (
+                          <div key={i} className="flex items-center justify-between px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-400">{d.date ? new Date(d.date).toLocaleDateString() : '—'}</span>
+                              <span className="text-green-400 font-medium">{d.documentTypeLabel}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-gray-300 truncate max-w-[120px]">{seller?.name || '—'}</span>
+                              <span className="text-gray-500">→</span>
+                              <span className="text-white font-medium truncate max-w-[120px]">{buyer?.name || '—'}</span>
+                              <span className="text-camelot-gold font-medium">
+                                {d.amount ? `$${Number(d.amount).toLocaleString()}` : ''}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <a
+                    href={reportData.acris.acrisUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-camelot-gold hover:underline"
+                  >
+                    <ExternalLink size={12} /> View full ACRIS history on NYC.gov
+                  </a>
+                </div>
+              )}
             </div>
           )}
 

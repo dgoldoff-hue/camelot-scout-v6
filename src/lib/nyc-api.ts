@@ -3,7 +3,7 @@
  * All endpoints are free and require no API key.
  */
 
-import type { HPDViolation, DOFProperty, DOBPermit, LL97Energy } from '@/types';
+import type { HPDViolation, DOFProperty, DOBPermit, LL97Energy, ACRISRecord, ACRISParty, ACRISData } from '@/types';
 import { detectBuildingOperations } from '@/lib/building-ops';
 
 const NYC_BASE = 'https://data.cityofnewyork.us/resource';
@@ -15,6 +15,9 @@ const ENDPOINTS = {
   dobPermits: `${NYC_BASE}/ipu4-2vj7.json`,
   dofProperty: `${NYC_BASE}/64uk-42ks.json`,
   ll97Energy: `${NYC_BASE}/7x5e-2fxh.json`,
+  acrisLegals: `${NYC_BASE}/8h5j-fqxa.json`,
+  acrisMaster: `${NYC_BASE}/bnx9-e6tj.json`,
+  acrisParties: `${NYC_BASE}/636b-3b5g.json`,
 };
 
 // Borough name → code mapping for NYC APIs
@@ -185,6 +188,157 @@ export async function fetchLL97Energy(address: string): Promise<LL97Energy[]> {
   }
 }
 
+// ---- ACRIS helpers ----
+
+const ACRIS_DOC_TYPES: Record<string, string> = {
+  DEED: 'Deed Transfer',
+  MTGE: 'Mortgage',
+  AGMT: 'Agreement',
+  ASST: 'Assignment of Mortgage',
+  SAT: 'Satisfaction of Mortgage',
+  RPTT: 'Real Property Transfer Tax',
+  'AL&R': 'Assignment of Lease & Rents',
+  CORRM: 'Correction Mortgage',
+  CORRD: 'Correction Deed',
+};
+
+const ACRIS_RELEVANT_TYPES = ['DEED', 'MTGE', 'AGMT', 'ASST', 'SAT'];
+
+/**
+ * Parse a BBL string into borough, block, lot components
+ */
+export function parseBBL(bbl: string): { borough: string; block: string; lot: string } | null {
+  if (!bbl || bbl.length < 10) return null;
+  const clean = bbl.replace(/\D/g, '');
+  if (clean.length < 10) return null;
+  return {
+    borough: clean.substring(0, 1),
+    block: clean.substring(1, 6),
+    lot: clean.substring(6, 10),
+  };
+}
+
+/**
+ * Fetch ACRIS deed/transfer/mortgage records for a BBL.
+ * 1. Query Legals by BBL → get document_ids
+ * 2. Query Master for those document_ids (filtered to relevant types)
+ * 3. Query Parties for those document_ids
+ * 4. Combine into clean ACRISRecord[]
+ */
+export async function fetchACRISRecords(borough: string, block: string, lot: string): Promise<ACRISData> {
+  const acrisUrl = `https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borough=${borough}&Block=${block.padStart(5, '0')}&Lot=${lot.padStart(4, '0')}`;
+
+  try {
+    // 10-year lookback
+    const tenYearsAgo = new Date();
+    tenYearsAgo.setFullYear(tenYearsAgo.getFullYear() - 10);
+    const dateStr = tenYearsAgo.toISOString().split('T')[0];
+
+    // Step 1: Query Legals by BBL
+    const legalsWhere = `borough='${borough}' AND block='${block}' AND lot='${lot}'`;
+    const legalsUrl = `${ENDPOINTS.acrisLegals}?$limit=500&$where=${encodeURIComponent(legalsWhere)}`;
+    const legalsRes = await fetch(legalsUrl);
+    if (!legalsRes.ok) throw new Error(`ACRIS Legals API error: ${legalsRes.status}`);
+    const legals: any[] = await legalsRes.json();
+
+    if (legals.length === 0) {
+      return { records: [], deeds: [], mortgages: [], acrisUrl, borough, block, lot };
+    }
+
+    // Get unique document_ids
+    const docIds = [...new Set(legals.map((l: any) => l.document_id).filter(Boolean))];
+    if (docIds.length === 0) {
+      return { records: [], deeds: [], mortgages: [], acrisUrl, borough, block, lot };
+    }
+
+    // Step 2 & 3: Query Master + Parties in parallel, batching document IDs
+    // Socrata has URL length limits, so batch in groups of 30
+    const batchSize = 30;
+    const batches: string[][] = [];
+    for (let i = 0; i < docIds.length; i += batchSize) {
+      batches.push(docIds.slice(i, i + batchSize));
+    }
+
+    const allMaster: any[] = [];
+    const allParties: any[] = [];
+
+    // Process batches (parallelize master + parties within each batch)
+    for (const batch of batches) {
+      const docIdFilter = batch.map((id) => `document_id='${id}'`).join(' OR ');
+      const typeFilter = ACRIS_RELEVANT_TYPES.map((t) => `doc_type='${t}'`).join(' OR ');
+      const masterWhere = `(${docIdFilter}) AND (${typeFilter}) AND document_date >= '${dateStr}'`;
+      const partiesWhere = docIdFilter;
+
+      const [masterRes, partiesRes] = await Promise.all([
+        fetch(`${ENDPOINTS.acrisMaster}?$limit=500&$where=${encodeURIComponent(masterWhere)}`).then((r) =>
+          r.ok ? r.json() : []
+        ).catch(() => []),
+        fetch(`${ENDPOINTS.acrisParties}?$limit=1000&$where=${encodeURIComponent(partiesWhere)}`).then((r) =>
+          r.ok ? r.json() : []
+        ).catch(() => []),
+      ]);
+
+      allMaster.push(...masterRes);
+      allParties.push(...partiesRes);
+    }
+
+    // Step 4: Build party map (document_id → parties)
+    const partyMap = new Map<string, ACRISParty[]>();
+    for (const p of allParties) {
+      const docId = p.document_id;
+      if (!partyMap.has(docId)) partyMap.set(docId, []);
+      const partyType: 'buyer' | 'seller' = p.party_type === '1' ? 'buyer' : 'seller';
+      const addr = [p.address_1, p.city, p.state, p.zip].filter(Boolean).join(', ') || undefined;
+      partyMap.get(docId)!.push({
+        type: partyType,
+        name: p.name || 'Unknown',
+        address: addr,
+      });
+    }
+
+    // Step 5: Combine master + parties into ACRISRecord[]
+    const records: ACRISRecord[] = allMaster
+      .map((m: any) => ({
+        documentId: m.document_id,
+        documentType: m.doc_type,
+        documentTypeLabel: ACRIS_DOC_TYPES[m.doc_type] || m.doc_type,
+        date: m.document_date || '',
+        amount: parseFloat(m.document_amt) || 0,
+        recordedDate: m.recorded_datetime || undefined,
+        parties: partyMap.get(m.document_id) || [],
+      }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    // Separate deeds and mortgages
+    const deeds = records.filter((r) => r.documentType === 'DEED');
+    const mortgages = records.filter((r) => ['MTGE', 'ASST', 'SAT'].includes(r.documentType));
+
+    // Last sale info
+    const lastDeed = deeds[0];
+    const lastSaleDate = lastDeed?.date;
+    const lastSalePrice = lastDeed?.amount || 0;
+    const lastSaleBuyer = lastDeed?.parties.find((p) => p.type === 'buyer')?.name;
+    const lastSaleSeller = lastDeed?.parties.find((p) => p.type === 'seller')?.name;
+
+    return {
+      records,
+      deeds,
+      mortgages,
+      lastSaleDate,
+      lastSalePrice,
+      lastSaleBuyer,
+      lastSaleSeller,
+      acrisUrl,
+      borough,
+      block,
+      lot,
+    };
+  } catch (err) {
+    console.error('ACRIS fetch error:', err);
+    return { records: [], deeds: [], mortgages: [], acrisUrl, borough, block, lot };
+  }
+}
+
 /**
  * Fetch ALL NYC data for a building (combined)
  */
@@ -207,6 +361,19 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
   const openViolations = violations.filter(
     (v) => v.currentstatus !== 'CLOSE' && v.violationstatus !== 'Close'
   );
+
+  // Fetch ACRIS if we have a BBL
+  let acris: ACRISData | null = null;
+  if (dof?.bbl) {
+    const bblParts = parseBBL(dof.bbl);
+    if (bblParts) {
+      try {
+        acris = await fetchACRISRecords(bblParts.borough, bblParts.block, bblParts.lot);
+      } catch (err) {
+        console.error('ACRIS fetch in report failed:', err);
+      }
+    }
+  }
 
   return {
     violations: {
@@ -258,6 +425,7 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
           propertyName: energy[0].property_name,
         }
       : null,
+    acris,
     buildingOps: detectBuildingOperations(
       dof?.bldgcl,
       parseInt(dof?.unitsres || dof?.unitstotal || '0') || 0,

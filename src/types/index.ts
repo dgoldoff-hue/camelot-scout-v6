@@ -380,3 +380,34 @@ export const GRADE_COLORS: Record<BuildingGrade, string> = {
   B: '#f59e0b',
   C: '#94a3b8',
 };
+
+// ACRIS (Automated City Register Information System) Types
+export interface ACRISParty {
+  type: 'buyer' | 'seller';
+  name: string;
+  address?: string;
+}
+
+export interface ACRISRecord {
+  documentId: string;
+  documentType: string; // DEED, MTGE, AGMT, ASST, SAT
+  documentTypeLabel: string;
+  date: string;
+  amount: number;
+  recordedDate?: string;
+  parties: ACRISParty[];
+}
+
+export interface ACRISData {
+  records: ACRISRecord[];
+  deeds: ACRISRecord[];
+  mortgages: ACRISRecord[];
+  lastSaleDate?: string;
+  lastSalePrice?: number;
+  lastSaleBuyer?: string;
+  lastSaleSeller?: string;
+  acrisUrl: string;
+  borough: string;
+  block: string;
+  lot: string;
+}
