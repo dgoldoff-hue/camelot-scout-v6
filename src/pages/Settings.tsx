@@ -46,7 +46,7 @@ export default function Settings() {
     },
     {
       name: 'HubSpot CRM',
-      configured: !!import.meta.env.VITE_HUBSPOT_API_KEY,
+      configured: !!(import.meta.env.VITE_HUBSPOT_API_KEY || ''),
       details: import.meta.env.VITE_HUBSPOT_API_KEY ? 'API key set' : 'Set VITE_HUBSPOT_API_KEY for CRM sync',
     },
     {
@@ -184,13 +184,13 @@ export default function Settings() {
                   {
                     label: 'HubSpot',
                     envVars: ['VITE_HUBSPOT_API_KEY'],
-                    configured: !!import.meta.env.VITE_HUBSPOT_API_KEY,
+                    configured: !!(import.meta.env.VITE_HUBSPOT_API_KEY || ''),
                     description: 'CRM sync for deals and contacts.',
                   },
                   {
                     label: 'Google Maps',
                     envVars: ['VITE_GOOGLE_MAPS_API_KEY'],
-                    configured: !!import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+                    configured: !!(import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''),
                     description: 'Map embeds on property details (optional).',
                   },
                 ].map((item) => (
