@@ -137,6 +137,24 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
     }
   };
 
+  const handleAddToPipeline = () => {
+    onUpdate?.(building.id, { pipeline_stage: 'discovered' as any, pipeline_moved_at: new Date().toISOString() });
+    toast.success(`${building.name || building.address} added to Pipeline → Discovered`);
+  };
+
+  const handleSendEmail = () => {
+    const subject = encodeURIComponent(`Introduction — Camelot Property Management | ${building.address}`);
+    const body = encodeURIComponent(
+      `Dear Board,\n\nMy name is David Goldoff, and I'm the principal of Camelot Realty Group, a boutique property management firm headquartered at 501 Madison Avenue in New York City.\n\nI'm reaching out because we specialize in managing ${building.type || 'residential'} buildings like ${building.address}, and I believe we could bring meaningful value to your ${building.units || ''}-unit property.\n\n` +
+      (building.enriched_data?.violations?.open ? `I noticed that ${building.address} currently has ${building.enriched_data.violations.open} open HPD violations on record. Our compliance team has extensive experience resolving these efficiently.\n\n` : '') +
+      `I'd welcome the opportunity to introduce Camelot to your board. Would you have 15 minutes for a brief call this week?\n\nWarm regards,\n\nDavid Goldoff\nPrincipal, Camelot Realty Group\n501 Madison Avenue, Suite 1400, New York, NY 10022\ndgoldoff@camelot.nyc\n212-206-9939 ext. 701 | 646-523-9068`
+    );
+    const contacts = building.contacts || [];
+    const emailTo = contacts.find((c: any) => c.email)?.email || '';
+    window.open(`mailto:${emailTo}?subject=${subject}&body=${body}`, '_self');
+    toast.success('Email draft opened');
+  };
+
   const saveNotes = () => {
     onUpdate?.(building.id, { notes });
     toast.success('Notes saved');
@@ -189,10 +207,10 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
             <button onClick={handleReportPDF} className="flex items-center gap-1.5 text-xs bg-camelot-gold text-camelot-navy px-3 py-1.5 rounded-lg font-medium hover:bg-camelot-gold-light transition-colors">
               <Download size={13} /> Report PDF
             </button>
-            <button className="flex items-center gap-1.5 text-xs bg-white/10 px-3 py-1.5 rounded-lg hover:bg-white/20 transition-colors">
+            <button onClick={handleSendEmail} className="flex items-center gap-1.5 text-xs bg-white/10 px-3 py-1.5 rounded-lg hover:bg-white/20 transition-colors">
               <Mail size={13} /> Send Email
             </button>
-            <button className="flex items-center gap-1.5 text-xs bg-white/10 px-3 py-1.5 rounded-lg hover:bg-white/20 transition-colors">
+            <button onClick={handleAddToPipeline} className="flex items-center gap-1.5 text-xs bg-white/10 px-3 py-1.5 rounded-lg hover:bg-white/20 transition-colors">
               <GitBranch size={13} /> Add to Pipeline
             </button>
             <button
