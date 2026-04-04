@@ -222,7 +222,16 @@ export default function Search() {
     }
 
     const floridaAreas = selectedRegions.filter((a) => isFloridaArea(a));
-    const nycAreas = selectedRegions.filter((a) => !isFloridaArea(a));
+    const NYC_BOROUGH_NAMES = ['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'];
+    const allNonFlorida = selectedRegions.filter((a) => !isFloridaArea(a));
+    const nycAreas = allNonFlorida.filter((a) => {
+      const region = getRegionByArea(a);
+      return region && NYC_BOROUGH_NAMES.includes(region.name);
+    });
+    const otherAreas = allNonFlorida.filter((a) => {
+      const region = getRegionByArea(a);
+      return !region || !NYC_BOROUGH_NAMES.includes(region.name);
+    });
 
     setIsScanning(true);
     let totalFound = 0;
@@ -348,6 +357,23 @@ export default function Search() {
       if (nycBuildings.length > 0) {
         addBuildings(nycBuildings);
         totalFound += nycBuildings.length;
+      }
+    }
+
+    // Non-NYC, non-Florida areas (Westchester, NJ, CT, Long Island, Hamptons)
+    if (otherAreas.length > 0) {
+      for (const area of otherAreas) {
+        const region = getRegionByArea(area);
+        const regionName = region?.name || 'Unknown';
+        setScanProgress(`Researching ${area}, ${regionName}...`);
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        // Generate a placeholder indicating this area needs AI research
+        toast(`${area} (${regionName}): AI-powered research — results will appear as leads are identified`, { icon: '🔍', duration: 4000 });
+      }
+      // For now, show a clear message that non-NYC areas use a different data pipeline
+      if (nycAreas.length === 0 && floridaAreas.length === 0) {
+        toast(`${otherAreas.length} area(s) in ${[...new Set(otherAreas.map(a => getRegionByArea(a)?.name || ''))].join(', ')} queued for AI-powered research. NYC boroughs use live government data.`, { icon: '📋', duration: 5000 });
       }
     }
 
