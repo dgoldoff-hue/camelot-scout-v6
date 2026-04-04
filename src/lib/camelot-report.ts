@@ -85,6 +85,9 @@ export interface MasterReportData {
   pricePerUnit: number;
   monthlyFee: number;
   annualFee: number;
+  // Geolocation
+  latitude: number | null;
+  longitude: number | null;
   // Property classification
   propertyType: string;
   neighborhoodName: string;
@@ -280,8 +283,22 @@ const CAMELOT = {
 // Data Builder
 // ============================================================
 
+async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const res = await fetch(`https://geosearch.planninglabs.nyc/v2/search?text=${encodeURIComponent(address)}&size=1`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const coords = data?.features?.[0]?.geometry?.coordinates;
+    if (coords && coords.length === 2) return { lat: coords[1], lng: coords[0] };
+    return null;
+  } catch { return null; }
+}
+
 export async function buildMasterReport(address: string, borough?: string): Promise<MasterReportData> {
-  const raw = await fetchFullBuildingReport(address, borough);
+  const [raw, geo] = await Promise.all([
+    fetchFullBuildingReport(address, borough),
+    geocodeAddress(address + (borough ? ', ' + borough + ', New York' : ', New York, NY')),
+  ]);
 
   const dof = raw.dof;
   const units = dof?.units || 0;
@@ -415,6 +432,8 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     scoutScore: score,
     scoutGrade: grade,
     complaint311Count: 0,
+    latitude: geo?.lat ?? null,
+    longitude: geo?.lng ?? null,
     propertyType: classifyBuildingType(dof?.buildingClass || ''),
     neighborhoodName: detectNeighborhood(address, borough || ''),
     neighborhoodMarketData: lookupNeighborhoodData(detectNeighborhood(address, borough || '')),
@@ -838,29 +857,60 @@ body{background:#fff}
 <div class="section-title">The Property</div>
 <div class="section-sub">${d.address} \u2014 ${d.propertyType}</div>
 
-<!-- Hero property image — full width Google Maps street-level -->
-<div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:320px;margin-bottom:16px;position:relative">
-<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=19&maptype=satellite" width="100%" height="320" style="border:0" allowfullscreen loading="lazy"></iframe>
-<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(58,75,91,0.85));padding:16px 20px 12px;color:#fff">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:700">${d.buildingName}</div>
+<!-- Hero: Google Street View of the actual building -->
+${d.latitude && d.longitude ? `
+<div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:340px;margin-bottom:16px;position:relative">
+<iframe src="https://www.google.com/maps/embed?pb=!4v1!6m8!1m7!1sCAoSLEFGMVFpcE0${Date.now()}!2m2!1d${d.latitude}!2d${d.longitude}!3f0!4f5!5f0.7820865974627469" width="100%" height="340" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(58,75,91,0.9));padding:16px 20px 12px;color:#fff">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700">${d.buildingName}</div>
 <div style="font-size:11px;opacity:0.8">${d.address} \u00B7 ${d.propertyType} \u00B7 ${d.units ? d.units + ' Units' : ''} ${d.stories ? '\u00B7 ' + d.stories + ' Floors' : ''} ${d.yearBuilt ? '\u00B7 Built ' + d.yearBuilt : ''}</div>
 </div>
 </div>
+` : `
+<div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:340px;margin-bottom:16px;position:relative">
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=19&maptype=satellite" width="100%" height="340" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(58,75,91,0.9));padding:16px 20px 12px;color:#fff">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700">${d.buildingName}</div>
+<div style="font-size:11px;opacity:0.8">${d.address} \u00B7 ${d.propertyType} \u00B7 ${d.units ? d.units + ' Units' : ''} ${d.stories ? '\u00B7 ' + d.stories + ' Floors' : ''} ${d.yearBuilt ? '\u00B7 Built ' + d.yearBuilt : ''}</div>
+</div>
+</div>
+`}
 
-<!-- Three panels: Street map, Neighborhood area, Directions from Camelot -->
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+<!-- Four panels: Street View, Map, Neighborhood, Directions -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+${d.latitude && d.longitude ? `
 <div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
-<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=17" width="100%" height="180" style="border:0" allowfullscreen loading="lazy"></iframe>
-<div style="text-align:center;font-size:9px;color:#999;padding:4px">Street Map</div>
+<iframe src="https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${d.latitude},${d.longitude}&heading=0&pitch=5&fov=80" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:9px;color:#999;padding:4px">\uD83D\uDCF7 Building Street View</div>
+</div>
+` : `
+<div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=18" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:9px;color:#999;padding:4px">\uD83D\uDCF7 Building Location</div>
+</div>
+`}
+<div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=16" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:9px;color:#999;padding:4px">\uD83D\uDDFA\uFE0F Street Map</div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+<div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${d.neighborhoodName ? encodeURIComponent(d.neighborhoodName + ' New York NY') : encodedAddr}&zoom=14" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:9px;color:#999;padding:4px">\uD83C\uDFD8\uFE0F Neighborhood Overview</div>
 </div>
 <div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
-<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=14" width="100%" height="180" style="border:0" allowfullscreen loading="lazy"></iframe>
-<div style="text-align:center;font-size:9px;color:#999;padding:4px">Neighborhood Area</div>
+<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=driving" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:9px;color:#999;padding:4px">\uD83D\uDE97 From Camelot HQ \u2014 477 Madison Ave</div>
 </div>
-<div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
-<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=driving" width="100%" height="180" style="border:0" allowfullscreen loading="lazy"></iframe>
-<div style="text-align:center;font-size:9px;color:#999;padding:4px">From Camelot HQ \u2014 477 Madison Ave</div>
 </div>
+
+<!-- StreetEasy + External Photo Sources -->
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:12px 16px;margin-bottom:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+<span style="font-size:11px;color:#555;font-weight:600">View more photos:</span>
+<a href="https://streeteasy.com/building/${encodeURIComponent(d.address.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}" target="_blank" style="font-size:11px;color:#A89035;text-decoration:underline">StreetEasy Listing Photos</a>
+<a href="https://www.google.com/maps/search/${encodedAddr}" target="_blank" style="font-size:11px;color:#A89035;text-decoration:underline">Google Maps Photos</a>
+<a href="https://www.google.com/search?q=${encodedAddr}+building+photos&tbm=isch" target="_blank" style="font-size:11px;color:#A89035;text-decoration:underline">Google Image Search</a>
 </div>
 
 <div class="stats-row">
@@ -1199,11 +1249,35 @@ ${[
 </div>
 </div>` : ''}
 
-<!-- PAGE 6: LL97 -->
+<!-- PAGE 6: LOCAL LAWS & REGULATORY EXPOSURE -->
+<div class="section section-cream">
+<div class="section-title">Local Law &amp; Regulatory Compliance</div>
+<div class="section-sub">NYC local laws applicable to ${d.buildingName} based on building size, age, and type</div>
+
+<table class="invest-table">
+<thead><tr><th>Local Law</th><th>Requirement</th><th>Applicability to This Building</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td style="font-weight:700">LL97 (Climate Mobilization)</td><td>Carbon emission caps for buildings &gt;25,000 SF. Penalties ~$268/ton excess CO\u2082.</td><td>${d.buildingArea > 25000 ? `<strong style="color:#dc2626">${d.buildingArea.toLocaleString()} SF \u2014 ABOVE threshold</strong>` : d.buildingArea > 0 ? `${d.buildingArea.toLocaleString()} SF \u2014 ${d.buildingArea > 25000 ? 'Above' : 'Below'} threshold` : 'Building area unknown'}</td><td style="color:${d.ll97 && d.ll97.period1Penalty > 0 ? '#dc2626' : '#16a34a'};font-weight:700">${d.ll97 ? (d.ll97.period1Penalty > 0 ? '\u26A0 Penalty Exposure' : '\u2714 Compliant') : 'Assessment needed'}</td></tr>
+<tr><td style="font-weight:700">LL11/FISP (Facade Inspection)</td><td>Facade inspection every 5 years for buildings &gt;6 stories.</td><td>${d.stories > 6 ? `<strong style="color:#dc2626">${d.stories} stories \u2014 REQUIRED</strong>` : d.stories > 0 ? `${d.stories} stories \u2014 Not required` : 'Unknown'}</td><td style="font-weight:600">${d.stories > 6 ? 'Cycle 10 due' : 'N/A'}</td></tr>
+<tr><td style="font-weight:700">LL152 (Gas Piping)</td><td>Periodic gas piping inspection for all buildings with gas service.</td><td>Required for buildings with gas piping</td><td style="font-weight:600">Verify compliance</td></tr>
+<tr><td style="font-weight:700">LL84 (Benchmarking)</td><td>Annual energy benchmarking for buildings &gt;25,000 SF.</td><td>${d.buildingArea > 25000 ? '<strong style="color:#dc2626">Required</strong>' : 'Below threshold'}</td><td style="font-weight:600">${d.energyStarScore != null ? 'Filed \u2014 Score: ' + d.energyStarScore : 'Verify filing'}</td></tr>
+<tr><td style="font-weight:700">LL87 (Energy Audit)</td><td>Energy audit + retro-commissioning every 10 years for buildings &gt;50,000 SF.</td><td>${d.buildingArea > 50000 ? '<strong style="color:#dc2626">Required</strong>' : 'Below threshold'}</td><td style="font-weight:600">Verify cycle</td></tr>
+<tr><td style="font-weight:700">HPD Registration</td><td>Annual registration for all residential buildings with 3+ units.</td><td>${d.units >= 3 ? '<strong>Required</strong>' : 'Not required'}</td><td style="color:${d.registrationOwner ? '#16a34a' : '#dc2626'};font-weight:600">${d.registrationOwner ? '\u2714 Registered' : '\u26A0 Verify'}</td></tr>
+<tr><td style="font-weight:700">LL18 (Elevator Inspection)</td><td>Annual elevator inspection for all buildings with elevators.</td><td>${d.stories > 5 ? 'Likely has elevator' : 'May be walk-up'}</td><td style="font-weight:600">Verify with DOB</td></tr>
+${d.isRentStabilized ? '<tr><td style="font-weight:700">Rent Stabilization</td><td>DHCR registration, rent guidelines board increases, lease renewals</td><td><strong style="color:#A89035">Rent Stabilized Building</strong></td><td style="color:#A89035;font-weight:600">Active \u2014 DHCR Registered</td></tr>' : ''}
+</tbody>
+</table>
+
+<div style="background:#3A4B5B;border-radius:8px;padding:14px 18px;margin-top:14px;color:#fff;font-size:12px;line-height:1.7">
+<strong style="color:#A89035">Camelot Compliance Guarantee:</strong> We proactively track ALL local law deadlines, filing requirements, and inspection cycles for every building we manage. Our zero-penalty track record across 42 properties speaks for itself. Compliance monitoring is included at no additional charge.
+</div>
+</div>
+
+<!-- LL97 DETAIL (if applicable) -->
 ${d.ll97 ? `
 <div class="section section-white">
-<div class="section-title">LL97 Compliance Analysis</div>
-<div class="section-sub">Local Law 97 carbon emission penalty exposure</div>
+<div class="section-title">LL97 Carbon Cap \u2014 Detailed Analysis</div>
+<div class="section-sub">Local Law 97 penalty exposure for ${d.buildingName}</div>
 <div class="stats-row">
 <div class="stat-box"><div class="val" style="color:#dc2626">$${d.ll97.period1Penalty.toLocaleString()}</div><div class="lbl">Annual Penalty (2024-2029)</div></div>
 <div class="stat-box"><div class="val" style="color:#dc2626">$${d.ll97.period2Penalty.toLocaleString()}</div><div class="lbl">Annual Penalty (2030-2034)</div></div>
