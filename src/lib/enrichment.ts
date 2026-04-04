@@ -109,7 +109,7 @@ export async function enrichWithProspeo(params: {
   }
 
   try {
-    const res = await fetch(`${PROSPEO_BASE}/email-finder`, {
+    const res = await fetch(`${PROSPEO_BASE}/api/v1/email-finder`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ export async function enrichWithProspeo(params: {
       body: JSON.stringify({
         first_name: params.firstName,
         last_name: params.lastName,
-        company: params.company,
+        company_name: params.company,
         domain: params.domain,
       }),
     });
