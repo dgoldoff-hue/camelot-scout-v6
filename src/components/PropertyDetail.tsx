@@ -1,14 +1,24 @@
 import { useState, useEffect } from 'react';
-import type { Building, Contact, Activity } from '@/types';
+import type {
+  Building, Contact, Activity, ContactRole, ContactCategory,
+  CONTACT_ROLE_LABELS, CONTACT_ROLE_CATEGORY, CONTACT_CATEGORY_COLORS, BuildingOperations,
+} from '@/types';
+import {
+  CONTACT_ROLE_LABELS as ROLE_LABELS,
+  CONTACT_ROLE_CATEGORY as ROLE_CATEGORY,
+  CONTACT_CATEGORY_COLORS as CAT_COLORS,
+} from '@/types';
 import { cn, formatCurrency, formatDate, formatNumber, gradeBg, daysInStage } from '@/lib/utils';
 import { fetchFullBuildingReport } from '@/lib/nyc-api';
 import { enrichBuildingContacts, isEnrichmentConfigured } from '@/lib/enrichment';
 import { calculateScore } from '@/lib/scoring';
+import { detectBuildingOperations, getDoormanLabel, getFrontDeskLabel } from '@/lib/building-ops';
 import toast from 'react-hot-toast';
 import {
   X, MapPin, Building2, AlertTriangle, DollarSign, Zap, FileText,
   Clock, StickyNote, Download, Mail, Phone, Linkedin, Plus,
   ExternalLink, Sparkles, RefreshCw, User, Shield, GitBranch, Loader2,
+  Facebook, Instagram, ChevronDown, ChevronRight,
 } from 'lucide-react';
 
 interface PropertyDetailProps {
@@ -29,6 +39,204 @@ const TABS: { key: Tab; label: string; icon: any }[] = [
   { key: 'activity', label: 'Activity', icon: Clock },
   { key: 'notes', label: 'Notes', icon: StickyNote },
 ];
+
+// ---- Contact helpers ----
+
+const CATEGORY_ORDER: ContactCategory[] = ['Board Members', 'Ownership', 'Building Staff', 'Management'];
+
+function resolveCategory(role: string): ContactCategory {
+  const r = role as ContactRole;
+  if (ROLE_CATEGORY[r]) return ROLE_CATEGORY[r];
+  // Legacy free-text mapping
+  const lower = role.toLowerCase();
+  if (lower.includes('board') || lower.includes('president') || lower.includes('treasurer') || lower.includes('secretary')) return 'Board Members';
+  if (lower.includes('owner') || lower.includes('landlord') || lower.includes('developer') || lower.includes('investor')) return 'Ownership';
+  if (lower.includes('super') || lower.includes('resident') || lower.includes('front desk') || lower.includes('doorman') || lower.includes('porter')) return 'Building Staff';
+  if (lower.includes('manag') || lower.includes('agent')) return 'Management';
+  return 'Management';
+}
+
+function resolveRoleLabel(role: string): string {
+  const r = role as ContactRole;
+  if (ROLE_LABELS[r]) return ROLE_LABELS[r];
+  return role; // legacy free text
+}
+
+function groupContacts(contacts: Contact[]): Record<ContactCategory, Contact[]> {
+  const groups: Record<ContactCategory, Contact[]> = {
+    'Board Members': [],
+    'Ownership': [],
+    'Building Staff': [],
+    'Management': [],
+  };
+  for (const c of contacts) {
+    const cat = resolveCategory(c.role);
+    groups[cat].push(c);
+  }
+  return groups;
+}
+
+function LinkedInIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+    </svg>
+  );
+}
+
+function FacebookIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+    </svg>
+  );
+}
+
+function InstagramIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+      <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678a6.162 6.162 0 100 12.324 6.162 6.162 0 100-12.324zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405a1.441 1.441 0 11-2.882 0 1.441 1.441 0 012.882 0z"/>
+    </svg>
+  );
+}
+
+function getSocialLinks(contact: Contact) {
+  const name = contact.name || '';
+  const company = contact.company || '';
+
+  const linkedinUrl = contact.linkedin_url || contact.linkedin
+    || `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(name + (company ? ' ' + company : ''))}`;
+  const facebookUrl = contact.facebook_url
+    || `https://www.facebook.com/search/people/?q=${encodeURIComponent(name)}`;
+  const instagramUrl = contact.instagram_url
+    || `https://www.instagram.com/${name.toLowerCase().replace(/\s+/g, '')}/`;
+
+  return { linkedinUrl, facebookUrl, instagramUrl };
+}
+
+// ---- Add Contact Form ----
+
+const CONTACT_ROLE_OPTIONS: { value: ContactRole; label: string }[] = [
+  { value: 'board_president', label: 'Board President' },
+  { value: 'board_treasurer', label: 'Board Treasurer' },
+  { value: 'board_secretary', label: 'Board Secretary' },
+  { value: 'board_member', label: 'Board Member' },
+  { value: 'owner', label: 'Owner' },
+  { value: 'landlord', label: 'Landlord' },
+  { value: 'developer', label: 'Developer' },
+  { value: 'investor', label: 'Investor' },
+  { value: 'resident_manager', label: 'Resident Manager' },
+  { value: 'super', label: 'Superintendent' },
+  { value: 'front_desk', label: 'Front Desk' },
+  { value: 'managing_agent', label: 'Managing Agent' },
+  { value: 'doorman', label: 'Doorman' },
+];
+
+function AddContactForm({ onAdd, onCancel }: { onAdd: (c: Contact) => void; onCancel: () => void }) {
+  const [form, setForm] = useState<Partial<Contact>>({ role: 'board_member' });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name?.trim()) {
+      toast.error('Name is required');
+      return;
+    }
+    onAdd({
+      name: form.name!.trim(),
+      role: form.role || 'board_member',
+      phone: form.phone || undefined,
+      email: form.email || undefined,
+      linkedin_url: form.linkedin_url || undefined,
+      facebook_url: form.facebook_url || undefined,
+      instagram_url: form.instagram_url || undefined,
+      company: form.company || undefined,
+      notes: form.notes || undefined,
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-gray-50 rounded-xl p-4 space-y-3 border border-gray-200">
+      <h4 className="font-semibold text-sm">Add Contact</h4>
+      <div className="grid grid-cols-2 gap-3">
+        <input
+          type="text"
+          placeholder="Name *"
+          value={form.name || ''}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+          required
+        />
+        <select
+          value={form.role || 'board_member'}
+          onChange={(e) => setForm({ ...form, role: e.target.value })}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+        >
+          {CONTACT_ROLE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        <input
+          type="tel"
+          placeholder="Phone"
+          value={form.phone || ''}
+          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          value={form.email || ''}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+        />
+        <input
+          type="text"
+          placeholder="Company"
+          value={form.company || ''}
+          onChange={(e) => setForm({ ...form, company: e.target.value })}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+        />
+        <input
+          type="url"
+          placeholder="LinkedIn URL"
+          value={form.linkedin_url || ''}
+          onChange={(e) => setForm({ ...form, linkedin_url: e.target.value })}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+        />
+        <input
+          type="url"
+          placeholder="Facebook URL"
+          value={form.facebook_url || ''}
+          onChange={(e) => setForm({ ...form, facebook_url: e.target.value })}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+        />
+        <input
+          type="url"
+          placeholder="Instagram URL"
+          value={form.instagram_url || ''}
+          onChange={(e) => setForm({ ...form, instagram_url: e.target.value })}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
+        />
+      </div>
+      <textarea
+        placeholder="Notes"
+        value={form.notes || ''}
+        onChange={(e) => setForm({ ...form, notes: e.target.value })}
+        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50 h-16 resize-none"
+      />
+      <div className="flex justify-end gap-2">
+        <button type="button" onClick={onCancel} className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700">
+          Cancel
+        </button>
+        <button type="submit" className="px-4 py-1.5 text-sm bg-camelot-gold text-white rounded-lg font-medium hover:bg-camelot-gold-dark transition-colors">
+          Add Contact
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// ---- Main Component ----
 
 export default function PropertyDetail({ building, onClose, onUpdate }: PropertyDetailProps) {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
@@ -295,9 +503,12 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
                 </div>
               </div>
 
-              {/* Score Breakdown */}
+              {/* Score Breakdown + Building Operations */}
               <div>
-                <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-3">Score Breakdown</h3>
+                {/* Building Operations Card */}
+                <BuildingOperationsCard building={building} nycData={nycData} />
+
+                <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-3 mt-6">Score Breakdown</h3>
                 <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                   {scoreBreakdown.factors.map((f) => (
                     <div key={f.name}>
@@ -350,74 +561,13 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
           )}
 
           {activeTab === 'contacts' && (
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold">Contacts ({building.contacts?.length || 0})</h3>
-                <button
-                  onClick={handleEnrich}
-                  disabled={isEnriching}
-                  className="flex items-center gap-1.5 text-sm bg-purple-50 text-purple-600 px-3 py-1.5 rounded-lg hover:bg-purple-100 transition-colors disabled:opacity-50"
-                >
-                  {isEnriching ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                  Enrich with Apollo/Prospeo
-                </button>
-              </div>
-
-              {(!building.contacts || building.contacts.length === 0) ? (
-                <div className="text-center py-12 text-gray-400">
-                  <User size={48} className="mx-auto mb-3 opacity-50" />
-                  <p className="font-medium">No contacts found yet</p>
-                  <p className="text-sm mt-1">Use "Enrich" to find board members, owners, and managers via Apollo.io</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {building.contacts.map((contact, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-camelot-gold/20 rounded-full flex items-center justify-center text-camelot-gold font-bold text-sm">
-                          {contact.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">{contact.name}</p>
-                          <p className="text-xs text-gray-500">{contact.role}</p>
-                          {contact.source && (
-                            <span className="text-[10px] text-gray-400">via {contact.source}</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {contact.phone && (
-                          <a
-                            href={`tel:${contact.phone}`}
-                            className="flex items-center gap-1 text-xs bg-green-50 text-green-600 px-2.5 py-1.5 rounded-lg hover:bg-green-100"
-                          >
-                            <Phone size={12} /> {contact.phone}
-                          </a>
-                        )}
-                        {contact.email && (
-                          <a
-                            href={`mailto:${contact.email}`}
-                            className="flex items-center gap-1 text-xs bg-blue-50 text-blue-600 px-2.5 py-1.5 rounded-lg hover:bg-blue-100"
-                          >
-                            <Mail size={12} /> {contact.email}
-                          </a>
-                        )}
-                        {contact.linkedin && (
-                          <a
-                            href={contact.linkedin}
-                            target="_blank"
-                            rel="noopener"
-                            className="flex items-center gap-1 text-xs bg-sky-50 text-sky-600 px-2.5 py-1.5 rounded-lg hover:bg-sky-100"
-                          >
-                            <Linkedin size={12} /> LinkedIn
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <ContactsTab
+              building={building}
+              isEnriching={isEnriching}
+              onEnrich={handleEnrich}
+              onUpdate={onUpdate}
+              nycData={nycData}
+            />
           )}
 
           {activeTab === 'violations' && (
@@ -643,6 +793,269 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
               )}
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ========================================
+// ContactsTab — grouped by category
+// ========================================
+
+function ContactsTab({
+  building,
+  isEnriching,
+  onEnrich,
+  onUpdate,
+  nycData,
+}: {
+  building: Building;
+  isEnriching: boolean;
+  onEnrich: () => void;
+  onUpdate?: (id: string, data: Partial<Building>) => void;
+  nycData: any;
+}) {
+  const [showAddForm, setShowAddForm] = useState(false);
+  const contacts = building.contacts || [];
+
+  // Compute building ops to potentially auto-add front desk placeholder
+  const buildingClass = building.building_class || nycData?.dof?.buildingClass || '';
+  const units = building.units || nycData?.dof?.units || 0;
+  const ops = detectBuildingOperations(buildingClass, units);
+
+  // Check if there's already a front desk contact
+  const hasFrontDeskContact = contacts.some(
+    (c) => c.role === 'front_desk' || c.role.toLowerCase().includes('front desk')
+  );
+
+  // Build effective contacts list (add front desk placeholder if needed)
+  const effectiveContacts = [...contacts];
+  if (ops.hasFrontDesk && !hasFrontDeskContact) {
+    effectiveContacts.push({
+      name: 'Building Front Desk',
+      role: 'front_desk',
+      phone: undefined, // Will show "Call building front desk"
+      notes: 'Call building front desk',
+    });
+  }
+
+  const grouped = groupContacts(effectiveContacts);
+
+  const handleAddContact = (contact: Contact) => {
+    const updatedContacts = [...contacts, contact];
+    onUpdate?.(building.id, { contacts: updatedContacts });
+    setShowAddForm(false);
+    toast.success(`Added ${contact.name}`);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold">Contacts ({contacts.length})</h3>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="flex items-center gap-1.5 text-sm bg-camelot-gold/10 text-camelot-gold px-3 py-1.5 rounded-lg hover:bg-camelot-gold/20 transition-colors"
+          >
+            <Plus size={14} /> Add Contact
+          </button>
+          <button
+            onClick={onEnrich}
+            disabled={isEnriching}
+            className="flex items-center gap-1.5 text-sm bg-purple-50 text-purple-600 px-3 py-1.5 rounded-lg hover:bg-purple-100 transition-colors disabled:opacity-50"
+          >
+            {isEnriching ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+            Enrich with Apollo/Prospeo
+          </button>
+        </div>
+      </div>
+
+      {showAddForm && (
+        <div className="mb-4">
+          <AddContactForm onAdd={handleAddContact} onCancel={() => setShowAddForm(false)} />
+        </div>
+      )}
+
+      {effectiveContacts.length === 0 ? (
+        <div className="text-center py-12 text-gray-400">
+          <User size={48} className="mx-auto mb-3 opacity-50" />
+          <p className="font-medium">No contacts found yet</p>
+          <p className="text-sm mt-1">Use "Add Contact" or "Enrich" to find board members, owners, and managers</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {CATEGORY_ORDER.map((category) => {
+            const catContacts = grouped[category];
+            if (catContacts.length === 0) return null;
+            const colors = CAT_COLORS[category];
+
+            return (
+              <div key={category}>
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <span className={cn('w-2 h-2 rounded-full', colors.bg.replace('bg-', 'bg-').replace('-50', '-500'))} />
+                  {category} ({catContacts.length})
+                </h4>
+                <div className="space-y-2">
+                  {catContacts.map((contact, i) => {
+                    const social = getSocialLinks(contact);
+                    const roleBadgeColors = colors;
+
+                    return (
+                      <div key={`${category}-${i}`} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-camelot-gold/20 rounded-full flex items-center justify-center text-camelot-gold font-bold text-sm">
+                            {contact.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{contact.name}</p>
+                            <span className={cn(
+                              'inline-block text-[10px] px-2 py-0.5 rounded-full border font-medium mt-0.5',
+                              roleBadgeColors.bg, roleBadgeColors.text, roleBadgeColors.border,
+                            )}>
+                              {resolveRoleLabel(contact.role)}
+                            </span>
+                            {contact.company && (
+                              <p className="text-[10px] text-gray-400 mt-0.5">{contact.company}</p>
+                            )}
+                            {contact.notes && (
+                              <p className="text-[10px] text-gray-400 italic mt-0.5">{contact.notes}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {contact.phone && (
+                            <a
+                              href={`tel:${contact.phone}`}
+                              className="flex items-center gap-1 text-xs bg-green-50 text-green-600 px-2.5 py-1.5 rounded-lg hover:bg-green-100 transition-colors"
+                            >
+                              <Phone size={12} /> {contact.phone}
+                            </a>
+                          )}
+                          {contact.email && (
+                            <a
+                              href={`mailto:${contact.email}`}
+                              className="flex items-center gap-1 text-xs bg-blue-50 text-blue-600 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
+                            >
+                              <Mail size={12} /> {contact.email}
+                            </a>
+                          )}
+                          {/* Social media icons */}
+                          <a
+                            href={social.linkedinUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-100 transition-colors"
+                            title="LinkedIn"
+                          >
+                            <LinkedInIcon className="w-3.5 h-3.5" />
+                          </a>
+                          <a
+                            href={social.facebookUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                            title="Facebook"
+                          >
+                            <FacebookIcon className="w-3.5 h-3.5" />
+                          </a>
+                          <a
+                            href={social.instagramUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 rounded-lg bg-pink-50 text-pink-600 hover:bg-pink-100 transition-colors"
+                            title="Instagram"
+                          >
+                            <InstagramIcon className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ========================================
+// BuildingOperationsCard — overview tab
+// ========================================
+
+function BuildingOperationsCard({
+  building,
+  nycData,
+}: {
+  building: Building;
+  nycData: any;
+}) {
+  const buildingClass = building.building_class || nycData?.dof?.buildingClass || '';
+  const units = building.units || nycData?.dof?.units || 0;
+  const ops = detectBuildingOperations(buildingClass, units);
+
+  // Don't render if we have no building class data at all
+  if (!buildingClass && !units) return null;
+
+  return (
+    <div>
+      <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-3">Building Operations</h3>
+      <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+        {/* Building Class */}
+        <div className="flex justify-between items-center py-1.5 border-b border-gray-200">
+          <span className="text-sm text-gray-500">Building Class</span>
+          <span className="text-sm font-medium">{buildingClass ? `${buildingClass} — ${ops.buildingClassDescription}` : '—'}</span>
+        </div>
+
+        {/* Union Status */}
+        <div className="flex justify-between items-center py-1.5 border-b border-gray-200">
+          <span className="text-sm text-gray-500">Union Status</span>
+          <span className={cn(
+            'text-xs px-2 py-0.5 rounded-full font-medium',
+            ops.unionStatus === 'likely_union'
+              ? 'bg-blue-100 text-blue-700'
+              : ops.unionStatus === 'likely_non_union'
+              ? 'bg-gray-100 text-gray-600'
+              : 'bg-gray-100 text-gray-400',
+          )}>
+            {ops.unionLabel}
+          </span>
+        </div>
+
+        {/* Doorman */}
+        <div className="flex justify-between items-center py-1.5 border-b border-gray-200">
+          <span className="text-sm text-gray-500">Doorman</span>
+          <span className={cn(
+            'text-xs px-2 py-0.5 rounded-full font-medium',
+            ops.hasDoorman ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500',
+          )}>
+            {getDoormanLabel(ops)}
+          </span>
+        </div>
+
+        {/* Front Desk */}
+        <div className="flex justify-between items-center py-1.5 border-b border-gray-200">
+          <span className="text-sm text-gray-500">Front Desk</span>
+          <span className={cn(
+            'text-xs px-2 py-0.5 rounded-full font-medium',
+            ops.hasFrontDesk ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500',
+          )}>
+            {getFrontDeskLabel(ops)}
+          </span>
+        </div>
+
+        {/* Elevator */}
+        <div className="flex justify-between items-center py-1.5">
+          <span className="text-sm text-gray-500">Elevator</span>
+          <span className={cn(
+            'text-xs px-2 py-0.5 rounded-full font-medium',
+            ops.hasElevator ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500',
+          )}>
+            {ops.hasElevator ? '🛗 Yes' : 'No'}
+          </span>
         </div>
       </div>
     </div>

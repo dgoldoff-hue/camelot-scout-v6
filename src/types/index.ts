@@ -9,11 +9,63 @@ export type TeamRole = 'owner' | 'tech_lead' | 'cold_caller' | 'operations' | 't
 export type BotStatus = 'active' | 'paused' | 'error' | 'idle';
 export type OutreachStatus = 'draft' | 'sent' | 'delivered' | 'opened' | 'replied' | 'bounced';
 
+export type ContactRole =
+  | 'board_president' | 'board_treasurer' | 'board_secretary' | 'board_member'
+  | 'owner' | 'landlord' | 'developer' | 'investor'
+  | 'resident_manager' | 'super' | 'front_desk' | 'managing_agent' | 'doorman';
+
+export const CONTACT_ROLE_LABELS: Record<ContactRole, string> = {
+  board_president: 'Board President',
+  board_treasurer: 'Board Treasurer',
+  board_secretary: 'Board Secretary',
+  board_member: 'Board Member',
+  owner: 'Owner',
+  landlord: 'Landlord',
+  developer: 'Developer',
+  investor: 'Investor',
+  resident_manager: 'Resident Manager',
+  super: 'Superintendent',
+  front_desk: 'Front Desk',
+  managing_agent: 'Managing Agent',
+  doorman: 'Doorman',
+};
+
+export type ContactCategory = 'Board Members' | 'Ownership' | 'Building Staff' | 'Management';
+
+export const CONTACT_ROLE_CATEGORY: Record<ContactRole, ContactCategory> = {
+  board_president: 'Board Members',
+  board_treasurer: 'Board Members',
+  board_secretary: 'Board Members',
+  board_member: 'Board Members',
+  owner: 'Ownership',
+  landlord: 'Ownership',
+  developer: 'Ownership',
+  investor: 'Ownership',
+  resident_manager: 'Building Staff',
+  super: 'Building Staff',
+  front_desk: 'Building Staff',
+  doorman: 'Building Staff',
+  managing_agent: 'Management',
+};
+
+export const CONTACT_CATEGORY_COLORS: Record<ContactCategory, { bg: string; text: string; border: string }> = {
+  'Board Members': { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+  'Ownership': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
+  'Building Staff': { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
+  'Management': { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
+};
+
 export interface Contact {
   name: string;
-  role: string; // Board President, Treasurer, Secretary, Owner, Super, Resident Manager, Managing Agent
+  role: string; // ContactRole or free-text for legacy data
   phone?: string;
   email?: string;
+  linkedin_url?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  company?: string;
+  notes?: string;
+  /** @deprecated use linkedin_url instead */
   linkedin?: string;
   source?: string;
   verified_at?: string;
@@ -277,6 +329,17 @@ export interface LL97Energy {
   occupancy: string;
   year_built: string;
   property_gfa_self_reported_ft: string;
+}
+
+// Building operations / staff detection
+export interface BuildingOperations {
+  unionStatus: 'likely_union' | 'likely_non_union' | 'unknown';
+  unionLabel: string;
+  hasDoorman: boolean;
+  hasFrontDesk: boolean;
+  hasElevator: boolean;
+  buildingClassDescription: string;
+  buildingClass: string;
 }
 
 // Region configuration

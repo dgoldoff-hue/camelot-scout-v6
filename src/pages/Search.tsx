@@ -13,6 +13,7 @@ import {
   Loader2, Zap, AlertTriangle, DollarSign, Calendar, X, Filter,
   Activity, TrendingUp, Users, Award, User, Home,
 } from 'lucide-react';
+import { detectBuildingOperations, getDoormanLabel, getFrontDeskLabel } from '@/lib/building-ops';
 
 type SearchTab = 'address' | 'owner' | 'unit';
 
@@ -249,7 +250,7 @@ export default function Search() {
       score: reportData.score?.total || 0,
       signals: reportData.score?.signals || [],
       contacts: [],
-      enriched_data: reportData,
+      enriched_data: { ...reportData, buildingOps: reportData.buildingOps },
       current_management: reportData.registration?.managementCompany || 'Unknown',
       source: 'nyc_open_data',
       status: 'active',
@@ -491,6 +492,43 @@ export default function Search() {
                       </span>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Building Operations Badges */}
+              {reportData.buildingOps && (
+                <div className="flex flex-wrap items-center gap-2 mb-4">
+                  <span className={cn(
+                    'text-xs px-2.5 py-1 rounded-full font-medium border',
+                    reportData.buildingOps.unionStatus === 'likely_union'
+                      ? 'bg-blue-900/30 text-blue-300 border-blue-500/30'
+                      : 'bg-white/10 text-gray-400 border-white/10',
+                  )}>
+                    {reportData.buildingOps.unionLabel}
+                  </span>
+                  <span className={cn(
+                    'text-xs px-2.5 py-1 rounded-full font-medium border',
+                    reportData.buildingOps.hasDoorman
+                      ? 'bg-green-900/30 text-green-300 border-green-500/30'
+                      : 'bg-white/10 text-gray-400 border-white/10',
+                  )}>
+                    {reportData.buildingOps.hasDoorman ? '🚪 Doorman Building' : 'No Doorman'}
+                  </span>
+                  {reportData.buildingOps.hasFrontDesk && (
+                    <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-green-900/30 text-green-300 border-green-500/30">
+                      📞 Has Front Desk
+                    </span>
+                  )}
+                  {reportData.buildingOps.hasElevator && (
+                    <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-purple-900/30 text-purple-300 border-purple-500/30">
+                      🛗 Elevator
+                    </span>
+                  )}
+                  {reportData.buildingOps.buildingClassDescription && (
+                    <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-white/10 text-gray-300 border-white/10">
+                      {reportData.buildingOps.buildingClass}: {reportData.buildingOps.buildingClassDescription}
+                    </span>
+                  )}
                 </div>
               )}
 

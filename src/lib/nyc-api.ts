@@ -4,6 +4,7 @@
  */
 
 import type { HPDViolation, DOFProperty, DOBPermit, LL97Energy } from '@/types';
+import { detectBuildingOperations } from '@/lib/building-ops';
 
 const NYC_BASE = 'https://data.cityofnewyork.us/resource';
 
@@ -257,6 +258,10 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
           propertyName: energy[0].property_name,
         }
       : null,
+    buildingOps: detectBuildingOperations(
+      dof?.bldgcl,
+      parseInt(dof?.unitsres || dof?.unitstotal || '0') || 0,
+    ),
   };
 }
 
