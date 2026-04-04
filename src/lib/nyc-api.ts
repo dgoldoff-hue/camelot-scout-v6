@@ -266,24 +266,64 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
 export async function searchByOwnerName(name: string): Promise<any[]> {
   try {
     const upperName = name.toUpperCase().replace(/'/g, "''");
-    const encoded = encodeURIComponent(upperName);
-    const url = `${ENDPOINTS.hpdRegistration}?$limit=100&$where=upper(ownerfirstname) like '%25${encoded}%25' OR upper(ownerlastname) like '%25${encoded}%25' OR upper(corporationname) like '%25${encoded}%25'`;
-
+    const parts = upperName.split(/\s+/).filter(Boolean);
+    
+    // Use HPD Registration Contacts dataset (has owner/agent names)
+    const contactsEndpoint = `${NYC_BASE}/feu5-w2e2.json`;
+    
+    // Build query — search firstname, lastname, and corporationname
+    let whereClause: string;
+    if (parts.length >= 2) {
+      // "David Goldoff" → search first AND last, OR as corporation
+      whereClause = `(upper(firstname) like '%25${encodeURIComponent(parts[0])}%25' AND upper(lastname) like '%25${encodeURIComponent(parts[1])}%25') OR upper(corporationname) like '%25${encodeURIComponent(upperName)}%25'`;
+    } else {
+      // Single word — search last name and corporation
+      whereClause = `upper(lastname) like '%25${encodeURIComponent(parts[0])}%25' OR upper(corporationname) like '%25${encodeURIComponent(parts[0])}%25'`;
+    }
+    
+    const url = `${contactsEndpoint}?$limit=200&$where=${whereClause}`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`HPD Registration API error: ${res.status}`);
-    const data = await res.json();
-
-    // Deduplicate by buildingid
-    const seen = new Set<string>();
-    const unique: any[] = [];
-    for (const row of data) {
-      const key = row.buildingid || `${row.housenumber}-${row.streetname}-${row.boroid}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        unique.push(row);
+    if (!res.ok) throw new Error(`HPD Contacts API error: ${res.status}`);
+    const contacts = await res.json();
+    
+    if (contacts.length === 0) return [];
+    
+    // Get unique registration IDs
+    const regIds = [...new Set(contacts.map((c: any) => c.registrationid))].slice(0, 50);
+    
+    // Fetch building info for each registration
+    const regQuery = regIds.map((id: string) => `registrationid='${id}'`).join(' OR ');
+    const buildingsUrl = `${ENDPOINTS.hpdRegistration}?$limit=200&$where=${encodeURIComponent(regQuery)}`;
+    const buildingsRes = await fetch(buildingsUrl);
+    const buildings = buildingsRes.ok ? await buildingsRes.json() : [];
+    
+    // Map registration IDs to contact info
+    const contactMap = new Map<string, any>();
+    for (const c of contacts) {
+      if (!contactMap.has(c.registrationid)) {
+        contactMap.set(c.registrationid, c);
       }
     }
-    return unique;
+    
+    // Merge building + contact data, deduplicate by address
+    const seen = new Set<string>();
+    const results: any[] = [];
+    for (const b of buildings) {
+      const addr = `${b.housenumber} ${b.streetname}`.trim();
+      if (seen.has(addr)) continue;
+      seen.add(addr);
+      const contact = contactMap.get(b.registrationid);
+      results.push({
+        ...b,
+        address: addr,
+        ownerName: contact ? `${contact.firstname || ''} ${contact.lastname || ''}`.trim() : '',
+        corporationName: contact?.corporationname || '',
+        contactType: contact?.type || '',
+        managementCompany: contact?.corporationname || '',
+      });
+    }
+    
+    return results;
   } catch (err) {
     console.error('Owner name search error:', err);
     return [];
