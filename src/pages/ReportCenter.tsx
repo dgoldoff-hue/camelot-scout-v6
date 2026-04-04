@@ -139,27 +139,74 @@ export default function ReportCenter() {
             </div>
           </div>
 
-          {/* Output Buttons */}
+          {/* Report Preview */}
+          <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+            <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">Jackie Property Intelligence Report</h2>
+              <div className="flex items-center gap-2">
+                <button onClick={handlePreviewBrochure} className="px-4 py-2 bg-[#A89035] text-white rounded-lg hover:bg-[#8A7A2C] text-sm font-medium flex items-center gap-2">
+                  <Eye className="w-4 h-4" /> Preview Full Report
+                </button>
+                <button onClick={handleDownloadHTML} className="px-4 py-2 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] text-sm font-medium flex items-center gap-2">
+                  <Download className="w-4 h-4" /> Download PDF
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
+                <div><span className="text-gray-400 text-xs uppercase block">Address</span><span className="font-medium">{data.address}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Type</span><span className="font-medium">{data.propertyType || 'Residential'}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Units</span><span className="font-medium">{data.units || 'N/A'}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Year Built</span><span className="font-medium">{data.yearBuilt || 'N/A'}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Market Value</span><span className="font-medium text-[#A89035]">{fmtMoney(data.marketValue)}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Management</span><span className="font-medium">{data.managementCompany || 'Self-Managed'}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Management Grade</span><span className={`font-bold ${data.managementGrade === 'A' ? 'text-green-600' : data.managementGrade === 'B' ? 'text-yellow-600' : 'text-red-600'}`}>{data.managementGrade}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Scout Grade</span><span className="font-bold">{data.scoutGrade} ({data.scoutScore}/100)</span></div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
+                <div><span className="text-gray-400 text-xs uppercase block">HPD Violations</span><span className={`font-medium ${data.violationsOpen > 5 ? 'text-red-600' : 'text-gray-900'}`}>{data.violationsTotal} total / {data.violationsOpen} open</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">ECB Penalties</span><span className="font-medium text-orange-600">${data.ecbPenaltyBalance.toLocaleString()}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">LL97 Penalty</span><span className={`font-medium ${data.ll97 && data.ll97.period1Penalty > 0 ? 'text-red-600' : 'text-green-600'}`}>{data.ll97 ? `$${data.ll97.period1Penalty.toLocaleString()}/yr` : 'N/A'}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Distress Level</span><span className={`font-medium ${data.distressLevel === 'critical' || data.distressLevel === 'distressed' ? 'text-red-600' : 'text-green-600'}`}>{data.distressLevel.toUpperCase()} ({data.distressScore}/100)</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Owner (DOF)</span><span className="font-medium">{data.dofOwner || 'N/A'}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Last Sale</span><span className="font-medium">{data.lastSaleDate ? new Date(data.lastSaleDate).toLocaleDateString() : 'N/A'} — {data.lastSalePrice ? fmtMoney(data.lastSalePrice) : 'N/A'}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Neighborhood</span><span className="font-medium capitalize">{data.neighborhoodName || data.borough || 'NYC'}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Proposed Fee</span><span className="font-medium text-[#A89035]">${data.monthlyFee.toLocaleString()}/mo (${data.pricePerUnit}/unit)</span></div>
+              </div>
+              {data.distressSignals && data.distressSignals.length > 0 && (
+                <div className="mb-4">
+                  <span className="text-gray-400 text-xs uppercase block mb-2">Distress Signals</span>
+                  <div className="flex flex-wrap gap-2">
+                    {data.distressSignals.map((s: any, i: number) => (
+                      <span key={i} className="text-xs bg-red-50 text-red-700 border border-red-200 px-2 py-1 rounded-full">{s.description}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
           <div className="bg-white rounded-xl border p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Output Options</h2>
-            <div className="flex flex-wrap gap-3">
-              <button onClick={handlePreviewBrochure} className="px-5 py-2.5 bg-[#A89035] text-white rounded-lg hover:bg-[#8A7A2C] font-medium flex items-center gap-2">
-                <Eye className="w-4 h-4" /> Jackie Report — Preview & Print
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              <button onClick={handlePreviewBrochure} className="px-4 py-3 bg-[#A89035] text-white rounded-lg hover:bg-[#8A7A2C] font-medium flex flex-col items-center gap-1 text-sm">
+                <Eye className="w-5 h-5" /> Preview Report
               </button>
-              <button onClick={handleDownloadHTML} className="px-5 py-2.5 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] font-medium flex items-center gap-2">
-                <Download className="w-4 h-4" /> Download Jackie Report
+              <button onClick={handleDownloadHTML} className="px-4 py-3 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] font-medium flex flex-col items-center gap-1 text-sm">
+                <Download className="w-5 h-5" /> Download PDF
               </button>
-              <button onClick={() => setShowEmailModal(true)} className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex items-center gap-2">
-                <Mail className="w-4 h-4" /> Email Draft
+              <button onClick={() => setShowEmailModal(true)} className="px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex flex-col items-center gap-1 text-sm">
+                <Mail className="w-5 h-5" /> Email Draft
               </button>
-              <button onClick={() => setShowCallerModal(true)} className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex items-center gap-2">
-                <Phone className="w-4 h-4" /> Cold Caller Sheet
+              <button onClick={() => setShowCallerModal(true)} className="px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex flex-col items-center gap-1 text-sm">
+                <Phone className="w-5 h-5" /> Send to Carl
               </button>
-              <button onClick={handleCSV} className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex items-center gap-2">
-                <Table2 className="w-4 h-4" /> CSV Export
+              <button onClick={handleCSV} className="px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex flex-col items-center gap-1 text-sm">
+                <Table2 className="w-5 h-5" /> CSV Export
               </button>
-              <button disabled className="px-5 py-2.5 bg-gray-100 text-gray-400 rounded-lg font-medium flex items-center gap-2 cursor-not-allowed">
-                <Link2 className="w-4 h-4" /> CRM Push (Connect HubSpot)
+              <button onClick={() => { navigator.clipboard.writeText(JSON.stringify(data, null, 2)); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium flex flex-col items-center gap-1 text-sm">
+                <Link2 className="w-5 h-5" /> Push to HubSpot
               </button>
             </div>
           </div>

@@ -12,8 +12,10 @@ export default function Archive() {
   const [searchText, setSearchText] = useState('');
   const [filterReason, setFilterReason] = useState('all');
 
+  const [showAll, setShowAll] = useState(true);
+
   const archivedBuildings = useMemo(() => {
-    let result = buildings.filter((b) => b.status === 'archived');
+    let result = showAll ? buildings : buildings.filter((b) => b.status === 'archived');
 
     if (searchText) {
       const q = searchText.toLowerCase();
@@ -30,7 +32,7 @@ export default function Archive() {
     }
 
     return result;
-  }, [buildings, searchText, filterReason]);
+  }, [buildings, searchText, filterReason, showAll]);
 
   const reasons = useMemo(() => {
     const all = buildings.filter((b) => b.status === 'archived');

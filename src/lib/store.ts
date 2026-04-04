@@ -29,8 +29,21 @@ interface BuildingsState {
   setError: (error: string | null) => void;
 }
 
+// Persist buildings to localStorage
+function saveBuildingsToStorage(buildings: Building[]) {
+  try {
+    localStorage.setItem('scout_buildings', JSON.stringify(buildings));
+  } catch { /* quota exceeded — skip */ }
+}
+function loadBuildingsFromStorage(): Building[] {
+  try {
+    const raw = localStorage.getItem('scout_buildings');
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
 export const useBuildingsStore = create<BuildingsState>((set, get) => ({
-  buildings: [],
+  buildings: loadBuildingsFromStorage(),
   selectedBuildings: new Set(),
   activeBuilding: null,
   isLoading: false,
@@ -43,11 +56,13 @@ export const useBuildingsStore = create<BuildingsState>((set, get) => ({
     sortOrder: 'desc',
   },
 
-  setBuildings: (buildings) => set({ buildings }),
+  setBuildings: (buildings) => { saveBuildingsToStorage(buildings); set({ buildings }); },
   addBuildings: (newBuildings) =>
-    set((state) => ({
-      buildings: [...newBuildings, ...state.buildings],
-    })),
+    set((state) => {
+      const merged = [...newBuildings, ...state.buildings];
+      saveBuildingsToStorage(merged);
+      return { buildings: merged };
+    }),
   updateBuilding: (id, data) =>
     set((state) => ({
       buildings: state.buildings.map((b) => (b.id === id ? { ...b, ...data } : b)),
