@@ -1520,10 +1520,36 @@ ${isSelfManaged ? `
 <div class="section-sub">Best-in-class integrations powering Camelot\u2019s management platform</div>
 
 <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;padding:20px 0">
-${['MDS Property Management Software', 'BankUnited', 'Select', 'AppFolio', 'ConciergePlus', 'PropertyShark', 'HubSpot CRM', 'Google Workspace', 'Parity Energy', 'BuildingLink'].map(p => `
-<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:14px 20px;text-align:center;min-width:140px">
-<div style="font-size:13px;font-weight:700;color:#3A4B5B">${p}</div>
-</div>`).join('')}
+<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
+<img src="https://www.aboramds.com/wp-content/uploads/2021/04/MDS_logo.png" alt="MDS" style="max-height:36px;max-width:120px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none;font-size:12px;font-weight:700;color:#3A4B5B">MDS</span>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/BankUnited_logo.svg/320px-BankUnited_logo.svg.png" alt="BankUnited" style="max-height:36px;max-width:120px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none;font-size:12px;font-weight:700;color:#3A4B5B">BankUnited</span>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/AppFolio_logo.svg/320px-AppFolio_logo.svg.png" alt="AppFolio" style="max-height:36px;max-width:120px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none;font-size:12px;font-weight:700;color:#3A4B5B">AppFolio</span>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/HubSpot_Logo.svg/320px-HubSpot_Logo.svg.png" alt="HubSpot" style="max-height:36px;max-width:120px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none;font-size:12px;font-weight:700;color:#3A4B5B">HubSpot</span>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Google_Workspace_wordmark_%282023%29.svg/320px-Google_Workspace_wordmark_%282023%29.svg.png" alt="Google Workspace" style="max-height:36px;max-width:120px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none;font-size:12px;font-weight:700;color:#3A4B5B">Google Workspace</span>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
+<img src="https://www.buildinglink.com/images/BL-logo.svg" alt="BuildingLink" style="max-height:36px;max-width:120px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none;font-size:12px;font-weight:700;color:#3A4B5B">BuildingLink</span>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
+<span style="font-size:12px;font-weight:700;color:#3A4B5B">Select</span>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
+<span style="font-size:12px;font-weight:700;color:#3A4B5B">ConciergePlus</span>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
+<span style="font-size:12px;font-weight:700;color:#3A4B5B">PropertyShark</span>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
+<span style="font-size:12px;font-weight:700;color:#3A4B5B">Parity Energy</span>
+</div>
 </div>
 
 <div style="text-align:center;font-size:10px;color:#888;margin-top:12px">Powered by: OpenAI NLP &nbsp;|&nbsp; AWS Cloud &nbsp;|&nbsp; AppFolio Sync &nbsp;|&nbsp; HubSpot CRM &nbsp;|&nbsp; RealtyMX &nbsp;|&nbsp; PropertyShark</div>
