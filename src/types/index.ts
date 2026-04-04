@@ -36,6 +36,7 @@ export interface Building {
   building_class?: string;
   grade: BuildingGrade;
   score: number;
+  score_breakdown?: Record<string, any>;
   signals: string[];
   contacts: Contact[];
   enriched_data: Record<string, any>;
