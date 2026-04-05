@@ -2104,68 +2104,76 @@ ${d.neighborhoodMarketData ? `
 <div style="font-size:10px;color:#999;text-align:center;margin-top:8px">Member: REBNY \u00B7 SPONY \u00B7 NYARM \u00B7 IREM \u00B7 BOMA \u00B7 NARPM \u00B7 NY Apartment Association</div>
 </div>
 
-<!-- PAGE 24: LEGAL, CONFIDENTIALITY & IP -->
+<!-- PAGE 24: CONFIDENTIALITY (CONDENSED) -->
 <div class="section section-white" style="font-size:11px;color:#555;line-height:1.8">
 <div class="section-title" style="font-size:20px">Confidentiality &amp; Legal Notice</div>
-<div class="section-sub">Please read carefully before distributing or reproducing this document</div>
 
-<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:20px;margin-bottom:16px">
-<h4 style="font-size:12px;font-weight:700;color:#2C3240;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">\uD83D\uDD12 Confidential &amp; Proprietary</h4>
-<p>This Property Intelligence Report (&ldquo;Report&rdquo;) has been prepared exclusively by <strong>Camelot Realty Group</strong> (&ldquo;Camelot&rdquo;) and is intended solely for the confidential use of the intended recipient(s). This Report contains proprietary market intelligence, data analytics, financial modeling, and strategic assessments that constitute the intellectual property and trade secrets of Camelot Realty Group.</p>
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:24px;margin-bottom:16px">
+<p style="font-size:12px;color:#2C3240;line-height:1.8;margin-bottom:12px">\uD83D\uDD12 This Property Intelligence Report is <strong>confidential and proprietary</strong> to Camelot Realty Group. It is intended solely for the named recipient(s) and may not be reproduced, distributed, or disclosed without prior written consent.</p>
+<p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:12px">\u00A9 ${new Date().getFullYear()} Camelot Realty Group. All rights reserved. Contents are protected by U.S. copyright and trade secret law. SCOUT, Jackie, Merlin AI, ConciergePlus, Prisma, Parity, and Camelot Central are proprietary platforms. This Report is for informational purposes only and does not constitute legal, financial, or investment advice. Data is sourced from NYC Open Data, ACRIS, StreetEasy, RealtyMX, and other third-party databases and is presented &ldquo;as is&rdquo; without warranty. AI-assisted analysis has been reviewed by licensed real estate professionals. Governed by the laws of the State of New York; venue in New York County.</p>
+<div style="text-align:center;margin-top:16px">
+<a href="https://www.camelot.nyc/legal" target="_blank" style="display:inline-block;background:#A89035;color:#fff;padding:10px 28px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.5px">Read Full Legal Terms &amp; Confidentiality Policy \u2192</a>
+</div>
 </div>
 
-<div style="margin-bottom:14px">
-<h4 style="font-size:12px;font-weight:700;color:#A89035;margin-bottom:6px">\u00A9 Copyright &amp; Intellectual Property</h4>
-<p>\u00A9 ${new Date().getFullYear()} Camelot Realty Group. All rights reserved. This Report and all of its contents \u2014 including but not limited to text, data, charts, graphs, maps, images, scoring methodologies, financial models, market analyses, neighborhood benchmarks, compliance assessments, and proprietary algorithms (collectively, &ldquo;Content&rdquo;) \u2014 are protected by United States copyright law, trade secret law, and applicable international intellectual property treaties.</p>
-<p style="margin-top:6px">The SCOUT Market Intelligence Platform, Jackie AI Pitch Engine, Merlin AI, ConciergePlus, Prisma, Parity, and Camelot Central are proprietary technology platforms of Camelot Realty Group. All product names, logos, and brands are the property of their respective owners.</p>
-</div>
-
-<div style="margin-bottom:14px">
-<h4 style="font-size:12px;font-weight:700;color:#A89035;margin-bottom:6px">\u26D4 Restrictions on Use</h4>
-<p>No part of this Report may be reproduced, distributed, transmitted, displayed, published, or broadcast in any form or by any means \u2014 including photocopying, recording, or other electronic or mechanical methods \u2014 without the prior written consent of Camelot Realty Group, except for brief quotations in critical reviews or as permitted by applicable law. Unauthorized reproduction, redistribution, or disclosure of this Report or any of its contents may result in civil and criminal penalties under applicable law.</p>
-</div>
-
-<div style="margin-bottom:14px">
-<h4 style="font-size:12px;font-weight:700;color:#A89035;margin-bottom:6px">\u26A0 Disclaimer &amp; Limitation of Liability</h4>
-<p>This Report is provided for informational purposes only and does not constitute legal, financial, tax, or investment advice. While Camelot Realty Group has made reasonable efforts to ensure the accuracy of the information contained herein, all data is sourced from third-party public databases (including but not limited to NYC Department of Finance, NYC Department of Buildings, NYC Housing Preservation and Development, ACRIS, StreetEasy, RealtyMX, and the NYC Mayor\u2019s Office of Sustainability) and is presented &ldquo;as is&rdquo; without warranty of any kind, express or implied.</p>
-<p style="margin-top:6px">Camelot Realty Group expressly disclaims all warranties, including but not limited to warranties of merchantability, fitness for a particular purpose, accuracy, and non-infringement. In no event shall Camelot Realty Group, its officers, directors, employees, agents, or affiliates be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising from or relating to the use of or reliance upon this Report.</p>
-</div>
-
-<div style="margin-bottom:14px">
-<h4 style="font-size:12px;font-weight:700;color:#A89035;margin-bottom:6px">\uD83D\uDCCA Data Sources &amp; Methodology</h4>
-<p>Market data, building statistics, and neighborhood benchmarks are sourced from verified databases including NYC Open Data (HPD, DOB, DOF, ECB), ACRIS (Automated City Register Information System), StreetEasy, REBNY RLS, and RealtyMX. LL97 carbon emission calculations are estimates based on publicly available energy benchmarking data and are subject to change based on updated filings. Scoring methodologies are proprietary to Camelot Realty Group and may not be reproduced.</p>
-</div>
-
-<div style="margin-bottom:14px">
-<h4 style="font-size:12px;font-weight:700;color:#A89035;margin-bottom:6px">\uD83E\uDD16 AI &amp; Technology Disclosure</h4>
-<p>This Report was compiled with the assistance of artificial intelligence tools, including AI-aided data synthesis, narrative drafting, scoring algorithms, and layout generation. All market data, building statistics, and neighborhood benchmarks have been sourced from verified databases and reviewed by Camelot\u2019s licensed real estate professionals. AI does not replace the human judgment and market expertise of the Camelot team \u2014 it accelerates our ability to deliver institutional-quality analysis at scale.</p>
-</div>
-
-<div style="margin-bottom:14px">
-<h4 style="font-size:12px;font-weight:700;color:#A89035;margin-bottom:6px">\u2696\uFE0F Governing Law</h4>
-<p>This Report and any disputes arising from or relating to its contents shall be governed by and construed in accordance with the laws of the State of New York, without regard to its conflict of law principles. Any legal action or proceeding relating to this Report shall be brought exclusively in the courts of the State of New York located in the County of New York, or in the United States District Court for the Southern District of New York.</p>
-</div>
-
-<div style="background:#3A4B5B;border-radius:8px;padding:16px;color:#fff;text-align:center;margin-top:16px">
-<p style="font-size:11px;line-height:1.6;color:rgba(255,255,255,0.7)">For questions regarding this Report or to request permission to reproduce any of its contents, contact:</p>
-<p style="font-size:12px;color:#A89035;font-weight:600;margin-top:6px">${CAMELOT.principal} &nbsp;\u00B7&nbsp; ${CAMELOT.email} &nbsp;\u00B7&nbsp; ${CAMELOT.phone}</p>
-<p style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:6px">${CAMELOT.license1} &nbsp;\u00B7&nbsp; ${CAMELOT.license2}</p>
+<div style="background:#3A4B5B;border-radius:8px;padding:14px 18px;color:#fff;text-align:center">
+<p style="font-size:11px;color:rgba(255,255,255,0.6)">Questions about this Report? Contact:</p>
+<p style="font-size:12px;color:#A89035;font-weight:600;margin-top:4px">${CAMELOT.principal} &nbsp;\u00B7&nbsp; ${CAMELOT.email} &nbsp;\u00B7&nbsp; ${CAMELOT.phone}</p>
+<p style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:4px">${CAMELOT.license1} &nbsp;\u00B7&nbsp; ${CAMELOT.license2}</p>
 </div>
 </div>
 
 <!-- PAGE 25: BACK COVER -->
-<div class="back-cover">
-<img src="./images/camelot-logo-white.png" alt="Camelot" style="width:80px;margin-bottom:12px;opacity:0.85" onerror="this.style.display='none'">
-<div style="font-family:Georgia,'Playfair Display',serif;font-style:italic;font-size:13px;color:rgba(255,255,255,0.5);max-width:500px;line-height:1.8;margin-bottom:20px">&ldquo;Don\u2019t let it be forgot, that once there was a spot, for one brief shining moment, that was known as Camelot.&rdquo;</div>
-<div style="font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:24px;letter-spacing:1px">Jacqueline Kennedy &nbsp;\u00B7&nbsp; December 1963</div>
-<div class="wordmark">C &nbsp;A &nbsp;M &nbsp;E &nbsp;L &nbsp;O &nbsp;T</div>
-<div class="pm-sub">Property Management</div>
-<h2>Next Steps</h2>
-<div class="tagline">We welcome the opportunity to discuss your needs<br>and refine our proposal to fit ${d.buildingName}&rsquo;s requirements.</div>
+<div class="back-cover" style="background:#3A4B5B;position:relative;overflow:hidden">
+
+<!-- Jackie Kennedy background image overlay -->
+<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/JKOnassis.jpg/440px-JKOnassis.jpg') center top/cover no-repeat;opacity:0.06"></div>
+<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(58,75,91,0.4) 0%,rgba(58,75,91,0.95) 40%,rgba(58,75,91,1) 70%)"></div>
+
+<!-- Content -->
+<div style="position:relative;z-index:1">
+
+<!-- Quote — large, emphasized, center stage -->
+<div style="margin-bottom:32px;max-width:560px">
+<div style="font-size:64px;font-family:'Playfair Display',Georgia,serif;color:#A89035;line-height:0.5;margin-bottom:16px;opacity:0.6">&ldquo;</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:22px;color:#fff;line-height:1.6;font-weight:400;letter-spacing:0.3px">Don\u2019t let it be forgot, that once there was a spot, for one brief shining moment, that was known as Camelot.</div>
+<div style="font-size:64px;font-family:'Playfair Display',Georgia,serif;color:#A89035;line-height:0.5;text-align:right;margin-top:12px;opacity:0.6">&rdquo;</div>
+<div style="text-align:right;margin-top:12px">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:13px;color:#A89035;font-weight:600;font-style:italic">Jacqueline Kennedy</div>
+<div style="font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:1px;margin-top:2px">Life Magazine &nbsp;\u00B7&nbsp; December 6, 1963</div>
+</div>
+</div>
+
+<!-- Divider -->
+<div style="width:80px;height:2px;background:#A89035;margin:0 auto 28px;opacity:0.5"></div>
+
+<!-- Next Steps -->
+<div style="margin-bottom:24px">
+<div class="wordmark" style="margin-bottom:4px">C &nbsp;A &nbsp;M &nbsp;E &nbsp;L &nbsp;O &nbsp;T</div>
+<div class="pm-sub" style="margin-bottom:0">Realty Group</div>
+</div>
+
+<h2 style="font-size:28px;margin-bottom:12px">Next Steps</h2>
+<div class="tagline" style="margin-bottom:24px">We welcome the opportunity to discuss ${d.buildingName}&rsquo;s<br>needs and refine our proposal to fit your building.</div>
+
+<!-- Meeting CTA -->
+<div style="display:flex;gap:12px;justify-content:center;margin-bottom:24px;flex-wrap:wrap">
+<a href="https://calendly.com/dgoldoff-camelot/30min" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#A89035;color:#fff;padding:12px 24px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
+<span style="font-size:16px">\uD83D\uDCC5</span> Schedule a Zoom Call
+</a>
+<a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+%E2%80%93+${encodeURIComponent(d.buildingName)}+Discussion&details=Management+proposal+discussion+for+${encodeURIComponent(d.buildingName)}%0A%0APrepared+by+Jackie+%7C+Camelot+Realty+Group&add=${CAMELOT.email}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:#A89035;padding:12px 24px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.3px;border:2px solid #A89035">
+<span style="font-size:16px">\uD83D\uDCF9</span> Create Google Meet
+</a>
+</div>
+<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:20px">Or suggest dates that work \u2014 we\u2019ll send a calendar invite</div>
+
+<!-- Contact -->
 <div class="contact-name">${CAMELOT.principal}, ${CAMELOT.title}</div>
 <div class="contact-info">${CAMELOT.phone} | ${CAMELOT.mobile}<br><a href="mailto:${CAMELOT.email}">${CAMELOT.email}</a> | <a href="mailto:${CAMELOT.infoEmail}">${CAMELOT.infoEmail}</a><br><a href="https://${CAMELOT.web}">${CAMELOT.web}</a></div>
 <div class="address">${CAMELOT.address}</div>
-<div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:12px">${CAMELOT.license1} | ${CAMELOT.license2}</div>
+<div style="font-size:9px;color:rgba(255,255,255,0.2);margin-top:12px">${CAMELOT.license1} | ${CAMELOT.license2}</div>
+
+</div>
 </div>
 
 </div>
