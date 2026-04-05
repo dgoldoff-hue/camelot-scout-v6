@@ -110,6 +110,8 @@ export interface MasterReportData {
   abatementAmount: number;
   hasTaxLien: boolean;
   taxLienDetails: Array<{ cycle: string; date: string; waterDebtOnly: boolean }>;
+  // Tiered pricing
+  tieredPricing: TieredPricing;
   // Fee comparison
   feeComparison: MarketFeeComparison | null;
   // Raw data for advanced usage
@@ -268,6 +270,78 @@ function calculateMarketFeeComparison(
       { service: 'Sublet Application', marketRate: '$100–$250', camelotRate: '$100–$250' },
       { service: 'Late Payment Enforcement', marketRate: 'Up to $50 or 5%', camelotRate: 'Per building policy' },
     ],
+  };
+}
+
+// ============================================================
+// ============================================================
+// Three-Tier Pricing Calculator
+// ============================================================
+
+export interface TieredPricing {
+  classic: { perUnit: number; monthly: number; annual: number };
+  intelligence: { perUnit: number; monthly: number; annual: number };
+  premier: { perUnit: number; monthly: number; annual: number };
+  recommended: 'classic' | 'intelligence' | 'premier';
+  units: number;
+}
+
+function calculateTieredPricing(units: number, borough: string, isRentStabilized: boolean, ll97Status: string): TieredPricing {
+  // Classic tier — base rates by building size
+  let classicBase: number;
+  if (units < 30) classicBase = 50;
+  else if (units <= 75) classicBase = 45;
+  else if (units <= 150) classicBase = 40;
+  else classicBase = 38;
+
+  // Intelligence tier — the sweet spot
+  let intelBase: number;
+  if (units < 30) intelBase = 65;
+  else if (units <= 75) intelBase = 55;
+  else if (units <= 150) intelBase = 50;
+  else intelBase = 45;
+
+  // Premier tier — white glove
+  let premierBase: number;
+  if (units < 30) premierBase = 85;
+  else if (units <= 75) premierBase = 75;
+  else if (units <= 150) premierBase = 70;
+  else premierBase = 65;
+
+  // Location adjustments
+  const bor = (borough || '').toLowerCase();
+  if (bor.includes('manhattan')) {
+    // Manhattan commands slight premium
+    classicBase += 5;
+    intelBase += 5;
+    premierBase += 5;
+  } else if (bor.includes('westchester') || bor.includes('connecticut') || bor.includes('jersey')) {
+    // Suburban discount
+    classicBase -= 5;
+    intelBase -= 5;
+    premierBase -= 5;
+  }
+
+  // Rent stabilization adds complexity
+  if (isRentStabilized) {
+    classicBase += 3;
+    intelBase += 3;
+    premierBase += 3;
+  }
+
+  // LL97 non-compliance adds monitoring
+  if (ll97Status && ll97Status !== 'compliant' && ll97Status !== 'unknown') {
+    intelBase += 2;
+    premierBase += 2;
+  }
+
+  const u = units || 1;
+  return {
+    classic: { perUnit: classicBase, monthly: classicBase * u, annual: classicBase * u * 12 },
+    intelligence: { perUnit: intelBase, monthly: intelBase * u, annual: intelBase * u * 12 },
+    premier: { perUnit: premierBase, monthly: premierBase * u, annual: premierBase * u * 12 },
+    recommended: 'intelligence',
+    units: u,
   };
 }
 
@@ -588,6 +662,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     pricePerUnit,
     monthlyFee,
     annualFee,
+    tieredPricing: calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown'),
     feeComparison: calculateMarketFeeComparison({
       units: units || 1,
       borough: borough || '',
@@ -620,20 +695,33 @@ OPENING:
 
 KEY HOOKS:
 ${d.violationsOpen > 0 ? `• ${d.violationsOpen} OPEN HPD VIOLATIONS — "We noticed your building has ${d.violationsOpen} open HPD violations. We have a proven track record clearing these efficiently."\n` : ''}${d.ecbPenaltyBalance > 0 ? `• $${d.ecbPenaltyBalance.toLocaleString()} ECB PENALTY BALANCE — "Your building has outstanding ECB fines that we can help resolve."\n` : ''}${d.ll97 && d.ll97.period1Penalty > 0 ? `• LL97 PENALTY EXPOSURE: $${d.ll97.period1Penalty.toLocaleString()}/yr — "Under Local Law 97, your building faces estimated annual penalties. We include LL97 compliance at no extra charge."\n` : ''}${d.hasActiveLitigation ? `• ⚖️ ACTIVE HOUSING LITIGATION — "We see your building has active housing court cases. Camelot has experience stabilizing buildings in exactly this situation."\n` : ''}${d.isRentStabilized ? `• RENT STABILIZED — "We specialize in rent-stabilized buildings and understand the regulatory complexity."\n` : ''}${d.distressLevel === 'distressed' || d.distressLevel === 'critical' ? `• FINANCIAL DISTRESS DETECTED (${d.distressLevel.toUpperCase()}) — approach with sensitivity, but this building needs help.\n` : ''}
+PRICING (USE THIS IN THE CALL):
+"We have three service levels designed for buildings like yours:"
+• CAMELOT CLASSIC: $${d.tieredPricing.classic.perUnit}/unit/month — full management, in-house CPA, weekly inspections, compliance
+• CAMELOT INTELLIGENCE ⭐: $${d.tieredPricing.intelligence.perUnit}/unit/month — everything in Classic PLUS AI portal, zero bank fees, quarterly market reports, LL97 compliance, free building inspection ($2,500 value)
+• CAMELOT PREMIER: $${d.tieredPricing.premier.perUnit}/unit/month — everything in Intelligence PLUS dedicated senior PM, insurance rebid, vendor guarantee, annual strategy session with David
+
+"Most of our buildings are on Intelligence — it includes AI-powered technology that no other management company offers. No Schedule A surprises."
+
+For ${d.units} units: Classic = $${d.tieredPricing.classic.monthly.toLocaleString()}/mo | Intelligence = $${d.tieredPricing.intelligence.monthly.toLocaleString()}/mo | Premier = $${d.tieredPricing.premier.monthly.toLocaleString()}/mo
+
 VALUE PROPS:
 • Weekly on-site inspections by senior management
 • AI-powered resident portal (ConciergePlus) — zero bank fees
 • Monthly virtual accounting, full financial transparency
 • LL97 compliance tracking included at no charge
 • 24/7 emergency response with direct management access
+• Three flexible pricing tiers — no long-term contracts required
 ${isSelfManaged ? '• "We understand you\'re self-managed — our 90-day onboarding makes the transition seamless"\n' : `• "We'd love to show you how we compare to ${d.managementCompany}"\n`}
 OBJECTION HANDLERS:
+"Too expensive" → "Our Intelligence tier is actually 25-40% LESS than FirstService or AKAM — and includes AI technology they charge extra for."
 "Happy with current management" → "Many clients felt the same before seeing our reporting platform. Open to a brief comparison?"
 "Not looking to switch" → "No commitment — just an opportunity to share what similar buildings are finding valuable."
-"Send me something" → "I'll send our Welcome to Camelot proposal customized for ${d.buildingName}. Best email?"
+"Send me something" → "I'll send our Welcome to Camelot proposal customized for ${d.buildingName} with all three pricing options. Best email?"
+"We're locked into a contract" → "When does it expire? We can prepare everything in advance so the transition is seamless."
 
 CLOSE:
-"Would it make sense to schedule a 15-minute call with David Goldoff to walk through what Camelot could do for ${d.buildingName}?"
+"Would it make sense to schedule a 15-minute call with David Goldoff to walk through the three service tiers for ${d.buildingName}? Most boards find the Intelligence package is exactly what they need."
 
 CONTACT: ${CAMELOT.principal} | ${CAMELOT.phone} | ${CAMELOT.email}
 `;
@@ -1698,24 +1786,96 @@ ${isSelfManaged ? `
 </div>
 </div>
 
-<!-- PAGE 15: PRICING -->
+<!-- PAGE 15: THREE-TIER PRICING -->
 <div class="section section-cream">
-<div class="section-title">The Proposed Investment</div>
-<div class="section-sub">Flat-rate, all-inclusive \u2014 no percentage fees, no hidden surcharges</div>
-<table class="invest-table">
-<thead><tr><th>Service Component</th><th>Camelot Inclusion</th></tr></thead>
-<tbody>
-<tr><td>Annual Management Fee</td><td><strong>$${d.monthlyFee.toLocaleString()}/month</strong> ($${d.pricePerUnit}/unit \u00D7 ${d.units} units)</td></tr>
-<tr><td>Online Payments (Maintenance/CC)</td><td class="free">ZERO Bank Fees</td></tr>
-<tr><td>Technology Platform</td><td class="included">Included \u2014 Camelot Central + ConciergePlus + Merlin AI</td></tr>
-<tr><td>Initial Building Inspection</td><td class="free">FREE ($2,500 value)</td></tr>
-<tr><td>In-House CPA / Accounting</td><td class="included">Included \u2014 no outsourcing</td></tr>
-<tr><td>LL97 Compliance Report</td><td class="included">Included \u2014 carbon cap modeling + roadmap</td></tr>
-<tr><td>AI Board Meeting Minutes</td><td class="included">Included</td></tr>
-<tr><td>In-House Attorney &amp; Engineer</td><td class="free">Free Advisory</td></tr>
-</tbody>
-</table>
-<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-style:italic;color:#A89035;font-size:13px;margin-top:16px;text-align:center">Our efficiencies effectively pay for our management \u2014 through long-term savings on vendors, compliance penalties, and capital expenditures.</div>
+<div class="section-title">Service Packages — ${d.buildingName}</div>
+<div class="section-sub">Three tiers designed for ${d.units} units \u2014 choose the level of service that fits your building</div>
+
+<!-- Three Tier Cards -->
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px">
+
+<!-- CLASSIC -->
+<div style="background:#fff;border:2px solid #D5D0C6;border-radius:10px;padding:20px;text-align:center">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:8px">Classic</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:28px;font-weight:800;color:#3A4B5B">$${d.tieredPricing.classic.perUnit}</div>
+<div style="font-size:11px;color:#888;margin-bottom:14px">per unit / month</div>
+<div style="font-size:10px;color:#555;text-align:left;line-height:1.8">
+\u2714 Weekly inspections<br>
+\u2714 24/7 emergency line<br>
+\u2714 In-house CPA<br>
+\u2714 Monthly financials<br>
+\u2714 Compliance tracking<br>
+\u2714 Vendor coordination<br>
+\u2714 Board meetings<br>
+<span style="color:#ccc">\u2716 ConciergePlus Portal</span><br>
+<span style="color:#ccc">\u2716 Merlin AI</span><br>
+<span style="color:#ccc">\u2716 Zero bank fees</span><br>
+<span style="color:#ccc">\u2716 Market reports</span><br>
+<span style="color:#ccc">\u2716 Free inspection</span>
+</div>
+<div style="margin-top:14px;padding-top:12px;border-top:1px solid #E5E3DE">
+<div style="font-size:11px;color:#888">$${d.tieredPricing.classic.monthly.toLocaleString()}/mo \u00B7 $${d.tieredPricing.classic.annual.toLocaleString()}/yr</div>
+</div>
+</div>
+
+<!-- INTELLIGENCE (RECOMMENDED) -->
+<div style="background:#3A4B5B;border:3px solid #A89035;border-radius:10px;padding:20px;text-align:center;color:#fff;position:relative">
+<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#A89035;color:#fff;padding:4px 16px;border-radius:20px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px">\u2B50 Recommended</div>
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;margin-bottom:8px;margin-top:4px">Intelligence</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:28px;font-weight:800;color:#A89035">$${d.tieredPricing.intelligence.perUnit}</div>
+<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:14px">per unit / month</div>
+<div style="font-size:10px;color:rgba(255,255,255,0.85);text-align:left;line-height:1.8">
+\u2714 Everything in Classic<br>
+\u2714 <strong style="color:#A89035">ConciergePlus Portal (26 modules)</strong><br>
+\u2714 <strong style="color:#A89035">Merlin AI \u2014 24/7 support</strong><br>
+\u2714 <strong style="color:#A89035">ZERO bank fees</strong><br>
+\u2714 <strong style="color:#A89035">Quarterly SCOUT reports</strong><br>
+\u2714 <strong style="color:#A89035">LL97 penalty modeling</strong><br>
+\u2714 <strong style="color:#A89035">AI board minutes</strong><br>
+\u2714 <strong style="color:#A89035">FREE building inspection</strong><br>
+<span style="color:rgba(255,255,255,0.3)">\u2716 Dedicated senior PM</span><br>
+<span style="color:rgba(255,255,255,0.3)">\u2716 Insurance rebid</span><br>
+<span style="color:rgba(255,255,255,0.3)">\u2716 Session w/ David</span>
+</div>
+<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(168,144,53,0.3)">
+<div style="font-size:11px;color:rgba(255,255,255,0.6)">$${d.tieredPricing.intelligence.monthly.toLocaleString()}/mo \u00B7 $${d.tieredPricing.intelligence.annual.toLocaleString()}/yr</div>
+</div>
+</div>
+
+<!-- PREMIER -->
+<div style="background:#fff;border:2px solid #A89035;border-radius:10px;padding:20px;text-align:center">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;margin-bottom:8px">Premier</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:28px;font-weight:800;color:#A89035">$${d.tieredPricing.premier.perUnit}</div>
+<div style="font-size:11px;color:#888;margin-bottom:14px">per unit / month</div>
+<div style="font-size:10px;color:#555;text-align:left;line-height:1.8">
+\u2714 Everything in Intelligence<br>
+\u2714 <strong>Dedicated Senior PM</strong><br>
+\u2714 <strong>Monthly market reports</strong><br>
+\u2714 <strong>Capital projects included</strong> (up to $50K)<br>
+\u2714 <strong>Annual insurance rebid</strong><br>
+\u2714 <strong>Vendor rebid guarantee</strong><br>
+\u2714 <strong>30-min emergency guarantee</strong><br>
+\u2714 <strong>Annual session w/ David Goldoff</strong><br>
+\u2714 <strong>Reduced Schedule A fees</strong>
+</div>
+<div style="margin-top:14px;padding-top:12px;border-top:1px solid #E5E3DE">
+<div style="font-size:11px;color:#888">$${d.tieredPricing.premier.monthly.toLocaleString()}/mo \u00B7 $${d.tieredPricing.premier.annual.toLocaleString()}/yr</div>
+</div>
+</div>
+
+</div>
+
+<!-- Comparison vs Competitors -->
+<div style="background:#EDE9DF;border-radius:8px;padding:14px 18px;margin-bottom:16px">
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center">
+<div><div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px">vs. FirstService</div><div style="font-size:13px;font-weight:700;color:#16a34a">30\u201345% less</div></div>
+<div><div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px">vs. AKAM</div><div style="font-size:13px;font-weight:700;color:#16a34a">25\u201340% less</div></div>
+<div><div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px">vs. Orsid</div><div style="font-size:13px;font-weight:700;color:#16a34a">15\u201330% less</div></div>
+</div>
+<div style="font-size:10px;color:#555;text-align:center;margin-top:8px">With MORE services included. No hidden Schedule A surprises.</div>
+</div>
+
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-style:italic;color:#A89035;font-size:13px;text-align:center">80% of Camelot clients choose Intelligence. Our AI technology pays for the difference.</div>
 </div>
 
 <!-- PAGE 15B: FEE COMPARISON — MARKET RATE ANALYSIS -->
