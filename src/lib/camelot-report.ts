@@ -2612,16 +2612,19 @@ ${d.neighborhoodMarketData ? `
 <h2 style="font-size:28px;margin-bottom:12px">Next Steps</h2>
 <div class="tagline" style="margin-bottom:24px">We welcome the opportunity to discuss ${d.buildingName}&rsquo;s<br>needs and refine our proposal to fit your building.</div>
 
-<!-- Meeting CTA -->
-<div style="display:flex;gap:12px;justify-content:center;margin-bottom:24px;flex-wrap:wrap">
-<a href="https://calendly.com/dgoldoff-camelot/30min" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#A89035;color:#fff;padding:12px 24px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
-<span style="font-size:16px">\uD83D\uDCC5</span> Schedule a Zoom Call
+<!-- Meeting CTA — Three Options -->
+<div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px;flex-wrap:wrap">
+<a href="https://zoom.us/j/new" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#2D8CFF;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
+<span style="font-size:15px">\uD83D\uDCF9</span> Zoom Meeting
 </a>
-<a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+%E2%80%93+${encodeURIComponent(d.buildingName)}+Discussion&details=Management+proposal+discussion+for+${encodeURIComponent(d.buildingName)}%0A%0APrepared+by+Jackie+%7C+Camelot+Realty+Group&add=${CAMELOT.email}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:#A89035;padding:12px 24px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.3px;border:2px solid #A89035">
-<span style="font-size:16px">\uD83D\uDCF9</span> Create Google Meet
+<a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+%E2%80%93+${encodeURIComponent(d.buildingName)}+Discussion&details=Management+proposal+discussion+for+${encodeURIComponent(d.buildingName)}%0A%0APrepared+by+Jackie+%7C+Camelot+Realty+Group&add=${CAMELOT.email}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#A89035;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
+<span style="font-size:15px">\uD83D\uDCC5</span> Google Meet
+</a>
+<a href="mailto:${CAMELOT.email}?subject=${encodeURIComponent('Meeting Request — ' + d.buildingName)}&body=${encodeURIComponent('Hello David,\\n\\nI would like to schedule a meeting to discuss the management proposal for ' + d.buildingName + '.\\n\\nPlease let me know your available dates and preferred meeting format (Zoom, Google Meet, or in-person).\\n\\nThank you.')}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:#A89035;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px;border:2px solid #A89035">
+<span style="font-size:15px">\u2709\uFE0F</span> Email to Schedule
 </a>
 </div>
-<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:20px">Or suggest dates that work \u2014 we\u2019ll send a calendar invite</div>
+<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:20px">Choose your preferred format \u2014 or reply to this report\u2019s email and we\u2019ll coordinate</div>
 
 <!-- Contact -->
 <div class="contact-name">${CAMELOT.principal}, ${CAMELOT.title}</div>
