@@ -59,7 +59,11 @@ export const useBuildingsStore = create<BuildingsState>((set, get) => ({
   setBuildings: (buildings) => { saveBuildingsToStorage(buildings); set({ buildings }); },
   addBuildings: (newBuildings) =>
     set((state) => {
-      const merged = [...newBuildings, ...state.buildings];
+      // Deduplicate by address (case-insensitive, trimmed) — new buildings win over old
+      const normalize = (addr: string) => (addr || '').trim().toLowerCase().replace(/\s+/g, ' ');
+      const newAddrs = new Set(newBuildings.map((b) => normalize(b.address)));
+      const deduped = state.buildings.filter((b) => !newAddrs.has(normalize(b.address)));
+      const merged = [...newBuildings, ...deduped];
       saveBuildingsToStorage(merged);
       return { buildings: merged };
     }),

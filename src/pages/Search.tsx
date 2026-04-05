@@ -22,6 +22,7 @@ type SearchTab = 'address' | 'owner' | 'unit';
 export default function Search() {
   const navigate = useNavigate();
   const addBuildings = useBuildingsStore((s) => s.addBuildings);
+  const setBuildings = useBuildingsStore((s) => s.setBuildings);
   const setFilters = useBuildingsStore((s) => s.setFilters);
 
   // Search tab state
@@ -237,6 +238,9 @@ export default function Search() {
     setIsScanning(true);
     let totalFound = 0;
 
+    // Clear previous scan results so the Results page starts fresh
+    setBuildings([]);
+
     // Florida areas — use pre-built data
     if (floridaAreas.length > 0) {
       setScanProgress(`Scanning ${floridaAreas.length} Florida area(s)...`);
@@ -378,9 +382,7 @@ export default function Search() {
       }
 
       if (unknownAreas.length > 0) {
-        for (const area of unknownAreas) {
-          toast(`${area}: AI-powered research queued — no pre-built data yet for this area`, { icon: '🔍', duration: 4000 });
-        }
+        toast(`${unknownAreas.length} area(s) not yet in database: ${unknownAreas.join(', ')}`, { icon: '🔍', duration: 5000 });
       }
     }
 
@@ -400,7 +402,7 @@ export default function Search() {
     } as any);
 
     if (totalFound > 0) {
-      toast.success(`Found ${totalFound} buildings across ${selectedRegions.length} area(s)`);
+      toast.success(`🏢 Found ${totalFound} buildings across ${selectedRegions.length} area(s)`, { duration: 5000 });
     } else {
       toast('No buildings found matching your criteria. Try adjusting filters.', { icon: '🔍' });
     }

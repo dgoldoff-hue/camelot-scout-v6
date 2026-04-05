@@ -38,6 +38,26 @@ const TRISTATE_BUILDINGS: TriStateBuilding[] = [
   { address: '3 Pondfield Road, Bronxville, NY', name: 'Pondfield Apartments', area: 'Bronxville', region: 'Westchester', units: 48, type: 'co-op', year_built: 1940, current_management: 'Unknown', market_value: 32000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
   { address: '1 Scarsdale Road, Tuckahoe, NY', name: 'Scarsdale Manor', area: 'Tuckahoe', region: 'Westchester', units: 96, type: 'co-op', year_built: 1950, current_management: 'Unknown', market_value: 42000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
 
+  // Westchester — Mount Vernon
+  { address: '125 Prospect Avenue, Mount Vernon, NY', name: 'Prospect Hill Co-ops', area: 'Mount Vernon', region: 'Westchester', units: 84, type: 'co-op', year_built: 1958, current_management: 'Unknown', market_value: 28000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
+  { address: '225 North Columbus Avenue, Mount Vernon, NY', name: 'Columbus Avenue Apartments', area: 'Mount Vernon', region: 'Westchester', units: 110, type: 'rental', year_built: 1972, current_management: 'Unknown', market_value: 35000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
+  // Westchester — Scarsdale
+  { address: '20 Overhill Road, Scarsdale, NY', name: 'Overhill Gardens', area: 'Scarsdale', region: 'Westchester', units: 52, type: 'co-op', year_built: 1948, current_management: 'Unknown', market_value: 38000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
+  // Westchester — Eastchester
+  { address: '2 Lake Street, Eastchester, NY', name: 'Lake Street Residences', area: 'Eastchester', region: 'Westchester', units: 64, type: 'co-op', year_built: 1960, current_management: 'Unknown', market_value: 22000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
+  // Westchester — Larchmont
+  { address: '1 Fountain Square, Larchmont, NY', name: 'Fountain Square Condominiums', area: 'Larchmont', region: 'Westchester', units: 36, type: 'condo', year_built: 1985, current_management: 'Unknown', market_value: 32000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
+  // Westchester — Rye
+  { address: '150 Purchase Street, Rye, NY', name: 'Rye Colony Club', area: 'Rye', region: 'Westchester', units: 88, type: 'co-op', year_built: 1965, current_management: 'Unknown', market_value: 48000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
+  // Westchester — Port Chester
+  { address: '140 Abendroth Avenue, Port Chester, NY', name: 'Abendroth Park Residences', area: 'Port Chester', region: 'Westchester', units: 72, type: 'rental', year_built: 2017, current_management: 'Unknown', market_value: 32000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
+  // Westchester — Tarrytown
+  { address: '100 Riverview Drive, Tarrytown, NY', name: 'Hudson House on the River', area: 'Tarrytown', region: 'Westchester', units: 56, type: 'condo', year_built: 2002, current_management: 'Unknown', market_value: 40000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
+  // Westchester — Dobbs Ferry
+  { address: '1 Main Street, Dobbs Ferry, NY', name: 'Rivertowns Square', area: 'Dobbs Ferry', region: 'Westchester', units: 132, type: 'rental', year_built: 2018, current_management: 'Ginsburg Development', market_value: 65000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
+  // Westchester — Hastings-on-Hudson
+  { address: '45 Main Street, Hastings-on-Hudson, NY', name: 'Hastings Landing', area: 'Hastings-on-Hudson', region: 'Westchester', units: 48, type: 'condo', year_built: 2008, current_management: 'Unknown', market_value: 28000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
+
   // Connecticut — Stamford
   { address: '1 Broad Street, Stamford, CT', name: 'Trump Parc Stamford', area: 'Stamford', region: 'Connecticut', units: 170, type: 'condo', year_built: 2009, current_management: 'Unknown', market_value: 125000000, contacts: [], notes: '🏠 Connecticut — AI-researched data (verify independently)' },
   { address: '100 Prospect Street, Stamford, CT', name: 'The Beacon', area: 'Stamford', region: 'Connecticut', units: 132, type: 'rental', year_built: 2016, current_management: 'Building & Land Technology', market_value: 85000000, contacts: [], notes: '🏠 Connecticut — AI-researched data (verify independently)' },
