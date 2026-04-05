@@ -722,17 +722,16 @@ Best regards,${sig}`,
 
   // loyalty — short intro email accompanying the downloaded report
   if (type === 'loyalty') {
+    const loyaltySig = `\n\nSincerely yours,\n\nDavid A. Goldoff\nFounder & President\nCamelot Property Management\n${CAMELOT.address}\n${CAMELOT.email} | ${CAMELOT.phone}\n${CAMELOT.web}`;
     return {
-      subject: `${d.buildingName} — Property Intelligence Report from Camelot Realty Group`,
+      subject: `${d.buildingName} at ${d.address} — Property Intelligence Report from Camelot Realty Group`,
       body: `Dear Board Member,
 
 Camelot Realty Group is a boutique property management firm based at 477 Madison Avenue in New York City. For over 18 years, we have proudly managed cooperatives, condominiums, and multifamily buildings across the New York metropolitan area — delivering hands-on service, financial transparency, and technology-driven management to every property in our portfolio.
 
-We were pleased to prepare the attached Property Intelligence Report for ${d.buildingName}. Our team took a close look at your ${d.units ? d.units + '-unit ' : ''}building and we believe there is a meaningful opportunity for Camelot to add value — from compliance and vendor optimization to financial reporting and resident services.
+We were pleased to prepare the attached Property Intelligence Report for ${d.buildingName} at ${d.address}. Our team took a close look at your ${d.units ? d.units + '-unit ' : ''}building and we believe there is a meaningful opportunity for Camelot to add value — from compliance and vendor optimization to financial reporting and resident services.
 
-We would welcome the chance to introduce ourselves to the board. If you have 15 minutes in the coming weeks, we'd be happy to arrange a brief Zoom call or meet at your convenience.
-
-Warm regards,${sig}`,
+We hope that we get the chance to meet soon.${loyaltySig}`,
     };
   }
 
@@ -1947,6 +1946,136 @@ ${[
 <div style="background:#16a34a;color:#fff;border-radius:8px;padding:14px 20px;margin-top:16px;text-align:center">
 <span style="font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:700">Total Year 1 Opportunity: $98,000 – $223,000+</span>
 <span style="display:block;font-size:11px;opacity:0.9;margin-top:4px">In combined cost reduction and revenue improvement — achievable without any maintenance increase</span>
+</div>
+</div>
+
+<!-- PAGE 17B: CHARTS, GRAPHS & 5-YEAR PRO FORMA -->
+<div class="section section-white">
+<div class="section-title">Value Creation — Visual Analysis</div>
+<div class="section-sub">Charts and projections specific to ${d.buildingName} (${d.units} units${d.buildingArea > 0 ? ', ' + d.buildingArea.toLocaleString() + ' SF' : ''})</div>
+
+<!-- Savings Breakdown — Horizontal Bar Chart -->
+<div style="margin-bottom:28px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600;margin-bottom:14px;padding-left:16px;border-left:4px solid #A89035">Projected Annual Savings by Category</div>
+${[
+  { label: 'Vendor Rebidding', low: 35000, high: 75000, color: '#A89035' },
+  { label: 'Insurance Review', low: 25000, high: 55000, color: '#3A4B5B' },
+  { label: 'Energy (Parity)', low: 15000, high: 35000, color: '#16a34a' },
+  { label: 'Revenue Recovery', low: 15000, high: 40000, color: '#0073b7' },
+  { label: 'Retention Savings', low: Math.round(d.units * 3500), high: Math.round(d.units * 8000), color: '#e63946' },
+  { label: 'Admin Efficiency', low: 8000, high: 18000, color: '#888' },
+].map(item => {
+  const maxVal = 75000 + (d.units * 8000);
+  const pctLow = Math.min(100, Math.round((item.low / maxVal) * 100));
+  const pctHigh = Math.min(100, Math.round((item.high / maxVal) * 100));
+  return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+<div style="width:120px;text-align:right;font-size:11px;color:#555;flex-shrink:0">${item.label}</div>
+<div style="flex:1;background:#E5E3DE;border-radius:4px;height:24px;position:relative">
+<div style="position:absolute;left:0;top:0;height:100%;background:${item.color};opacity:0.3;border-radius:4px;width:${pctHigh}%"></div>
+<div style="position:absolute;left:0;top:0;height:100%;background:${item.color};border-radius:4px;width:${pctLow}%"></div>
+<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:600;color:#2C3240">$${(item.low/1000).toFixed(0)}K–$${(item.high/1000).toFixed(0)}K</span>
+</div>
+</div>`;
+}).join('\n')}
+</div>
+
+<!-- 5-Year Pro Forma Projection -->
+<div style="margin-bottom:28px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600;margin-bottom:14px;padding-left:16px;border-left:4px solid #A89035">5-Year Financial Pro Forma</div>
+${(() => {
+  const mgmtFee = d.monthlyFee * 12;
+  const yr1Low = 98000; const yr1High = 223000;
+  const yr1Mid = Math.round((yr1Low + yr1High) / 2);
+  const growth = 1.04; // 4% annual improvement
+  const years = [1, 2, 3, 4, 5];
+  const projections = years.map(y => {
+    const savings = Math.round(yr1Mid * Math.pow(growth, y - 1));
+    const fee = Math.round(mgmtFee * Math.pow(1.02, y - 1)); // 2% fee escalation
+    const net = savings - fee;
+    const roi = Math.round((savings / fee) * 100);
+    return { year: y, savings, fee, net, roi };
+  });
+  const cumSavings = projections.reduce((acc, p) => { acc.push((acc.length > 0 ? acc[acc.length - 1] : 0) + p.net); return acc; }, [] as number[]);
+  const totalSavings5yr = cumSavings[cumSavings.length - 1];
+  const maxCum = totalSavings5yr;
+
+  return `<table class="invest-table" style="font-size:11px">
+<thead><tr><th>Year</th><th>Est. Value Created</th><th>Management Fee</th><th>Net Benefit</th><th>ROI</th><th>Cumulative Net</th></tr></thead>
+<tbody>
+${projections.map((p, i) => `<tr${i % 2 ? ' style="background:#EDE9DF"' : ''}>
+<td style="font-weight:700">Year ${p.year}</td>
+<td style="color:#16a34a;font-weight:600">$${p.savings.toLocaleString()}</td>
+<td>$${p.fee.toLocaleString()}</td>
+<td style="color:${p.net > 0 ? '#16a34a' : '#dc2626'};font-weight:700">$${p.net.toLocaleString()}</td>
+<td style="color:#A89035;font-weight:700">${p.roi}%</td>
+<td style="font-weight:600">$${cumSavings[i].toLocaleString()}</td>
+</tr>`).join('\n')}
+</tbody>
+</table>
+
+<!-- Cumulative Net Benefit — Area Chart -->
+<div style="margin-top:16px;padding:16px 20px;background:#EDE9DF;border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:10px">Cumulative Net Benefit Over 5 Years</div>
+<div style="display:flex;align-items:flex-end;gap:4px;height:120px">
+${cumSavings.map((val, i) => {
+  const pct = Math.max(8, Math.round((val / maxCum) * 100));
+  return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+<div style="font-size:9px;font-weight:700;color:#16a34a">$${(val/1000).toFixed(0)}K</div>
+<div style="width:100%;background:linear-gradient(to top,#16a34a,#4ade80);border-radius:4px 4px 0 0;height:${pct}%;min-height:10px"></div>
+<div style="font-size:9px;color:#888">Yr ${i + 1}</div>
+</div>`;
+}).join('\n')}
+</div>
+</div>
+
+<!-- ROI Summary -->
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
+<div style="background:#3A4B5B;border-radius:8px;padding:16px;text-align:center;color:#fff">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;font-weight:700;color:#A89035">${projections[0].roi}%</div>
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-top:4px;opacity:0.7">Year 1 ROI</div>
+</div>
+<div style="background:#3A4B5B;border-radius:8px;padding:16px;text-align:center;color:#fff">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;font-weight:700;color:#16a34a">$${(totalSavings5yr/1000).toFixed(0)}K</div>
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-top:4px;opacity:0.7">5-Year Net Benefit</div>
+</div>
+<div style="background:#3A4B5B;border-radius:8px;padding:16px;text-align:center;color:#fff">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;font-weight:700;color:#A89035">${((totalSavings5yr / (projections.reduce((s, p) => s + p.fee, 0))) * 100).toFixed(0)}%</div>
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-top:4px;opacity:0.7">5-Year Avg ROI</div>
+</div>
+</div>`;
+})()}
+</div>
+
+<!-- OpEx Breakdown — Donut Chart (CSS) -->
+<div style="margin-top:24px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600;margin-bottom:14px;padding-left:16px;border-left:4px solid #A89035">Typical Operating Expense Breakdown</div>
+<div style="display:flex;gap:24px;align-items:center">
+<div style="width:180px;height:180px;border-radius:50%;flex-shrink:0;position:relative;background:conic-gradient(#dc2626 0deg 97deg,#A89035 97deg 169deg,#3A4B5B 169deg 230deg,#16a34a 230deg 280deg,#0073b7 280deg 320deg,#888 320deg 360deg)">
+<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90px;height:90px;background:#FDFAF3;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center">
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:700;color:#2C3240">${d.neighborhoodMarketData ? d.neighborhoodMarketData.opexRange.split('–')[0] : '$20'}</div>
+<div style="font-size:8px;color:#888;text-transform:uppercase">avg $/SF/yr</div>
+</div>
+</div>
+<div style="flex:1">
+${[
+  { label: 'Real Estate Taxes', pct: '27%', color: '#dc2626' },
+  { label: 'Insurance', pct: '20%', color: '#A89035' },
+  { label: 'Utilities', pct: '17%', color: '#3A4B5B' },
+  { label: 'Maintenance & Repairs', pct: '14%', color: '#16a34a' },
+  { label: 'Management & Admin', pct: '11%', color: '#0073b7' },
+  { label: 'Other / Reserve', pct: '11%', color: '#888' },
+].map(c => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+<div style="width:10px;height:10px;border-radius:2px;background:${c.color};flex-shrink:0"></div>
+<div style="font-size:11px;color:#555;flex:1">${c.label}</div>
+<div style="font-size:11px;font-weight:700;color:#2C3240">${c.pct}</div>
+</div>`).join('\n')}
+<div style="font-size:9px;color:#888;margin-top:8px;font-style:italic">★ Camelot targets Insurance, Utilities, Maintenance & Mgmt for direct savings</div>
+</div>
+</div>
+</div>
+
+<div style="background:#EDE9DF;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:12px 16px;margin-top:20px">
+<p style="font-size:11px;color:#555;line-height:1.6"><strong style="color:#A89035">Note:</strong> All projections are estimates based on Camelot portfolio benchmarks across 42 managed properties. Actual results vary by building. Year 1 estimates are conservative; savings typically compound as vendor contracts are rebid, energy optimization matures, and resident retention improves. Management fee assumes 2% annual escalation; value creation assumes 4% annual improvement.</p>
 </div>
 </div>
 
