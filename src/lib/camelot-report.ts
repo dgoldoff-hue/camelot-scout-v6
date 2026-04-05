@@ -101,6 +101,15 @@ export interface MasterReportData {
   boardMembers: Array<{ name: string; title: string }>;
   buildingStaff: Array<{ role: string; name: string }>;
   professionals: { lawFirm: string | null; accountingFirm: string | null; engineer: string | null; architect: string | null };
+  // DOB Professional contacts
+  dobArchitects: Array<{ name: string; title: string; license: string }>;
+  dobEngineers: Array<{ name: string; title: string; license: string }>;
+  dobOwners: Array<{ name: string; businessName: string; phone: string; type: string }>;
+  // DOF Abatement & Tax Liens
+  hasAbatement: boolean;
+  abatementAmount: number;
+  hasTaxLien: boolean;
+  taxLienDetails: Array<{ cycle: string; date: string; waterDebtOnly: boolean }>;
   // Fee comparison
   feeComparison: MarketFeeComparison | null;
   // Raw data for advanced usage
@@ -565,9 +574,17 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     professionals: {
       lawFirm: null,
       accountingFirm: null,
-      engineer: raw.permits?.items?.[0]?.owner_s_first_name ? `${raw.permits.items[0].owner_s_first_name} ${raw.permits.items[0].owner_s_last_name || ''}`.trim() : null,
-      architect: null,
+      engineer: (raw.dobProfessionals || []).find((p: any) => p.role === 'engineer')?.name
+        || (raw.permits?.items?.[0]?.owner_s_first_name ? `${raw.permits.items[0].owner_s_first_name} ${raw.permits.items[0].owner_s_last_name || ''}`.trim() : null),
+      architect: (raw.dobProfessionals || []).find((p: any) => p.role === 'architect')?.name || null,
     },
+    dobArchitects: (raw.dobProfessionals || []).filter((p: any) => p.role === 'architect').map((p: any) => ({ name: p.name, title: p.title, license: p.license })),
+    dobEngineers: (raw.dobProfessionals || []).filter((p: any) => p.role === 'engineer').map((p: any) => ({ name: p.name, title: p.title, license: p.license })),
+    dobOwners: (raw.dobOwners || []).map((o: any) => ({ name: o.name, businessName: o.businessName, phone: o.phone, type: o.type })),
+    hasAbatement: raw.dofAbatement?.hasAbatement || false,
+    abatementAmount: raw.dofAbatement?.currentExemption || 0,
+    hasTaxLien: raw.taxLiens?.hasLien || false,
+    taxLienDetails: raw.taxLiens?.liens || [],
     pricePerUnit,
     monthlyFee,
     annualFee,
@@ -1060,8 +1077,12 @@ ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borou
 <span style="font-size:20px">🔍</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">NYSCEF (Court E-Filing)</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Court filings, lawsuits, HP actions</div></div>
 </a>
+<a href="https://a836-pts-access.nyc.gov/care/search/commonsearch.aspx?mode=persprop" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">🏦</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">DOF Property Tax</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Abatements, tax liens, exemptions, assessments</div></div>
+</a>
 </div>
-<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Data priority: HPD Registration → DOF/PLUTO → StreetEasy → PropertyShark → Domicile (units/fees) · ACRIS → DOF → HPD (ownership) · LexisNexis → NYSCEF → HPD Litigation (legal) · NY AG (offering plans)</div>
+<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Data priority: HPD → DOF/PLUTO → StreetEasy → PropertyShark → Domicile (units/fees) · ACRIS → DOF → HPD (ownership) · DOB permits (architect/engineer/owner) · DOF Exemptions (abatements/liens) · LexisNexis → NYSCEF (legal) · NY AG (offering plans)</div>
 </div>
 
 <div class="stats-row">
@@ -1273,21 +1294,68 @@ ${d.managementDuration ? `<div style="margin-bottom:4px">\u2022 Duration \u2014 
 </div>
 </div>
 
-<!-- PROFESSIONAL SERVICES — Critical -->
-<div style="background:#fff;border:2px solid #A89035;border-radius:8px;padding:18px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:12px">\u2696\uFE0F Professional Services</div>
+<!-- PROFESSIONAL SERVICES — From DOB Permit Records -->
+<div style="background:#fff;border:2px solid #A89035;border-radius:8px;padding:18px;margin-bottom:16px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:12px">⚖️ Professional Services <span style="font-weight:400;color:#888;text-transform:none;letter-spacing:0">(from DOB permit filings)</span></div>
 <table style="width:100%;border-collapse:collapse">
 <thead><tr>
-<th style="text-align:left;padding:8px 12px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:2px solid #A89035;width:40%">Service</th>
-<th style="text-align:left;padding:8px 12px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:2px solid #A89035">Firm / Contact</th>
+<th style="text-align:left;padding:8px 12px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:2px solid #A89035;width:30%">Role</th>
+<th style="text-align:left;padding:8px 12px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:2px solid #A89035">Name</th>
+<th style="text-align:left;padding:8px 12px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:2px solid #A89035">License</th>
 </tr></thead>
 <tbody>
-<tr><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240;border-bottom:1px solid #E5E3DE">Law Firm / Attorney</td><td style="padding:10px 12px;font-size:12px;color:#2C3240;border-bottom:1px solid #E5E3DE">${d.professionals.lawFirm || '<em style="color:#999">To be identified</em>'}</td></tr>
-<tr style="background:#EDE9DF"><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240;border-bottom:1px solid #E5E3DE">Accounting / Audit Firm</td><td style="padding:10px 12px;font-size:12px;color:#2C3240;border-bottom:1px solid #E5E3DE">${d.professionals.accountingFirm || '<em style="color:#999">To be identified</em>'}</td></tr>
-<tr><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240;border-bottom:1px solid #E5E3DE">Licensed Engineer</td><td style="padding:10px 12px;font-size:12px;color:#2C3240;border-bottom:1px solid #E5E3DE">${d.professionals.engineer || '<em style="color:#999">To be identified</em>'}</td></tr>
-<tr style="background:#EDE9DF"><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240">Architect</td><td style="padding:10px 12px;font-size:12px;color:#2C3240">${d.professionals.architect || '<em style="color:#999">To be identified</em>'}</td></tr>
+${d.dobArchitects.length > 0 ? d.dobArchitects.map((a, i) => `<tr${i % 2 ? ' style="background:#EDE9DF"' : ''}><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240;border-bottom:1px solid #E5E3DE">🏗️ ${a.title}</td><td style="padding:10px 12px;font-size:12px;color:#2C3240;border-bottom:1px solid #E5E3DE;font-weight:500">${a.name}</td><td style="padding:10px 12px;font-size:11px;color:#888;border-bottom:1px solid #E5E3DE;font-family:monospace">${a.license || '—'}</td></tr>`).join('') : '<tr><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240;border-bottom:1px solid #E5E3DE">🏗️ Architect</td><td style="padding:10px 12px;font-size:12px;color:#999;border-bottom:1px solid #E5E3DE;font-style:italic" colspan="2">No DOB permit filings found</td></tr>'}
+${d.dobEngineers.length > 0 ? d.dobEngineers.map((e, i) => `<tr${(d.dobArchitects.length + i) % 2 ? ' style="background:#EDE9DF"' : ''}><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240;border-bottom:1px solid #E5E3DE">⚙️ ${e.title}</td><td style="padding:10px 12px;font-size:12px;color:#2C3240;border-bottom:1px solid #E5E3DE;font-weight:500">${e.name}</td><td style="padding:10px 12px;font-size:11px;color:#888;border-bottom:1px solid #E5E3DE;font-family:monospace">${e.license || '—'}</td></tr>`).join('') : '<tr style="background:#EDE9DF"><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240;border-bottom:1px solid #E5E3DE">⚙️ Engineer</td><td style="padding:10px 12px;font-size:12px;color:#999;border-bottom:1px solid #E5E3DE;font-style:italic" colspan="2">No DOB permit filings found</td></tr>'}
+<tr><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240;border-bottom:1px solid #E5E3DE">⚖️ Law Firm</td><td style="padding:10px 12px;font-size:12px;color:#2C3240;border-bottom:1px solid #E5E3DE" colspan="2">${d.professionals.lawFirm || '<em style="color:#999">To be identified — check LexisNexis / NYSCEF</em>'}</td></tr>
+<tr style="background:#EDE9DF"><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240">📊 Accounting Firm</td><td style="padding:10px 12px;font-size:12px;color:#2C3240" colspan="2">${d.professionals.accountingFirm || '<em style="color:#999">To be identified — check AG Offering Plan</em>'}</td></tr>
 </tbody>
 </table>
+<div style="font-size:9px;color:#888;margin-top:8px">Source: NYC Dept. of Buildings permit records. Professionals listed are those who filed DOB applications for this property.</div>
+</div>
+
+<!-- DOB OWNER INFORMATION -->
+${d.dobOwners.length > 0 ? `
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:16px;margin-bottom:16px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:10px">🏠 Property Owner(s) — DOB Records</div>
+<table style="width:100%;border-collapse:collapse">
+<thead><tr>
+<th style="text-align:left;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:1px solid #D5D0C6">Name</th>
+<th style="text-align:left;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:1px solid #D5D0C6">Business</th>
+<th style="text-align:left;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:1px solid #D5D0C6">Phone</th>
+<th style="text-align:left;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:1px solid #D5D0C6">Type</th>
+</tr></thead>
+<tbody>
+${d.dobOwners.map((o, i) => `<tr${i % 2 ? ' style="background:#fff"' : ''}><td style="padding:8px 10px;font-size:12px;font-weight:600;color:#2C3240;border-bottom:1px solid #E5E3DE">${o.name}</td><td style="padding:8px 10px;font-size:11px;color:#555;border-bottom:1px solid #E5E3DE">${o.businessName || '—'}</td><td style="padding:8px 10px;font-size:11px;color:#555;border-bottom:1px solid #E5E3DE;font-family:monospace">${o.phone || '—'}</td><td style="padding:8px 10px;font-size:11px;color:#888;border-bottom:1px solid #E5E3DE">${o.type || '—'}</td></tr>`).join('')}
+</tbody>
+</table>
+<div style="font-size:9px;color:#888;margin-top:6px">Source: DOB permit applications — owner listed on filing. Cross-reference with ACRIS and DOF for verification.</div>
+</div>` : ''}
+
+<!-- TAX ABATEMENT & LIEN STATUS -->
+<div style="background:#fff;border:2px solid ${d.hasTaxLien ? '#dc2626' : '#A89035'};border-radius:8px;padding:18px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:${d.hasTaxLien ? '#dc2626' : '#A89035'};font-weight:700;margin-bottom:12px">🏦 Tax Status — DOF Abatement & Lien Search</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+<div style="background:#EDE9DF;border-radius:6px;padding:14px;text-align:center">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px">Co-op/Condo Abatement</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700;color:${d.hasAbatement ? '#16a34a' : '#888'}">${d.hasAbatement ? '✅ Active' : '—  None'}</div>
+${d.abatementAmount > 0 ? `<div style="font-size:11px;color:#16a34a;font-weight:600;margin-top:4px">$\${d.abatementAmount.toLocaleString()} exempt</div>` : ''}
+</div>
+<div style="background:${d.hasTaxLien ? 'rgba(220,38,38,0.08)' : '#EDE9DF'};border-radius:6px;padding:14px;text-align:center;${d.hasTaxLien ? 'border:1px solid rgba(220,38,38,0.3)' : ''}">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px">Tax Liens</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700;color:${d.hasTaxLien ? '#dc2626' : '#16a34a'}">${d.hasTaxLien ? '⚠️ LIEN' : '✅ Clear'}</div>
+${d.hasTaxLien ? `<div style="font-size:11px;color:#dc2626;font-weight:600;margin-top:4px">${d.taxLienDetails.length} lien(s) on record</div>` : '<div style="font-size:11px;color:#16a34a;margin-top:4px">No liens found</div>'}
+</div>
+<div style="background:#EDE9DF;border-radius:6px;padding:14px;text-align:center">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px">DOF Search</div>
+<div style="font-size:11px;color:#555;line-height:1.5;margin-top:6px"><a href="https://a836-pts-access.nyc.gov/care/search/commonsearch.aspx?mode=persprop" target="_blank" style="color:#A89035;text-decoration:underline;font-weight:600">Search DOF Property Tax →</a></div>
+</div>
+</div>
+${d.hasTaxLien ? `
+<div style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);border-radius:6px;padding:12px;margin-bottom:10px">
+<div style="font-size:11px;color:#991b1b;font-weight:600;margin-bottom:6px">⚠️ Tax Lien Details</div>
+${d.taxLienDetails.map(l => `<div style="font-size:11px;color:#555;padding:2px 0">• ${l.cycle}${l.date ? ' — ' + new Date(l.date).toLocaleDateString() : ''}${l.waterDebtOnly ? ' (water debt only)' : ''}</div>`).join('')}
+</div>` : ''}
+<div style="font-size:9px;color:#888">Source: NYC Dept. of Finance — Property Exemptions (8y4t-faws) and Tax Lien Sale (9rz4-mjek). Abatement data reflects most recent assessment year. Tax liens indicate properties included in NYC's annual tax lien sale process.</div>
 </div>
 </div>
 

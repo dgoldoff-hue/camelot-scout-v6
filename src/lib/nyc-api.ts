@@ -476,6 +476,158 @@ export async function fetchACRISRecords(borough: string, block: string, lot: str
   }
 }
 
+// ============================================================
+// DOF Property Exemptions / Abatement
+// ============================================================
+
+const DOF_EXEMPTIONS_ENDPOINT = `${NYC_BASE}/8y4t-faws.json`;
+const DOF_TAX_LIEN_ENDPOINT = `${NYC_BASE}/9rz4-mjek.json`;
+
+export interface DOFAbatementData {
+  hasAbatement: boolean;
+  currentExemption: number;     // current year exempt amount
+  taxClass: string;
+  coopApts: number;
+  yearBuilt: number;
+  ownerName: string;
+  raw: any;
+}
+
+export interface TaxLienData {
+  hasLien: boolean;
+  liens: Array<{
+    cycle: string;
+    date: string;
+    waterDebtOnly: boolean;
+  }>;
+}
+
+/**
+ * Fetch DOF Property Exemptions (co-op/condo abatement data, tax class details)
+ */
+export async function fetchDOFExemptions(borough: string, block: string, lot: string): Promise<DOFAbatementData | null> {
+  try {
+    const url = `${DOF_EXEMPTIONS_ENDPOINT}?$limit=1&$order=year DESC&$where=boro='${borough}' AND block='${block}' AND lot='${lot}'`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data || data.length === 0) return null;
+    const d = data[0];
+    const exemption = parseFloat(d.curactextot) || 0;
+    return {
+      hasAbatement: exemption > 0,
+      currentExemption: exemption,
+      taxClass: d.curtaxclass || '',
+      coopApts: parseInt(d.coop_apts) || 0,
+      yearBuilt: parseInt(d.yrbuilt) || 0,
+      ownerName: d.owner || '',
+      raw: d,
+    };
+  } catch (err) {
+    console.error('DOF Exemptions fetch error:', err);
+    return null;
+  }
+}
+
+/**
+ * Fetch DOF Tax Lien Sale data — checks if property has any outstanding tax liens
+ */
+export async function fetchTaxLiens(borough: string, block: string, lot: string): Promise<TaxLienData> {
+  try {
+    const url = `${DOF_TAX_LIEN_ENDPOINT}?$limit=10&$order=month DESC&$where=borough='${borough}' AND block='${block}' AND lot='${lot}'`;
+    const res = await fetch(url);
+    if (!res.ok) return { hasLien: false, liens: [] };
+    const data = await res.json();
+    return {
+      hasLien: data.length > 0,
+      liens: data.map((d: any) => ({
+        cycle: d.cycle || '',
+        date: d.month || '',
+        waterDebtOnly: d.water_debt_only === 'YES',
+      })),
+    };
+  } catch (err) {
+    console.error('Tax Lien fetch error:', err);
+    return { hasLien: false, liens: [] };
+  }
+}
+
+// ============================================================
+// DOB Permit Professional Extraction
+// ============================================================
+
+export interface DOBProfessional {
+  name: string;
+  title: string;   // 'RA' (Registered Architect), 'PE' (Professional Engineer), 'Filing Rep', etc.
+  license: string;
+  role: 'architect' | 'engineer' | 'filing_rep';
+}
+
+export interface DOBOwnerInfo {
+  name: string;
+  businessName: string;
+  phone: string;
+  type: string;  // INDIVIDUAL, CORPORATION, etc.
+}
+
+/**
+ * Extract architect/engineer contacts and owner info from DOB permit records
+ */
+export function extractDOBProfessionals(permits: DOBPermit[]): { professionals: DOBProfessional[]; owners: DOBOwnerInfo[] } {
+  const profMap = new Map<string, DOBProfessional>();
+  const ownerMap = new Map<string, DOBOwnerInfo>();
+
+  for (const p of permits) {
+    // Extract applicant (architect/engineer)
+    const firstName = (p as any).applicant_s_first_name || '';
+    const lastName = (p as any).applicant_s_last_name || '';
+    const profTitle = (p as any).applicant_professional_title || '';
+    const license = (p as any).applicant_license__ || '';
+
+    if (firstName || lastName) {
+      const fullName = `${firstName} ${lastName}`.trim();
+      const key = fullName.toUpperCase();
+      if (!profMap.has(key)) {
+        let role: DOBProfessional['role'] = 'filing_rep';
+        if (profTitle === 'RA') role = 'architect';
+        else if (profTitle === 'PE') role = 'engineer';
+
+        profMap.set(key, {
+          name: fullName,
+          title: profTitle === 'RA' ? 'Registered Architect' : profTitle === 'PE' ? 'Professional Engineer' : profTitle || 'Filing Representative',
+          license: license,
+          role,
+        });
+      }
+    }
+
+    // Extract owner
+    const ownerFirst = (p as any).owner_s_first_name || '';
+    const ownerLast = (p as any).owner_s_last_name || '';
+    const ownerBiz = (p as any).owner_s_business_name || '';
+    const ownerPhone = (p as any).owner_sphone__ || '';
+    const ownerType = (p as any).owner_type || '';
+
+    if (ownerFirst || ownerLast || ownerBiz) {
+      const ownerName = `${ownerFirst} ${ownerLast}`.trim() || ownerBiz;
+      const oKey = ownerName.toUpperCase();
+      if (!ownerMap.has(oKey)) {
+        ownerMap.set(oKey, {
+          name: ownerName,
+          businessName: ownerBiz && ownerBiz !== 'N/A' ? ownerBiz : '',
+          phone: ownerPhone,
+          type: ownerType,
+        });
+      }
+    }
+  }
+
+  return {
+    professionals: Array.from(profMap.values()),
+    owners: Array.from(ownerMap.values()),
+  };
+}
+
 /**
  * Fetch ALL NYC data for a building (combined)
  */
@@ -504,6 +656,8 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
   let ecbViolations: ECBViolation[] = [];
   let housingLitigation: HousingLitigation[] = [];
   let rentStabilization: RentStabilization[] = [];
+  let dofAbatement: DOFAbatementData | null = null;
+  let taxLiens: TaxLienData = { hasLien: false, liens: [] };
 
   if (dof?.bbl) {
     const bblParts = parseBBL(dof.bbl);
@@ -512,8 +666,8 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
       const parsedAddr = parseAddress(address);
       const boroCode = bblParts.borough;
 
-      // Fetch ACRIS, ECB, Litigation, and Rent Stabilization in parallel
-      const [acrisResult, ecbResult, litigationResult, rentStabResult] = await Promise.all([
+      // Fetch ACRIS, ECB, Litigation, Rent Stabilization, Abatements, and Tax Liens in parallel
+      const [acrisResult, ecbResult, litigationResult, rentStabResult, abatementResult, lienResult] = await Promise.all([
         fetchACRISRecords(bblParts.borough, bblParts.block, bblParts.lot).catch((err) => {
           console.error('ACRIS fetch in report failed:', err);
           return null;
@@ -532,14 +686,27 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
           console.error('Rent stabilization fetch in report failed:', err);
           return [] as RentStabilization[];
         }),
+        fetchDOFExemptions(bblParts.borough, bblParts.block, bblParts.lot).catch((err) => {
+          console.error('DOF Abatement fetch in report failed:', err);
+          return null;
+        }),
+        fetchTaxLiens(bblParts.borough, bblParts.block, bblParts.lot).catch((err) => {
+          console.error('Tax Lien fetch in report failed:', err);
+          return { hasLien: false, liens: [] } as TaxLienData;
+        }),
       ]);
 
       acris = acrisResult;
       ecbViolations = ecbResult;
       housingLitigation = litigationResult;
       rentStabilization = rentStabResult;
+      dofAbatement = abatementResult;
+      taxLiens = lienResult;
     }
   }
+
+  // Extract DOB professional contacts (architect, engineer, owner)
+  const dobExtracted = extractDOBProfessionals(permits);
 
   return {
     violations: {
@@ -610,6 +777,10 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
       dof?.bldgcl,
       parseInt(dof?.unitsres || dof?.unitstotal || '0') || 0,
     ),
+    dobProfessionals: dobExtracted.professionals,
+    dobOwners: dobExtracted.owners,
+    dofAbatement,
+    taxLiens,
   };
 }
 
