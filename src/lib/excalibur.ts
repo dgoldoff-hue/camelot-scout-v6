@@ -10,7 +10,7 @@ import type { MasterReportData, TieredPricing } from './camelot-report';
 // Types
 // ============================================================
 
-export type AssetClass = 'rental' | 'condo' | 'coop' | 'new-construction' | 'office' | 'single-tenant';
+export type AssetClass = 'rental' | 'condo' | 'coop' | 'new-construction' | 'office' | 'retail' | 'single-tenant';
 
 export interface AgreementInput {
   // Asset class
@@ -77,6 +77,7 @@ export const ASSET_CLASS_LABELS: Record<AssetClass, string> = {
   'coop': 'Cooperative (Co-op)',
   'new-construction': 'New Construction Condominium',
   'office': 'Office Building',
+  'retail': 'Retail Property',
   'single-tenant': 'Single Tenant / Individual Unit',
 };
 
@@ -265,7 +266,13 @@ Portfolio: ${input.units || '[___]'} ${input.buildingType || 'Residential Units'
 
 <p><strong>AGENT ("Manager"):</strong> ${CAMELOT.name}, a New York corporation ("Agent"), ${CAMELOT.address} · ${CAMELOT.principal}, ${CAMELOT.title} · ${CAMELOT.mobile} · ${CAMELOT.email}</p>
 
-<p>WHEREAS the Client owns real property known as and located at: ${fullAddr} (the "Property"), consisting of ${input.units || '[___]'} ${input.isRentStabilized ? 'rent-stabilized ' : ''}residential rental units; and</p>
+<p>WHEREAS the Client owns real property known as and located at: ${fullAddr} (the "Property"), consisting of ${input.units || '[___]'} ${
+  input.assetClass === 'condo' ? 'condominium units governed by a Declaration and By-Laws filed with the New York State Attorney General\'s office pursuant to Article 9-B of the New York Real Property Law (the "Condominium Act")' :
+  input.assetClass === 'coop' ? 'cooperative apartment units, ownership of which is evidenced by shares of stock in the cooperative corporation and a proprietary lease' :
+  input.assetClass === 'office' ? 'office/commercial units subject to commercial lease agreements' :
+  input.assetClass === 'single-tenant' ? 'residential unit(s)' :
+  `${input.isRentStabilized ? 'rent-stabilized ' : ''}residential rental units`
+}; and</p>
 <p>WHEREAS the Client desires to engage the Agent to perform property management services as set forth herein, and the Agent desires to accept such engagement;</p>
 <p>NOW, THEREFORE, for good and valuable consideration, the sufficiency of which is hereby acknowledged, the Parties agree as follows:</p>
 </div>
@@ -284,6 +291,34 @@ Portfolio: ${input.units || '[___]'} ${input.buildingType || 'Residential Units'
 <p>"Services" shall mean the property management duties of the Agent set forth in Article VI of this Agreement, not including the Additional Services.</p>
 <p>"Term" shall mean the Initial Period and any renewal period(s) as described in Article II.</p>
 <p>"Union Contract" shall mean any collective bargaining agreement or contract with a labor union representing Employees at the Property.</p>
+${input.assetClass === 'condo' ? `
+<p>"Board of Managers" shall mean the governing body of the Condominium as established by the Declaration and By-Laws.</p>
+<p>"Common Charges" shall mean the monthly charges assessed to each unit owner for the maintenance, repair, and operation of the common elements of the Condominium.</p>
+<p>"Common Elements" shall mean the portions of the Condominium property designated for common use by all unit owners as defined in the Declaration.</p>
+<p>"Declaration" shall mean the Declaration of Condominium establishing the Property as a condominium under the New York Condominium Act (RPL Article 9-B).</p>
+<p>"Offering Plan" shall mean the plan filed with the New York State Attorney General's office pursuant to the Martin Act and General Business Law Article 23-A.</p>
+<p>"Alteration Agreement" shall mean the agreement required for any unit owner renovation, establishing insurance, indemnification, and construction management requirements.</p>
+` : ''}
+${input.assetClass === 'coop' ? `
+<p>"Board of Directors" shall mean the governing body of the Cooperative Corporation.</p>
+<p>"Maintenance" shall mean the monthly charges assessed to each shareholder based on share allocation for the operation, maintenance, and underlying mortgage obligations of the Cooperative.</p>
+<p>"Proprietary Lease" shall mean the lease agreement between the Cooperative Corporation and each shareholder granting occupancy rights to a specific apartment.</p>
+<p>"Share Certificate" shall mean the stock certificate evidencing a shareholder's ownership interest in the Cooperative Corporation.</p>
+<p>"Flip Tax" shall mean the transfer fee payable to the Cooperative Corporation upon the sale or transfer of shares, as set forth in the Proprietary Lease or House Rules.</p>
+<p>"Sublet Policy" shall mean the Cooperative's rules governing subletting of apartments by shareholders, including any sublet fees, duration limits, and board approval requirements.</p>
+<p>"Recognition Agreement" shall mean the agreement between the Cooperative Corporation and a shareholder's lender acknowledging the lender's security interest in the shares and proprietary lease.</p>
+` : ''}
+${input.assetClass === 'office' ? `
+<p>"CAM Charges" shall mean Common Area Maintenance charges allocated to tenants on a pro rata basis based on their proportionate share of rentable square footage.</p>
+<p>"Tenant Improvement Allowance" (TI) shall mean any landlord contribution toward the build-out or improvement of a commercial tenant's space.</p>
+<p>"NNN" or "Triple Net" shall mean a lease structure in which the tenant pays base rent plus its proportionate share of real estate taxes, insurance, and CAM charges.</p>
+<p>"Lease Escalation" shall mean contractual rent increases, whether fixed, indexed to CPI, or based on operating expense pass-throughs.</p>
+<p>"Certificate of Occupancy" (CO) shall mean the document issued by the NYC Department of Buildings certifying that the premises comply with applicable building codes and are authorized for the intended use.</p>
+` : ''}
+${input.assetClass === 'single-tenant' ? `
+<p>"Unit" shall mean the individual residential dwelling unit that is the subject of this Agreement.</p>
+<p>"Tenant" shall mean the current or future occupant of the Unit under a residential lease agreement.</p>
+` : ''}
 </div>
 
 <!-- ARTICLE II — TERM -->
@@ -359,6 +394,58 @@ ${input.isRentStabilized ? `<div class="article-sub">6.6 Rent-Stabilization Comp
 <p>Agent shall maintain a 24-hour, seven-day-a-week telephone emergency hotline for reporting of and prompt response to emergency conditions at the Property.</p>
 <div class="article-sub">6.${input.isRentStabilized ? '10' : '9'} Capital Improvements.</div>
 <p>Agent shall assist the Client in identifying, bidding, and supervising capital improvement projects at the Property. Agent shall obtain not less than three (3) competitive bids for any capital project exceeding $5,000 in cost. For projects totaling $25,000 or more, Agent shall be entitled to a construction supervision fee equal to ten percent (10%) of the total project cost. Construction oversight for projects under $25,000 is included in the base management fee.</p>
+
+${input.assetClass === 'condo' ? `
+<div class="article-sub">6.${input.isRentStabilized ? '11' : '10'} Board of Managers Support.</div>
+<p>Agent shall attend and prepare agendas for all regular and special meetings of the Board of Managers, prepare and distribute meeting minutes, maintain the Condominium's corporate records, coordinate annual unit owner meetings, and assist in the preparation and distribution of the annual budget and common charge statements in compliance with RPL Article 9-B.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '12' : '11'} Common Charge Administration.</div>
+<p>Agent shall calculate, bill, and collect monthly common charges from all unit owners. Agent shall maintain individual unit owner ledgers, pursue arrears through written notices and, with Board authorization, initiate lien filings per RPL §339-z. Agent shall prepare and distribute annual financial statements and operating budgets in compliance with the By-Laws and Condominium Act.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '13' : '12'} Alteration Agreement Administration.</div>
+<p>Agent shall process all unit owner alteration applications, verify insurance requirements (including contractor general liability, workers' compensation, and excess coverage naming the Condominium as additional insured), coordinate Board review and approval, monitor construction progress, and ensure compliance with DOB permit requirements and the building's alteration policy.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '14' : '13'} Offering Plan & Regulatory Compliance.</div>
+<p>Agent shall maintain awareness of the building's Offering Plan and any amendments, ensure compliance with the Martin Act and General Business Law Article 23-A, coordinate with the AG's office on required filings, and advise the Board on sponsor obligations, reserve fund requirements per RPL §339-mm, and common element maintenance responsibilities.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '15' : '14'} Resale & Transfer Processing.</div>
+<p>Agent shall process unit resale applications, coordinate board waiver of right of first refusal (if applicable), prepare closing documentation, calculate and collect any transfer fees, and ensure compliance with the By-Laws and Offering Plan provisions governing unit transfers. Agent shall collect an application processing fee per Schedule A.</p>
+` : ''}
+
+${input.assetClass === 'coop' ? `
+<div class="article-sub">6.${input.isRentStabilized ? '11' : '10'} Board of Directors Support.</div>
+<p>Agent shall attend and prepare agendas for all regular and special meetings of the Board of Directors, prepare and distribute meeting minutes, maintain the Cooperative Corporation's corporate records, coordinate annual shareholder meetings, assist in proxy solicitation, and prepare and distribute the annual budget and maintenance schedule.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '12' : '11'} Maintenance Administration.</div>
+<p>Agent shall calculate, bill, and collect monthly maintenance charges from all shareholders based on their share allocation. Agent shall maintain individual shareholder ledgers, pursue arrears through written notices and, with Board authorization, initiate holdover proceedings. Agent shall prepare and distribute annual financial statements, operating budgets, and Form 1098 statements to shareholders.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '13' : '12'} Stock Transfer & Proprietary Lease Administration.</div>
+<p>Agent shall process all applications for the purchase, sale, or transfer of shares and proprietary leases, including: credit and background checks; financial statement review; board interview coordination; preparation of stock transfer documents; collection of flip tax; issuance of new share certificates; and execution of amended proprietary leases. Agent shall maintain the stock ledger and ensure compliance with the Certificate of Incorporation, By-Laws, and applicable securities exemptions.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '14' : '13'} Sublet & Alteration Administration.</div>
+<p>Agent shall process all sublet applications in accordance with the Cooperative's Sublet Policy, including: applicant screening; collection of sublet fees (typically 20-30% of monthly maintenance as set by the Board); monitoring sublet duration limits; and ensuring compliance with the Proprietary Lease. Agent shall also process alteration applications, verify insurance requirements, and monitor construction per the building's alteration policy.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '15' : '14'} Recognition Agreement Processing.</div>
+<p>Agent shall coordinate the preparation and execution of recognition agreements (Aztech forms or equivalent) for shareholder financing, liaise with lenders and their counsel, and collect the recognition agreement processing fee per Schedule A.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '16' : '15'} Underlying Mortgage & Tax Coordination.</div>
+<p>Agent shall monitor the Cooperative Corporation's underlying mortgage obligations, coordinate refinancing as directed by the Board, prepare RPIE filings, monitor real estate tax assessments, and advise the Board on J-51 or other applicable tax abatement programs. Agent shall also coordinate tax certiorari proceedings as authorized by the Board.</p>
+` : ''}
+
+${input.assetClass === 'office' ? `
+<div class="article-sub">6.${input.isRentStabilized ? '11' : '10'} Commercial Lease Administration.</div>
+<p>Agent shall administer all commercial lease agreements, including: rent billing and collection; CAM charge calculation and reconciliation; operating expense pass-through computation; lease escalation tracking; tenant improvement coordination; and compliance with lease covenants. Agent shall maintain a lease abstract for each tenant and provide the Client with quarterly lease expiration reports.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '12' : '11'} CAM Charge Administration.</div>
+<p>Agent shall calculate each tenant's proportionate share of Common Area Maintenance charges, prepare and distribute annual CAM estimates and year-end reconciliations, maintain supporting documentation, and handle tenant disputes regarding CAM allocations in compliance with applicable lease provisions.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '13' : '12'} Tenant Improvement Coordination.</div>
+<p>Agent shall coordinate tenant improvement (TI) build-outs, including: contractor selection and oversight; TI allowance tracking and disbursement; DOB permit coordination; certificate of occupancy verification; and punch list management. TI coordination fees are set forth in Schedule A.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '14' : '13'} Commercial Insurance & Compliance.</div>
+<p>Agent shall procure and maintain commercial property insurance, commercial general liability, umbrella, terrorism (TRIA), and environmental liability coverage as appropriate. Agent shall ensure compliance with all commercial building codes, fire safety regulations, ADA accessibility requirements, commercial Certificate of Occupancy, and Local Laws including LL11/FISP, LL26 (elevator), LL152 (gas piping), and LL97 (carbon emissions) as applicable to commercial buildings.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '15' : '14'} Retail & Office Leasing Support.</div>
+<p>Agent shall support the Client's leasing efforts by: preparing vacant space for showing; coordinating with leasing brokers; reviewing prospective tenant financials; negotiating lease terms as authorized; and managing the lease execution process. Leasing commissions are set forth in Schedule A.</p>
+` : ''}
+
+${input.assetClass === 'single-tenant' ? `
+<div class="article-sub">6.${input.isRentStabilized ? '11' : '10'} Tenant Placement.</div>
+<p>Agent shall market the Unit for rent, screen prospective tenants (including credit, background, income, and reference verification), prepare lease agreements, coordinate move-in inspections, and collect first month's rent and security deposit. Tenant placement fees are set forth in Schedule A.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '12' : '11'} Lease Administration.</div>
+<p>Agent shall administer the lease agreement, handle tenant communications, process maintenance requests, coordinate repairs and maintenance through vetted vendors, and ensure compliance with NYC housing code requirements including lead paint disclosure (Local Law 1), window guard regulations, and heat/hot water requirements.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '13' : '12'} Financial Management.</div>
+<p>Agent shall collect monthly rent, pursue arrears, manage security deposit in compliance with NYS Real Property Law §7-103, pay approved expenses from the Client Account, and provide monthly financial statements including income/expense reports and bank reconciliations.</p>
+<div class="article-sub">6.${input.isRentStabilized ? '14' : '13'} Vacancy Management.</div>
+<p>Agent shall manage unit turnover, including: move-out inspection; security deposit reconciliation within 14 days per NYS law; unit preparation for re-rental; and marketing for new tenants. During vacancy, Agent shall conduct regular property checks and maintain the Unit in showing condition.</p>
+` : ''}
 </div>
 
 <!-- ARTICLES VII-XVII (condensed for all asset classes) -->
@@ -508,6 +595,63 @@ ${input.isRentStabilized ? '<tr><td>DHCR Annual Rent Registration</td><td>$50/un
 </tbody>
 </table>
 
+${input.assetClass === 'condo' ? `
+<table class="schedule">
+<thead><tr><th colspan="3">Condominium-Specific Services</th></tr></thead>
+<tbody>
+<tr><td>Unit Resale Application Processing</td><td>$500/application</td><td>Credit check, board review, closing coordination</td></tr>
+<tr><td>Alteration Application Processing</td><td>$500/application</td><td>Insurance review, board approval, DOB coordination</td></tr>
+<tr><td>Estoppel Certificate</td><td>$250/certificate</td><td>Financial status letter for unit sales</td></tr>
+<tr><td>Annual Budget Preparation</td><td class="included">Included</td><td>Budget draft and board presentation</td></tr>
+<tr><td>Reserve Fund Study Coordination</td><td>$1,500 flat</td><td>Engineer engagement and report review</td></tr>
+<tr><td>Offering Plan Amendment Coordination</td><td>$150/hour</td><td>Attorney coordination for plan amendments</td></tr>
+</tbody>
+</table>` : ''}
+
+${input.assetClass === 'coop' ? `
+<table class="schedule">
+<thead><tr><th colspan="3">Cooperative-Specific Services</th></tr></thead>
+<tbody>
+<tr><td>Share Transfer / Sale Application</td><td>$500/application</td><td>Credit check, financials, board interview, stock transfer</td></tr>
+<tr><td>Sublet Application Processing</td><td>$350/application</td><td>Screening, board review, sublet agreement</td></tr>
+<tr><td>Recognition Agreement (Aztech)</td><td>$300/agreement</td><td>Lender coordination and execution</td></tr>
+<tr><td>Flip Tax Administration</td><td class="included">Included</td><td>Calculation and collection at closing</td></tr>
+<tr><td>Stock Certificate Issuance</td><td>$200/certificate</td><td>New certificate preparation and ledger update</td></tr>
+<tr><td>Proprietary Lease Amendment</td><td>$150/hour</td><td>Attorney coordination</td></tr>
+<tr><td>Annual Shareholder Meeting</td><td class="included">Included</td><td>Preparation, proxy solicitation, attendance</td></tr>
+<tr><td>J-51 / Tax Abatement Administration</td><td>$500/filing</td><td>Application and annual compliance</td></tr>
+<tr><td>Underlying Mortgage Refinancing</td><td>Negotiated</td><td>Board coordination, lender engagement</td></tr>
+</tbody>
+</table>` : ''}
+
+${input.assetClass === 'office' ? `
+<table class="schedule">
+<thead><tr><th colspan="3">Commercial / Office-Specific Services</th></tr></thead>
+<tbody>
+<tr><td>Commercial Lease Negotiation</td><td>$250/hour</td><td>Term sheet, LOI, lease review with counsel</td></tr>
+<tr><td>Leasing Commission (New Tenant)</td><td>Per lease terms</td><td>Typically 4-6% of aggregate rent</td></tr>
+<tr><td>Leasing Commission (Renewal)</td><td>Per lease terms</td><td>Typically 2-3% of aggregate rent</td></tr>
+<tr><td>CAM Reconciliation</td><td class="included">Included</td><td>Annual calculation and tenant notification</td></tr>
+<tr><td>Tenant Improvement Coordination</td><td>5% of TI cost</td><td>Build-out oversight, contractor management</td></tr>
+<tr><td>Environmental Compliance</td><td>$150/hour</td><td>Phase I coordination, remediation oversight</td></tr>
+<tr><td>ADA Compliance Review</td><td>$150/hour</td><td>Assessment and remediation coordination</td></tr>
+<tr><td>Commercial Insurance Administration</td><td>$750/year</td><td>Coverage review, broker coordination, claims</td></tr>
+</tbody>
+</table>` : ''}
+
+${input.assetClass === 'single-tenant' ? `
+<table class="schedule">
+<thead><tr><th colspan="3">Individual Unit-Specific Services</th></tr></thead>
+<tbody>
+<tr><td>Tenant Placement Fee</td><td>1 month's rent</td><td>Marketing, screening, lease execution</td></tr>
+<tr><td>Lease Renewal</td><td>$200/renewal</td><td>Market analysis, negotiation, execution</td></tr>
+<tr><td>Vacancy Preparation</td><td>At cost + 15%</td><td>Cleaning, painting, minor repairs</td></tr>
+<tr><td>Eviction Coordination</td><td>$350/proceeding</td><td>Notice service, attorney coordination, court</td></tr>
+<tr><td>Property Inspection</td><td class="included">Included</td><td>Monthly drive-by + quarterly interior</td></tr>
+<tr><td>Year-End Tax Package</td><td>$150/year</td><td>Income/expense statement for tax filing</td></tr>
+</tbody>
+</table>` : ''}
+
 <p style="font-size:10px;color:#888;margin-top:12px;text-align:center">All fees subject to annual adjustment of ${input.annualIncrease}% per year on each anniversary of the Effective Date.</p>
 </div>
 
@@ -523,23 +667,66 @@ Confidential · © ${year} · All Rights Reserved<br>
 }
 
 // ============================================================
+// Asset-Class Specific: CONDOMINIUM
+// ============================================================
+
+export function generateCondoAgreement(input: AgreementInput): string {
+  // Use rental as base, override key sections for condo
+  const modified = { ...input, assetClass: 'condo' as AssetClass };
+  // The rental generator handles the full structure; for condo we modify specific articles
+  // Key condo differences are handled via the assetClass flag in the shared template
+  return generateRentalAgreement(modified);
+}
+
+// ============================================================
+// Asset-Class Specific: CO-OP
+// ============================================================
+
+export function generateCoopAgreement(input: AgreementInput): string {
+  const modified = { ...input, assetClass: 'coop' as AssetClass };
+  return generateRentalAgreement(modified);
+}
+
+// ============================================================
+// Asset-Class Specific: OFFICE
+// ============================================================
+
+export function generateOfficeAgreement(input: AgreementInput): string {
+  const modified = { ...input, assetClass: 'office' as AssetClass };
+  return generateRentalAgreement(modified);
+}
+
+// ============================================================
+// Asset-Class Specific: RETAIL
+// ============================================================
+
+export function generateRetailAgreement(input: AgreementInput): string {
+  const modified = { ...input, assetClass: 'office' as AssetClass }; // retail uses office base
+  return generateRentalAgreement(modified);
+}
+
+// ============================================================
+// Asset-Class Specific: INDIVIDUAL UNIT
+// ============================================================
+
+export function generateSingleUnitAgreement(input: AgreementInput): string {
+  const modified = { ...input, assetClass: 'single-tenant' as AssetClass };
+  return generateRentalAgreement(modified);
+}
+
+// ============================================================
 // Export: Generate agreement by asset class
 // ============================================================
 
 export function generateAgreement(input: AgreementInput): string {
-  // For now, all asset classes use the rental template as base
-  // Condo, co-op, office, etc. will get specialized versions
   switch (input.assetClass) {
-    case 'rental':
-      return generateRentalAgreement(input);
-    case 'condo':
-    case 'coop':
-    case 'new-construction':
-    case 'office':
-    case 'single-tenant':
-      // TODO: Specialized templates — for now use rental as base
-      return generateRentalAgreement(input);
-    default:
-      return generateRentalAgreement(input);
+    case 'rental': return generateRentalAgreement(input);
+    case 'condo': return generateCondoAgreement(input);
+    case 'coop': return generateCoopAgreement(input);
+    case 'new-construction': return generateCondoAgreement(input); // new construction uses condo base
+    case 'office': return generateOfficeAgreement(input);
+    case 'retail': return generateRetailAgreement(input);
+    case 'single-tenant': return generateSingleUnitAgreement(input);
+    default: return generateRentalAgreement(input);
   }
 }

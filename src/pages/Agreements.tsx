@@ -120,7 +120,6 @@ export default function Agreements() {
                 )}
               >
                 {label}
-                {key !== 'rental' && <span className="block text-[10px] opacity-60 mt-0.5">Coming soon</span>}
               </button>
             ))}
           </div>
