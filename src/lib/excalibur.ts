@@ -186,17 +186,45 @@ ${css}
 
 <!-- COVER PAGE -->
 <div class="cover">
-<img src="./images/camelot-logo-white.png" alt="Camelot" style="width:120px;margin-bottom:24px;opacity:0.9" onerror="this.style.display='none'">
-<div class="wordmark">C A M E L O T</div>
-<div style="font-size:12px;color:#A89035;letter-spacing:2px;margin-bottom:30px">Property Management Services Corp.</div>
-<h1>Property Management Agreement</h1>
+<img src="./images/camelot-logo-white.png" alt="Camelot" style="width:140px;margin-bottom:32px;opacity:0.95" onerror="this.parentElement.querySelector('.wordmark').style.marginTop='40px';this.style.display='none'">
+
+<h1 style="font-size:26px;margin-bottom:4px">Property Management Agreement</h1>
 <div class="subtitle">For ${ASSET_CLASS_LABELS[input.assetClass]}</div>
-<div style="font-size:13px;color:#fff;margin-top:16px;font-weight:600">${CAMELOT.name}</div>
-<div class="meta">${CAMELOT.address}</div>
-<div class="meta">${CAMELOT.phone} · ${CAMELOT.web}</div>
-<div class="prepared">Prepared for: ${input.clientName || '[Client Name]'} — ${year}</div>
-<div class="meta" style="margin-top:8px">${fullAddr} · Confidential</div>
-<div style="margin-top:20px"><span class="tier-badge">${tierLabel} Package</span></div>
+
+<div style="width:60px;height:2px;background:#A89035;margin:24px auto"></div>
+
+<!-- PREPARED FOR — large and bold -->
+<div style="margin:20px 0;max-width:600px">
+<div style="font-size:11px;text-transform:uppercase;letter-spacing:3px;color:rgba(255,255,255,0.4);margin-bottom:8px">Prepared For</div>
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;color:#A89035;line-height:1.3;margin-bottom:8px">${input.clientName || '[Client Name]'}</div>
+${input.clientEntityName && input.clientEntityName !== input.clientName ? `<div style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:12px">${input.clientEntityName}</div>` : ''}
+</div>
+
+<!-- PROPERTY DETAILS — bold and prominent -->
+<div style="background:rgba(0,0,0,0.2);border:1px solid rgba(168,144,53,0.3);border-radius:8px;padding:20px 28px;margin:16px 0;max-width:500px;text-align:left">
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700;color:#fff;margin-bottom:6px">${fullAddr}</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;margin-top:10px">
+${input.blockLot ? `<div><span style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4)">Block & Lot</span><div style="font-size:13px;font-weight:700;color:#A89035">${input.blockLot}</div></div>` : ''}
+${input.units ? `<div><span style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4)">Units</span><div style="font-size:13px;font-weight:700;color:#A89035">${input.units}</div></div>` : ''}
+${input.jackieData?.stories ? `<div><span style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4)">Stories</span><div style="font-size:13px;font-weight:700;color:#A89035">${input.jackieData.stories}</div></div>` : ''}
+<div><span style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4)">Asset Class</span><div style="font-size:13px;font-weight:700;color:#A89035">${ASSET_CLASS_LABELS[input.assetClass]}</div></div>
+</div>
+</div>
+
+<!-- METADATA -->
+<div style="margin-top:20px;font-size:11px;color:rgba(255,255,255,0.5);line-height:2">
+<div><strong style="color:rgba(255,255,255,0.7)">Date:</strong> ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} · ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+<div><strong style="color:rgba(255,255,255,0.7)">Prepared By:</strong> ${CAMELOT.principal}, ${CAMELOT.title} — ${CAMELOT.shortName}</div>
+<div><strong style="color:rgba(255,255,255,0.7)">Valid Until:</strong> ${(() => { const d = new Date(); let biz = 0; while (biz < 10) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) biz++; } return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); })()} (10 business days)</div>
+</div>
+
+<div style="margin-top:16px"><span class="tier-badge">${tierLabel} Package</span></div>
+
+<div style="position:absolute;bottom:20px;left:0;right:0;text-align:center">
+<div style="font-size:10px;color:rgba(255,255,255,0.3)">${CAMELOT.name}</div>
+<div style="font-size:9px;color:rgba(255,255,255,0.2)">${CAMELOT.address} · ${CAMELOT.phone} · ${CAMELOT.web}</div>
+<div style="font-size:8px;color:rgba(255,255,255,0.15);margin-top:4px">Confidential · ${version}</div>
+</div>
 </div>
 
 <!-- PROPERTY VISUAL & MAP -->
