@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Search, LayoutGrid, Bookmark, Upload, GitBranch, Mail, MessageSquare,
   Archive, Download, Bot, Settings, ChevronLeft, ChevronRight,
-  BookOpen, HelpCircle, ShieldCheck, Bell, FileText, Swords, Crown,
+  BookOpen, HelpCircle, ShieldCheck, Bell, FileText, Swords, Sword, Crown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/lib/store';
@@ -47,6 +47,7 @@ const navigation: NavSection[] = [
       { label: 'Pipeline', href: '/pipeline', icon: <GitBranch size={18} />, tourId: 'pipeline' },
       { label: 'Outreach', href: '/outreach', icon: <Mail size={18} />, tourId: 'outreach' },
       { label: 'Proposals', href: '/proposals', icon: <FileText size={18} /> },
+      { label: 'Excalibur', href: '/agreements', icon: <Sword size={18} /> },
       { label: 'Scout AI', href: '/chat', icon: <MessageSquare size={18} />, tourId: 'scout-ai' },
     ],
   },
