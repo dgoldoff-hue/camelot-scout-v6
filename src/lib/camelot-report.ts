@@ -491,7 +491,26 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   ]);
 
   const dof = raw.dof;
-  const units = dof?.units || 0;
+
+  // Cascade unit count from multiple sources — never show 0 if ANY source has data
+  // Priority: DOF/PLUTO → DOF Exemptions → DOB Permits → Energy Benchmarking → estimate from area
+  let units = dof?.units || 0;
+  if (!units && raw.dofAbatement?.raw?.units) units = parseInt(raw.dofAbatement.raw.units) || 0;
+  if (!units && raw.dofAbatement?.raw?.coop_apts && parseInt(raw.dofAbatement.raw.coop_apts) > 0) units = parseInt(raw.dofAbatement.raw.coop_apts);
+  if (!units && raw.dobUnits) units = raw.dobUnits; // from DOB permit dwelling_units
+  if (!units && raw.energy?.energyStarScore != null) {
+    // Energy benchmarking data exists — building is definitely real, try number_of_units
+    units = parseInt((raw as any).energy?.number_of_units) || 0;
+  }
+  // Last resort: estimate from building area (~850 SF per avg unit in NYC multifamily)
+  if (!units && dof?.buildingArea && dof.buildingArea > 2000) {
+    units = Math.round(dof.buildingArea / 850);
+  }
+
+  // Cascade stories from DOF → DOB
+  let stories = dof?.stories || 0;
+  if (!stories && raw.dobStories) stories = raw.dobStories;
+
   const gfa = dof?.buildingArea || 0;
 
   // LL97 Calculation
@@ -579,7 +598,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     buildingName: raw.energy?.propertyName || address,
     date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     units,
-    stories: dof?.stories || 0,
+    stories,
     yearBuilt: dof?.yearBuilt || 0,
     buildingClass: dof?.buildingClass || '',
     taxClass: dof?.taxClass || '',
@@ -588,9 +607,16 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     landValue: dof?.landValue || 0,
     lotArea: dof?.lotArea || 0,
     buildingArea: gfa,
-    dofOwner: dof?.owner || '',
+    dofOwner: dof?.owner
+      || raw.dofAbatement?.ownerName
+      || (raw.dobOwners?.[0]?.name)
+      || (raw.acris?.lastSaleBuyer)
+      || '',
     bbl: dof?.bbl || '',
-    registrationOwner: raw.registration?.owner || null,
+    registrationOwner: raw.registration?.owner
+      || (raw.dobOwners?.[0]?.name)
+      || raw.dofAbatement?.ownerName
+      || null,
     managementCompany: raw.registration?.managementCompany || null,
     violationsTotal: raw.violations?.total || 0,
     violationsOpen: raw.violations?.open || 0,
@@ -643,7 +669,28 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       permitsCount: raw.permits?.count || 0,
       violationsTotal: raw.violations?.total || 0,
     }).scorecard,
-    boardMembers: raw.registration?.owner ? [{ name: raw.registration.owner, title: 'Registered Owner' }] : [],
+    boardMembers: (() => {
+      const members: Array<{ name: string; title: string }> = [];
+      // HPD Registration owner
+      if (raw.registration?.owner) members.push({ name: raw.registration.owner, title: 'Registered Owner (HPD)' });
+      // DOF owner (if different)
+      const dofName = dof?.owner || raw.dofAbatement?.ownerName || '';
+      if (dofName && !members.some(m => m.name.toUpperCase() === dofName.toUpperCase())) {
+        members.push({ name: dofName, title: 'Property Owner (DOF)' });
+      }
+      // DOB permit owners (if different)
+      for (const o of (raw.dobOwners || []).slice(0, 3)) {
+        if (o.name && !members.some(m => m.name.toUpperCase() === o.name.toUpperCase())) {
+          members.push({ name: o.name + (o.businessName ? ' / ' + o.businessName : ''), title: `Owner (DOB Permits)${o.phone ? ' · ' + o.phone : ''}` });
+        }
+      }
+      // ACRIS last buyer (if different)
+      const acrisBuyer = raw.acris?.lastSaleBuyer;
+      if (acrisBuyer && !members.some(m => m.name.toUpperCase() === acrisBuyer.toUpperCase())) {
+        members.push({ name: acrisBuyer, title: 'Last Buyer (ACRIS)' });
+      }
+      return members;
+    })(),
     buildingStaff: [],
     professionals: {
       lawFirm: null,

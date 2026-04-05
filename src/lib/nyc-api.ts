@@ -708,6 +708,18 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
   // Extract DOB professional contacts (architect, engineer, owner)
   const dobExtracted = extractDOBProfessionals(permits);
 
+  // Extract unit count from DOB permits as fallback
+  let dobUnits = 0;
+  let dobStories = 0;
+  for (const p of permits) {
+    const eu = parseInt((p as any).existing_dwelling_units) || 0;
+    const pu = parseInt((p as any).proposed_dwelling_units) || 0;
+    const es = parseInt((p as any).existingno_of_stories) || 0;
+    if (eu > dobUnits) dobUnits = eu;
+    if (pu > dobUnits) dobUnits = pu;
+    if (es > dobStories) dobStories = es;
+  }
+
   return {
     violations: {
       total: violations.length,
@@ -779,6 +791,8 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
     ),
     dobProfessionals: dobExtracted.professionals,
     dobOwners: dobExtracted.owners,
+    dobUnits,
+    dobStories,
     dofAbatement,
     taxLiens,
   };
