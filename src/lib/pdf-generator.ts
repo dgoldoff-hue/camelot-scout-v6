@@ -2,7 +2,7 @@
  * Client-side PDF/HTML/CSV helpers for Camelot Scout reports
  */
 
-/** Open HTML in a new tab and trigger print dialog (for PDF via browser print) */
+/** Open HTML in a new tab for preview (no auto-print) */
 export function openBrochureForPrint(html: string, filename: string): void {
   const win = window.open('', '_blank');
   if (!win) {
@@ -12,8 +12,6 @@ export function openBrochureForPrint(html: string, filename: string): void {
   win.document.write(html);
   win.document.close();
   win.document.title = filename.replace(/\.html$/i, '');
-  // Give fonts/maps time to load before triggering print
-  setTimeout(() => win.print(), 2000);
 }
 
 /** Download HTML string as an .html file */
