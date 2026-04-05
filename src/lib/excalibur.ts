@@ -133,15 +133,22 @@ export function generateRentalAgreement(input: AgreementInput): string {
   const tierLabel = input.selectedTier === 'classic' ? 'Camelot Classic' : input.selectedTier === 'intelligence' ? 'Camelot Intelligence' : 'Camelot Premier';
   const year = new Date(input.effectiveDate || Date.now()).getFullYear();
 
+    const version = `v${new Date().getFullYear()}.${(new Date().getMonth()+1).toString().padStart(2,'0')}.1`;
+  const timestamp = new Date().toISOString();
+  const encodedAddr = encodeURIComponent(fullAddr);
+
   const css = `
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;color:#2C3240;font-size:12px;line-height:1.7;background:#fff}
 @media print{@page{margin:0.6in 0.75in;size:letter}body{font-size:11px}}
-.page{max-width:750px;margin:0 auto;padding:40px 0}
+.page{max-width:750px;margin:0 auto;padding:40px 0;counter-reset:page-num}
 h1,h2,h3{font-family:'Plus Jakarta Sans',sans-serif}
-.cover{background:#3A4B5B;color:#fff;padding:60px;text-align:center;min-height:700px;display:flex;flex-direction:column;justify-content:center;align-items:center;page-break-after:always}
+.article,.cover{counter-increment:page-num;position:relative}
+.page-footer{text-align:center;font-size:8px;color:#bbb;padding-top:8px;border-top:1px solid #E5E3DE;margin-top:16px;display:flex;justify-content:space-between;align-items:center}
+.page-footer::after{content:counter(page-num);font-weight:500;font-size:9px;color:#999}
+.cover{background:#3A4B5B;color:#fff;padding:60px;text-align:center;min-height:700px;display:flex;flex-direction:column;justify-content:center;align-items:center;page-break-after:always;border:3px solid #A89035}
 .cover .wordmark{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;letter-spacing:12px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:4px}
 .cover h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;color:#A89035;font-weight:700;margin:20px 0 8px}
 .cover .subtitle{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:4px}
@@ -189,6 +196,63 @@ ${css}
 <div class="prepared">Prepared for: ${input.clientName || '[Client Name]'} — ${year}</div>
 <div class="meta" style="margin-top:8px">${fullAddr} · Confidential</div>
 <div style="margin-top:20px"><span class="tier-badge">${tierLabel} Package</span></div>
+</div>
+
+<!-- PROPERTY VISUAL & MAP -->
+<div class="article" style="page-break-before:always">
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;color:#A89035;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #A89035">The Property</div>
+
+<!-- Street View Photo -->
+${input.jackieData?.latitude && input.jackieData?.longitude ? `
+<div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6;height:250px;margin-bottom:12px;position:relative">
+<iframe src="https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${input.jackieData.latitude},${input.jackieData.longitude}&heading=0&pitch=5&fov=80" width="100%" height="250" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(58,75,91,0.9));padding:12px 16px 8px;color:#fff">
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700">${fullAddr}</div>
+<div style="font-size:10px;opacity:0.7">${input.units || ''} Units ${input.blockLot ? '· ' + input.blockLot : ''}</div>
+</div>
+</div>
+` : `
+<div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6;height:250px;margin-bottom:12px">
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=18&maptype=satellite" width="100%" height="250" style="border:0" allowfullscreen loading="lazy"></iframe>
+</div>
+`}
+
+<!-- Two maps: Street + Directions to Camelot -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+<div style="border-radius:6px;overflow:hidden;border:1px solid #D5D0C6">
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=16" width="100%" height="160" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:8px;color:#999;padding:3px">📍 Property Location</div>
+</div>
+<div style="border-radius:6px;overflow:hidden;border:1px solid #D5D0C6">
+<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=driving" width="100%" height="160" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:8px;color:#999;padding:3px">🚗 From Camelot HQ — 477 Madison Ave</div>
+</div>
+</div>
+
+<!-- Property Details Grid -->
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+<div style="background:#EDE9DF;border-radius:6px;padding:10px;text-align:center">
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#A89035">${input.units || '—'}</div>
+<div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px">Units</div>
+</div>
+<div style="background:#EDE9DF;border-radius:6px;padding:10px;text-align:center">
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:#3A4B5B">${input.blockLot || '—'}</div>
+<div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px">Block/Lot</div>
+</div>
+<div style="background:#EDE9DF;border-radius:6px;padding:10px;text-align:center">
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:#3A4B5B">${input.isRentStabilized ? 'Yes' : 'No'}</div>
+<div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px">Rent Stabilized</div>
+</div>
+<div style="background:#EDE9DF;border-radius:6px;padding:10px;text-align:center">
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:#3A4B5B">${input.isUnion ? '32BJ' : 'Non-Union'}</div>
+<div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px">Labor Status</div>
+</div>
+</div>
+
+<div class="page-footer">
+<span>${CAMELOT.shortName} · ${CAMELOT.address}</span>
+<span>${version} · ${timestamp.split('T')[0]} · Generated by Excalibur AI</span>
+</div>
 </div>
 
 <!-- PREAMBLE -->
@@ -449,7 +513,8 @@ ${input.isRentStabilized ? '<tr><td>DHCR Annual Rent Registration</td><td>$50/un
 
 <div class="footer">
 ${CAMELOT.shortName} · ${CAMELOT.address}<br>
-Confidential · © ${year} · All Rights Reserved
+Confidential · © ${year} · All Rights Reserved<br>
+<span style="font-size:7px;color:#bbb">${version} · Generated ${timestamp.split('T')[0]} · Created by Excalibur AI · Camelot OS</span>
 </div>
 
 </div>
