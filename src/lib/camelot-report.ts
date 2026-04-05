@@ -849,46 +849,46 @@ export function generateBrochureHTML(d: MasterReportData): string {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jackie Property Intelligence Report \u2014 ${d.buildingName} | Camelot Realty Group</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
-body{font-family:'Inter',-apple-system,sans-serif;background:#F5F0E5;color:#2C3240;font-size:13px;line-height:1.6}
+body{font-family:'DM Sans',-apple-system,sans-serif;background:#F5F0E5;color:#2C3240;font-size:13px;line-height:1.6}
 @media print{@page{margin:0.15in}*{-webkit-print-color-adjust:exact!important}}
 .page{max-width:900px;margin:0 auto;counter-reset:page-num}
 .section,.cover,.elevator,.back-cover{counter-increment:page-num;position:relative;border:1px solid #D5D0C6;margin-bottom:8px}
 .section::after{content:'Confidential \u00A9 ${new Date().getFullYear()} Camelot Realty Group \u00B7 Proprietary \u0026 Trade Secret \u00B7 Do Not Distribute Without Written Consent';display:block;text-align:center;font-size:8px;color:#999;letter-spacing:0.5px;margin-top:24px;padding-top:12px;border-top:1px solid #E5E3DE}
-.section::before{counter-increment:page-num 0;content:counter(page-num);position:absolute;bottom:12px;right:20px;font-size:10px;color:#bbb;font-family:'Inter',sans-serif;font-weight:500}
-.cover::before,.back-cover::before,.elevator::before{content:counter(page-num);position:absolute;bottom:16px;right:24px;font-size:10px;color:rgba(255,255,255,0.3);font-family:'Inter',sans-serif;font-weight:500}
+.section::before{counter-increment:page-num 0;content:counter(page-num);position:absolute;bottom:12px;right:20px;font-size:10px;color:#bbb;font-family:'DM Sans',sans-serif;font-weight:500}
+.cover::before,.back-cover::before,.elevator::before{content:counter(page-num);position:absolute;bottom:16px;right:24px;font-size:10px;color:rgba(255,255,255,0.3);font-family:'DM Sans',sans-serif;font-weight:500}
 a{color:#A89035;text-decoration:none}
 .gold{color:#A89035}.navy{color:#3A4B5B}
 
 /* Cover */
 .cover{background:#3A4B5B;color:#fff;padding:60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:600px;page-break-after:always;position:relative;border-color:rgba(168,144,53,0.3)}
 .cover .badge{position:absolute;top:28px;right:28px;background:#A89035;color:#fff;padding:12px 18px;font-size:9px;letter-spacing:3px;text-transform:uppercase;font-weight:700;line-height:1.4;text-align:center}
-.cover .wordmark{font-family:'Playfair Display',Georgia,serif;font-size:16px;letter-spacing:12px;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:6px}
+.cover .wordmark{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;letter-spacing:12px;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:6px}
 .cover .pm-sub{font-size:12px;color:#A89035;letter-spacing:2px;margin-bottom:48px}
-.cover h1{font-family:'Playfair Display',Georgia,serif;font-size:42px;color:#A89035;font-weight:700;margin-bottom:8px;line-height:1.2;max-width:700px}
+.cover h1{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:42px;color:#A89035;font-weight:700;margin-bottom:8px;line-height:1.2;max-width:700px}
 .cover .proposal-sub{font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:8px;font-weight:300;letter-spacing:1px}
 .cover .meta{font-size:12px;color:rgba(255,255,255,0.5);margin-top:6px}
-.cover .prepared{font-family:'Playfair Display',Georgia,serif;font-size:12px;color:#A89035;font-style:italic;margin-top:40px}
+.cover .prepared{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:12px;color:#A89035;font-style:italic;margin-top:40px}
 
 /* Elevator */
 .elevator{background:#F5F0E5;padding:50px 60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;page-break-after:always;min-height:400px}
-.elevator h2{font-family:'Playfair Display',Georgia,serif;font-size:36px;color:#A89035;font-weight:700;margin-bottom:16px;max-width:640px;line-height:1.2}
+.elevator h2{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:36px;color:#A89035;font-weight:700;margin-bottom:16px;max-width:640px;line-height:1.2}
 .elevator .gold-bar{width:60px;height:3px;background:#A89035;margin:0 auto 24px}
-.elevator p{font-family:Georgia,serif;font-size:15px;color:#555;line-height:1.9;max-width:600px}
+.elevator p{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;color:#555;line-height:1.9;max-width:600px}
 
 /* Sections */
 .section{padding:36px 50px;page-break-after:always}
 .section-cream{background:#F5F0E5}.section-white{background:#FDFAF3}
-.section-title{font-family:'Playfair Display',Georgia,serif;font-size:26px;color:#A89035;margin-bottom:6px;padding-left:16px;border-left:4px solid #A89035;font-weight:700}
+.section-title{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:26px;color:#A89035;margin-bottom:6px;padding-left:16px;border-left:4px solid #A89035;font-weight:700}
 .section-sub{font-size:12px;color:#888;margin-bottom:28px;padding-left:16px}
 
 /* Stats */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:24px 0}
 .stat-box{background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:16px;text-align:center}
-.stat-box .val{font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#A89035;font-weight:700}
+.stat-box .val{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:28px;color:#A89035;font-weight:700}
 .stat-box .lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
 
 /* Info grid */
@@ -904,7 +904,7 @@ a{color:#A89035;text-decoration:none}
 .compare-table th:nth-child(3){background:#E5E3DE;color:#666}
 .compare-table td{padding:10px 16px;border-bottom:1px solid #eee;color:#666;text-align:center}
 .compare-table td:nth-child(2){background:#EDE9DF;font-weight:600;color:#2C3240}
-.compare-tagline{font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#A89035;font-size:14px;text-align:center;margin-top:20px}
+.compare-tagline{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-style:italic;color:#A89035;font-size:14px;text-align:center;margin-top:20px}
 
 /* Cards */
 .core-svc{background:#FDFAF3;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:20px;margin-bottom:16px}
@@ -919,7 +919,7 @@ a{color:#A89035;text-decoration:none}
 /* Transition */
 .transition-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:16px 0}
 .trans-card{background:#fff;border:1px solid #E5E3DE;border-top:3px solid #A89035;border-radius:0 0 8px 8px;padding:20px}
-.trans-card h4{font-family:'Playfair Display',Georgia,serif;font-size:14px;font-weight:700;color:#A89035;margin-bottom:6px}
+.trans-card h4{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;font-weight:700;color:#A89035;margin-bottom:6px}
 .trans-card .sub{font-size:11px;color:#888;margin-bottom:12px;font-style:italic}
 .trans-card ul{list-style:none}.trans-card ul li{font-size:11px;color:#555;padding:4px 0 4px 16px;position:relative}
 .trans-card ul li::before{content:"\u2022";position:absolute;left:0;color:#A89035;font-weight:700;font-size:14px}
@@ -936,16 +936,16 @@ a{color:#A89035;text-decoration:none}
 /* Testimonials */
 .testimonial-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0}
 .testimonial{background:#fff;border:1px solid #E5E3DE;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:24px}
-.testimonial .qm{font-family:'Playfair Display',Georgia,serif;font-size:48px;color:#A89035;line-height:0.8;margin-bottom:10px}
-.testimonial p{font-family:Georgia,serif;font-size:12px;color:#555;font-style:italic;line-height:1.8;margin-bottom:12px}
+.testimonial .qm{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:48px;color:#A89035;line-height:0.8;margin-bottom:10px}
+.testimonial p{font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#555;font-style:italic;line-height:1.8;margin-bottom:12px}
 .testimonial .author{font-size:12px;color:#A89035;font-weight:600}
 .testimonial .author-title{font-size:10px;color:#888}
 
 /* Back cover */
 .back-cover{background:#3A4B5B;color:#fff;min-height:400px;padding:60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;page-break-after:always;border-color:rgba(168,144,53,0.3)}
-.back-cover .wordmark{font-family:'Playfair Display',Georgia,serif;font-size:14px;letter-spacing:10px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px}
+.back-cover .wordmark{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;letter-spacing:10px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px}
 .back-cover .pm-sub{font-size:11px;color:#A89035;margin-bottom:32px;letter-spacing:2px}
-.back-cover h2{font-family:'Playfair Display',Georgia,serif;font-size:32px;color:#A89035;margin-bottom:8px;font-weight:700}
+.back-cover h2{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:32px;color:#A89035;margin-bottom:8px;font-weight:700}
 .back-cover .tagline{font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:32px;line-height:1.8}
 .back-cover .contact-name{font-size:15px;color:#A89035;font-weight:600;margin-bottom:4px}
 .back-cover .contact-info{font-size:12px;color:rgba(255,255,255,0.6);line-height:2}
@@ -955,13 +955,13 @@ a{color:#A89035;text-decoration:none}
 /* Intel section */
 .intel-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:16px 0}
 .intel-card{background:#fff;border:1px solid #E5E3DE;border-radius:8px;padding:16px;text-align:center}
-.intel-card .val{font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:700}
+.intel-card .val{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:24px;font-weight:700}
 .intel-card .lbl{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
 .red{color:#dc2626}.orange{color:#ea580c}.green{color:#16a34a}.yellow{color:#ca8a04}
 
 .about-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:24px 0}
 .about-stat{background:#fff;border:1px solid #E5E3DE;border-radius:8px;padding:18px;text-align:center}
-.about-stat .val{font-family:'Playfair Display',Georgia,serif;font-size:24px;color:#A89035;font-weight:700}
+.about-stat .val{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:24px;color:#A89035;font-weight:700}
 .about-stat .lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
 
 .compliance-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:16px 0}
@@ -972,11 +972,11 @@ a{color:#A89035;text-decoration:none}
 
 .tech-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0}
 .tech-col{background:#EDE9DF;border:1px solid #E5E3DE;border-radius:8px;padding:22px}
-.tech-col h4{font-family:'Playfair Display',Georgia,serif;font-size:16px;color:#2C3240;margin-bottom:14px;font-weight:700}
+.tech-col h4{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;color:#2C3240;margin-bottom:14px;font-weight:700}
 .tech-col ul{list-style:none}.tech-col ul li{font-size:12px;color:#555;padding:5px 0 5px 22px;position:relative}
 .tech-col ul li::before{content:"\u2714";position:absolute;left:0;color:#A89035;font-size:14px;font-weight:700}
 
-.mission-stmt{font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#A89035;font-size:15px;text-align:center;margin-bottom:20px;line-height:1.6;font-weight:600;max-width:700px;margin-left:auto;margin-right:auto}
+.mission-stmt{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-style:italic;color:#A89035;font-size:15px;text-align:center;margin-bottom:20px;line-height:1.6;font-weight:600;max-width:700px;margin-left:auto;margin-right:auto}
 
 @media print{
 body{background:#fff}
@@ -1013,7 +1013,7 @@ ${d.latitude && d.longitude ? `
 <div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:340px;margin-bottom:16px;position:relative">
 <iframe src="https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${d.latitude},${d.longitude}&heading=0&pitch=5&fov=80" width="100%" height="340" style="border:0" allowfullscreen loading="lazy"></iframe>
 <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(58,75,91,0.9));padding:16px 20px 12px;color:#fff">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700">${d.buildingName}</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:20px;font-weight:700">${d.buildingName}</div>
 <div style="font-size:11px;opacity:0.8">${d.address} \u00B7 ${d.propertyType} \u00B7 ${d.units ? d.units + ' Units' : ''} ${d.stories ? '\u00B7 ' + d.stories + ' Floors' : ''} ${d.yearBuilt ? '\u00B7 Built ' + d.yearBuilt : ''}</div>
 </div>
 </div>
@@ -1021,7 +1021,7 @@ ${d.latitude && d.longitude ? `
 <div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:340px;margin-bottom:16px;position:relative">
 <iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=19&maptype=satellite" width="100%" height="340" style="border:0" allowfullscreen loading="lazy"></iframe>
 <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(58,75,91,0.9));padding:16px 20px 12px;color:#fff">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700">${d.buildingName}</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:20px;font-weight:700">${d.buildingName}</div>
 <div style="font-size:11px;opacity:0.8">${d.address} \u00B7 ${d.propertyType} \u00B7 ${d.units ? d.units + ' Units' : ''} ${d.stories ? '\u00B7 ' + d.stories + ' Floors' : ''} ${d.yearBuilt ? '\u00B7 Built ' + d.yearBuilt : ''}</div>
 </div>
 </div>
@@ -1122,7 +1122,7 @@ ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borou
 <div class="stat-box"><div class="val">${d.yearBuilt || 'N/A'}</div><div class="lbl">Year Built</div></div>
 </div>
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:20px;margin-top:12px">
-<p style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#555;line-height:1.8;text-align:center">${hookLine}</p>
+<p style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;color:#555;line-height:1.8;text-align:center">${hookLine}</p>
 </div>
 </div>
 
@@ -1379,12 +1379,12 @@ ${d.dobOwners.map((o, i) => `<tr${i % 2 ? ' style="background:#fff"' : ''}><td s
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
 <div style="background:#EDE9DF;border-radius:6px;padding:14px;text-align:center">
 <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px">Co-op/Condo Abatement</div>
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700;color:${d.hasAbatement ? '#16a34a' : '#888'}">${d.hasAbatement ? '✅ Active' : '—  None'}</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:20px;font-weight:700;color:${d.hasAbatement ? '#16a34a' : '#888'}">${d.hasAbatement ? '✅ Active' : '—  None'}</div>
 ${d.abatementAmount > 0 ? `<div style="font-size:11px;color:#16a34a;font-weight:600;margin-top:4px">$\${d.abatementAmount.toLocaleString()} exempt</div>` : ''}
 </div>
 <div style="background:${d.hasTaxLien ? 'rgba(220,38,38,0.08)' : '#EDE9DF'};border-radius:6px;padding:14px;text-align:center;${d.hasTaxLien ? 'border:1px solid rgba(220,38,38,0.3)' : ''}">
 <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px">Tax Liens</div>
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700;color:${d.hasTaxLien ? '#dc2626' : '#16a34a'}">${d.hasTaxLien ? '⚠️ LIEN' : '✅ Clear'}</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:20px;font-weight:700;color:${d.hasTaxLien ? '#dc2626' : '#16a34a'}">${d.hasTaxLien ? '⚠️ LIEN' : '✅ Clear'}</div>
 ${d.hasTaxLien ? `<div style="font-size:11px;color:#dc2626;font-weight:600;margin-top:4px">${d.taxLienDetails.length} lien(s) on record</div>` : '<div style="font-size:11px;color:#16a34a;margin-top:4px">No liens found</div>'}
 </div>
 <div style="background:#EDE9DF;border-radius:6px;padding:14px;text-align:center">
@@ -1408,7 +1408,7 @@ ${d.taxLienDetails.map(l => `<div style="font-size:11px;color:#555;padding:2px 0
 
 <div style="display:flex;align-items:center;gap:24px;margin:20px 0">
 <div style="width:100px;height:100px;border-radius:50%;background:${d.managementGrade === 'A' ? '#16a34a' : d.managementGrade === 'B' ? '#ca8a04' : d.managementGrade === 'C' ? '#ea580c' : '#dc2626'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-<span style="font-family:'Playfair Display',Georgia,serif;font-size:48px;font-weight:700;color:#fff">${d.managementGrade}</span>
+<span style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:48px;font-weight:700;color:#fff">${d.managementGrade}</span>
 </div>
 <div>
 <div style="font-size:16px;font-weight:700;color:#2C3240;margin-bottom:4px">Overall Management Grade: ${d.managementGrade}</div>
@@ -1680,7 +1680,7 @@ ${isSelfManaged ? `
 <div class="section section-cream">
 <div class="section-title">Technology Platform</div>
 <div class="section-sub">Proprietary tools connecting data, intelligence, and operations</div>
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:20px;font-weight:600">Merlin AI &nbsp;+&nbsp; Camelot Central &nbsp;+&nbsp; ConciergePlus</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:20px;font-weight:600">Merlin AI &nbsp;+&nbsp; Camelot Central &nbsp;+&nbsp; ConciergePlus</div>
 <div class="tech-cols">
 <div class="tech-col"><h4>For Board &amp; Management</h4><ul><li>Group and individual messaging</li><li>Utility usage tracking</li><li>Building files &amp; documents</li><li>Compliance status updates</li><li>AI-powered meeting minutes</li><li>Real-time financial dashboards</li></ul></div>
 <div class="tech-col"><h4>For Residents</h4><ul><li>ConciergePlus portal + mobile app</li><li>Pay maintenance \u2014 zero bank fees</li><li>AI chatbot support 24/7</li><li>Book amenities &amp; download docs</li><li>Direct staff contact</li><li>Work order tracking &amp; updates</li></ul></div>
@@ -1715,7 +1715,7 @@ ${isSelfManaged ? `
 <tr><td>In-House Attorney &amp; Engineer</td><td class="free">Free Advisory</td></tr>
 </tbody>
 </table>
-<div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#A89035;font-size:13px;margin-top:16px;text-align:center">Our efficiencies effectively pay for our management \u2014 through long-term savings on vendors, compliance penalties, and capital expenditures.</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-style:italic;color:#A89035;font-size:13px;margin-top:16px;text-align:center">Our efficiencies effectively pay for our management \u2014 through long-term savings on vendors, compliance penalties, and capital expenditures.</div>
 </div>
 
 <!-- PAGE 15B: FEE COMPARISON — MARKET RATE ANALYSIS -->
@@ -1728,17 +1728,17 @@ ${d.feeComparison ? `
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:18px;text-align:center">
 <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:6px">Market Range</div>
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:700;color:#dc2626">$${d.feeComparison.marketRangeLow}–$${d.feeComparison.marketRangeHigh}</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:24px;font-weight:700;color:#dc2626">$${d.feeComparison.marketRangeLow}–$${d.feeComparison.marketRangeHigh}</div>
 <div style="font-size:10px;color:#888">per unit / year</div>
 </div>
 <div style="background:#3A4B5B;border-radius:8px;padding:18px;text-align:center">
 <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#A89035;margin-bottom:6px">Camelot Rate</div>
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:700;color:#A89035">$${d.feeComparison.camelotAnnualPerUnit}</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:24px;font-weight:700;color:#A89035">$${d.feeComparison.camelotAnnualPerUnit}</div>
 <div style="font-size:10px;color:rgba(255,255,255,0.6)">per unit / year</div>
 </div>
 <div style="background:#16a34a;border-radius:8px;padding:18px;text-align:center;color:#fff">
 <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px">Your Savings</div>
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700">${d.feeComparison.savings}</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:20px;font-weight:700">${d.feeComparison.savings}</div>
 <div style="font-size:10px;opacity:0.8">with MORE services included</div>
 </div>
 </div>
@@ -1848,7 +1848,7 @@ ${d.feeComparison.ancillaryFeesIncluded.map(svc => `<div style="font-size:11px;c
 
 <div style="display:grid;grid-template-columns:3fr 2fr;gap:20px">
 <div>
-<h4 style="font-family:'Playfair Display',Georgia,serif;font-size:16px;color:#3A4B5B;font-weight:700;margin-bottom:10px">In-House CPA Team</h4>
+<h4 style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;color:#3A4B5B;font-weight:700;margin-bottom:10px">In-House CPA Team</h4>
 <p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:14px">We don\u2019t outsource our books. Our in-house CPAs work directly for ${d.buildingName}, ensuring absolute accuracy, clear reporting, and immediate answers to your financial questions.</p>
 <div style="margin-bottom:6px"><span style="color:#A89035;font-size:14px">\u2714</span> <span style="font-size:12px;color:#2C3240">Detailed Books Delivered Monthly \u2014 on schedule</span></div>
 <div style="margin-bottom:6px"><span style="color:#A89035;font-size:14px">\u2714</span> <span style="font-size:12px;color:#2C3240">Real-Time Digital Arrears Tracking</span></div>
@@ -1859,15 +1859,15 @@ ${d.feeComparison.ancillaryFeesIncluded.map(svc => `<div style="font-size:11px;c
 </div>
 <div>
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:18px;text-align:center;margin-bottom:12px">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#A89035;font-weight:700">10.55%</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:28px;color:#A89035;font-weight:700">10.55%</div>
 <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px">Avg. YoY Rent Increase<br>vs. 5.20% market</div>
 </div>
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:18px;text-align:center;margin-bottom:12px">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#A89035;font-weight:700">96%</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:28px;color:#A89035;font-weight:700">96%</div>
 <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px">Portfolio Occupancy Rate</div>
 </div>
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:18px;text-align:center">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#A89035;font-weight:700"></div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:28px;color:#A89035;font-weight:700"></div>
 <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px"></div>
 </div>
 </div>
@@ -1944,7 +1944,7 @@ ${[
 </table>
 
 <div style="background:#16a34a;color:#fff;border-radius:8px;padding:14px 20px;margin-top:16px;text-align:center">
-<span style="font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:700">Total Year 1 Opportunity: $98,000 – $223,000+</span>
+<span style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;font-weight:700">Total Year 1 Opportunity: $98,000 – $223,000+</span>
 <span style="display:block;font-size:11px;opacity:0.9;margin-top:4px">In combined cost reduction and revenue improvement — achievable without any maintenance increase</span>
 </div>
 </div>
@@ -2031,15 +2031,15 @@ ${cumSavings.map((val, i) => {
 <!-- ROI Summary -->
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
 <div style="background:#3A4B5B;border-radius:8px;padding:16px;text-align:center;color:#fff">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;font-weight:700;color:#A89035">${projections[0].roi}%</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:28px;font-weight:700;color:#A89035">${projections[0].roi}%</div>
 <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-top:4px;opacity:0.7">Year 1 ROI</div>
 </div>
 <div style="background:#3A4B5B;border-radius:8px;padding:16px;text-align:center;color:#fff">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;font-weight:700;color:#16a34a">$${(totalSavings5yr/1000).toFixed(0)}K</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:28px;font-weight:700;color:#16a34a">$${(totalSavings5yr/1000).toFixed(0)}K</div>
 <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-top:4px;opacity:0.7">5-Year Net Benefit</div>
 </div>
 <div style="background:#3A4B5B;border-radius:8px;padding:16px;text-align:center;color:#fff">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;font-weight:700;color:#A89035">${((totalSavings5yr / (projections.reduce((s, p) => s + p.fee, 0))) * 100).toFixed(0)}%</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:28px;font-weight:700;color:#A89035">${((totalSavings5yr / (projections.reduce((s, p) => s + p.fee, 0))) * 100).toFixed(0)}%</div>
 <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-top:4px;opacity:0.7">5-Year Avg ROI</div>
 </div>
 </div>`;
@@ -2052,7 +2052,7 @@ ${cumSavings.map((val, i) => {
 <div style="display:flex;gap:24px;align-items:center">
 <div style="width:180px;height:180px;border-radius:50%;flex-shrink:0;position:relative;background:conic-gradient(#dc2626 0deg 97deg,#A89035 97deg 169deg,#3A4B5B 169deg 230deg,#16a34a 230deg 280deg,#0073b7 280deg 320deg,#888 320deg 360deg)">
 <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90px;height:90px;background:#FDFAF3;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:700;color:#2C3240">${d.neighborhoodMarketData ? d.neighborhoodMarketData.opexRange.split('–')[0] : '$20'}</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;font-weight:700;color:#2C3240">${d.neighborhoodMarketData ? d.neighborhoodMarketData.opexRange.split('–')[0] : '$20'}</div>
 <div style="font-size:8px;color:#888;text-transform:uppercase">avg $/SF/yr</div>
 </div>
 </div>
@@ -2130,7 +2130,7 @@ ${[
 <div class="section-title">Technology Platform</div>
 <div class="section-sub">Proven tools today + next-generation Camelot OS deploying 2026</div>
 
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:6px;font-weight:600">Current Stack \u2014 Active Now</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:6px;font-weight:600">Current Stack \u2014 Active Now</div>
 <table class="compare-table" style="margin-bottom:20px">
 <thead><tr><th style="background:#3A4B5B;color:#fff">Platform</th><th style="background:#3A4B5B;color:#fff">Function</th><th style="background:#3A4B5B;color:#fff">Benefit to ${d.buildingName}</th></tr></thead>
 <tbody>
@@ -2144,7 +2144,7 @@ ${[
 </tbody>
 </table>
 
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:6px;font-weight:600">Camelot OS \u2014 Deploying 2026</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:6px;font-weight:600">Camelot OS \u2014 Deploying 2026</div>
 <div class="va-grid">
 <div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">ConciergePlus</h5><p>Personal AI assistant and enhanced resident portal \u2014 powered by Merlin and the Camelot OS system. Dashboard and mobile app for board members, residents, RM/Super, vendors, and front desk. Every request logged, tracked, and AI-assisted 24/7.</p></div>
 <div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Merlin AI</h5><p>Camelot\u2019s AI engine powering ConciergePlus, budget forecasting, expense anomaly detection, vendor scoring, pro-forma modeling, and intelligent building operations.</p></div>
@@ -2196,7 +2196,7 @@ ${d.neighborhoodMarketData ? `
 </table>
 
 <div style="background:#EDE9DF;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:14px 18px;margin-top:14px">
-<p style="font-family:Georgia,serif;font-size:12px;font-style:italic;color:#3A4B5B;line-height:1.7">&ldquo;Location sets the revenue ceiling; management determines what you keep. Camelot\u2019s integrated cost management \u2014 energy optimization (Parity), online payments (Prisma), and compliance automation \u2014 directly lowers the operating cost line across all building types.&rdquo;</p>
+<p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-style:italic;color:#3A4B5B;line-height:1.7">&ldquo;Location sets the revenue ceiling; management determines what you keep. Camelot\u2019s integrated cost management \u2014 energy optimization (Parity), online payments (Prisma), and compliance automation \u2014 directly lowers the operating cost line across all building types.&rdquo;</p>
 <p style="font-size:10px;color:#A89035;font-weight:600;margin-top:6px">\u2014 Camelot Q1 2026 Market Report</p>
 </div>
 </div>
@@ -2239,12 +2239,12 @@ ${d.neighborhoodMarketData ? `
 <div class="section-sub">BankUnited — premier banking for property management and co-op associations</div>
 
 <div style="background:#fff;border:2px solid #A89035;border-radius:8px;padding:22px;margin:16px 0">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:16px;color:#3A4B5B;font-weight:700;margin-bottom:10px">BankUnited Partnership</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;color:#3A4B5B;font-weight:700;margin-bottom:10px">BankUnited Partnership</div>
 <p style="font-size:12px;color:#555;line-height:1.8">Camelot works exclusively with <strong>BankUnited</strong> \u2014 in our view the premier banking partner for property management companies and co-op associations in New York City. BankUnited offers <strong>no account fees</strong>, competitive interest rate matching, and deep technology integration with our payment systems, vendor payments, and collections workflows. Their automation tools streamline bank reconciliations and management reporting \u2014 reducing errors and improving financial transparency.</p>
 <p style="font-size:12px;color:#A89035;font-weight:600;margin-top:10px">This relationship often delivers meaningful financial value from Day 1.</p>
 </div>
 
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;color:#A89035;text-align:center;margin-top:16px;font-weight:600">RED Awards 2025: Property Management Company of the Year</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;color:#A89035;text-align:center;margin-top:16px;font-weight:600">RED Awards 2025: Property Management Company of the Year</div>
 <div style="font-size:11px;color:#888;text-align:center;margin-top:6px">REBNY 2025: David Goldoff Leadership Award &nbsp;\u00B7&nbsp; 42 Properties &nbsp;\u00B7&nbsp; $240M+ AUM &nbsp;\u00B7&nbsp; 18+ Years</div>
 <div style="font-size:10px;color:#999;text-align:center;margin-top:8px">Member: REBNY \u00B7 SPONY \u00B7 NYARM \u00B7 IREM \u00B7 BOMA \u00B7 NARPM \u00B7 NY Apartment Association</div>
 </div>
@@ -2280,11 +2280,11 @@ ${d.neighborhoodMarketData ? `
 
 <!-- Quote — large, emphasized, center stage -->
 <div style="margin-bottom:32px;max-width:560px">
-<div style="font-size:64px;font-family:'Playfair Display',Georgia,serif;color:#A89035;line-height:0.5;margin-bottom:16px;opacity:0.6">&ldquo;</div>
-<div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:22px;color:#fff;line-height:1.6;font-weight:400;letter-spacing:0.3px">Don\u2019t let it be forgot, that once there was a spot, for one brief shining moment, that was known as Camelot.</div>
-<div style="font-size:64px;font-family:'Playfair Display',Georgia,serif;color:#A89035;line-height:0.5;text-align:right;margin-top:12px;opacity:0.6">&rdquo;</div>
+<div style="font-size:64px;font-family:'Plus Jakarta Sans',-apple-system,sans-serif;color:#A89035;line-height:0.5;margin-bottom:16px;opacity:0.6">&ldquo;</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-style:italic;font-size:22px;color:#fff;line-height:1.6;font-weight:400;letter-spacing:0.3px">Don\u2019t let it be forgot, that once there was a spot, for one brief shining moment, that was known as Camelot.</div>
+<div style="font-size:64px;font-family:'Plus Jakarta Sans',-apple-system,sans-serif;color:#A89035;line-height:0.5;text-align:right;margin-top:12px;opacity:0.6">&rdquo;</div>
 <div style="text-align:right;margin-top:12px">
-<div style="font-family:'Playfair Display',Georgia,serif;font-size:13px;color:#A89035;font-weight:600;font-style:italic">Jacqueline Kennedy</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:13px;color:#A89035;font-weight:600;font-style:italic">Jacqueline Kennedy</div>
 <div style="font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:1px;margin-top:2px">Life Magazine &nbsp;\u00B7&nbsp; December 6, 1963</div>
 </div>
 </div>
