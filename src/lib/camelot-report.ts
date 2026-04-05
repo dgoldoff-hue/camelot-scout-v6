@@ -1079,9 +1079,9 @@ ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borou
 <span style="font-size:20px">📍</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">Google Maps</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Photos, reviews, nearby amenities</div></div>
 </a>`}
-<a href="https://www.domicile.com/search?q=${encodedAddr}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<a href="https://www.domecile.com/search?q=${encodedAddr}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
 <span style="font-size:20px">🔑</span>
-<div><div style="font-size:12px;font-weight:600;color:#A89035">Domicile</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Fees, current management, building info</div></div>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">Domecile</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Fees, current management, building info</div></div>
 </a>
 <a href="https://www.lexisnexis.com/en-us/gateway.page" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
 <span style="font-size:20px">⚖️</span>
@@ -1112,7 +1112,7 @@ ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borou
 <div><div style="font-size:12px;font-weight:600;color:#A89035">DOB BIS (Building Info System)</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Permits, complaints, violations, certificates of occupancy</div></div>
 </a>
 </div>
-<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Data: HPD → DOF → StreetEasy → PropertyShark → Domicile (units) · ACRIS → DOF → HPD (ownership) · DOB/BIS → SiteCompli → Jack Jaffa (violations/permits) · DOF (abatements/liens) · LexisNexis → NYSCEF (legal) · NY AG (offering plans)</div>
+<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Data: HPD → DOF → StreetEasy → PropertyShark → Domecile (units) · ACRIS → DOF → HPD (ownership) · DOB/BIS → SiteCompli → Jack Jaffa (violations/permits) · DOF (abatements/liens) · LexisNexis → NYSCEF (legal) · NY AG (offering plans)</div>
 </div>
 
 <div class="stats-row">
@@ -1245,9 +1245,9 @@ ${d.distressSignals.length > 0 ? `
 <a href="https://offeringplandatasearch.ag.ny.gov/" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Search AG Offering Plans →</a>
 </div>
 <div style="background:#EDE9DF;border-radius:6px;padding:12px">
-<div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">Domicile — Fees & Management</div>
+<div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">Domecile — Fees & Management</div>
 <div style="font-size:10px;color:#555;line-height:1.5">Building fees (maintenance, common charges), current management company, amenities, and resident reviews. Useful for competitive fee benchmarking.</div>
-<a href="https://www.domicile.com/search?q=${encodedAddr}" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Search Domicile →</a>
+<a href="https://www.domecile.com/search?q=${encodedAddr}" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Search Domecile →</a>
 </div>
 <div style="background:#EDE9DF;border-radius:6px;padding:12px">
 <div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">NYSCEF — Court E-Filings</div>
