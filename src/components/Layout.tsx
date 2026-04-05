@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Search, LayoutGrid, Bookmark, Upload, GitBranch, Mail, MessageSquare,
   Archive, Download, Bot, Settings, ChevronLeft, ChevronRight,
-  BookOpen, HelpCircle, ShieldCheck, Bell, FileText, Swords, Sword, Crown,
+  BookOpen, HelpCircle, ShieldCheck, Bell, FileText, Swords, Sword, Crown, Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/lib/store';
@@ -39,6 +39,7 @@ const navigation: NavSection[] = [
       { label: 'Competitors', href: '/intelligence', icon: <Swords size={18} /> },
       { label: 'Reports', href: '/reports', icon: <FileText size={18} /> },
       { label: 'Jackie', href: '/report-center', icon: <Crown size={18} /> },
+      { label: 'Sentinel', href: '/sentinel', icon: <Eye size={18} /> },
     ],
   },
   {
