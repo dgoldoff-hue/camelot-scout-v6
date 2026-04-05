@@ -423,6 +423,12 @@ function lookupNeighborhoodData(neighborhood: string): NeighborhoodMarketData | 
 }
 
 function gradeManagement(d: { violationsOpen: number; ecbPenaltyBalance: number; hasActiveLitigation: boolean; permitsCount: number; violationsTotal: number }): { grade: string; scorecard: { violations: number; compliance: number; financial: number; overall: number } } {
+  // If we have NO data at all, don't assign a grade — return "Pending Review"
+  const hasAnyData = d.violationsTotal > 0 || d.ecbPenaltyBalance > 0 || d.hasActiveLitigation || d.permitsCount > 0;
+  if (!hasAnyData) {
+    return { grade: '—', scorecard: { violations: 0, compliance: 0, financial: 0, overall: 0 } };
+  }
+
   // Violations score: fewer = better (out of 100)
   let violScore = 100;
   if (d.violationsOpen > 50) violScore = 15;
@@ -734,7 +740,7 @@ ${'━'.repeat(50)}
 
 BUILDING: ${d.address}
 UNITS: ${d.units} | FLOORS: ${d.stories} | GRADE: ${d.scoutGrade} (${d.scoutScore}/100)
-MANAGEMENT: ${d.managementCompany || 'Self-Managed / Unknown'}
+MANAGEMENT: ${d.managementCompany || 'To be confirmed — research via Domecile, PropertyShark, or building website'}
 ${d.dofOwner ? `OWNER (DOF): ${d.dofOwner}` : ''}
 
 OPENING:
@@ -919,7 +925,7 @@ export function generateCSVExport(d: MasterReportData): string {
     ['Land Value', `$${d.landValue.toLocaleString()}`],
     ['DOF Owner', d.dofOwner],
     ['BBL', d.bbl],
-    ['Current Management', d.managementCompany || 'Unknown'],
+    ['Current Management', d.managementCompany || 'To be confirmed'],
     ['HPD Violations (Total)', String(d.violationsTotal)],
     ['HPD Violations (Open)', String(d.violationsOpen)],
     ['Class A', String(d.violationClassA)],
@@ -1434,10 +1440,10 @@ ${d.distressSignals.length > 0 ? `
 <th style="text-align:left;padding:8px 12px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#A89035;border-bottom:1px solid rgba(168,144,53,0.3)">Role / Title</th>
 </tr></thead>
 <tbody>
-<tr><td style="padding:8px 12px;font-size:12px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1)">${d.dofOwner || 'N/A'}</td><td style="padding:8px 12px;font-size:12px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.1)">Owner (NYC DOF Record)</td></tr>
+${d.dofOwner ? `<tr><td style="padding:8px 12px;font-size:12px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1)">${d.dofOwner}</td><td style="padding:8px 12px;font-size:12px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.1)">Owner (NYC DOF Record)</td></tr>` : ''}
 ${d.registrationOwner ? `<tr><td style="padding:8px 12px;font-size:12px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1)">${d.registrationOwner}</td><td style="padding:8px 12px;font-size:12px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.1)">Registration Owner (HPD)</td></tr>` : ''}
 ${d.boardMembers.map(b => `<tr><td style="padding:8px 12px;font-size:12px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:600">${b.name}</td><td style="padding:8px 12px;font-size:12px;color:#A89035;border-bottom:1px solid rgba(255,255,255,0.1)">${b.title}</td></tr>`).join('')}
-${d.boardMembers.length === 0 ? '<tr><td colspan="2" style="padding:8px 12px;font-size:11px;color:rgba(255,255,255,0.5)">Additional board members \u2014 available upon engagement or via contact enrichment</td></tr>' : ''}
+${d.boardMembers.length === 0 ? '<tr><td colspan="2" style="padding:8px 12px;font-size:11px;color:rgba(255,255,255,0.5);font-style:italic">Ownership and board details to be confirmed upon engagement with the building.</td></tr>' : ''}
 </tbody>
 </table>
 </div>
@@ -1451,20 +1457,17 @@ ${d.buildingStaff.length > 0 ? `
 <table style="width:100%;border-collapse:collapse">
 ${d.buildingStaff.map(s => `<tr><td style="padding:6px 0;font-size:12px;font-weight:600;color:#2C3240">${s.name}</td><td style="padding:6px 0;font-size:11px;color:#888;text-align:right">${s.role}</td></tr>`).join('')}
 </table>` : `
-<div style="font-size:11px;color:#888;line-height:1.6">
-<div style="margin-bottom:4px">\u2022 Superintendent \u2014 <em>To be identified</em></div>
-<div style="margin-bottom:4px">\u2022 Resident Manager \u2014 <em>To be identified</em></div>
-<div style="margin-bottom:4px">\u2022 Front Desk / Doorman \u2014 <em>To be identified</em></div>
-<div style="margin-bottom:4px">\u2022 Porter / Handyman \u2014 <em>To be identified</em></div>
+<div style="font-size:11px;color:#888;line-height:1.6;font-style:italic">
+Staff details will be confirmed during our initial building assessment and transition planning.
 </div>`}
 </div>
 
 <!-- MANAGEMENT -->
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:16px">
 <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:10px">\uD83C\uDFE2 Current Management</div>
-<div style="font-size:14px;font-weight:700;color:#2C3240;margin-bottom:8px">${d.managementCompany || 'Self-Managed / Unknown'}</div>
+<div style="font-size:14px;font-weight:700;color:#2C3240;margin-bottom:8px">${d.managementCompany || 'To be confirmed upon engagement'}</div>
 <div style="font-size:11px;color:#888;line-height:1.6">
-<div style="margin-bottom:4px">\u2022 Managing Agent \u2014 <em>${d.managementCompany || 'Not registered'}</em></div>
+<div style="margin-bottom:4px">\u2022 Managing Agent \u2014 <em>${d.managementCompany || 'To be confirmed upon engagement'}</em></div>
 ${d.managementDuration ? `<div style="margin-bottom:4px">\u2022 Duration \u2014 ~${d.managementDuration}</div>` : ''}
 <div style="margin-bottom:4px">\u2022 Management Grade \u2014 <strong style="color:${d.managementGrade === 'A' ? '#16a34a' : d.managementGrade === 'B' ? '#ca8a04' : '#dc2626'}">${d.managementGrade}</strong> (${d.managementScorecard.overall}/100)</div>
 </div>
@@ -1546,8 +1549,8 @@ ${d.taxLienDetails.map(l => `<div style="font-size:11px;color:#555;padding:2px 0
 <span style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:48px;font-weight:700;color:#fff">${d.managementGrade}</span>
 </div>
 <div>
-<div style="font-size:16px;font-weight:700;color:#2C3240;margin-bottom:4px">Overall Management Grade: ${d.managementGrade}</div>
-<div style="font-size:12px;color:#555;line-height:1.6">Based on HPD violations, ECB compliance, DOB permits, litigation status, and financial indicators. ${d.managementGrade === 'A' ? 'This building is well-maintained.' : d.managementGrade === 'B' ? 'There is room for meaningful improvement.' : 'Significant management issues detected &mdash; this building would benefit from professional management.'}</div>
+<div style="font-size:16px;font-weight:700;color:#2C3240;margin-bottom:4px">Overall Management Grade: ${d.managementGrade === '—' ? 'Pending Review' : d.managementGrade}</div>
+<div style="font-size:12px;color:#555;line-height:1.6">${d.managementGrade === '—' ? 'Insufficient public data available to assign a management grade. A full assessment will be conducted upon engagement with the building.' : `Based on HPD violations, ECB compliance, DOB permits, litigation status, and financial indicators. ${d.managementGrade === 'A' ? 'This building is well-maintained.' : d.managementGrade === 'B' ? 'There is room for meaningful improvement.' : 'Significant management issues detected &mdash; this building would benefit from professional management.'}`}</div>
 </div>
 </div>
 
