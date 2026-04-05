@@ -2239,7 +2239,13 @@ ${d.neighborhoodMarketData ? `
 <div class="section-sub">BankUnited — premier banking for property management and co-op associations</div>
 
 <div style="background:#fff;border:2px solid #A89035;border-radius:8px;padding:22px;margin:16px 0">
-<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;color:#3A4B5B;font-weight:700;margin-bottom:10px">BankUnited Partnership</div>
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+<div style="width:48px;height:48px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative">
+<img src="https://www.google.com/s2/favicons?domain=bankunited.com&sz=128" alt="BankUnited" style="width:48px;height:48px;object-fit:contain;border-radius:8px;position:absolute;top:0;left:0" onerror="this.style.display='none'">
+<div style="width:48px;height:48px;background:#003366;border-radius:8px;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-weight:800;font-size:14px">BU</span></div>
+</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;color:#3A4B5B;font-weight:700">BankUnited Partnership</div>
+</div>
 <p style="font-size:12px;color:#555;line-height:1.8">Camelot works exclusively with <strong>BankUnited</strong> \u2014 in our view the premier banking partner for property management companies and co-op associations in New York City. BankUnited offers <strong>no account fees</strong>, competitive interest rate matching, and deep technology integration with our payment systems, vendor payments, and collections workflows. Their automation tools streamline bank reconciliations and management reporting \u2014 reducing errors and improving financial transparency.</p>
 <p style="font-size:12px;color:#A89035;font-weight:600;margin-top:10px">This relationship often delivers meaningful financial value from Day 1.</p>
 </div>
