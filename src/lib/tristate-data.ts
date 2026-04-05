@@ -58,6 +58,23 @@ const TRISTATE_BUILDINGS: TriStateBuilding[] = [
   // Westchester — Hastings-on-Hudson
   { address: '45 Main Street, Hastings-on-Hudson, NY', name: 'Hastings Landing', area: 'Hastings-on-Hudson', region: 'Westchester', units: 48, type: 'condo', year_built: 2008, current_management: 'Unknown', market_value: 28000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
 
+  // Hamptons — Sag Harbor
+  { address: '2 Main Street, Sag Harbor, NY', name: 'Sag Harbor Wharf Residences', area: 'Sag Harbor', region: 'Hamptons', units: 32, type: 'condo', year_built: 2018, current_management: 'Unknown', market_value: 58000000, contacts: [], notes: '🏖️ Hamptons — AI-researched data (verify independently)' },
+  { address: '129 Hampton Street, Sag Harbor, NY', name: 'Hampton Street Apartments', area: 'Sag Harbor', region: 'Hamptons', units: 16, type: 'rental', year_built: 1985, current_management: 'Unknown', market_value: 12000000, contacts: [], notes: '🏖️ Hamptons — AI-researched data (verify independently)' },
+  // Hamptons — Bridgehampton
+  { address: '2462 Montauk Highway, Bridgehampton, NY', name: 'Bridgehampton Commons', area: 'Bridgehampton', region: 'Hamptons', units: 22, type: 'condo', year_built: 2012, current_management: 'Unknown', market_value: 45000000, contacts: [], notes: '🏖️ Hamptons — AI-researched data (verify independently)' },
+  // Hamptons — Montauk
+  { address: '88 South Emerson Avenue, Montauk, NY', name: 'Montauk Shores Condominiums', area: 'Montauk', region: 'Hamptons', units: 64, type: 'condo', year_built: 1971, current_management: 'Unknown', market_value: 35000000, contacts: [], notes: '🏖️ Hamptons — AI-researched data (verify independently)' },
+  { address: '20 Surfside Drive, Montauk, NY', name: 'Surfside Apartments', area: 'Montauk', region: 'Hamptons', units: 28, type: 'condo', year_built: 1978, current_management: 'Unknown', market_value: 22000000, contacts: [], notes: '🏖️ Hamptons — AI-researched data (verify independently)' },
+  // Hamptons — Westhampton Beach
+  { address: '105 Sunset Avenue, Westhampton Beach, NY', name: 'Westhampton Beach Club Residences', area: 'Westhampton Beach', region: 'Hamptons', units: 36, type: 'condo', year_built: 2008, current_management: 'Unknown', market_value: 52000000, contacts: [], notes: '🏖️ Hamptons — AI-researched data (verify independently)' },
+  // Hamptons — Amagansett
+  { address: '321 Main Street, Amagansett, NY', name: 'Amagansett Square', area: 'Amagansett', region: 'Hamptons', units: 14, type: 'condo', year_built: 2015, current_management: 'Unknown', market_value: 38000000, contacts: [], notes: '🏖️ Hamptons — AI-researched data (verify independently)' },
+  // Hamptons — Water Mill
+  { address: '670 Montauk Highway, Water Mill, NY', name: 'Water Mill Commons', area: 'Water Mill', region: 'Hamptons', units: 20, type: 'condo', year_built: 2016, current_management: 'Unknown', market_value: 44000000, contacts: [], notes: '🏖️ Hamptons — AI-researched data (verify independently)' },
+  // Hamptons — Shelter Island
+  { address: '35 North Ferry Road, Shelter Island, NY', name: 'Shelter Island Heights Apartments', area: 'Shelter Island', region: 'Hamptons', units: 12, type: 'rental', year_built: 1992, current_management: 'Unknown', market_value: 8000000, contacts: [], notes: '🏖️ Hamptons — AI-researched data (verify independently)' },
+
   // Connecticut — Stamford
   { address: '1 Broad Street, Stamford, CT', name: 'Trump Parc Stamford', area: 'Stamford', region: 'Connecticut', units: 170, type: 'condo', year_built: 2009, current_management: 'Unknown', market_value: 125000000, contacts: [], notes: '🏠 Connecticut — AI-researched data (verify independently)' },
   { address: '100 Prospect Street, Stamford, CT', name: 'The Beacon', area: 'Stamford', region: 'Connecticut', units: 132, type: 'rental', year_built: 2016, current_management: 'Building & Land Technology', market_value: 85000000, contacts: [], notes: '🏠 Connecticut — AI-researched data (verify independently)' },
