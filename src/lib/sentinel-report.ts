@@ -88,7 +88,8 @@ interface TrackedBuilding {
   performance: string;
 }
 
-const TRACKED_BUILDINGS: TrackedBuilding[] = [
+export const TRACKED_BUILDINGS: TrackedBuilding[] = [
+  // Confirmed portfolio buildings with verified data
   { name: '949 Park Avenue', address: '949 Park Ave', neighborhood: 'Upper East Side', units: 12, type: 'Condo', camelotPSF: 1750, neighborhoodPSF: 1620, performance: 'Above' },
   { name: '105 E 29th Street', address: '105 E 29th St', neighborhood: 'Midtown', units: 45, type: 'Co-op', camelotPSF: 1180, neighborhoodPSF: 1100, performance: 'Above' },
   { name: '201 E 15th Street', address: '201 E 15th St', neighborhood: 'East Village / LES', units: 32, type: 'Co-op', camelotPSF: 1350, neighborhoodPSF: 1275, performance: 'Above' },
@@ -360,6 +361,186 @@ OpEx ranges: ${NEIGHBORHOODS.map(n => `${n.name.split('/')[0].split(' ').slice(0
 Data Sources: ACRIS (live API) · NYC DOF (live API) · StreetEasy · RealtyMX · OneKey MLS · REBNY RLS<br>
 ${quarter} ${year} · Published ${publishDate} · Generated ${timestamp.split('T')[0]} · Sentinel Engine · Camelot OS<br>
 © ${year} Camelot Realty Group · Confidential · All Rights Reserved
+</div>
+</div>
+
+</div>
+</body>
+</html>`;
+}
+
+// ============================================================
+// Per-Building Client Report Generator
+// ============================================================
+
+export function generateBuildingReport(building: TrackedBuilding, input: SentinelInput): string {
+  const { quarter, year } = input;
+  const periodMap: Record<string, string> = { Q1: 'January–March', Q2: 'April–June', Q3: 'July–September', Q4: 'October–December' };
+  const period = periodMap[quarter];
+  const publishDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const timestamp = new Date().toISOString();
+
+  // Find matching neighborhood data
+  const hood = NEIGHBORHOODS.find(n => n.name === building.neighborhood) || NEIGHBORHOODS[0];
+  const psfDiff = building.camelotPSF - building.neighborhoodPSF;
+  const psfPct = ((psfDiff / building.neighborhoodPSF) * 100).toFixed(1);
+  const isAbove = psfDiff > 0;
+  const encodedAddr = encodeURIComponent(building.address + ', New York, NY');
+  const estValue = building.camelotPSF * (building.units * 850); // rough avg unit size
+  const annualRentalPotential = hood.medianRent1BR * 12 * building.units;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${building.name} — ${quarter} ${year} Market Report | Camelot Realty Group</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#F5F0E5;color:#2C3240;font-size:13px;line-height:1.6}
+.page{max-width:900px;margin:0 auto}
+h1,h2,h3{font-family:'Plus Jakarta Sans',sans-serif}
+.section{padding:36px 50px;page-break-after:always;border:1px solid #D5D0C6;margin-bottom:8px}
+.section-title{font-size:24px;color:#B8973A;margin-bottom:6px;padding-left:16px;border-left:4px solid #B8973A;font-weight:700}
+.section-sub{font-size:12px;color:#888;margin-bottom:24px;padding-left:16px}
+.cover{background:#0D2240;color:#fff;padding:60px;text-align:center;min-height:500px;display:flex;flex-direction:column;justify-content:center;align-items:center;page-break-after:always;border:3px solid #B8973A;margin-bottom:8px}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}
+.stat-box{background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:16px;text-align:center}
+.stat-box .val{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;color:#B8973A;font-weight:700}
+.stat-box .lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+th{background:#B8973A;color:#fff;padding:10px 14px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px}
+td{padding:10px 14px;border-bottom:1px solid #E5E3DE}
+tr:nth-child(even){background:#EDE9DF}
+@media print{@page{margin:0.15in}body{background:#fff}.cover{background:#0D2240!important}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- COVER -->
+<div class="cover">
+<img src="./images/camelot-logo-white.png" alt="Camelot" style="width:100px;margin-bottom:20px;opacity:0.9" onerror="this.style.display='none'">
+<div style="font-size:12px;letter-spacing:8px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:30px">C A M E L O T</div>
+<div style="font-size:14px;color:#B8973A;letter-spacing:3px;margin-bottom:20px">MARKET INTELLIGENCE</div>
+<h1 style="font-size:36px;color:#B8973A;font-weight:800;margin-bottom:8px">${building.name}</h1>
+<div style="font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:4px">${quarter} ${year} Quarterly Market Report</div>
+<div style="font-size:13px;color:rgba(255,255,255,0.5)">${period} ${year} · ${building.neighborhood}</div>
+<div style="width:60px;height:2px;background:#B8973A;margin:24px auto"></div>
+<div style="font-size:11px;color:rgba(255,255,255,0.4)">
+Prepared exclusively for the Board of ${building.name}<br>
+Complimentary quarterly report from Camelot Realty Group
+</div>
+</div>
+
+<!-- PROPERTY OVERVIEW -->
+<div class="section" style="background:#FDFAF3">
+<div class="section-title">Your Property</div>
+<div class="section-sub">${building.address}, New York, NY · ${building.type} · ${building.units} Units</div>
+
+<!-- Street View -->
+<div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6;height:250px;margin-bottom:16px">
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddr}&zoom=18&maptype=satellite" width="100%" height="250" style="border:0" allowfullscreen loading="lazy"></iframe>
+</div>
+
+<div class="stat-row">
+<div class="stat-box"><div class="val">${building.units}</div><div class="lbl">Units</div></div>
+<div class="stat-box"><div class="val">${building.type}</div><div class="lbl">Building Type</div></div>
+<div class="stat-box"><div class="val">${building.neighborhood}</div><div class="lbl">Neighborhood</div></div>
+<div class="stat-box"><div class="val" style="color:${isAbove ? '#16a34a' : '#B8973A'}">${isAbove ? '▲' : '●'} ${building.performance}</div><div class="lbl">vs. Market</div></div>
+</div>
+</div>
+
+<!-- YOUR BUILDING vs MARKET -->
+<div class="section" style="background:#F5F0E5">
+<div class="section-title">Your Building vs. ${building.neighborhood}</div>
+<div class="section-sub">How ${building.name} compares to neighborhood benchmarks — ${quarter} ${year}</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
+<div style="background:#0D2240;border-radius:8px;padding:18px;text-align:center;color:#fff">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#B8973A;margin-bottom:6px">Your Building</div>
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;color:#B8973A">$${building.camelotPSF.toLocaleString()}</div>
+<div style="font-size:10px;color:rgba(255,255,255,0.6)">per sqft</div>
+</div>
+<div style="background:#EDE9DF;border-radius:8px;padding:18px;text-align:center">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:6px">Neighborhood Median</div>
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;color:#2C3240">$${building.neighborhoodPSF.toLocaleString()}</div>
+<div style="font-size:10px;color:#888">per sqft</div>
+</div>
+<div style="background:${isAbove ? '#16a34a' : '#B8973A'};border-radius:8px;padding:18px;text-align:center;color:#fff">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px">Difference</div>
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800">${isAbove ? '+' : ''}${psfPct}%</div>
+<div style="font-size:10px;opacity:0.8">${isAbove ? 'Above market' : 'At market'}</div>
+</div>
+</div>
+
+<!-- Neighborhood Benchmarks -->
+<table>
+<thead><tr><th>Metric</th><th>${building.name}</th><th>${building.neighborhood} Avg</th><th>vs. Market</th></tr></thead>
+<tbody>
+<tr><td style="font-weight:600">$/Sqft (${building.type.includes('Co') ? 'Co-op' : 'Condo'})</td><td style="color:#B8973A;font-weight:700">$${building.camelotPSF.toLocaleString()}</td><td>$${building.neighborhoodPSF.toLocaleString()}</td><td style="color:${isAbove ? '#16a34a' : '#B8973A'};font-weight:700">${isAbove ? '+' : ''}${psfPct}%</td></tr>
+<tr><td style="font-weight:600">Median 1BR Rent</td><td style="color:#B8973A;font-weight:700">$${hood.medianRent1BR.toLocaleString()}</td><td>$${hood.medianRent1BR.toLocaleString()}</td><td>Benchmark</td></tr>
+<tr><td style="font-weight:600">Median 2BR Rent</td><td style="color:#B8973A;font-weight:700">$${hood.medianRent2BR.toLocaleString()}</td><td>$${hood.medianRent2BR.toLocaleString()}</td><td>Benchmark</td></tr>
+<tr><td style="font-weight:600">Avg Days on Market</td><td>${hood.daysOnMarket} days</td><td>${hood.daysOnMarket} days</td><td>Benchmark</td></tr>
+<tr><td style="font-weight:600">YoY Price Change</td><td style="color:${hood.yoyChange > 0 ? '#16a34a' : '#dc2626'};font-weight:700">${hood.yoyChange > 0 ? '+' : ''}${hood.yoyChange}%</td><td>${hood.yoyChange > 0 ? '+' : ''}${hood.yoyChange}%</td><td>${hood.momentum}</td></tr>
+<tr><td style="font-weight:600">Operating Costs</td><td>${hood.opexRange}/SF/yr</td><td>${hood.opexRange}/SF/yr</td><td>Range</td></tr>
+</tbody>
+</table>
+
+<!-- Estimated Value -->
+<div style="background:#0D2240;border-radius:8px;padding:16px;color:#fff;text-align:center;margin-top:16px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#B8973A;margin-bottom:8px">Estimated Portfolio Metrics</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+<div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#B8973A">$${(estValue / 1e6).toFixed(1)}M</div><div style="font-size:9px;color:rgba(255,255,255,0.6)">Est. Building Value</div></div>
+<div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#B8973A">$${(annualRentalPotential / 1e6).toFixed(2)}M</div><div style="font-size:9px;color:rgba(255,255,255,0.6)">Annual Rental Potential</div></div>
+<div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#B8973A">${((annualRentalPotential / estValue) * 100).toFixed(1)}%</div><div style="font-size:9px;color:rgba(255,255,255,0.6)">Est. Gross Yield</div></div>
+</div>
+</div>
+</div>
+
+<!-- NEIGHBORHOOD SCORES -->
+<div class="section" style="background:#FDFAF3">
+<div class="section-title">${building.neighborhood} — Neighborhood Scores</div>
+<div class="section-sub">Composite ratings for your neighborhood (1–10 scale)</div>
+
+<div class="stat-row">
+<div class="stat-box"><div class="val" style="color:#B8973A">${hood.investScore}</div><div class="lbl">💰 Investment</div></div>
+<div class="stat-box"><div class="val" style="color:#1A6B7C">${hood.liveScore}</div><div class="lbl">🏠 Livability</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">${hood.familyScore}</div><div class="lbl">👨‍👩‍👧 Family</div></div>
+<div class="stat-box"><div class="val" style="color:#0D2240">${hood.workScore}</div><div class="lbl">💼 Work Access</div></div>
+</div>
+
+<div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<div style="background:#EDE9DF;border-radius:8px;padding:14px">
+<div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">Price Momentum</div>
+<div style="font-size:20px;font-weight:800;color:${hood.momentum === 'Very Strong' || hood.momentum === 'Strong' ? '#16a34a' : '#B8973A'}">${hood.momentum} ↑</div>
+</div>
+<div style="background:#EDE9DF;border-radius:8px;padding:14px">
+<div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">Operating Cost Range</div>
+<div style="font-size:20px;font-weight:800;color:#0D2240">${hood.opexRange}</div>
+<div style="font-size:10px;color:#888">per sqft / year</div>
+</div>
+</div>
+</div>
+
+<!-- CAMELOT NOTE -->
+<div class="section" style="background:#F5F0E5">
+<div class="section-title">From Your Management Team</div>
+<div class="section-sub">A note from Camelot Realty Group</div>
+
+<div style="background:#0D2240;border-radius:8px;padding:24px;color:#fff;margin-bottom:16px">
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;line-height:1.8;color:rgba(255,255,255,0.85)">
+${building.name} continues to ${isAbove ? 'outperform' : 'track with'} the ${building.neighborhood} market at <strong style="color:#B8973A">$${building.camelotPSF}/sqft</strong> — ${isAbove ? psfPct + '% above' : 'at'} the neighborhood median of $${building.neighborhoodPSF}/sqft. This performance reflects the building's strong governance, proactive maintenance, and the financial discipline of the board and management team working together.
+</div>
+<div style="margin-top:16px;font-size:12px;color:#B8973A;font-weight:600">
+Camelot Realty Group · 477 Madison Avenue, 6th Floor · (212) 206-9939 · camelot.nyc
+</div>
+</div>
+
+<div style="text-align:center;font-size:10px;color:#888;margin-top:12px">
+Data Sources: ACRIS (live) · NYC DOF (live) · StreetEasy · RealtyMX · REBNY RLS<br>
+${quarter} ${year} · Published ${publishDate} · Generated ${timestamp.split('T')[0]} · Sentinel Engine · Camelot OS<br>
+© ${year} Camelot Realty Group · Confidential — Prepared exclusively for the Board of ${building.name}
 </div>
 </div>
 

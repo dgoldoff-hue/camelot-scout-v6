@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Eye, Download, Share2, BarChart3, Building2, TrendingUp, DollarSign, MapPin, Loader2 } from 'lucide-react';
 import { openBrochureForPrint, downloadAsHTML } from '@/lib/pdf-generator';
-import { generateSentinelReport, type SentinelInput, DEFAULT_SENTINEL_INPUT, QUARTERS } from '@/lib/sentinel-report';
+import { generateSentinelReport, generateBuildingReport, TRACKED_BUILDINGS, type SentinelInput, DEFAULT_SENTINEL_INPUT, QUARTERS } from '@/lib/sentinel-report';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 
 export default function Sentinel() {
   const [input, setInput] = useState<SentinelInput>({ ...DEFAULT_SENTINEL_INPUT });
   const [generated, setGenerated] = useState(false);
+  const [selectedBuilding, setSelectedBuilding] = useState<number | null>(null);
+  const [buildingGenerated, setBuildingGenerated] = useState(false);
 
   const update = (patch: Partial<SentinelInput>) => setInput(prev => ({ ...prev, ...patch }));
 
@@ -124,6 +126,85 @@ export default function Sentinel() {
               </button>
             </>
           )}
+        </div>
+      </div>
+      {/* Per-Building Client Reports */}
+      <div className="bg-white rounded-xl border shadow-sm divide-y">
+        <div className="p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-1">Client Building Reports</h2>
+          <p className="text-gray-500 text-sm mb-4">Generate per-building market reports for each managed property. Send to boards as a complimentary quarterly service.</p>
+
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            {TRACKED_BUILDINGS.map((b, i) => (
+              <button
+                key={i}
+                onClick={() => { setSelectedBuilding(i); setBuildingGenerated(false); }}
+                className={cn(
+                  'p-3 rounded-lg text-left transition-all border',
+                  selectedBuilding === i ? 'border-teal-600 bg-teal-50' : 'border-gray-200 hover:border-gray-300'
+                )}
+              >
+                <div className="font-semibold text-sm">{b.name}</div>
+                <div className="text-xs text-gray-500">{b.neighborhood} · {b.type} · {b.units} units</div>
+                <div className={cn('text-xs font-bold mt-1', b.performance === 'Above' ? 'text-green-600' : 'text-yellow-600')}>
+                  {b.performance === 'Above' ? '▲' : '●'} {b.performance} market · ${b.camelotPSF}/sqft
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                if (selectedBuilding === null) { toast.error('Select a building first'); return; }
+                setBuildingGenerated(true);
+                toast.success(`Report generated for ${TRACKED_BUILDINGS[selectedBuilding].name}`);
+              }}
+              disabled={selectedBuilding === null}
+              className="bg-teal-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-teal-700 transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              <Building2 size={16} /> Generate Building Report
+            </button>
+
+            {buildingGenerated && selectedBuilding !== null && (
+              <>
+                <button
+                  onClick={() => {
+                    const html = generateBuildingReport(TRACKED_BUILDINGS[selectedBuilding], input);
+                    openBrochureForPrint(html, `Camelot-${TRACKED_BUILDINGS[selectedBuilding].name}-${input.quarter}-${input.year}`);
+                  }}
+                  className="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 flex items-center gap-2"
+                >
+                  <Eye size={16} /> Preview
+                </button>
+                <button
+                  onClick={() => {
+                    const b = TRACKED_BUILDINGS[selectedBuilding];
+                    const html = generateBuildingReport(b, input);
+                    downloadAsHTML(html, `Camelot-${b.name.replace(/[^a-zA-Z0-9]/g,'-')}-${input.quarter}-${input.year}.html`);
+                  }}
+                  className="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 flex items-center gap-2"
+                >
+                  <Download size={16} /> Download
+                </button>
+              </>
+            )}
+
+            <button
+              onClick={() => {
+                TRACKED_BUILDINGS.forEach((b, i) => {
+                  const html = generateBuildingReport(b, input);
+                  setTimeout(() => {
+                    downloadAsHTML(html, `Camelot-${b.name.replace(/[^a-zA-Z0-9]/g,'-')}-${input.quarter}-${input.year}.html`);
+                  }, i * 500);
+                });
+                toast.success(`Generating ${TRACKED_BUILDINGS.length} building reports...`);
+              }}
+              className="bg-camelot-gold text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-camelot-gold-light transition-all flex items-center gap-2 ml-auto"
+            >
+              <Share2 size={16} /> Generate All ({TRACKED_BUILDINGS.length})
+            </button>
+          </div>
         </div>
       </div>
     </div>
