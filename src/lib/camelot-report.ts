@@ -1044,8 +1044,24 @@ ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borou
 <span style="font-size:20px">📍</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">Google Maps</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Photos, reviews, nearby amenities</div></div>
 </a>`}
+<a href="https://www.domicile.com/search?q=${encodedAddr}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">🔑</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">Domicile</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Fees, current management, building info</div></div>
+</a>
+<a href="https://www.lexisnexis.com/en-us/gateway.page" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">⚖️</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">LexisNexis</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Legal issues, litigation, judgments, liens</div></div>
+</a>
+<a href="https://offeringplandatasearch.ag.ny.gov/" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">📜</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">NY AG — Offering Plans</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Co-op/condo offering plans, amendments, sponsor info</div></div>
+</a>
+<a href="https://iapps.courts.state.ny.us/nyscef/CaseSearch?TAession=FIND" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">🔍</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">NYSCEF (Court E-Filing)</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Court filings, lawsuits, HP actions</div></div>
+</a>
 </div>
-<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Data priority: HPD Registration → DOF/PLUTO → StreetEasy → PropertyShark (units) · ACRIS → DOF → HPD (ownership) · HPD Open Data (violations)</div>
+<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Data priority: HPD Registration → DOF/PLUTO → StreetEasy → PropertyShark → Domicile (units/fees) · ACRIS → DOF → HPD (ownership) · LexisNexis → NYSCEF → HPD Litigation (legal) · NY AG (offering plans)</div>
 </div>
 
 <div class="stats-row">
@@ -1162,6 +1178,34 @@ ${d.distressSignals.length > 0 ? `
 <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#dc2626;font-weight:600">Distress Signals</div>
 </div>
 <div style="display:flex;flex-wrap:wrap;gap:8px">${d.distressSignals.map(s => `<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:500">${s.description}</span>`).join('')}</div>` : ''}
+
+<!-- Legal & Regulatory Cross-Reference -->
+<div style="margin-top:20px;background:#fff;border:2px solid #3A4B5B;border-radius:8px;padding:18px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#3A4B5B;font-weight:700;margin-bottom:10px">⚖️ Legal & Regulatory Cross-Reference</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<div style="background:#EDE9DF;border-radius:6px;padding:12px">
+<div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">LexisNexis — Litigation & Liens</div>
+<div style="font-size:10px;color:#555;line-height:1.5">Cross-reference recommended: lawsuits, judgments, UCC filings, liens, and regulatory actions against the building, management company, or ownership entity.</div>
+<a href="https://www.lexisnexis.com/en-us/gateway.page" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Search LexisNexis →</a>
+</div>
+<div style="background:#EDE9DF;border-radius:6px;padding:12px">
+<div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">NY Attorney General — Offering Plans</div>
+<div style="font-size:10px;color:#555;line-height:1.5">Co-op and condo offering plans, amendments, and sponsor disclosures filed with the AG's Real Estate Finance Bureau. Key for understanding building governance structure.</div>
+<a href="https://offeringplandatasearch.ag.ny.gov/" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Search AG Offering Plans →</a>
+</div>
+<div style="background:#EDE9DF;border-radius:6px;padding:12px">
+<div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">Domicile — Fees & Management</div>
+<div style="font-size:10px;color:#555;line-height:1.5">Building fees (maintenance, common charges), current management company, amenities, and resident reviews. Useful for competitive fee benchmarking.</div>
+<a href="https://www.domicile.com/search?q=${encodedAddr}" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Search Domicile →</a>
+</div>
+<div style="background:#EDE9DF;border-radius:6px;padding:12px">
+<div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">NYSCEF — Court E-Filings</div>
+<div style="font-size:10px;color:#555;line-height:1.5">NY State Courts Electronic Filing system. Search for active litigation, HP actions (housing court), breach of warranty, and construction disputes.</div>
+<a href="https://iapps.courts.state.ny.us/nyscef/CaseSearch?TAession=FIND" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Search NYSCEF →</a>
+</div>
+</div>
+<div style="font-size:9px;color:#888;margin-top:10px;text-align:center">Jackie recommends cross-referencing all legal databases before engagement. LexisNexis requires a subscription. AG Offering Plan data and NYSCEF are publicly accessible.</div>
+</div>
 </div>
 
 <!-- PAGE 5: OWNERSHIP & FINANCIAL -->
