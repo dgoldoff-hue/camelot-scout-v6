@@ -840,8 +840,11 @@ export function generateBrochureHTML(d: MasterReportData): string {
 html,body{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
 body{font-family:'Inter',-apple-system,sans-serif;background:#F5F0E5;color:#2C3240;font-size:13px;line-height:1.6}
 @media print{@page{margin:0.15in}*{-webkit-print-color-adjust:exact!important}}
-.page{max-width:900px;margin:0 auto}
+.page{max-width:900px;margin:0 auto;counter-reset:page-num}
+.section,.cover,.elevator,.back-cover{counter-increment:page-num;position:relative}
 .section::after{content:'Confidential \u00A9 ${new Date().getFullYear()} Camelot Realty Group \u00B7 Proprietary \u0026 Trade Secret \u00B7 Do Not Distribute Without Written Consent';display:block;text-align:center;font-size:8px;color:#999;letter-spacing:0.5px;margin-top:24px;padding-top:12px;border-top:1px solid #E5E3DE}
+.section::before{counter-increment:page-num 0;content:counter(page-num);position:absolute;bottom:12px;right:20px;font-size:10px;color:#bbb;font-family:'Inter',sans-serif;font-weight:500}
+.cover::before,.back-cover::before,.elevator::before{content:counter(page-num);position:absolute;bottom:16px;right:24px;font-size:10px;color:rgba(255,255,255,0.3);font-family:'Inter',sans-serif;font-weight:500}
 a{color:#A89035;text-decoration:none}
 .gold{color:#A89035}.navy{color:#3A4B5B}
 
@@ -1876,40 +1879,29 @@ ${d.feeComparison.ancillaryFeesIncluded.map(svc => `<div style="font-size:11px;c
 <div class="section-title">Technology Platform Partners</div>
 <div class="section-sub">Best-in-class integrations powering Camelot\u2019s management platform</div>
 
-<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;padding:20px 0">
-<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
-<img src="https://www.aboramds.com/wp-content/uploads/2021/04/MDS_logo.png" alt="MDS" style="max-height:36px;max-width:120px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none;font-size:12px;font-weight:700;color:#3A4B5B">MDS</span>
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;padding:20px 0">
+${[
+  { name: 'MDS', domain: 'aboramds.com', color: '#1a365d', initial: 'M', desc: 'Core PM Platform' },
+  { name: 'BankUnited', domain: 'bankunited.com', color: '#003366', initial: 'BU', desc: 'Banking Partner' },
+  { name: 'AppFolio', domain: 'appfolio.com', color: '#0066cc', initial: 'AF', desc: 'Property Mgmt' },
+  { name: 'HubSpot', domain: 'hubspot.com', color: '#ff7a59', initial: 'HS', desc: 'CRM' },
+  { name: 'Google', domain: 'google.com', color: '#4285f4', initial: 'G', desc: 'Workspace' },
+  { name: 'BuildingLink', domain: 'buildinglink.com', color: '#0073b7', initial: 'BL', desc: 'Resident Portal' },
+  { name: 'Select', domain: 'selectleasing.com', color: '#2d6a4f', initial: 'S', desc: 'Leasing' },
+  { name: 'ConciergePlus', domain: 'conciergeplus.com', color: '#A89035', initial: 'C+', desc: 'AI Portal' },
+  { name: 'PropertyShark', domain: 'propertyshark.com', color: '#e63946', initial: 'PS', desc: 'Market Intel' },
+  { name: 'Parity', domain: 'parity.com', color: '#16a34a', initial: 'P', desc: 'Energy/HVAC' },
+].map(p => `<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:90px">
+<div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden">
+<img src="https://www.google.com/s2/favicons?domain=${p.domain}&sz=128" alt="${p.name}" style="width:44px;height:44px;object-fit:contain;border-radius:10px;position:absolute;top:0;left:0" onerror="this.style.display='none'">
+<div style="width:44px;height:44px;background:${p.color};border-radius:10px;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-weight:800;font-size:${p.initial.length > 1 ? '14' : '18'}px;letter-spacing:-0.5px">${p.initial}</span></div>
 </div>
-<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/BankUnited_logo.svg/320px-BankUnited_logo.svg.png" alt="BankUnited" style="max-height:36px;max-width:120px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none;font-size:12px;font-weight:700;color:#3A4B5B">BankUnited</span>
-</div>
-<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/AppFolio_logo.svg/320px-AppFolio_logo.svg.png" alt="AppFolio" style="max-height:36px;max-width:120px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none;font-size:12px;font-weight:700;color:#3A4B5B">AppFolio</span>
-</div>
-<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/HubSpot_Logo.svg/320px-HubSpot_Logo.svg.png" alt="HubSpot" style="max-height:36px;max-width:120px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none;font-size:12px;font-weight:700;color:#3A4B5B">HubSpot</span>
-</div>
-<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Google_Workspace_wordmark_%282023%29.svg/320px-Google_Workspace_wordmark_%282023%29.svg.png" alt="Google Workspace" style="max-height:36px;max-width:120px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none;font-size:12px;font-weight:700;color:#3A4B5B">Google Workspace</span>
-</div>
-<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
-<img src="https://www.buildinglink.com/images/BL-logo.svg" alt="BuildingLink" style="max-height:36px;max-width:120px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none;font-size:12px;font-weight:700;color:#3A4B5B">BuildingLink</span>
-</div>
-<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
-<span style="font-size:12px;font-weight:700;color:#3A4B5B">Select</span>
-</div>
-<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
-<span style="font-size:12px;font-weight:700;color:#3A4B5B">ConciergePlus</span>
-</div>
-<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
-<span style="font-size:12px;font-weight:700;color:#3A4B5B">PropertyShark</span>
-</div>
-<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px 20px;text-align:center;min-width:140px;max-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px">
-<span style="font-size:12px;font-weight:700;color:#3A4B5B">Parity Energy</span>
-</div>
+<div style="font-size:11px;font-weight:700;color:#2C3240;line-height:1.2">${p.name}</div>
+<div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px">${p.desc}</div>
+</div>`).join('\n')}
 </div>
 
-<div style="text-align:center;font-size:10px;color:#888;margin-top:12px">Powered by: OpenAI NLP &nbsp;|&nbsp; AWS Cloud &nbsp;|&nbsp; AppFolio Sync &nbsp;|&nbsp; HubSpot CRM &nbsp;|&nbsp; RealtyMX &nbsp;|&nbsp; PropertyShark</div>
+<div style="text-align:center;font-size:10px;color:#888;margin-top:8px">Also powered by: OpenAI NLP &nbsp;\u00B7&nbsp; AWS Cloud &nbsp;\u00B7&nbsp; RealtyMX &nbsp;\u00B7&nbsp; SiteCompli &nbsp;\u00B7&nbsp; Jack Jaffa</div>
 </div>
 
 <!-- PAGE 17: FINANCIAL OPPORTUNITY ANALYSIS -->
