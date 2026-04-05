@@ -101,6 +101,8 @@ export interface MasterReportData {
   boardMembers: Array<{ name: string; title: string }>;
   buildingStaff: Array<{ role: string; name: string }>;
   professionals: { lawFirm: string | null; accountingFirm: string | null; engineer: string | null; architect: string | null };
+  // Fee comparison
+  feeComparison: MarketFeeComparison | null;
   // Raw data for advanced usage
   raw: any;
 }
@@ -154,6 +156,111 @@ const NEIGHBORHOOD_MARKET_DATA: Record<string, NeighborhoodMarketData> = {
   'jersey city': { condoPSF: 750, coopPSF: 500, rentalPSFYr: 48, median1BR: 2800, median2BR: 3600, daysOnMarket: 14, investScore: 8.5, liveScore: 8.2, familyScore: 7.8, workScore: 8.5, momentum: 'Strong', opexRange: '$14–26/sqft/yr' },
   'hoboken': { condoPSF: 850, coopPSF: 600, rentalPSFYr: 52, median1BR: 3000, median2BR: 4000, daysOnMarket: 12, investScore: 8.0, liveScore: 8.5, familyScore: 8.2, workScore: 8.3, momentum: 'Moderate', opexRange: '$16–28/sqft/yr' },
 };
+
+// ============================================================
+// Market Fee Comparison Data
+// ============================================================
+
+export interface MarketFeeComparison {
+  marketRangeLow: number;   // per unit per year
+  marketRangeHigh: number;
+  camelotAnnualPerUnit: number;
+  camelotMonthlyPerUnit: number;
+  savings: string;          // e.g. "15-30% below market"
+  tier: 'manhattan-luxury' | 'manhattan-standard' | 'outer-borough' | 'suburban';
+  tierLabel: string;
+  ancillaryFeesIncluded: string[];
+  ancillaryComparison: Array<{ service: string; marketRate: string; camelotRate: string }>;
+}
+
+function calculateMarketFeeComparison(
+  d: { units: number; borough: string; propertyType: string; buildingClass: string; isRentStabilized: boolean; ll97Status: string; pricePerUnit: number }
+): MarketFeeComparison {
+  const bor = (d.borough || '').toLowerCase();
+  const isManh = bor.includes('manhattan');
+  const isOuter = bor.includes('brooklyn') || bor.includes('queens') || bor.includes('bronx') || bor.includes('staten');
+  const isSuburban = bor.includes('westchester') || bor.includes('connecticut') || bor.includes('jersey') || bor.includes('long island') || bor.includes('hamptons');
+  const isElevator = (d.buildingClass || '').toUpperCase().startsWith('D');
+  const isLuxury = isManh && isElevator && d.units >= 50;
+
+  let tier: MarketFeeComparison['tier'];
+  let tierLabel: string;
+  let marketLow: number;
+  let marketHigh: number;
+
+  if (isLuxury) {
+    tier = 'manhattan-luxury';
+    tierLabel = 'Manhattan Full-Service / Luxury';
+    marketLow = 800;
+    marketHigh = 1200;
+  } else if (isManh) {
+    tier = 'manhattan-standard';
+    tierLabel = 'Manhattan Standard / Walk-Up';
+    marketLow = 600;
+    marketHigh = 900;
+  } else if (isSuburban) {
+    tier = 'suburban';
+    tierLabel = 'Suburban NYC (Westchester / NJ / CT)';
+    marketLow = 350;
+    marketHigh = 600;
+  } else {
+    tier = 'outer-borough';
+    tierLabel = 'Outer Boroughs (Brooklyn, Queens, Bronx)';
+    marketLow = 450;
+    marketHigh = 800;
+  }
+
+  const camelotAnnual = d.pricePerUnit * 12;
+
+  // For small buildings, large firms impose minimums — effective per-unit cost is higher
+  if (d.units < 50) {
+    // Large firms often charge $50K+ minimum annual — that's $1,000+/unit for a 50-unit building
+    marketLow = Math.max(marketLow, 600);
+    marketHigh = Math.max(marketHigh, 1000);
+  }
+
+  const midMarket = (marketLow + marketHigh) / 2;
+  const savingsPct = Math.round(((midMarket - camelotAnnual) / midMarket) * 100);
+  const savings = savingsPct > 0 ? `~${savingsPct}% below market average` : 'Competitive with market';
+
+  return {
+    marketRangeLow: marketLow,
+    marketRangeHigh: marketHigh,
+    camelotAnnualPerUnit: camelotAnnual,
+    camelotMonthlyPerUnit: d.pricePerUnit,
+    savings,
+    tier,
+    tierLabel,
+    ancillaryFeesIncluded: [
+      'In-house CPA & monthly accounting',
+      'LL97 compliance monitoring & reporting',
+      'Technology platform (ConciergePlus + Merlin AI)',
+      'AI-powered board meeting minutes',
+      'Online payment processing (ZERO bank fees)',
+      'Initial building inspection ($2,500 value)',
+      'In-house attorney advisory (free consultation)',
+      'Licensed engineer advisory',
+      'Weekly on-site inspections',
+      '24/7 emergency response line',
+    ],
+    ancillaryComparison: [
+      { service: 'Onboarding / Setup', marketRate: '$250–$500', camelotRate: 'Included' },
+      { service: 'Lease Renewal Processing', marketRate: '$150–$300/renewal', camelotRate: 'Included' },
+      { service: 'Building Inspection', marketRate: '$1,500–$3,500', camelotRate: 'FREE ($2,500 value)' },
+      { service: 'In-House CPA / Accounting', marketRate: '$5,000–$15,000/yr', camelotRate: 'Included' },
+      { service: 'LL97 Compliance Report', marketRate: '$3,000–$8,000', camelotRate: 'Included' },
+      { service: 'Technology Platform', marketRate: '$3–$8/unit/month', camelotRate: 'Included' },
+      { service: 'Online Payment Processing', marketRate: '2.5–3.5% per transaction', camelotRate: 'ZERO fees' },
+      { service: 'Board Meeting Minutes (AI)', marketRate: 'Not available', camelotRate: 'Included' },
+      { service: 'Project Management (small)', marketRate: '5%–15% of project cost', camelotRate: 'Included for routine' },
+      { service: 'Additional Board Meetings', marketRate: '$150–$500/meeting', camelotRate: 'Unlimited' },
+      { service: 'Sale/Transfer Processing', marketRate: '~$500 (buyer pays)', camelotRate: '~$500 (buyer pays)' },
+      { service: 'Move-In/Move-Out Fee', marketRate: '~$500 each', camelotRate: '~$500 each' },
+      { service: 'Sublet Application', marketRate: '$100–$250', camelotRate: '$100–$250' },
+      { service: 'Late Payment Enforcement', marketRate: 'Up to $50 or 5%', camelotRate: 'Per building policy' },
+    ],
+  };
+}
 
 // ============================================================
 // Building Classification
@@ -464,6 +571,15 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     pricePerUnit,
     monthlyFee,
     annualFee,
+    feeComparison: calculateMarketFeeComparison({
+      units: units || 1,
+      borough: borough || '',
+      propertyType: classifyBuildingType(dof?.buildingClass || ''),
+      buildingClass: dof?.buildingClass || '',
+      isRentStabilized: raw.rentStabilization?.isStabilized || false,
+      ll97Status: ll97Data?.complianceStatus || 'unknown',
+      pricePerUnit,
+    }),
     raw,
   };
 }
@@ -905,12 +1021,31 @@ ${d.latitude && d.longitude ? `
 </div>
 </div>
 
-<!-- StreetEasy + External Photo Sources -->
-<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:12px 16px;margin-bottom:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-<span style="font-size:11px;color:#555;font-weight:600">View more photos:</span>
-<a href="https://streeteasy.com/building/${encodeURIComponent(d.address.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}" target="_blank" style="font-size:11px;color:#A89035;text-decoration:underline">StreetEasy Listing Photos</a>
-<a href="https://www.google.com/maps/search/${encodedAddr}" target="_blank" style="font-size:11px;color:#A89035;text-decoration:underline">Google Maps Photos</a>
-<a href="https://www.google.com/search?q=${encodedAddr}+building+photos&tbm=isch" target="_blank" style="font-size:11px;color:#A89035;text-decoration:underline">Google Image Search</a>
+<!-- StreetEasy + Research Sources Panel -->
+<div style="background:#3A4B5B;border-radius:10px;padding:18px 22px;margin-bottom:14px;color:#fff">
+<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#A89035;font-weight:700;margin-bottom:12px">🔍 Property Research Sources</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<a href="https://streeteasy.com/building/${encodeURIComponent(d.address.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">🏠</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">StreetEasy</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Photos, listings, sales history, pricing</div></div>
+</a>
+<a href="https://www.propertyshark.com/mason/Property/${d.bbl ? d.bbl.replace(/\s/g, '') : ''}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">🦈</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">PropertyShark</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Owner info, comparables, tax records</div></div>
+</a>
+<a href="https://www.crexi.com/search?q=${encodedAddr}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">🏢</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">Crexi</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Commercial listings, investment data</div></div>
+</a>
+${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borough=${d.bbl.charAt(0)}&Block=${d.bbl.substring(1, 6)}&Lot=${d.bbl.substring(6)}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">🏛️</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">NYC City Register (ACRIS)</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Deeds, mortgages, liens — BBL: ${d.bbl}</div></div>
+</a>` : `<a href="https://www.google.com/maps/search/${encodedAddr}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">📍</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">Google Maps</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Photos, reviews, nearby amenities</div></div>
+</a>`}
+</div>
+<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Data priority: HPD Registration → DOF/PLUTO → StreetEasy → PropertyShark (units) · ACRIS → DOF → HPD (ownership) · HPD Open Data (violations)</div>
 </div>
 
 <div class="stats-row">
@@ -938,8 +1073,18 @@ ${d.latitude && d.longitude ? `
 <p style="font-size:12px;color:#555">Camelot Realty Group operates from <strong>477 Madison Avenue, 6th Floor</strong> (Midtown Manhattan). The map above shows the driving route to your property at ${d.address}. Camelot\u2019s senior managers conduct regular on-site inspections \u2014 your building is within our core service area with rapid response times.</p>
 </div>
 <div style="background:#fff;border:1px solid #E5E3DE;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px">
-<h4 style="font-size:13px;font-weight:700;color:#2C3240;margin-bottom:4px">\uD83D\uDE87 Transit Access</h4>
-<p style="font-size:12px;color:#555">New York City subway and bus service provide comprehensive transit coverage to this property. The building is accessible via major subway lines, ensuring convenient access for residents, staff, and management alike.</p>
+<h4 style="font-size:13px;font-weight:700;color:#2C3240;margin-bottom:4px">\uD83D\uDE87 Transit Commute — Camelot Office ↔ ${d.buildingName}</h4>
+<p style="font-size:12px;color:#555;margin-bottom:10px">Transit route from <strong>477 Madison Ave (Camelot HQ)</strong> to your property. Camelot's senior management conducts regular on-site inspections via subway and car.</p>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+<div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
+<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=transit" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:9px;color:#999;padding:4px">🚇 Transit Route — Camelot → Property</div>
+</div>
+<div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
+<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=walking" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:9px;color:#999;padding:4px">🚶 Walking Route — Camelot → Property</div>
+</div>
 </div>
 </div>
 
@@ -1418,6 +1563,82 @@ ${isSelfManaged ? `
 </table>
 <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#A89035;font-size:13px;margin-top:16px;text-align:center">Our efficiencies effectively pay for our management \u2014 through long-term savings on vendors, compliance penalties, and capital expenditures.</div>
 </div>
+
+<!-- PAGE 15B: FEE COMPARISON — MARKET RATE ANALYSIS -->
+${d.feeComparison ? `
+<div class="section section-white">
+<div class="section-title">Fee Comparison — Market Rate Analysis</div>
+<div class="section-sub">${d.feeComparison.tierLabel} — How Camelot compares to industry standard pricing</div>
+
+<!-- Market vs Camelot Visual -->
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:18px;text-align:center">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:6px">Market Range</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:700;color:#dc2626">$${d.feeComparison.marketRangeLow}–$${d.feeComparison.marketRangeHigh}</div>
+<div style="font-size:10px;color:#888">per unit / year</div>
+</div>
+<div style="background:#3A4B5B;border-radius:8px;padding:18px;text-align:center">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#A89035;margin-bottom:6px">Camelot Rate</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:700;color:#A89035">$${d.feeComparison.camelotAnnualPerUnit}</div>
+<div style="font-size:10px;color:rgba(255,255,255,0.6)">per unit / year</div>
+</div>
+<div style="background:#16a34a;border-radius:8px;padding:18px;text-align:center;color:#fff">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px">Your Savings</div>
+<div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700">${d.feeComparison.savings}</div>
+<div style="font-size:10px;opacity:0.8">with MORE services included</div>
+</div>
+</div>
+
+<!-- Bar Chart: Annual Cost Comparison -->
+<div style="margin-bottom:24px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600;margin-bottom:12px;padding-left:16px;border-left:4px solid #A89035">Annual Management Cost (${d.units} units)</div>
+<div style="display:flex;flex-direction:column;gap:8px;padding:0 20px">
+<div style="display:flex;align-items:center;gap:8px">
+<div style="font-size:11px;color:#888;width:110px;text-align:right">Market Low</div>
+<div style="flex:1;background:#E5E3DE;border-radius:4px;height:28px;position:relative">
+<div style="background:linear-gradient(to right,#dc2626,#f87171);height:100%;border-radius:4px;width:${Math.min(100, Math.round((d.feeComparison.marketRangeLow * d.units) / (d.feeComparison.marketRangeHigh * d.units) * 100))}%"></div>
+<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#2C3240">$${(d.feeComparison.marketRangeLow * d.units).toLocaleString()}/yr</span>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:8px">
+<div style="font-size:11px;color:#888;width:110px;text-align:right">Market High</div>
+<div style="flex:1;background:#E5E3DE;border-radius:4px;height:28px;position:relative">
+<div style="background:linear-gradient(to right,#dc2626,#f87171);height:100%;border-radius:4px;width:100%"></div>
+<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#fff">$${(d.feeComparison.marketRangeHigh * d.units).toLocaleString()}/yr</span>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:8px">
+<div style="font-size:11px;color:#A89035;width:110px;text-align:right;font-weight:700">★ Camelot</div>
+<div style="flex:1;background:#E5E3DE;border-radius:4px;height:28px;position:relative">
+<div style="background:linear-gradient(to right,#A89035,#C4AA6E);height:100%;border-radius:4px;width:${Math.min(100, Math.round((d.feeComparison.camelotAnnualPerUnit * d.units) / (d.feeComparison.marketRangeHigh * d.units) * 100))}%"></div>
+<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#2C3240">$${(d.feeComparison.camelotAnnualPerUnit * d.units).toLocaleString()}/yr</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Ancillary Fees Comparison Table -->
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600;margin-bottom:12px;padding-left:16px;border-left:4px solid #A89035">What's Included — Camelot vs. Industry Standard</div>
+<table class="invest-table" style="font-size:11px">
+<thead><tr><th>Service</th><th>Industry Standard Rate</th><th>Camelot Rate</th></tr></thead>
+<tbody>
+${d.feeComparison.ancillaryComparison.map((row, i) => `<tr${i % 2 === 0 ? '' : ' style="background:#EDE9DF"'}><td>${row.service}</td><td style="color:#dc2626">${row.marketRate}</td><td style="color:#16a34a;font-weight:600">${row.camelotRate}</td></tr>`).join('\n')}
+</tbody>
+</table>
+
+<!-- Services included callout -->
+<div style="background:#3A4B5B;border-radius:8px;padding:16px 20px;margin-top:16px;color:#fff">
+<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#A89035;font-weight:700;margin-bottom:10px">✅ Services Included at No Extra Charge</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+${d.feeComparison.ancillaryFeesIncluded.map(svc => `<div style="font-size:11px;color:rgba(255,255,255,0.8);padding:3px 0">• ${svc}</div>`).join('\n')}
+</div>
+</div>
+
+<div style="background:#EDE9DF;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:12px 16px;margin-top:16px">
+<p style="font-size:10px;color:#555;line-height:1.6"><strong style="color:#A89035">Source:</strong> Industry fee ranges compiled from Brick Underground, CooperatorNews, FirstService Residential, PropertyClub NYC, Hudson Property Services, Habitat Magazine, Hauseit, and Yoreevo (2023–2025). Actual rates vary by company and building. Camelot's all-inclusive pricing often provides better total value than lower base fees with extensive à la carte charges.</p>
+</div>
+</div>
+` : ''}
 
 <!-- PAGE 16: PROVEN TRACK RECORD -->
 <div class="section section-white">
