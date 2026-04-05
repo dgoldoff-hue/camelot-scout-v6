@@ -1081,8 +1081,20 @@ ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borou
 <span style="font-size:20px">🏦</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">DOF Property Tax</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Abatements, tax liens, exemptions, assessments</div></div>
 </a>
+<a href="https://www.jackjaffa.com/violation-services/" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">📋</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">Jack Jaffa & Associates</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Violation research, removal, hearings, expediting</div></div>
+</a>
+<a href="https://clients.sitecompli.com" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">✅</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">SiteCompli</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Violations, ownership, open permits, complaints</div></div>
+</a>
+<a href="https://a810-bisweb.nyc.gov/bisweb/PropertyProfileOverviewServlet?boro=${d.bbl ? d.bbl.charAt(0) : '1'}&block=${d.bbl ? d.bbl.substring(1, 6) : ''}&lot=${d.bbl ? d.bbl.substring(6) : ''}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<span style="font-size:20px">🏗️</span>
+<div><div style="font-size:12px;font-weight:600;color:#A89035">DOB BIS (Building Info System)</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Permits, complaints, violations, certificates of occupancy</div></div>
+</a>
 </div>
-<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Data priority: HPD → DOF/PLUTO → StreetEasy → PropertyShark → Domicile (units/fees) · ACRIS → DOF → HPD (ownership) · DOB permits (architect/engineer/owner) · DOF Exemptions (abatements/liens) · LexisNexis → NYSCEF (legal) · NY AG (offering plans)</div>
+<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Data: HPD → DOF → StreetEasy → PropertyShark → Domicile (units) · ACRIS → DOF → HPD (ownership) · DOB/BIS → SiteCompli → Jack Jaffa (violations/permits) · DOF (abatements/liens) · LexisNexis → NYSCEF (legal) · NY AG (offering plans)</div>
 </div>
 
 <div class="stats-row">
@@ -1225,7 +1237,19 @@ ${d.distressSignals.length > 0 ? `
 <a href="https://iapps.courts.state.ny.us/nyscef/CaseSearch?TAession=FIND" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Search NYSCEF →</a>
 </div>
 </div>
-<div style="font-size:9px;color:#888;margin-top:10px;text-align:center">Jackie recommends cross-referencing all legal databases before engagement. LexisNexis requires a subscription. AG Offering Plan data and NYSCEF are publicly accessible.</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+<div style="background:#EDE9DF;border-radius:6px;padding:12px">
+<div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">Jack Jaffa & Associates — Violations</div>
+<div style="font-size:10px;color:#555;line-height:1.5">Industry-standard violation research, removal services, ECB hearing representation, and expediting. Deep database of NYC building violations history.</div>
+<a href="https://www.jackjaffa.com/violation-services/" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Jack Jaffa Violations →</a>
+</div>
+<div style="background:#EDE9DF;border-radius:6px;padding:12px">
+<div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">SiteCompli — Compliance Platform</div>
+<div style="font-size:10px;color:#555;line-height:1.5">Comprehensive building compliance: violations, ownership data, open permits, complaints (complaint & non-complaint), inspections, and compliance calendar tracking.</div>
+<a href="https://clients.sitecompli.com" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">SiteCompli Dashboard →</a>
+</div>
+</div>
+<div style="font-size:9px;color:#888;margin-top:10px;text-align:center">Jackie recommends cross-referencing all databases before engagement. LexisNexis and SiteCompli require subscriptions. AG Offering Plans, NYSCEF, DOB BIS, and Jack Jaffa lookups are publicly accessible.</div>
 </div>
 </div>
 
