@@ -280,17 +280,19 @@ Portfolio: ${input.units || '[___]'} ${input.buildingType || 'Residential Units'
 <!-- ARTICLE I — DEFINITIONS -->
 <div class="article">
 <div class="article-title">Article I — Definitions</div>
-<p>"Additional Services" shall mean Lease Services, Transfer Services, Financing Services, Hearing Services, Audit Services, Pre-Occupation Services, and Emergency Services, as each are defined in Article VII.</p>
-<p>"Client Account" shall mean a bank account, held at an FDIC-insured institution, maintained by the Agent on behalf of and for the benefit of the Client, to receive rent collections and disburse approved operating expenses.</p>
-<p>"Emergency Services" shall mean any Additional Services that, by reasonable determination of the Agent, must be performed on an emergency basis to protect the safety of persons or to prevent imminent damage to the Property and cannot await prior written approval.</p>
-<p>"Employees" shall mean all persons necessary to be employed or otherwise engaged (including superintendents, porters, handymen, and other building staff) to properly maintain and operate the Property.</p>
-<p>"Effective Date" shall mean the date first written above on which this Agreement becomes operative.</p>
-<p>"Lease Rate" shall mean the annual or monthly rate of rent charged to a tenant under a lease agreement.</p>
-<p>"Reimbursable Expenses" shall mean all reasonable, documented out-of-pocket expenses incurred by the Agent in connection with the Services and Additional Services, to be paid from Client Accounts.</p>
-<p>"Residential Unit" shall mean any and all residential dwelling units at the Property subject to this Agreement, including any preferential, market-rate, or rent-stabilized units.</p>
-<p>"Services" shall mean the property management duties of the Agent set forth in Article VI of this Agreement, not including the Additional Services.</p>
-<p>"Term" shall mean the Initial Period and any renewal period(s) as described in Article II.</p>
-<p>"Union Contract" shall mean any collective bargaining agreement or contract with a labor union representing Employees at the Property.</p>
+<ul style="list-style:none;margin:0;padding:0">
+<li style="margin-bottom:8px"><strong>"Additional Services"</strong> shall mean Lease Services, Transfer Services, Financing Services, Hearing Services, Audit Services, Pre-Occupation Services, and Emergency Services, as each are defined in Article VII.</li>
+<li style="margin-bottom:8px"><strong>"Client Account"</strong> shall mean a bank account, held at an FDIC-insured institution, maintained by the Agent on behalf of and for the benefit of the Client, to receive rent collections and disburse approved operating expenses.</li>
+<li style="margin-bottom:8px"><strong>"Emergency Services"</strong> shall mean any Additional Services that, by reasonable determination of the Agent, must be performed on an emergency basis to protect the safety of persons or to prevent imminent damage to the Property and cannot await prior written approval.</li>
+<li style="margin-bottom:8px"><strong>"Employees"</strong> shall mean all persons necessary to be employed or otherwise engaged (including superintendents, porters, handymen, and other building staff) to properly maintain and operate the Property.</li>
+<li style="margin-bottom:8px"><strong>"Effective Date"</strong> shall mean the date first written above on which this Agreement becomes operative.</li>
+<li style="margin-bottom:8px"><strong>"Lease Rate"</strong> shall mean the annual or monthly rate of rent charged to a tenant under a lease agreement.</li>
+<li style="margin-bottom:8px"><strong>"Reimbursable Expenses"</strong> shall mean all reasonable, documented out-of-pocket expenses incurred by the Agent in connection with the Services and Additional Services, to be paid from Client Accounts.</li>
+<li style="margin-bottom:8px"><strong>"Residential Unit"</strong> shall mean any and all residential dwelling units at the Property subject to this Agreement, including any preferential, market-rate, or rent-stabilized units.</li>
+<li style="margin-bottom:8px"><strong>"Services"</strong> shall mean the property management duties of the Agent set forth in Article VI of this Agreement, not including the Additional Services.</li>
+<li style="margin-bottom:8px"><strong>"Term"</strong> shall mean the Initial Period and any renewal period(s) as described in Article II.</li>
+<li style="margin-bottom:8px"><strong>"Union Contract"</strong> shall mean any collective bargaining agreement or contract with a labor union representing Employees at the Property.</li>
+</ul>
 ${input.assetClass === 'condo' ? `
 <p>"Board of Managers" shall mean the governing body of the Condominium as established by the Declaration and By-Laws.</p>
 <p>"Common Charges" shall mean the monthly charges assessed to each unit owner for the maintenance, repair, and operation of the common elements of the Condominium.</p>
@@ -355,11 +357,29 @@ ${input.assetClass === 'single-tenant' ? `
 <div class="article">
 <div class="article-title">Article V — Compensation</div>
 <div class="article-sub">5.1 Management Fee.</div>
-<p>As consideration for the performance of the Services, the Client shall pay to the Agent a monthly management fee equal to the greater of: (a) ${fee > 0 ? '$' + fee.toLocaleString() : 'the Fixed Monthly Fee set forth in Schedule A'} (${perUnit > 0 ? '$' + perUnit + '/unit × ' + input.units + ' units' : 'as calculated'}), or (b) five percent (5%) of gross monthly rent collected from the Property during such month. The management fee shall be deducted directly from the Client Account on the first business day of each month.</p>
+<p>As consideration for the performance of the Services, the Client shall pay to the Agent a monthly management fee equal to the <strong>greater</strong> of the following two options, whichever produces the higher amount:</p>
+<ul style="margin:8px 0 8px 24px;list-style:disc">
+<li style="margin-bottom:6px"><strong>Option A — Fixed Monthly Fee:</strong> ${fee > 0 ? '<strong>$' + fee.toLocaleString() + '/month</strong>' : 'The Fixed Monthly Fee set forth in Schedule A'} ${perUnit > 0 ? '(<strong>$' + perUnit + '</strong>/unit × <strong>' + input.units + '</strong> units)' : ''}</li>
+<li style="margin-bottom:6px"><strong>Option B — Percentage of Rent:</strong> <strong>Five percent (5%)</strong> of gross monthly rent collected from the Property during such month</li>
+</ul>
+<p>The management fee shall be deducted directly from the Client Account on the first business day of each month.</p>
 <div class="article-sub">5.2 Accounting & Reporting Fee.</div>
-<p>The monthly accounting and reporting fee is WAIVED as a base recurring charge for this engagement. Notwithstanding the foregoing, accounting and reporting services shall be billed at $150/hour when such services are required specifically in connection with: (a) property or financial audits of the Property; (b) tenant rent disputes, rent overcharge proceedings, or arrears litigation; or (c) City agency proceedings involving rent treble charge calculations or DHCR overcharge investigations.</p>
+<p>The monthly accounting and reporting fee is <strong>WAIVED</strong> as a base recurring charge for this engagement. Accounting and reporting services shall be billed at <strong>$150/hour</strong> only when required for:</p>
+<ul style="margin:6px 0 8px 24px;list-style:disc">
+<li style="margin-bottom:4px">Property or financial <strong>audits</strong> of the Property</li>
+<li style="margin-bottom:4px">Tenant <strong>rent disputes</strong>, rent overcharge proceedings, or arrears litigation</li>
+<li style="margin-bottom:4px">City agency proceedings involving <strong>rent treble charge</strong> calculations or DHCR overcharge investigations</li>
+</ul>
 <div class="article-sub">5.3 Technology Fee.</div>
-<p>The Client shall pay the Agent a monthly technology fee of Fifty Dollars ($50.00) per month, covering access to the Agent's Merlin AI portfolio intelligence platform, the ConciergePlus resident portal, the owner reporting dashboard, digital work order system, and electronic rent collection infrastructure. As a promotional incentive, the technology fee shall be fully waived for the first six (6) months from the Effective Date of this Agreement.</p>
+<p>The Client shall pay a monthly technology fee of <strong>$50.00/month</strong>, covering:</p>
+<ul style="margin:6px 0 8px 24px;list-style:disc">
+<li style="margin-bottom:4px"><strong>Merlin AI</strong> portfolio intelligence platform</li>
+<li style="margin-bottom:4px"><strong>ConciergePlus</strong> resident portal (26 modules)</li>
+<li style="margin-bottom:4px">Owner reporting dashboard</li>
+<li style="margin-bottom:4px">Digital work order system</li>
+<li style="margin-bottom:4px">Electronic rent collection infrastructure</li>
+</ul>
+<p><strong>Promotional incentive:</strong> The technology fee is <strong>fully waived for the first six (6) months</strong> from the Effective Date.</p>
 ${input.startupFee > 0 ? `<div class="article-sub">5.4 Startup/Onboarding Fee.</div>
 <p>The Client shall pay a one-time onboarding fee of $${input.startupFee.toLocaleString()} upon execution of this Agreement, covering initial property audit, file migration, technology setup, vendor onboarding, and transition coordination.</p>` : ''}
 <div class="article-sub">5.${input.startupFee > 0 ? '5' : '4'} Payment for Additional Services.</div>
@@ -498,25 +518,59 @@ ${input.specialTerms ? `
 <div class="article" style="page-break-before:always">
 <div class="article-title">Execution</div>
 <p>IN WITNESS WHEREOF, the Parties hereto have executed this Agreement as of the day and year first written above.</p>
+
 <div class="sig-grid">
 <div class="sig-box">
-<p style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:8px">CLIENT (OWNER)</p>
-<p style="font-size:11px;color:#555;margin-bottom:4px">${input.clientEntityName || input.clientName || '[Client Entity Name]'}</p>
-<div class="sig-line"></div>
-<div class="sig-label">By: ___________________________</div>
-<div class="sig-label">Name: ${input.clientName || '___________________________'}</div>
-<div class="sig-label">Title: ___________________________</div>
-<div class="sig-label">Date: ___________________________</div>
+<p style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:12px">CLIENT (OWNER)</p>
+<div style="margin-bottom:10px">
+<label style="font-size:9px;color:#888;display:block;margin-bottom:2px">Organization / Entity Name:</label>
+<input type="text" value="${input.clientEntityName || input.clientName || ''}" style="width:100%;border:none;border-bottom:1.5px solid #3A4B5B;padding:6px 2px;font-size:12px;font-family:'DM Sans',sans-serif;color:#2C3240;background:transparent;outline:none" placeholder="Entity name">
 </div>
+<div style="margin-bottom:10px">
+<label style="font-size:9px;color:#888;display:block;margin-bottom:2px">Signature:</label>
+<div style="border-bottom:1.5px solid #3A4B5B;height:40px"></div>
+</div>
+<div style="margin-bottom:10px">
+<label style="font-size:9px;color:#888;display:block;margin-bottom:2px">Print Name:</label>
+<input type="text" value="${input.clientName || ''}" style="width:100%;border:none;border-bottom:1.5px solid #3A4B5B;padding:6px 2px;font-size:12px;font-family:'DM Sans',sans-serif;color:#2C3240;background:transparent;outline:none" placeholder="Full name">
+</div>
+<div style="margin-bottom:10px">
+<label style="font-size:9px;color:#888;display:block;margin-bottom:2px">Title:</label>
+<input type="text" style="width:100%;border:none;border-bottom:1.5px solid #3A4B5B;padding:6px 2px;font-size:12px;font-family:'DM Sans',sans-serif;color:#2C3240;background:transparent;outline:none" placeholder="Title / Position">
+</div>
+<div>
+<label style="font-size:9px;color:#888;display:block;margin-bottom:2px">Date:</label>
+<input type="date" style="width:100%;border:none;border-bottom:1.5px solid #3A4B5B;padding:6px 2px;font-size:12px;font-family:'DM Sans',sans-serif;color:#2C3240;background:transparent;outline:none">
+</div>
+</div>
+
 <div class="sig-box">
-<p style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:8px">AGENT</p>
-<p style="font-size:11px;color:#555;margin-bottom:4px">${CAMELOT.name}</p>
-<div class="sig-line"></div>
-<div class="sig-label">By: ___________________________</div>
-<div class="sig-label">Name: ${CAMELOT.principal}</div>
-<div class="sig-label">Title: ${CAMELOT.title}</div>
-<div class="sig-label">Date: ___________________________</div>
+<p style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:12px">AGENT</p>
+<div style="margin-bottom:10px">
+<label style="font-size:9px;color:#888;display:block;margin-bottom:2px">Organization:</label>
+<input type="text" value="${CAMELOT.name}" style="width:100%;border:none;border-bottom:1.5px solid #3A4B5B;padding:6px 2px;font-size:12px;font-family:'DM Sans',sans-serif;color:#2C3240;background:transparent;outline:none" readonly>
 </div>
+<div style="margin-bottom:10px">
+<label style="font-size:9px;color:#888;display:block;margin-bottom:2px">Signature:</label>
+<div style="border-bottom:1.5px solid #3A4B5B;height:40px"></div>
+</div>
+<div style="margin-bottom:10px">
+<label style="font-size:9px;color:#888;display:block;margin-bottom:2px">Print Name:</label>
+<input type="text" value="${CAMELOT.principal}" style="width:100%;border:none;border-bottom:1.5px solid #3A4B5B;padding:6px 2px;font-size:12px;font-family:'DM Sans',sans-serif;color:#2C3240;background:transparent;outline:none" readonly>
+</div>
+<div style="margin-bottom:10px">
+<label style="font-size:9px;color:#888;display:block;margin-bottom:2px">Title:</label>
+<input type="text" value="${CAMELOT.title}" style="width:100%;border:none;border-bottom:1.5px solid #3A4B5B;padding:6px 2px;font-size:12px;font-family:'DM Sans',sans-serif;color:#2C3240;background:transparent;outline:none" readonly>
+</div>
+<div>
+<label style="font-size:9px;color:#888;display:block;margin-bottom:2px">Date:</label>
+<input type="date" style="width:100%;border:none;border-bottom:1.5px solid #3A4B5B;padding:6px 2px;font-size:12px;font-family:'DM Sans',sans-serif;color:#2C3240;background:transparent;outline:none">
+</div>
+</div>
+</div>
+
+<div style="margin-top:20px;background:#EDE9DF;border-radius:6px;padding:12px 16px;text-align:center;font-size:11px;color:#555">
+<strong>Digital Signature Option:</strong> This agreement can be executed electronically via DocuSign. Upon generation, a copy will be sent to <strong>dgoldoff@camelot.nyc</strong> for processing. To request a DocuSign link, contact Camelot at ${CAMELOT.phone}.
 </div>
 </div>
 
