@@ -4,7 +4,7 @@ import { buildMasterReport, generateBrochureHTML, generateColdCallerSheet, gener
 import { openBrochureForPrint, downloadAsHTML, triggerCSVDownload, copyToClipboard } from '@/lib/pdf-generator';
 import toast from 'react-hot-toast';
 
-type EmailType = 'intro' | 'followup' | 'proposal' | 'compliance';
+type EmailType = 'intro' | 'followup' | 'proposal' | 'compliance' | 'loyalty';
 
 export default function ReportCenter() {
   const [address, setAddress] = useState('');
@@ -304,10 +304,10 @@ export default function ReportCenter() {
             </div>
             <div className="p-4">
               <div className="flex gap-2 mb-4">
-                {(['intro', 'followup', 'proposal', 'compliance'] as EmailType[]).map(t => (
+                {(['loyalty', 'intro', 'followup', 'proposal', 'compliance'] as EmailType[]).map(t => (
                   <button key={t} onClick={() => setEmailType(t)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium ${emailType === t ? 'bg-[#A89035] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                    {t === 'intro' ? 'Introduction' : t === 'followup' ? 'Follow-Up' : t === 'proposal' ? 'Proposal' : 'LL97 Compliance'}
+                    {t === 'loyalty' ? 'Report Intro' : t === 'intro' ? 'Introduction' : t === 'followup' ? 'Follow-Up' : t === 'proposal' ? 'Proposal' : 'LL97 Compliance'}
                   </button>
                 ))}
               </div>

@@ -643,7 +643,7 @@ CONTACT: ${CAMELOT.principal} | ${CAMELOT.phone} | ${CAMELOT.email}
 // Email Drafts
 // ============================================================
 
-export function generateEmailDraft(d: MasterReportData, type: 'intro' | 'followup' | 'proposal' | 'compliance'): { subject: string; body: string } {
+export function generateEmailDraft(d: MasterReportData, type: 'intro' | 'followup' | 'proposal' | 'compliance' | 'loyalty'): { subject: string; body: string } {
   const sig = `\n\n${CAMELOT.principal}\n${CAMELOT.title}, ${CAMELOT.shortName}\n${CAMELOT.address}\n${CAMELOT.email} | ${CAMELOT.phone}\n${CAMELOT.web}`;
 
   if (type === 'intro') {
@@ -717,6 +717,22 @@ PROPOSED INVESTMENT:
 I'd welcome the opportunity to present this to your board.
 
 Best regards,${sig}`,
+    };
+  }
+
+  // loyalty — short intro email accompanying the downloaded report
+  if (type === 'loyalty') {
+    return {
+      subject: `${d.buildingName} — Property Intelligence Report from Camelot Realty Group`,
+      body: `Dear Board Member,
+
+Camelot Realty Group is a boutique property management firm based at 477 Madison Avenue in New York City. For over 18 years, we have proudly managed cooperatives, condominiums, and multifamily buildings across the New York metropolitan area — delivering hands-on service, financial transparency, and technology-driven management to every property in our portfolio.
+
+We were pleased to prepare the attached Property Intelligence Report for ${d.buildingName}. Our team took a close look at your ${d.units ? d.units + '-unit ' : ''}building and we believe there is a meaningful opportunity for Camelot to add value — from compliance and vendor optimization to financial reporting and resident services.
+
+We would welcome the chance to introduce ourselves to the board. If you have 15 minutes in the coming weeks, we'd be happy to arrange a brief Zoom call or meet at your convenience.
+
+Warm regards,${sig}`,
     };
   }
 
@@ -841,7 +857,7 @@ html,body{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!im
 body{font-family:'Inter',-apple-system,sans-serif;background:#F5F0E5;color:#2C3240;font-size:13px;line-height:1.6}
 @media print{@page{margin:0.15in}*{-webkit-print-color-adjust:exact!important}}
 .page{max-width:900px;margin:0 auto;counter-reset:page-num}
-.section,.cover,.elevator,.back-cover{counter-increment:page-num;position:relative}
+.section,.cover,.elevator,.back-cover{counter-increment:page-num;position:relative;border:1px solid #D5D0C6;margin-bottom:8px}
 .section::after{content:'Confidential \u00A9 ${new Date().getFullYear()} Camelot Realty Group \u00B7 Proprietary \u0026 Trade Secret \u00B7 Do Not Distribute Without Written Consent';display:block;text-align:center;font-size:8px;color:#999;letter-spacing:0.5px;margin-top:24px;padding-top:12px;border-top:1px solid #E5E3DE}
 .section::before{counter-increment:page-num 0;content:counter(page-num);position:absolute;bottom:12px;right:20px;font-size:10px;color:#bbb;font-family:'Inter',sans-serif;font-weight:500}
 .cover::before,.back-cover::before,.elevator::before{content:counter(page-num);position:absolute;bottom:16px;right:24px;font-size:10px;color:rgba(255,255,255,0.3);font-family:'Inter',sans-serif;font-weight:500}
@@ -849,7 +865,7 @@ a{color:#A89035;text-decoration:none}
 .gold{color:#A89035}.navy{color:#3A4B5B}
 
 /* Cover */
-.cover{background:#3A4B5B;color:#fff;padding:60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:600px;page-break-after:always;position:relative}
+.cover{background:#3A4B5B;color:#fff;padding:60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:600px;page-break-after:always;position:relative;border-color:rgba(168,144,53,0.3)}
 .cover .badge{position:absolute;top:28px;right:28px;background:#A89035;color:#fff;padding:12px 18px;font-size:9px;letter-spacing:3px;text-transform:uppercase;font-weight:700;line-height:1.4;text-align:center}
 .cover .wordmark{font-family:'Playfair Display',Georgia,serif;font-size:16px;letter-spacing:12px;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:6px}
 .cover .pm-sub{font-size:12px;color:#A89035;letter-spacing:2px;margin-bottom:48px}
@@ -927,7 +943,7 @@ a{color:#A89035;text-decoration:none}
 .testimonial .author-title{font-size:10px;color:#888}
 
 /* Back cover */
-.back-cover{background:#3A4B5B;color:#fff;min-height:400px;padding:60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;page-break-after:always}
+.back-cover{background:#3A4B5B;color:#fff;min-height:400px;padding:60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;page-break-after:always;border-color:rgba(168,144,53,0.3)}
 .back-cover .wordmark{font-family:'Playfair Display',Georgia,serif;font-size:14px;letter-spacing:10px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px}
 .back-cover .pm-sub{font-size:11px;color:#A89035;margin-bottom:32px;letter-spacing:2px}
 .back-cover h2{font-family:'Playfair Display',Georgia,serif;font-size:32px;color:#A89035;margin-bottom:8px;font-weight:700}
