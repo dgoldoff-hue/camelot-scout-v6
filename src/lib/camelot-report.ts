@@ -2145,14 +2145,91 @@ ${[
 </table>
 
 <div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;color:#A89035;text-align:center;margin-bottom:6px;font-weight:600">Camelot OS \u2014 Deploying 2026</div>
+
+<!-- ConciergePlus Hero — the centerpiece -->
+<div style="background:#3A4B5B;border-radius:10px;padding:22px;margin-bottom:16px;color:#fff">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+<div style="width:40px;height:40px;background:#A89035;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="color:#fff;font-weight:800;font-size:14px">C+</span></div>
+<div>
+<div style="font-size:16px;font-weight:700;color:#A89035">ConciergePlus — AI-Driven Resident Portal</div>
+<div style="font-size:11px;color:rgba(255,255,255,0.6)">26 integrated modules \u00B7 Board + Resident + Staff + Vendor portals \u00B7 Mobile app</div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">
+${['Amenity Booking', 'Announcements', 'Package Delivery', 'Service Requests', 'Online Payments', 'Incident Reports', 'Key Tracking', 'Equipment Mgmt', 'Discussion Forum', 'Pet Registry', 'Parking Mgmt', 'Community Polls', 'Newsletter', 'Vacancy Dates', 'Entry Instructions', 'Residents\u2019 Guide'].map(m => `<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:5px 8px;font-size:9px;color:rgba(255,255,255,0.8);text-align:center">${m}</div>`).join('\n')}
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+<div style="background:rgba(168,144,53,0.15);border:1px solid rgba(168,144,53,0.3);border-radius:6px;padding:10px;text-align:center">
+<div style="font-size:18px;font-weight:800;color:#A89035">$0</div>
+<div style="font-size:9px;color:rgba(255,255,255,0.6)">Bank Fees on Payments</div>
+</div>
+<div style="background:rgba(168,144,53,0.15);border:1px solid rgba(168,144,53,0.3);border-radius:6px;padding:10px;text-align:center">
+<div style="font-size:18px;font-weight:800;color:#A89035">24/7</div>
+<div style="font-size:9px;color:rgba(255,255,255,0.6)">AI Support (Merlin)</div>
+</div>
+<div style="background:rgba(168,144,53,0.15);border:1px solid rgba(168,144,53,0.3);border-radius:6px;padding:10px;text-align:center">
+<div style="font-size:18px;font-weight:800;color:#A89035">26</div>
+<div style="font-size:9px;color:rgba(255,255,255,0.6)">Integrated Modules</div>
+</div>
+</div>
+</div>
+
+<!-- Camelot OS Platform Cards -->
 <div class="va-grid">
-<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">ConciergePlus</h5><p>Personal AI assistant and enhanced resident portal \u2014 powered by Merlin and the Camelot OS system. Dashboard and mobile app for board members, residents, RM/Super, vendors, and front desk. Every request logged, tracked, and AI-assisted 24/7.</p></div>
 <div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Merlin AI</h5><p>Camelot\u2019s AI engine powering ConciergePlus, budget forecasting, expense anomaly detection, vendor scoring, pro-forma modeling, and intelligent building operations.</p></div>
 <div class="va-card" style="border-left-color:#3A4B5B"><h5>SCOUT</h5><p>Market intelligence \u2014 monthly benchmarks, ACRIS data, rental tracking, peer building comparisons, lead generation.</p></div>
 <div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Jackie</h5><p>AI-powered new business development engine \u2014 generates Property Intelligence Reports, management proposals, email drafts, and cold caller sheets.</p></div>
 <div class="va-card" style="border-left-color:#3A4B5B"><h5>Prisma</h5><p>Enhanced ACH billing, real-time collection tracking, 90% NSF reduction via Plaid-linked payments.</p></div>
 <div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Parity</h5><p>Real-time HVAC and energy monitoring. LL97 liability modeling included. 15\u201325% utility savings.</p></div>
 <div class="va-card" style="border-left-color:#3A4B5B"><h5>Camelot Central</h5><p>Unified mobile app \u2014 building files, utility tracking, compliance, smart access, all resident services in one interface.</p></div>
+</div>
+
+<!-- Camelot OS Backend -->
+<div style="background:#EDE9DF;border:2px solid #A89035;border-radius:8px;padding:18px;margin-top:16px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:8px">\uD83E\uDDE0 Camelot OS — Intelligent Backend</div>
+<p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:10px">Behind every Camelot-managed building is an AI-readable file system powered by Make.com automation and MDS property codes. Every document \u2014 leases, financials, compliance filings, vendor contracts, board minutes \u2014 is automatically classified, named, and organized so AI agents can instantly retrieve and process information across all 42 properties. No more searching. No more lost files. No more institutional knowledge locked in someone\u2019s head.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+${['MDS Property Codes', 'Auto-Classification', 'Make.com Automation', 'Google Drive Structured Storage', 'AI-Ready File System', 'Real-Time Monitoring'].map(t => `<span style="display:inline-block;background:#fff;border:1px solid #D5D0C6;border-radius:4px;padding:4px 10px;font-size:10px;color:#3A4B5B;font-weight:600">${t}</span>`).join('\n')}
+</div>
+</div>
+</div>
+
+<!-- PAGE 19B: QUARTERLY MANAGEMENT REPORTS -->
+<div class="section section-white">
+<div class="section-title">Quarterly Management Reports</div>
+<div class="section-sub">Data-driven gut checks on your building\u2019s performance, costs, and market position</div>
+
+<p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:16px">Every quarter, Camelot delivers a comprehensive management report to your board \u2014 not just financials, but a full market-aware assessment of how your building is performing relative to comparable properties. These reports use <strong>SCOUT market intelligence</strong> and <strong>Camelot OS data</strong> to give you the kind of analysis that institutional investors expect.</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
+<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">\uD83D\uDCCA Cost of Living Analysis</h5>
+<p style="font-size:11px;color:#555;line-height:1.5">How your operating costs track against CPI, neighborhood benchmarks, and peer buildings. Are maintenance fees keeping pace or falling behind?</p>
+</div>
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
+<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">\uD83C\uDFE0 Unit Value Assessment</h5>
+<p style="font-size:11px;color:#555;line-height:1.5">How your home stacks up against comparable sales and rentals in the neighborhood. $/sqft trends, median prices, and days on market.</p>
+</div>
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
+<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">\uD83D\uDCC8 Neighborhood Market Pulse</h5>
+<p style="font-size:11px;color:#555;line-height:1.5">Median sale prices, rental rates, days on market, investment scores, and price momentum \u2014 sourced from ACRIS closed sales and StreetEasy leased data.</p>
+</div>
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
+<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">\u2705 Building Performance Scorecard</h5>
+<p style="font-size:11px;color:#555;line-height:1.5">Violations cleared, vendor savings achieved, compliance status, energy improvements, and overall management grade \u2014 tracked quarter over quarter.</p>
+</div>
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
+<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">\uD83D\uDCB0 Reserve Fund Health Check</h5>
+<p style="font-size:11px;color:#555;line-height:1.5">Current reserve balance vs. 5-year capital plan needs. Are you funded for the roof, elevator, fa\u00E7ade, and boiler work ahead?</p>
+</div>
+<div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
+<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">\uD83D\uDCC8 Rent Growth vs. Market</h5>
+<p style="font-size:11px;color:#555;line-height:1.5">Camelot\u2019s portfolio averages <strong>10.55% YoY rent growth</strong> vs. the Manhattan market average of <strong>5.20%</strong>. Your quarterly report shows exactly where your building stands.</p>
+</div>
+</div>
+
+<div style="background:#3A4B5B;border-radius:8px;padding:16px;color:#fff;text-align:center">
+<p style="font-size:12px;line-height:1.7;color:rgba(255,255,255,0.8)">Quarterly reports are <strong style="color:#A89035">included at no additional charge</strong> for all Camelot-managed properties. Board members receive a branded PDF and live dashboard access via Camelot Central.</p>
 </div>
 </div>
 
