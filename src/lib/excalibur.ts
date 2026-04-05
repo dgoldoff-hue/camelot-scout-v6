@@ -598,7 +598,7 @@ ${input.specialTerms ? `
 </div>
 
 <div style="margin-top:20px;background:#EDE9DF;border-radius:6px;padding:12px 16px;text-align:center;font-size:11px;color:#555">
-<strong>Digital Signature Option:</strong> This agreement can be executed electronically via DocuSign. Upon generation, a copy will be sent to <strong>dgoldoff@camelot.nyc</strong> for processing. To request a DocuSign link, contact Camelot at ${CAMELOT.phone}.
+<strong>Digital Signature Option:</strong> This agreement can be executed electronically via DocuSign. Upon generation, a copy will be sent to <strong>management@camelot.nyc</strong> for processing. To request a DocuSign link, contact Camelot at ${CAMELOT.phone}.
 </div>
 </div>
 
