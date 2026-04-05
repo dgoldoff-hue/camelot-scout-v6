@@ -677,8 +677,19 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     }).scorecard,
     boardMembers: (() => {
       const members: Array<{ name: string; title: string }> = [];
-      // HPD Registration owner
-      if (raw.registration?.owner) members.push({ name: raw.registration.owner, title: 'Registered Owner (HPD)' });
+      // HPD MDR Contacts — the gold standard for building contacts
+      for (const c of (raw.hpdContacts || [])) {
+        if (c.type === 'CorporateOwner' && c.corp) {
+          members.push({ name: c.corp, title: 'Corporate Owner (HPD MDR)' });
+        }
+        if (c.type === 'HeadOfficer' && c.name) {
+          members.push({ name: c.name, title: c.title || 'Head Officer / Board President (HPD MDR)' });
+        }
+      }
+      // HPD Registration owner (if not already captured)
+      if (raw.registration?.owner && !members.some(m => m.name.toUpperCase() === raw.registration.owner.toUpperCase())) {
+        members.push({ name: raw.registration.owner, title: 'Registered Owner (HPD)' });
+      }
       // DOF owner (if different)
       const dofName = dof?.owner || raw.dofAbatement?.ownerName || '';
       if (dofName && !members.some(m => m.name.toUpperCase() === dofName.toUpperCase())) {
@@ -697,7 +708,14 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       }
       return members;
     })(),
-    buildingStaff: [],
+    buildingStaff: (() => {
+      const staff: Array<{ role: string; name: string }> = [];
+      for (const c of (raw.hpdContacts || [])) {
+        if (c.type === 'SiteManager' && c.name) staff.push({ role: 'Site Manager / Superintendent', name: c.name });
+        if (c.type === 'Agent' && c.name) staff.push({ role: 'Managing Agent', name: `${c.name}${c.corp ? ' — ' + c.corp : ''}` });
+      }
+      return staff;
+    })(),
     professionals: {
       lawFirm: null,
       accountingFirm: null,

@@ -290,7 +290,7 @@ export async function fetchDOBPermits(address: string, borough?: string): Promis
       where = `upper(street_name) like '${encodeURIComponent(pattern)}'`;
     }
 
-    let url = `${ENDPOINTS.dobPermits}?$limit=50&$order=filing_date DESC&$where=${where}`;
+    let url = `${ENDPOINTS.dobPermits}?$limit=50&$order=pre__filing_date DESC&$where=${where}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`DOB API error: ${res.status}`);
     return await res.json();
@@ -705,6 +705,35 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
     }
   }
 
+  // Fetch HPD MDR Contacts (Multiple Dwelling Registration — key building contacts)
+  let hpdContacts: Array<{ type: string; description: string; name: string; corp: string; title: string; address: string }> = [];
+  const regId = registration[0]?.registrationid;
+  if (regId) {
+    try {
+      const contactsEndpoint = `${NYC_BASE}/feu5-w2e2.json`;
+      const contactsRes = await fetch(`${contactsEndpoint}?$limit=20&$where=registrationid='${regId}'`);
+      if (contactsRes.ok) {
+        const contactsData = await contactsRes.json();
+        hpdContacts = contactsData.map((c: any) => ({
+          type: c.type || '',
+          description: c.contactdescription || '',
+          name: `${c.firstname || ''} ${c.lastname || ''}`.trim() || c.corporationname || '',
+          corp: c.corporationname || '',
+          title: c.title || '',
+          address: [c.businesshousenumber, c.businessstreetname, c.businesscity, c.businessstate, c.businesszip].filter(Boolean).join(' '),
+        }));
+      }
+    } catch (err) {
+      console.error('HPD Contacts fetch error:', err);
+    }
+  }
+
+  // Extract management company from HPD contacts if not found in registration
+  const agentContact = hpdContacts.find(c => c.type === 'Agent');
+  const headOfficer = hpdContacts.find(c => c.type === 'HeadOfficer');
+  const siteManager = hpdContacts.find(c => c.type === 'SiteManager');
+  const corpOwner = hpdContacts.find(c => c.type === 'CorporateOwner');
+
   // Extract DOB professional contacts (architect, engineer, owner)
   const dobExtracted = extractDOBProfessionals(permits);
 
@@ -730,11 +759,12 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
     registration: {
       owner: reg?.ownerfirstname
         ? `${reg.ownerfirstname} ${reg.ownerlastname}`
-        : reg?.corporationname || null,
-      managementCompany: reg?.managementcompany || null,
+        : reg?.corporationname || corpOwner?.name || corpOwner?.corp || null,
+      managementCompany: reg?.managementcompany || agentContact?.corp || agentContact?.name || null,
       registrationId: reg?.registrationid || null,
       buildingId: reg?.buildingid || null,
     },
+    hpdContacts,
     dof: dof
       ? {
           bbl: dof.bbl,
