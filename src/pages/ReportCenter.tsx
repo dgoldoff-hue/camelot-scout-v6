@@ -16,6 +16,7 @@ export default function ReportCenter() {
   const [showCallerModal, setShowCallerModal] = useState(false);
   const [emailType, setEmailType] = useState<EmailType>('intro');
   const [copied, setCopied] = useState(false);
+  const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
 
   const generate = useCallback(async () => {
     if (!address.trim()) return;
@@ -38,15 +39,17 @@ export default function ReportCenter() {
   }, [address, borough]);
 
   const handlePreviewBrochure = () => {
-    if (!data) return;
-    const html = generateBrochureHTML(data);
-    openBrochureForPrint(html, `Jackie-Report-${data.buildingName}`);
+    const d = getDataWithPhotos();
+    if (!d) return;
+    const html = generateBrochureHTML(d);
+    openBrochureForPrint(html, `Jackie-Report-${d.buildingName}`);
   };
 
   const handleDownloadHTML = () => {
-    if (!data) return;
-    const html = generateBrochureHTML(data);
-    downloadAsHTML(html, `Jackie-Report-${data.buildingName.replace(/[^a-zA-Z0-9]/g, '-')}.html`);
+    const d = getDataWithPhotos();
+    if (!d) return;
+    const html = generateBrochureHTML(d);
+    downloadAsHTML(html, `Jackie-Report-${d.buildingName.replace(/[^a-zA-Z0-9]/g, '-')}.html`);
   };
 
   const handleCSV = () => {
@@ -58,6 +61,53 @@ export default function ReportCenter() {
   const handleCopy = async (text: string) => {
     const ok = await copyToClipboard(text);
     if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); }
+  };
+
+  // Photo upload handler — converts files to data URLs and stores them
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        setUploadedPhotos(prev => [...prev, dataUrl]);
+        // Also save to localStorage keyed by address
+        if (address.trim()) {
+          const key = `camelot_photos_${address.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+          const existing = JSON.parse(localStorage.getItem(key) || '[]');
+          existing.push(dataUrl);
+          localStorage.setItem(key, JSON.stringify(existing));
+        }
+        toast.success(`Photo uploaded (${file.name})`);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = ''; // reset input
+  };
+
+  // Load saved photos when address changes
+  const loadSavedPhotos = useCallback(() => {
+    if (!address.trim()) return;
+    const key = `camelot_photos_${address.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+    const saved = JSON.parse(localStorage.getItem(key) || '[]');
+    if (saved.length > 0) setUploadedPhotos(saved);
+  }, [address]);
+
+  // Inject uploaded photos into report data before generating
+  const getDataWithPhotos = (): MasterReportData | null => {
+    if (!data) return null;
+    if (uploadedPhotos.length === 0) return data;
+    return {
+      ...data,
+      buildingPhotos: {
+        exterior: uploadedPhotos,
+        streetView: data.buildingPhotos?.streetView || '',
+        satellite: data.buildingPhotos?.satellite || '',
+        source: 'Uploaded by Camelot team',
+      },
+    };
   };
 
   const emailDraft = data ? generateEmailDraft(data, emailType) : null;
@@ -201,6 +251,55 @@ export default function ReportCenter() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Photo Upload */}
+          <div className="bg-white rounded-xl border p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Building Photos</h2>
+            <p className="text-xs text-gray-500 mb-3">Upload exterior, lobby, or interior photos to include in the report. Photos are saved per address.</p>
+            <div className="flex items-center gap-3 mb-3">
+              <label className="cursor-pointer bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload Photos
+                <input type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" />
+              </label>
+              {uploadedPhotos.length > 0 && (
+                <span className="text-xs text-gray-500">{uploadedPhotos.length} photo(s) uploaded</span>
+              )}
+              {uploadedPhotos.length > 0 && (
+                <button
+                  onClick={() => {
+                    setUploadedPhotos([]);
+                    if (address.trim()) {
+                      const key = `camelot_photos_${address.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+                      localStorage.removeItem(key);
+                    }
+                    toast.success('Photos cleared');
+                  }}
+                  className="text-xs text-red-500 hover:text-red-700 underline"
+                >Clear all</button>
+              )}
+            </div>
+            {uploadedPhotos.length > 0 && (
+              <div className="grid grid-cols-4 gap-2">
+                {uploadedPhotos.map((url, i) => (
+                  <div key={i} className="relative rounded-lg overflow-hidden border border-gray-200 h-20">
+                    <img src={url} alt={`Building photo ${i + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => {
+                        const updated = uploadedPhotos.filter((_, idx) => idx !== i);
+                        setUploadedPhotos(updated);
+                        if (address.trim()) {
+                          const key = `camelot_photos_${address.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+                          localStorage.setItem(key, JSON.stringify(updated));
+                        }
+                      }}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                    >×</button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
