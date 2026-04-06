@@ -753,7 +753,10 @@ export async function buildMasterReport(address: string, borough?: string): Prom
 // ============================================================
 
 export function generateColdCallerSheet(d: MasterReportData): string {
-  const isSelfManaged = !d.managementCompany || d.managementCompany === 'Unknown' || d.managementCompany === 'Self-Managed';
+  // Check both managementCompany AND buildingStaff for a managing agent
+  const agentFromStaff = d.buildingStaff.find(s => s.role.toLowerCase().includes('managing agent'));
+  const actualManagement = d.managementCompany && d.managementCompany !== 'To be confirmed upon engagement' ? d.managementCompany : agentFromStaff ? agentFromStaff.name : null;
+  const isSelfManaged = !actualManagement;
   return `COLD CALL PREP — ${d.buildingName}
 ${'━'.repeat(50)}
 
@@ -994,7 +997,9 @@ export function generateCSVExport(d: MasterReportData): string {
 export function generateBrochureHTML(d: MasterReportData): string {
   const addr = d.address;
   const encodedAddr = encodeURIComponent(addr);
-  const isSelfManaged = !d.managementCompany || d.managementCompany === 'Unknown' || d.managementCompany === 'Self-Managed';
+  const brochureAgent = d.buildingStaff.find(s => s.role.toLowerCase().includes('managing agent'));
+  const brochureActualMgmt = d.managementCompany && !['Unknown','To be confirmed upon engagement'].includes(d.managementCompany) ? d.managementCompany : brochureAgent ? brochureAgent.name : null;
+  const isSelfManaged = !brochureActualMgmt;
   const fmtMoney = (n: number) => n >= 1e6 ? `$${(n/1e6).toFixed(1)}M` : `$${n.toLocaleString()}`;
 
   const hookLine = isSelfManaged
@@ -1014,7 +1019,7 @@ export function generateBrochureHTML(d: MasterReportData): string {
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
 body{font-family:'DM Sans',-apple-system,sans-serif;background:#F5F0E5;color:#2C3240;font-size:13px;line-height:1.6}
-@media print{@page{margin:0.15in}*{-webkit-print-color-adjust:exact!important}}
+.no-print{display:block}@media print{.no-print{display:none!important}@page{margin:0.15in}*{-webkit-print-color-adjust:exact!important}}
 .page{max-width:900px;margin:0 auto;counter-reset:page-num}
 .section,.cover,.elevator,.back-cover{counter-increment:page-num;position:relative;border:1px solid #D5D0C6;margin-bottom:8px}
 .section::after{content:'Confidential \u00A9 ${new Date().getFullYear()} Camelot Realty Group \u00B7 Proprietary \u0026 Trade Secret \u00B7 Do Not Distribute Without Written Consent';display:block;text-align:center;font-size:8px;color:#999;letter-spacing:0.5px;margin-top:24px;padding-top:12px;border-top:1px solid #E5E3DE}
@@ -1149,13 +1154,23 @@ body{background:#fff}
 <body>
 <div class="page">
 
+<!-- FLOATING ACTION BAR (no-print) -->
+<div style="position:fixed;top:0;left:0;right:0;background:#3A4B5B;padding:8px 20px;display:flex;gap:8px;align-items:center;justify-content:flex-end;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.3)" class="no-print">
+<span style="color:#A89035;font-size:13px;font-weight:700;margin-right:auto">Jackie Report — ${d.buildingName}</span>
+<button onclick="window.print()" style="background:#A89035;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">🖨️ Print / Save PDF</button>
+<button onclick="var a=document.createElement('a');a.href='data:text/html,'+encodeURIComponent(document.documentElement.outerHTML);a.download='Jackie-${d.buildingName.replace(/[^a-zA-Z0-9]/g,'-')}.html';a.click()" style="background:#fff;color:#3A4B5B;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">⬇️ Download</button>
+<button onclick="window.open('mailto:?subject='+encodeURIComponent('Property Intelligence Report — ${d.buildingName}')+'&body='+encodeURIComponent('Please find the attached Property Intelligence Report for ${d.buildingName}.\\n\\nPrepared by Camelot Realty Group.'))" style="background:transparent;color:#A89035;border:2px solid #A89035;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">✉️ Email</button>
+</div>
+<div style="height:50px" class="no-print"></div>
+
 <!-- PAGE 1: COVER -->
 <div class="cover">
 <img src="./images/camelot-logo-white.png" alt="Camelot Realty Group" style="width:140px;margin-bottom:32px;opacity:0.95" onerror="this.style.display='none'">
 <h1>${d.buildingName}</h1>
 <div class="proposal-sub">Property Intelligence Report &amp; Management Proposal</div>
 <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-top:4px">Powered by Jackie &nbsp;\u00B7&nbsp; Camelot OS &nbsp;\u00B7&nbsp; SCOUT Market Intelligence</div>
-<div class="meta">${d.borough} &nbsp;|&nbsp; New York</div>
+<div class="meta">${d.address} &nbsp;|&nbsp; ${d.borough || "New York"}</div>
+<div class="meta" style="margin-top:4px">${d.bbl ? "BBL: " + d.bbl + " &nbsp;|&nbsp; " : ""}${d.propertyType}</div>
 <div class="meta">${d.units ? d.units + ' Units' : ''} ${d.stories ? '&nbsp;|&nbsp; ' + d.stories + ' Floors' : ''}</div>
 <div class="prepared">Prepared exclusively for the Board of Directors &mdash; ${d.date}</div>
 <div style="position:absolute;bottom:60px;left:0;right:0;text-align:center">
@@ -1490,9 +1505,9 @@ Staff details will be confirmed during our initial building assessment and trans
 <!-- MANAGEMENT -->
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:16px">
 <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:10px">\uD83C\uDFE2 Current Management</div>
-<div style="font-size:14px;font-weight:700;color:#2C3240;margin-bottom:8px">${d.managementCompany || 'To be confirmed upon engagement'}</div>
+<div style="font-size:14px;font-weight:700;color:#2C3240;margin-bottom:8px">${brochureActualMgmt || d.managementCompany || 'To be confirmed upon engagement'}</div>
 <div style="font-size:11px;color:#888;line-height:1.6">
-<div style="margin-bottom:4px">\u2022 Managing Agent \u2014 <em>${d.managementCompany || 'To be confirmed upon engagement'}</em></div>
+<div style="margin-bottom:4px">\u2022 Managing Agent \u2014 <em>${brochureActualMgmt || d.managementCompany || 'To be confirmed upon engagement'}</em></div>
 ${d.managementDuration ? `<div style="margin-bottom:4px">\u2022 Duration \u2014 ~${d.managementDuration}</div>` : ''}
 <div style="margin-bottom:4px">\u2022 Management Grade \u2014 <strong style="color:${d.managementGrade === 'A' ? '#16a34a' : d.managementGrade === 'B' ? '#ca8a04' : '#dc2626'}">${d.managementGrade}</strong> (${d.managementScorecard.overall}/100)</div>
 </div>
@@ -2621,13 +2636,13 @@ ${d.neighborhoodMarketData ? `
 
 <!-- Meeting CTA — Three Options -->
 <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px;flex-wrap:wrap">
-<a href="https://zoom.us/j/new" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#2D8CFF;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
-<span style="font-size:15px">\uD83D\uDCF9</span> Zoom Meeting
+<a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+Management+Discussion&details=Property+management+proposal+discussion.%0A%0AZoom+link+will+be+added+by+Camelot.&add=${CAMELOT.email}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#2D8CFF;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
+<span style="font-size:15px">\uD83D\uDCC5</span> Schedule Meeting
 </a>
 <a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+%E2%80%93+${encodeURIComponent(d.buildingName)}+Discussion&details=Management+proposal+discussion+for+${encodeURIComponent(d.buildingName)}%0A%0APrepared+by+Jackie+%7C+Camelot+Realty+Group&add=${CAMELOT.email}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#A89035;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
 <span style="font-size:15px">\uD83D\uDCC5</span> Google Meet
 </a>
-<a href="mailto:${CAMELOT.email}?subject=${encodeURIComponent('Meeting Request — ' + d.buildingName)}&body=${encodeURIComponent('Hello David,\\n\\nI would like to schedule a meeting to discuss the management proposal for ' + d.buildingName + '.\\n\\nPlease let me know your available dates and preferred meeting format (Zoom, Google Meet, or in-person).\\n\\nThank you.')}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:#A89035;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px;border:2px solid #A89035">
+<a href="mailto:?subject=${encodeURIComponent('Meeting Request — ' + d.buildingName + ' | Camelot Realty Group')}&body=${encodeURIComponent('Hello,\\n\\nI would like to schedule a meeting to discuss the management proposal for ' + d.buildingName + '.\\n\\nPlease let me know your available dates and preferred meeting format.\\n\\nBest regards')}&cc=${CAMELOT.email}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:#A89035;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px;border:2px solid #A89035">
 <span style="font-size:15px">\u2709\uFE0F</span> Email to Schedule
 </a>
 </div>
