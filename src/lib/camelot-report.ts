@@ -2926,12 +2926,16 @@ function generateProposal() {
     propertyType: ${JSON.stringify(d.propertyType)},
     stories: ${d.stories},
     buildingArea: ${d.buildingArea},
+    buildingArea_fmt: '${d.buildingArea > 0 ? d.buildingArea.toLocaleString() : ""}',
     managementCompany: ${JSON.stringify(d.managementCompany || '')},
     registrationOwner: ${JSON.stringify(d.registrationOwner || '')},
     dofOwner: ${JSON.stringify(d.dofOwner || '')},
+    bbl: ${JSON.stringify(d.bbl || '')},
     violationsOpen: ${d.violationsOpen},
     violationsTotal: ${d.violationsTotal},
     violationClassC: ${d.violationClassC},
+    violationClassB: ${d.violationClassB},
+    ecbCount: ${d.ecbCount},
     ecbPenaltyBalance: ${d.ecbPenaltyBalance},
     scoutGrade: ${JSON.stringify(d.scoutGrade)},
     isRentStabilized: ${d.isRentStabilized},
@@ -2941,206 +2945,214 @@ function generateProposal() {
     boardMembers: ${JSON.stringify(d.boardMembers || [])},
     buildingStaff: ${JSON.stringify(d.buildingStaff || [])},
     ll97Status: ${JSON.stringify(d.ll97?.complianceStatus || 'unknown')},
+    ll97Penalty: ${d.ll97?.period1Penalty || 0},
+    hasActiveLitigation: ${d.hasActiveLitigation},
+    litigationCount: ${d.litigationCount},
+    permitsCount: ${d.permitsCount},
+    lastSaleDate: ${JSON.stringify(d.lastSaleDate || '')},
+    lastSalePrice: ${d.lastSalePrice},
+    distressLevel: ${JSON.stringify(d.distressLevel || 'low')},
+    energyStarScore: ${d.energyStarScore || 0},
+    latitude: ${d.latitude || 'null'},
+    longitude: ${d.longitude || 'null'},
     date: ${JSON.stringify(d.date)},
   };
 
   var owner = d.registrationOwner || d.dofOwner || 'Board of Directors';
-  var boardList = (d.boardMembers || []).map(function(b){ return b.name + (b.title ? ' (' + b.title + ')' : ''); }).join(', ') || 'To be confirmed';
+  var boardNames = (d.boardMembers || []).map(function(b){ return b.name; }).join(', ');
 
-  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Proposal of Services — ' + d.buildingName + '</title>' +
+  // Build dynamic pain points from data
+  var pains = [];
+  if (d.violationsOpen > 5) pains.push({icon: '\u26A0\uFE0F', title: d.violationsOpen + ' Open Violations', desc: d.violationClassC > 0 ? d.violationClassC + ' are Class C (immediately hazardous) requiring urgent attention.' : 'Including ' + d.violationClassB + ' Class B violations requiring timely correction.'});
+  if (d.ecbPenaltyBalance > 0) pains.push({icon: '\uD83D\uDCB0', title: '$' + d.ecbPenaltyBalance.toLocaleString() + ' in ECB Penalties', desc: d.ecbCount + ' active Environmental Control Board cases. We resolve and mitigate these through hearings and certified corrections.'});
+  if (d.ll97Status === 'non-compliant' || d.ll97Penalty > 0) pains.push({icon: '\uD83C\uDF21\uFE0F', title: 'LL97 Carbon Exposure', desc: 'Estimated penalty of $' + d.ll97Penalty.toLocaleString() + '/yr beginning 2025. Camelot delivers a compliance roadmap within 30 days.'});
+  if (d.hasActiveLitigation) pains.push({icon: '\u2696\uFE0F', title: d.litigationCount + ' Active Litigation Cases', desc: 'Open legal matters on file. Our in-house counsel advisory helps manage risk and reduce exposure.'});
+  if (d.isRentStabilized) pains.push({icon: '\uD83C\uDFE0', title: 'Rent Stabilized Portfolio', desc: 'DHCR compliance, legal rent calculations, MCI filings, and renewal management require specialized expertise.'});
+  if (d.distressLevel === 'high' || d.distressLevel === 'critical') pains.push({icon: '\uD83D\uDEA8', title: 'Elevated Distress Score', desc: 'Multiple risk signals detected. Proactive intervention can prevent further deterioration and protect asset value.'});
+  if (pains.length === 0) pains.push({icon: '\u2714\uFE0F', title: 'Well-Maintained Building', desc: 'Your building is in good standing. Camelot can help optimize operations, reduce costs, and unlock additional value.'});
+
+  var painHTML = pains.map(function(p) {
+    return '<div style="display:flex;gap:10px;padding:10px 12px;background:#fff;border-left:3px solid #A89035;border-radius:0 6px 6px 0;margin-bottom:8px">' +
+      '<div style="font-size:18px;flex-shrink:0">' + p.icon + '</div>' +
+      '<div><strong style="font-size:11px;color:#3A4B5B">' + p.title + '</strong><br><span style="font-size:10px;color:#666">' + p.desc + '</span></div></div>';
+  }).join('');
+
+  // Street View image
+  var streetView = d.latitude && d.longitude ? 'https://maps.googleapis.com/maps/api/streetview?size=800x300&location=' + d.latitude + ',' + d.longitude + '&fov=100&pitch=5&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8' : '';
+
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Proposal of Services \u2014 ' + d.buildingName + '</title>' +
   '<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">' +
   '<style>' +
   '*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }' +
-  'body { font-family: "DM Sans", -apple-system, sans-serif; color: #2C3240; line-height: 1.6; }' +
-  'h1,h2,h3,h4 { font-family: "Plus Jakarta Sans", -apple-system, sans-serif; }' +
-  '.page { page-break-after: always; padding: 48px; min-height: 100vh; position: relative; }' +
+  'body { font-family: "DM Sans", -apple-system, sans-serif; color: #2C3240; line-height: 1.5; }' +
+  'h1,h2,h3 { font-family: "Plus Jakarta Sans", -apple-system, sans-serif; }' +
+  '.page { page-break-after: always; min-height: 100vh; position: relative; }' +
   '.page:last-child { page-break-after: auto; }' +
-  '.cover { background: linear-gradient(135deg, #3A4B5B 0%, #2C3240 100%); color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }' +
-  '.cover h1 { font-size: 32px; font-weight: 800; color: #A89035; margin-bottom: 8px; }' +
-  '.section-title { font-size: 20px; font-weight: 700; color: #3A4B5B; border-left: 4px solid #A89035; padding-left: 16px; margin-bottom: 16px; }' +
-  '.scope-item { display: flex; gap: 12px; margin-bottom: 10px; padding: 10px 14px; background: #F5F0E5; border-radius: 8px; }' +
-  '.scope-icon { width: 28px; height: 28px; background: #A89035; color: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }' +
-  '.tier-card { border: 2px solid #E5E3DE; border-radius: 10px; padding: 20px; text-align: center; }' +
-  '.tier-card.recommended { border-color: #A89035; background: linear-gradient(to bottom, #FAF8F5, #F5F0E5); }' +
-  '.timeline-item { display: flex; gap: 14px; margin-bottom: 14px; }' +
-  '.timeline-dot { width: 32px; height: 32px; background: #A89035; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }' +
-  '.sig-block { border-top: 1px solid #ccc; padding-top: 20px; margin-top: 40px; }' +
-  '.sig-line { border-bottom: 1px solid #2C3240; width: 300px; height: 40px; margin-bottom: 4px; }' +
-  '@media print { @page { margin: 0.5in; } .no-print { display: none !important; } }' +
+  '.gold { color: #A89035; } .slate { color: #3A4B5B; }' +
+  '.sig-line { border-bottom: 1px solid #2C3240; width: 280px; height: 36px; margin-bottom: 2px; }' +
+  '@media print { @page { margin: 0.4in 0.5in; } .no-print { display: none !important; } body { font-size: 10px; } }' +
   '</style></head><body>' +
 
-  // COVER
-  '<div class="page cover">' +
-  '<div style="font-size:12px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:24px">Camelot Realty Group</div>' +
-  '<h1>' + d.buildingName + '</h1>' +
-  '<div style="font-size:16px;color:#fff;margin-top:8px;font-weight:600">Proposal of Services</div>' +
-  '<div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:16px">' + d.address + ' | ' + (d.borough || 'New York') + '</div>' +
-  '<div style="margin-top:40px;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.8">' +
-  'Prepared for: ' + owner + '<br>' +
-  'Prepared by: David A. Goldoff, President<br>' +
+  /* ═══════════════ PAGE 1: COVER + YOUR BUILDING + PAIN POINTS ═══════════════ */
+  '<div class="page">' +
+
+  /* Cover header */
+  '<div style="background:linear-gradient(135deg,#3A4B5B,#2C3240);color:#fff;padding:32px 36px;border-radius:0 0 12px 12px;margin:-0px -0px 0 -0px;position:relative">' +
+  '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
+  '<div>' +
+  '<div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px">C A M E L O T &nbsp; R E A L T Y &nbsp; G R O U P</div>' +
+  '<h1 style="font-size:26px;font-weight:800;color:#A89035;margin-bottom:4px">' + d.buildingName + '</h1>' +
+  '<div style="font-size:12px;color:rgba(255,255,255,0.7)">' + d.address + ' &nbsp;|&nbsp; ' + (d.borough || 'New York') + (d.bbl ? ' &nbsp;|&nbsp; BBL: ' + d.bbl : '') + '</div>' +
+  '</div>' +
+  '<div style="text-align:right;font-size:10px;color:rgba(255,255,255,0.5);line-height:1.6">' +
+  'Proposal of Services<br>' +
+  'Prepared for: <span style="color:#fff">' + owner + '</span><br>' +
   'Date: ' + d.date + '<br>' +
-  '<span style="color:#A89035;font-weight:600">Valid for 10 business days</span>' +
+  '<span style="color:#A89035;font-weight:600">Valid 10 business days</span>' +
+  '</div></div></div>' +
+
+  /* Street View image */
+  (streetView ? '<div style="margin:0 0 12px 0;border-radius:0 0 8px 8px;overflow:hidden;height:140px;background:#EDE9DF"><img src="' + streetView + '" style="width:100%;height:140px;object-fit:cover" onerror="this.parentElement.style.display=\'none\'"></div>' : '<div style="height:12px"></div>') +
+
+  /* Property snapshot + Pain Points side by side */
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 24px">' +
+
+  /* Left: Building snapshot */
+  '<div>' +
+  '<div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#A89035;font-weight:700;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #A89035">' + d.propertyType + ' &nbsp;\u00B7&nbsp; ' + d.units + ' Units &nbsp;\u00B7&nbsp; ' + d.stories + ' Stories</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:800;color:#A89035">' + d.yearBuilt + '</div><div style="font-size:8px;color:#888;text-transform:uppercase">Year Built</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:800;color:' + (d.violationsOpen > 20 ? '#dc2626' : d.violationsOpen > 5 ? '#A89035' : '#16a34a') + '">' + d.violationsOpen + '</div><div style="font-size:8px;color:#888;text-transform:uppercase">Open Violations</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:800;color:#3A4B5B">' + d.scoutGrade + '</div><div style="font-size:8px;color:#888;text-transform:uppercase">Scout Grade</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:800;color:#3A4B5B">$' + (d.ecbPenaltyBalance > 0 ? (d.ecbPenaltyBalance/1000).toFixed(0) + 'K' : '0') + '</div><div style="font-size:8px;color:#888;text-transform:uppercase">ECB Penalties</div></div>' +
   '</div>' +
-  '<div style="margin-top:auto;padding-top:32px;font-size:10px;color:rgba(255,255,255,0.3)">477 Madison Avenue, 6th Fl | New York, NY 10022 | (212) 206-9939 | www.camelot.nyc</div>' +
+  (d.managementCompany ? '<div style="font-size:10px;color:#888">Current management: <strong style="color:#3A4B5B">' + d.managementCompany + '</strong></div>' : '') +
+  (d.buildingArea_fmt ? '<div style="font-size:10px;color:#888">' + d.buildingArea_fmt + ' gross SF' + (d.isRentStabilized ? ' &nbsp;\u00B7&nbsp; <span style="color:#A89035;font-weight:600">Rent Stabilized</span>' : '') + '</div>' : '') +
   '</div>' +
 
-  // SECTION 1: ABOUT YOUR PROPERTY
-  '<div class="page">' +
-  '<div class="section-title">About Your Property</div>' +
-  '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">' +
-  '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;width:40%;color:#3A4B5B">Address</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.address + ', ' + (d.borough || 'New York') + '</td></tr>' +
-  '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Units</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.units + '</td></tr>' +
-  '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Year Built</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.yearBuilt + '</td></tr>' +
-  '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Stories</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.stories + '</td></tr>' +
-  '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Building Class</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.propertyType + ' (' + d.buildingClass + ')</td></tr>' +
-  (d.buildingArea > 0 ? '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Gross Area</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.buildingArea.toLocaleString() + ' SF</td></tr>' : '') +
-  (d.managementCompany ? '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Current Management</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.managementCompany + '</td></tr>' : '') +
-  (d.isRentStabilized ? '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Rent Stabilized</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;color:#A89035;font-weight:600">Yes</td></tr>' : '') +
-  '</table>' +
-
-  '<div style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:10px">Key Findings</div>' +
-  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:' + (d.violationsOpen > 20 ? '#dc2626' : d.violationsOpen > 5 ? '#A89035' : '#16a34a') + '">' + d.violationsOpen + '</div><div style="font-size:10px;color:#888;text-transform:uppercase">Open Violations</div></div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#3A4B5B">' + d.scoutGrade + '</div><div style="font-size:10px;color:#888;text-transform:uppercase">Scout Grade</div></div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#A89035">' + d.violationClassC + '</div><div style="font-size:10px;color:#888;text-transform:uppercase">Class C (Hazardous)</div></div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#3A4B5B">$' + d.ecbPenaltyBalance.toLocaleString() + '</div><div style="font-size:10px;color:#888;text-transform:uppercase">ECB Penalties</div></div>' +
+  /* Right: Pain Points */
+  '<div>' +
+  '<div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#dc2626;font-weight:700;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #dc2626">What We Found &nbsp;\u2014&nbsp; How We Help</div>' +
+  painHTML +
   '</div>' +
 
-  (d.boardMembers.length > 0 ? '<div style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">Contacts Identified</div><p style="font-size:12px;color:#555;margin-bottom:20px">' + boardList + '</p>' : '') +
+  '</div>' + /* end grid */
+
+  /* Confidence statement */
+  '<div style="background:linear-gradient(135deg,#A89035,#C5A55A);color:#fff;border-radius:8px;padding:14px 24px;margin:14px 24px 0 24px;text-align:center">' +
+  '<div style="font-size:13px;font-weight:700">We\u2019ve managed buildings like yours for 18 years. We know exactly what needs to happen here.</div>' +
+  '<div style="font-size:10px;opacity:0.85;margin-top:2px">42 properties &nbsp;\u00B7&nbsp; 5 boroughs &nbsp;\u00B7&nbsp; In-house CPA &nbsp;\u00B7&nbsp; In-house tech &nbsp;\u00B7&nbsp; $0 bank fees &nbsp;\u00B7&nbsp; 24/7 emergency</div>' +
+  '</div>' +
+  '</div>' + /* end page 1 */
+
+  /* ═══════════════ PAGE 2: SCOPE + PRICING TIERS ═══════════════ */
+  '<div class="page" style="padding:28px 36px">' +
+
+  '<div style="font-size:18px;font-weight:800;color:#3A4B5B;border-left:4px solid #A89035;padding-left:14px;margin-bottom:14px">Our Solution for ' + d.buildingName + '</div>' +
+
+  /* Scope — compact 3-column grid */
+  '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:10px;border-top:3px solid #A89035"><div style="font-size:13px;margin-bottom:4px">\uD83D\uDCCA</div><strong style="font-size:10px;color:#3A4B5B">Financial Management</strong><div style="font-size:9px;color:#666;margin-top:3px;line-height:1.4">Monthly financials &bull; In-house CPA &bull; Annual budgets &bull; Collections &bull; Arrears tracking &bull; Bank reconciliations</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:10px;border-top:3px solid #A89035"><div style="font-size:13px;margin-bottom:4px">\u2696\uFE0F</div><strong style="font-size:10px;color:#3A4B5B">Compliance & Risk</strong><div style="font-size:9px;color:#666;margin-top:3px;line-height:1.4">HPD violations &bull; DOB filings &bull; ECB hearings &bull; LL97/LL11 &bull; DHCR filings &bull; Insurance oversight</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:10px;border-top:3px solid #A89035"><div style="font-size:13px;margin-bottom:4px">\uD83C\uDFE0</div><strong style="font-size:10px;color:#3A4B5B">Operations & Tenants</strong><div style="font-size:9px;color:#666;margin-top:3px;line-height:1.4">Weekly inspections &bull; Vendor 3-bid &bull; 24/7 emergency &bull; Resident portal &bull; Board meetings &bull; Staff management</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:10px;border-top:3px solid #3A4B5B"><div style="font-size:13px;margin-bottom:4px">\uD83D\uDD27</div><strong style="font-size:10px;color:#3A4B5B">Maintenance & Repair</strong><div style="font-size:9px;color:#666;margin-top:3px;line-height:1.4">General construction &bull; Emergency repairs &bull; Preventive programs &bull; Capital projects &bull; Cleaning services</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:10px;border-top:3px solid #3A4B5B"><div style="font-size:13px;margin-bottom:4px">\uD83D\uDC64</div><strong style="font-size:10px;color:#3A4B5B">Staffing Services</strong><div style="font-size:9px;color:#666;margin-top:3px;line-height:1.4">Resident Manager &bull; Superintendent &bull; Porter &bull; Handyman &bull; Direct hire or Camelot-managed</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:10px;border-top:3px solid #3A4B5B"><div style="font-size:13px;margin-bottom:4px">\uD83C\uDFE2</div><strong style="font-size:10px;color:#3A4B5B">Brokerage & Advisory</strong><div style="font-size:9px;color:#666;margin-top:3px;line-height:1.4">Licensed brokerage &bull; Sales & leasing &bull; Market analysis &bull; Refinancing advisory</div></div>' +
   '</div>' +
 
-  // SECTION 2: SCOPE OF SERVICES
-  '<div class="page">' +
-  '<div class="section-title">Scope of Services \u2014 Property Management</div>' +
-  '<p style="font-size:12px;color:#555;margin-bottom:16px">Camelot will serve as the exclusive managing agent for ' + d.buildingName + ', providing comprehensive front-end and back-end management including:</p>' +
+  /* Pricing tiers */
+  '<div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#A89035;font-weight:700;margin-bottom:10px;padding-bottom:4px;border-bottom:2px solid #A89035">Pricing &nbsp;\u2014&nbsp; ' + d.units + ' Units</div>' +
 
-  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Day-to-Day Operations & Oversight</strong><br><span style="font-size:11px;color:#666">Full operational management of building systems, common areas, and staff supervision</span></div></div>' +
-  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Weekly Property Inspections</strong><br><span style="font-size:11px;color:#666">On-site walkthroughs documenting conditions, maintenance needs, and staff performance</span></div></div>' +
-  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Resident Communications & Inquiry Handling</strong><br><span style="font-size:11px;color:#666">24/7 AI-assisted response via ConciergePlus + dedicated property manager for all inquiries</span></div></div>' +
-  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Accounts Receivable & Collections</strong><br><span style="font-size:11px;color:#666">Rent/maintenance collection, arrears tracking, legal coordination for non-payment</span></div></div>' +
-  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Violation Monitoring & Resolution</strong><br><span style="font-size:11px;color:#666">Proactive HPD, DOB, and ECB violation tracking with certified correction filings</span></div></div>' +
-  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Financial Reporting & CPA Oversight</strong><br><span style="font-size:11px;color:#666">Monthly financials, annual budget preparation, in-house CPA review, audit coordination</span></div></div>' +
-  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Board Meeting Attendance & Minutes</strong><br><span style="font-size:11px;color:#666">Preparation of board packages, meeting facilitation, AI-assisted minutes distribution</span></div></div>' +
-  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Vendor Management & 3-Bid Procurement</strong><br><span style="font-size:11px;color:#666">Competitive bidding through Camelot vendor network \u2014 elevator, cleaning, extermination, HVAC</span></div></div>' +
-  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>24/7 Emergency Response</strong><br><span style="font-size:11px;color:#666">After-hours emergency hotline with direct escalation to management and licensed contractors</span></div></div>' +
-  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Insurance Program Oversight</strong><br><span style="font-size:11px;color:#666">Annual coverage review, claims management, independent broker market analysis</span></div></div>' +
-  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Compliance Monitoring</strong><br><span style="font-size:11px;color:#666">LL97 carbon compliance, LL11/FISP facade inspections, Local Law tracking and filings</span></div></div>' +
-  '</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">' +
 
-  // SECTION 3: VALUE-ADD SERVICES
-  '<div class="page">' +
-  '<div class="section-title">Value-Add Services Available</div>' +
-  '<p style="font-size:12px;color:#555;margin-bottom:16px">Beyond core management, Camelot offers specialized services that create additional value:</p>' +
-  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035"><strong style="color:#3A4B5B">\uD83C\uDFE0 Licensed Real Estate Brokerage</strong><p style="font-size:11px;color:#666;margin-top:4px">Sales, leasing, and market analysis through Camelot Brokerage Services Corp</p></div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035"><strong style="color:#3A4B5B">\uD83D\uDEE0 Capital Project Management</strong><p style="font-size:11px;color:#666;margin-top:4px">Renovation oversight, capital improvement planning, contractor management up to $50K included in Premier tier</p></div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035"><strong style="color:#3A4B5B">\u2705 LL97 & Environmental Compliance</strong><p style="font-size:11px;color:#666;margin-top:4px">Carbon penalty modeling, compliance roadmaps, Parity energy monitoring integration</p></div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035"><strong style="color:#3A4B5B">\uD83D\uDD27 Construction, Maintenance & Repair</strong><p style="font-size:11px;color:#666;margin-top:4px">General construction, emergency repairs, preventive maintenance programs</p></div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035"><strong style="color:#3A4B5B">\u2728 Cleaning Services</strong><p style="font-size:11px;color:#666;margin-top:4px">Common area cleaning, post-construction cleanup, deep cleaning programs</p></div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035"><strong style="color:#3A4B5B">\uD83D\uDC64 Staffing Services</strong><p style="font-size:11px;color:#666;margin-top:4px">Resident Manager, Superintendent, Porter, Handyman \u2014 direct hire or Camelot-managed</p></div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035;grid-column:1/-1"><strong style="color:#3A4B5B">\uD83D\uDCBB Technology: ConciergePlus + SCOUT Intelligence + Merlin AI</strong><p style="font-size:11px;color:#666;margin-top:4px">26-module resident portal, AI-powered building intelligence, automated compliance tracking, digital board packages</p></div>' +
-  '</div>' +
-  '</div>' +
+  '<div style="border:1.5px solid #E5E3DE;border-radius:8px;padding:14px;text-align:center">' +
+  '<div style="font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:#888">Classic</div>' +
+  '<div style="font-size:24px;font-weight:800;color:#A89035;margin:6px 0">$' + (d.pricePerUnit > 50 ? d.pricePerUnit - 12 : 38) + '\u2013' + (d.pricePerUnit > 50 ? d.pricePerUnit : 55) + '</div>' +
+  '<div style="font-size:9px;color:#888">per unit / month</div>' +
+  '<div style="font-size:9px;color:#555;margin-top:8px;text-align:left;line-height:1.5">\u2714 Full-service management<br>\u2714 In-house CPA & financials<br>\u2714 Weekly inspections<br>\u2714 Compliance monitoring<br>\u2714 Vendor management</div></div>' +
 
-  // SECTION 4: PRICING
-  '<div class="page">' +
-  '<div class="section-title">Pricing</div>' +
-  '<p style="font-size:12px;color:#555;margin-bottom:20px">Based on our analysis of ' + d.buildingName + ' (' + d.units + ' units), we recommend the following service tiers:</p>' +
-  '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">' +
+  '<div style="border:2px solid #A89035;border-radius:8px;padding:14px;text-align:center;background:linear-gradient(to bottom,#FAF8F5,#F5F0E5)">' +
+  '<div style="font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:#A89035;font-weight:700">\u2B50 Recommended</div>' +
+  '<div style="font-size:24px;font-weight:800;color:#A89035;margin:6px 0">$' + (d.pricePerUnit > 50 ? d.pricePerUnit - 5 : 45) + '\u2013' + (d.pricePerUnit > 50 ? d.pricePerUnit + 10 : 65) + '</div>' +
+  '<div style="font-size:9px;color:#888">per unit / month</div>' +
+  '<div style="font-size:9px;color:#555;margin-top:8px;text-align:left;line-height:1.5">\u2714 Everything in Classic<br>\u2714 ConciergePlus (26 modules)<br>\u2714 Merlin AI + SCOUT reports<br>\u2714 LL97 penalty modeling<br>\u2714 $0 bank fees<br>\u2714 <strong style="color:#A89035">FREE $2,500 inspection</strong></div></div>' +
 
-  '<div class="tier-card"><div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:8px">Tier 1</div><div style="font-size:18px;font-weight:700;color:#3A4B5B">Camelot Classic</div><div style="font-size:28px;font-weight:800;color:#A89035;margin:12px 0">$' + (d.pricePerUnit > 50 ? d.pricePerUnit - 12 : 38) + '\u2013$' + (d.pricePerUnit > 50 ? d.pricePerUnit : 55) + '</div><div style="font-size:10px;color:#888">per unit / month</div><ul style="text-align:left;font-size:11px;color:#555;margin-top:12px;padding-left:16px;line-height:1.8"><li>Full-service management</li><li>In-house CPA</li><li>Weekly inspections</li><li>Compliance monitoring</li><li>Standard tech stack</li></ul></div>' +
-
-  '<div class="tier-card recommended"><div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;margin-bottom:8px">\u2B50 Recommended</div><div style="font-size:18px;font-weight:700;color:#3A4B5B">Camelot Intelligence</div><div style="font-size:28px;font-weight:800;color:#A89035;margin:12px 0">$' + (d.pricePerUnit > 50 ? d.pricePerUnit - 5 : 45) + '\u2013$' + (d.pricePerUnit > 50 ? d.pricePerUnit + 10 : 65) + '</div><div style="font-size:10px;color:#888">per unit / month</div><ul style="text-align:left;font-size:11px;color:#555;margin-top:12px;padding-left:16px;line-height:1.8"><li>Everything in Classic</li><li>ConciergePlus (26 modules)</li><li>Merlin AI assistant</li><li>SCOUT quarterly reports</li><li>LL97 penalty modeling</li><li>Zero bank fees</li><li>FREE $2,500 building inspection</li></ul></div>' +
-
-  '<div class="tier-card"><div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:8px">Tier 3</div><div style="font-size:18px;font-weight:700;color:#3A4B5B">Camelot Premier</div><div style="font-size:28px;font-weight:800;color:#A89035;margin:12px 0">$' + (d.pricePerUnit > 50 ? d.pricePerUnit + 10 : 65) + '\u2013$' + (d.pricePerUnit > 50 ? d.pricePerUnit + 30 : 90) + '</div><div style="font-size:10px;color:#888">per unit / month</div><ul style="text-align:left;font-size:11px;color:#555;margin-top:12px;padding-left:16px;line-height:1.8"><li>Everything in Intelligence</li><li>Dedicated senior PM</li><li>Monthly board reports</li><li>Capital projects up to $50K</li><li>Insurance & vendor rebid guarantee</li><li>Priority 30-min emergency</li><li>Annual session with David</li></ul></div>' +
+  '<div style="border:1.5px solid #E5E3DE;border-radius:8px;padding:14px;text-align:center">' +
+  '<div style="font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:#888">Premier</div>' +
+  '<div style="font-size:24px;font-weight:800;color:#A89035;margin:6px 0">$' + (d.pricePerUnit > 50 ? d.pricePerUnit + 10 : 65) + '\u2013' + (d.pricePerUnit > 50 ? d.pricePerUnit + 30 : 90) + '</div>' +
+  '<div style="font-size:9px;color:#888">per unit / month</div>' +
+  '<div style="font-size:9px;color:#555;margin-top:8px;text-align:left;line-height:1.5">\u2714 Everything in Intelligence<br>\u2714 Dedicated senior PM<br>\u2714 Monthly board reports<br>\u2714 Capital projects to $50K<br>\u2714 Insurance rebid guarantee<br>\u2714 Annual session with David</div></div>' +
 
   '</div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:14px;margin-top:16px;font-size:11px;color:#555">' +
-  '<strong style="color:#A89035">\u2714 Accounting services WAIVED</strong> for the first 12 months<br>' +
-  '<strong style="color:#A89035">\u2714 Technology setup:</strong> $50/unit/mo (FREE first 6 months)<br>' +
-  '<strong style="color:#A89035">\u2714 Management fee</strong> = greater of fixed monthly fee or 5% of gross collected rent' +
-  '</div>' +
+
+  '<div style="display:flex;gap:16px;font-size:9px;color:#555;justify-content:center">' +
+  '<span>\u2714 <strong style="color:#A89035">Accounting WAIVED</strong> (12 mo)</span>' +
+  '<span>\u2714 <strong style="color:#A89035">Tech $50/unit</strong> (FREE 6 mo)</span>' +
+  '<span>\u2714 <strong style="color:#A89035">Fee</strong> = fixed or 5% gross rent</span>' +
   '</div>' +
 
-  // SECTION 5: 90-DAY TRANSITION PLAN
-  '<div class="page">' +
-  '<div class="section-title">90-Day Transition Plan</div>' +
-  '<p style="font-size:12px;color:#555;margin-bottom:20px">Our proven onboarding process ensures zero disruption to residents and staff:</p>' +
-
-  '<div class="timeline-item"><div class="timeline-dot">1</div><div><strong style="color:#3A4B5B">Days 1\u20137: Kickoff & Discovery</strong><p style="font-size:11px;color:#666;margin-top:4px">Kickoff meeting with board/ownership \u2022 Document collection (financials, leases, vendor contracts, insurance) \u2022 Complete vendor & staff inventory \u2022 Building condition assessment \u2022 Introduce Camelot team</p></div></div>' +
-  '<div class="timeline-item"><div class="timeline-dot">2</div><div><strong style="color:#3A4B5B">Days 8\u201330: System Setup & Audit</strong><p style="font-size:11px;color:#666;margin-top:4px">Deploy MDS, ConciergePlus, AppFolio \u2022 Initiate vendor rebid process \u2022 Compliance audit (HPD, DOB, LL97) \u2022 Insurance review \u2022 Introduce Camelot to staff & residents \u2022 Launch resident portal</p></div></div>' +
-  '<div class="timeline-item"><div class="timeline-dot">3</div><div><strong style="color:#3A4B5B">Days 31\u201360: Operations Live</strong><p style="font-size:11px;color:#666;margin-top:4px">First board report delivered \u2022 Violation resolution program begins \u2022 Financial systems fully live \u2022 Collections process established \u2022 Emergency protocols tested</p></div></div>' +
-  '<div class="timeline-item"><div class="timeline-dot">4</div><div><strong style="color:#3A4B5B">Days 61\u201390: Full Stabilization</strong><p style="font-size:11px;color:#666;margin-top:4px">Full operations stabilized \u2022 First quarterly SCOUT report delivered \u2022 Vendor savings realized \u2022 Technology fully deployed \u2022 First LL97 compliance roadmap (if applicable) \u2022 Resident satisfaction survey</p></div></div>' +
-
-  '<div style="background:#3A4B5B;border-radius:8px;padding:16px;color:#fff;margin-top:20px;text-align:center">' +
-  '<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#A89035;margin-bottom:6px">Our Commitment</div>' +
-  '<div style="font-size:14px;font-weight:600">Zero disruption to residents. Full transparency to the board. Measurable results by Day 90.</div>' +
-  '</div>' +
+  /* 90-Day Transition — compact */
+  '<div style="margin-top:14px;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#A89035;font-weight:700;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #A89035">90-Day Transition</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">' +
+  '<div style="background:#3A4B5B;border-radius:6px;padding:10px;color:#fff"><div style="font-size:10px;color:#A89035;font-weight:700;margin-bottom:4px">DAYS 1\u201330</div><div style="font-size:9px;line-height:1.4;opacity:0.9">File audit &bull; FREE inspection &bull; Staff review &bull; Vendor analysis &bull; Compliance review &bull; System setup &bull; Tenant notification</div></div>' +
+  '<div style="background:#3A4B5B;border-radius:6px;padding:10px;color:#fff"><div style="font-size:10px;color:#A89035;font-weight:700;margin-bottom:4px">DAYS 31\u201360</div><div style="font-size:9px;line-height:1.4;opacity:0.9">First board report &bull; Violation program &bull; Vendor rebidding &bull; Portal launch &bull; Collections active &bull; Financial systems live</div></div>' +
+  '<div style="background:#3A4B5B;border-radius:6px;padding:10px;color:#fff"><div style="font-size:10px;color:#A89035;font-weight:700;margin-bottom:4px">DAYS 61\u201390</div><div style="font-size:9px;line-height:1.4;opacity:0.9">Full ops stabilized &bull; SCOUT report &bull; Vendor savings realized &bull; Tech deployed &bull; LL97 roadmap &bull; Resident survey</div></div>' +
   '</div>' +
 
-  // SECTION 6: ABOUT CAMELOT
-  '<div class="page">' +
-  '<div class="section-title">About Camelot Realty Group</div>' +
-  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:800;color:#A89035">18+</div><div style="font-size:10px;color:#888;text-transform:uppercase">Years Experience</div></div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:800;color:#A89035">42</div><div style="font-size:10px;color:#888;text-transform:uppercase">Properties Managed</div></div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:800;color:#A89035">5</div><div style="font-size:10px;color:#888;text-transform:uppercase">Boroughs Covered</div></div>' +
-  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:800;color:#A89035">2006</div><div style="font-size:10px;color:#888;text-transform:uppercase">Founded</div></div>' +
-  '</div>' +
-  '<p style="font-size:12px;color:#555;line-height:1.8;margin-bottom:14px">Camelot Realty Group is a boutique property management firm headquartered at <strong>477 Madison Avenue, 6th Floor, New York, NY 10022</strong>. Founded in 2006 by David A. Goldoff, we specialize in co-op, condo, and rental management with a technology-forward approach that delivers measurable results.</p>' +
-  '<p style="font-size:12px;color:#555;line-height:1.8;margin-bottom:14px"><strong>Banking Partner:</strong> BankUnited \u2014 zero account fees, premium rate matching<br><strong>Awards:</strong> RED Awards 2025, REBNY Leadership Award<br><strong>Technology:</strong> AppFolio, BuildingLink, ConciergePlus+AI, SCOUT, Merlin AI, Parity, Prisma</p>' +
+  '</div>' + /* end page 2 */
+
+  /* ═══════════════ PAGE 3: NEXT STEPS + SIGNATURES ═══════════════ */
+  '<div class="page" style="padding:28px 36px">' +
+
+  '<div style="font-size:18px;font-weight:800;color:#3A4B5B;border-left:4px solid #A89035;padding-left:14px;margin-bottom:16px">Next Steps</div>' +
+
+  '<div style="background:#3A4B5B;border-radius:10px;padding:22px;color:#fff;text-align:center;margin-bottom:18px">' +
+  '<div style="font-size:15px;font-weight:700">We\u2019d like to meet \u2014 in person or virtually \u2014 to discuss this proposal.</div>' +
+  '<div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:6px">This proposal is a starting point. We want to understand your priorities before finalizing terms.</div>' +
   '</div>' +
 
-  // SECTION 7: NEXT STEPS
-  '<div class="page">' +
-  '<div class="section-title">Next Steps</div>' +
-  '<div style="background:#3A4B5B;border-radius:10px;padding:28px;color:#fff;text-align:center;margin-bottom:24px">' +
-  '<div style="font-size:18px;font-weight:700;margin-bottom:8px">We must meet in person or virtually to discuss this proposal further.</div>' +
-  '<div style="font-size:12px;color:rgba(255,255,255,0.7)">This proposal is a starting point. We want to learn more about your building, your board, and your priorities before finalizing terms.</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:18px">' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:12px;text-align:center"><div style="font-size:18px;margin-bottom:4px">\uD83D\uDCCB</div><div style="font-size:10px;font-weight:700;color:#3A4B5B">1. Review</div><div style="font-size:9px;color:#666">Review this proposal and the Jackie Intelligence Report</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:12px;text-align:center"><div style="font-size:18px;margin-bottom:4px">\uD83E\uDD1D</div><div style="font-size:10px;font-weight:700;color:#3A4B5B">2. Meet</div><div style="font-size:9px;color:#666">Schedule a meeting to discuss scope, pricing, and timeline</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:12px;text-align:center"><div style="font-size:18px;margin-bottom:4px">\uD83D\uDCDD</div><div style="font-size:10px;font-weight:700;color:#3A4B5B">3. Agreement</div><div style="font-size:9px;color:#666">We deliver a formal Management Agreement for execution</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:6px;padding:12px;text-align:center"><div style="font-size:18px;margin-bottom:4px">\uD83D\uDE80</div><div style="font-size:10px;font-weight:700;color:#3A4B5B">4. Transition</div><div style="font-size:9px;color:#666">Onboarding begins within days \u2014 zero disruption</div></div>' +
   '</div>' +
 
-  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">' +
-  '<a href="https://zoom.us" style="display:block;text-decoration:none;background:#2D8CFF;color:#fff;padding:20px;border-radius:10px;text-align:center;font-weight:700;font-size:14px">\uD83D\uDCF9 Schedule Zoom Meeting</a>' +
-  '<a href="mailto:dgoldoff@camelot.nyc?subject=' + encodeURIComponent('Meeting Request — ' + d.buildingName) + '" style="display:block;text-decoration:none;background:#A89035;color:#fff;padding:20px;border-radius:10px;text-align:center;font-weight:700;font-size:14px">\u2709 Email to Schedule</a>' +
+  /* Contact card */
+  '<div style="background:linear-gradient(135deg,#3A4B5B,#2C3240);border-radius:8px;padding:16px 20px;color:#fff;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">' +
+  '<div><strong style="font-size:13px">David A. Goldoff</strong><br><span style="font-size:10px;color:#A89035">President &amp; Licensed Property Manager</span></div>' +
+  '<div style="text-align:right;font-size:10px;line-height:1.6;color:rgba(255,255,255,0.8)">(212) 206-9939 &nbsp;\u00B7&nbsp; (646) 523-9068<br>dgoldoff@camelot.nyc &nbsp;\u00B7&nbsp; www.camelot.nyc<br>477 Madison Avenue, 6th Fl, NY 10022</div>' +
   '</div>' +
 
-  '<div style="text-align:center;font-size:13px;color:#555;line-height:1.8">' +
-  '<strong style="color:#3A4B5B">David A. Goldoff</strong>, President<br>' +
-  '(212) 206-9939 | (646) 523-9068<br>' +
-  '<a href="mailto:dgoldoff@camelot.nyc" style="color:#A89035">dgoldoff@camelot.nyc</a> | <a href="https://www.camelot.nyc" style="color:#A89035">www.camelot.nyc</a><br>' +
-  '477 Madison Avenue, 6th Floor, New York, NY 10022' +
-  '</div>' +
+  /* Signature blocks */
+  '<div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#A89035;font-weight:700;margin-bottom:12px;padding-bottom:4px;border-bottom:2px solid #A89035">Authorization</div>' +
+  '<p style="font-size:10px;color:#666;margin-bottom:16px">Upon execution, this proposal constitutes a mutual letter of intent to engage Camelot Realty Group as managing agent for ' + d.buildingName + '. Final terms will be documented in a formal Property Management Agreement.</p>' +
+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">' +
+
+  '<div>' +
+  '<div style="font-size:11px;font-weight:700;color:#3A4B5B;margin-bottom:10px">CLIENT</div>' +
+  '<div style="font-size:9px;color:#888;margin-bottom:2px">Authorized Representative</div><div class="sig-line"></div><div style="font-size:9px;color:#555">Name &amp; Title</div>' +
+  '<div style="margin-top:12px;font-size:9px;color:#888;margin-bottom:2px">Signature</div><div class="sig-line"></div>' +
+  '<div style="margin-top:12px;font-size:9px;color:#888;margin-bottom:2px">Date</div><div class="sig-line" style="width:160px"></div>' +
+  '<div style="margin-top:8px;font-size:10px;color:#3A4B5B;font-weight:600">' + d.buildingName + '</div>' +
   '</div>' +
 
-  // SECTION 8: SIGNATURE PAGE
-  '<div class="page">' +
-  '<div class="section-title">Authorization & Signatures</div>' +
-  '<p style="font-size:12px;color:#555;margin-bottom:24px">Upon execution, this proposal constitutes a mutual letter of intent to enter into a formal Property Management Agreement for ' + d.buildingName + ' at ' + d.address + '. Final terms, including specific fee schedules and service scope, will be documented in a comprehensive management agreement.</p>' +
-
-  '<div class="sig-block">' +
-  '<div style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:16px">CLIENT</div>' +
-  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">' +
-  '<div><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Authorized Representative</div><div class="sig-line"></div><div style="font-size:11px;color:#555">Name & Title</div></div>' +
-  '<div><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Date</div><div class="sig-line"></div></div>' +
-  '</div>' +
-  '<div style="margin-top:20px"><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Signature</div><div class="sig-line" style="width:400px"></div></div>' +
-  '<div style="margin-top:12px"><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Property / Entity Name</div><div style="font-size:13px;font-weight:600;color:#3A4B5B">' + d.buildingName + '</div></div>' +
+  '<div>' +
+  '<div style="font-size:11px;font-weight:700;color:#3A4B5B;margin-bottom:10px">CAMELOT REALTY GROUP</div>' +
+  '<div style="font-size:9px;color:#888;margin-bottom:2px">Authorized Representative</div><div class="sig-line"></div><div style="font-size:9px;color:#555">David A. Goldoff, President</div>' +
+  '<div style="margin-top:12px;font-size:9px;color:#888;margin-bottom:2px">Signature</div><div class="sig-line"></div>' +
+  '<div style="margin-top:12px;font-size:9px;color:#888;margin-bottom:2px">Date</div><div class="sig-line" style="width:160px"></div>' +
+  '<div style="margin-top:8px;font-size:10px;color:#888">Camelot Realty Group LLC &nbsp;\u00B7&nbsp; License #10491200104</div>' +
   '</div>' +
 
-  '<div class="sig-block">' +
-  '<div style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:16px">CAMELOT REALTY GROUP</div>' +
-  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">' +
-  '<div><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Authorized Representative</div><div class="sig-line"></div><div style="font-size:11px;color:#555">David A. Goldoff, President</div></div>' +
-  '<div><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Date</div><div class="sig-line"></div></div>' +
-  '</div>' +
-  '<div style="margin-top:20px"><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Signature</div><div class="sig-line" style="width:400px"></div></div>' +
-  '<div style="margin-top:12px;font-size:10px;color:#888">Camelot Realty Group LLC | 477 Madison Avenue, 6th Fl, NY 10022 | License #10491200104</div>' +
   '</div>' +
 
-  '<div style="margin-top:32px;padding:14px;background:#F5F0E5;border-radius:8px;font-size:10px;color:#888;line-height:1.6">' +
-  'This proposal is confidential and intended solely for the recipient. Terms are valid for 10 business days from the date above. For questions or to request a formal management agreement, contact <a href="mailto:dgoldoff@camelot.nyc" style="color:#A89035">dgoldoff@camelot.nyc</a> or <a href="mailto:management@camelot.nyc" style="color:#A89035">management@camelot.nyc</a>.' +
+  '<div style="margin-top:20px;padding:10px 14px;background:#F5F0E5;border-radius:6px;font-size:9px;color:#888;line-height:1.5">' +
+  'This proposal is confidential. Terms valid 10 business days. Contact <a href="mailto:dgoldoff@camelot.nyc" style="color:#A89035">dgoldoff@camelot.nyc</a> or <a href="mailto:management@camelot.nyc" style="color:#A89035">management@camelot.nyc</a> for questions or to request the formal management agreement.' +
   '</div>' +
-  '</div>' +
+
+  '</div>' + /* end page 3 */
 
   '</body></html>';
 
@@ -3151,7 +3163,6 @@ function generateProposal() {
     setTimeout(function() { w.print(); }, 800);
   }
 }
-</script>
 </body>
 </html>`;
 }
