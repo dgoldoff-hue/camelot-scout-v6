@@ -481,6 +481,126 @@ const CAMELOT = {
 };
 
 // ============================================================
+// Portfolio Database (Camelot + Blue Owl + Penn South Capital)
+// ============================================================
+
+interface PortfolioBuilding {
+  address: string;
+  name: string;
+  type: 'Condominium' | 'Co-operative' | 'Rental' | 'Commercial';
+  neighborhood: string;
+  borough: string;
+  lat: number;
+  lng: number;
+  outcome: string;
+  brand: 'Camelot' | 'Blue Owl' | 'Penn South Capital';
+  caseStudy?: { situation: string; response: string; result: string; statLine: string };
+}
+
+const CAMELOT_PORTFOLIO: PortfolioBuilding[] = [
+  { address: '949 Park Avenue', name: '949 Park Avenue Condominium', type: 'Condominium', neighborhood: 'Carnegie Hill, UES', borough: 'Manhattan', lat: 40.7772, lng: -73.9601, outcome: '$200K saved in one insurance claim', brand: 'Camelot', caseStudy: { situation: 'A 9th-floor window shattered unexpectedly, triggering FDNY emergency response and creating an immediate pedestrian safety risk on Park Avenue.', response: 'Within hours, Camelot secured the area with a sidewalk bridge, commissioned a professional engineering assessment, and coordinated directly with the insurance carrier.', result: '949 Park Avenue saved $200,000. Full replacement cost covered by insurance. Updated house rules and improved 32BJ staff accountability.', statLine: '$200,000 SAVED \u00B7 ZERO DISRUPTION TO RESIDENTS \u00B7 PARK AVENUE PORTFOLIO \u2014 CAMELOT ACTIVE' } },
+  { address: '105 E 29th Street', name: '105 E 29th Street Co-op', type: 'Co-operative', neighborhood: 'NoMad / Midtown South', borough: 'Manhattan', lat: 40.7437, lng: -73.9830, outcome: 'Vendor rebid: 14% savings Yr 1', brand: 'Camelot' },
+  { address: '201 E 15th Street', name: '201 E 15th Street Co-op', type: 'Co-operative', neighborhood: 'Gramercy Park', borough: 'Manhattan', lat: 40.7338, lng: -73.9851, outcome: 'Insurance restructure: 18% reduction', brand: 'Camelot' },
+  { address: '165 E 7th Street', name: '165 E 7th Street Condominium', type: 'Condominium', neighborhood: 'East Village', borough: 'Manhattan', lat: 40.7260, lng: -73.9835, outcome: 'LL97 roadmap delivered in 60 days', brand: 'Camelot' },
+  { address: '137 Franklin Street', name: '137 Franklin Street Apartment Corp', type: 'Co-operative', neighborhood: 'Tribeca', borough: 'Manhattan', lat: 40.7178, lng: -74.0044, outcome: '\u201CBest and most knowledgeable PMs\u201D', brand: 'Camelot' },
+  { address: '58 White Street', name: '58 White Street', type: 'Condominium', neighborhood: 'Tribeca', borough: 'Manhattan', lat: 40.7186, lng: -74.0022, outcome: '$1.2M deferred maintenance resolved', brand: 'Camelot', caseStudy: { situation: 'Building had $1.2M in deferred capital maintenance, multiple open DOB violations, and an expiring insurance policy with no carrier willing to renew.', response: 'Camelot prioritized violations, engaged new engineering and legal counsel, executed emergency capital repairs, and secured insurance through our broker network.', result: '58 White Street: All critical violations resolved within 90 days. Insurance renewed at competitive rates. Capital reserve plan funded and on track.', statLine: '$1.2M DEFERRED MAINTENANCE RESOLVED \u00B7 ALL VIOLATIONS CLEARED \u00B7 TRIBECA PORTFOLIO \u2014 CAMELOT ACTIVE' } },
+  { address: '300 E 56th Street', name: '300 E 56th Street', type: 'Co-operative', neighborhood: 'Sutton Place', borough: 'Manhattan', lat: 40.7588, lng: -73.9652, outcome: 'Full financial restructuring', brand: 'Camelot' },
+  { address: '465 Park Avenue', name: '465 Park Avenue', type: 'Condominium', neighborhood: 'Midtown East', borough: 'Manhattan', lat: 40.7625, lng: -73.9710, outcome: 'Capital planning overhaul', brand: 'Camelot' },
+  { address: '500 W 43rd Street', name: '500 W 43rd Street', type: 'Rental', neighborhood: "Hell's Kitchen", borough: 'Manhattan', lat: 40.7596, lng: -73.9948, outcome: 'Rent stabilized portfolio optimization', brand: 'Camelot' },
+  { address: '748 St Nicholas Avenue', name: '748 St Nicholas Avenue', type: 'Rental', neighborhood: 'Hamilton Heights', borough: 'Manhattan', lat: 40.8252, lng: -73.9433, outcome: 'HPD violations cleared 100%', brand: 'Camelot' },
+  { address: '86 W 127th Street', name: '86 W 127th Street', type: 'Rental', neighborhood: 'Harlem', borough: 'Manhattan', lat: 40.8088, lng: -73.9470, outcome: 'Full compliance restored', brand: 'Camelot' },
+  { address: '930 St Nicholas Avenue', name: '930 St Nicholas Avenue', type: 'Rental', neighborhood: 'Washington Heights', borough: 'Manhattan', lat: 40.8325, lng: -73.9406, outcome: 'Stabilization program', brand: 'Camelot' },
+  { address: '253 W 73rd Street', name: '253 W 73rd Street', type: 'Co-operative', neighborhood: 'Upper West Side', borough: 'Manhattan', lat: 40.7793, lng: -73.9793, outcome: 'Board governance restructured', brand: 'Camelot' },
+  { address: '39 5th Avenue', name: '39 Fifth Avenue', type: 'Co-operative', neighborhood: 'Greenwich Village', borough: 'Manhattan', lat: 40.7322, lng: -73.9958, outcome: 'Vendor savings 22%', brand: 'Camelot' },
+  { address: '260 W 26th Street', name: '260 W 26th Street', type: 'Co-operative', neighborhood: 'Chelsea', borough: 'Manhattan', lat: 40.7465, lng: -73.9960, outcome: 'Energy efficiency upgrade', brand: 'Camelot' },
+  { address: '56 E 87th Street', name: '56 E 87th Street', type: 'Co-operative', neighborhood: 'Carnegie Hill', borough: 'Manhattan', lat: 40.7829, lng: -73.9567, outcome: 'Board transition managed', brand: 'Camelot' },
+  { address: '604 Grand Street', name: '604 Grand Street', type: 'Rental', neighborhood: 'Williamsburg', borough: 'Brooklyn', lat: 40.7125, lng: -73.9394, outcome: 'Brooklyn expansion — stabilized ops', brand: 'Camelot' },
+  { address: '83-55 Woodhaven Boulevard', name: '83-55 Woodhaven Blvd', type: 'Co-operative', neighborhood: 'Woodhaven', borough: 'Queens', lat: 40.6934, lng: -73.8571, outcome: 'First Queens portfolio building', brand: 'Camelot' },
+  { address: '788 Pelham Parkway', name: '788 Pelham Parkway', type: 'Rental', neighborhood: 'Pelham Parkway', borough: 'Bronx', lat: 40.8563, lng: -73.8640, outcome: 'Bronx portfolio flagship', brand: 'Camelot' },
+  { address: '346 E 119th Street', name: '346 E 119th Street', type: 'Rental', neighborhood: 'East Harlem', borough: 'Manhattan', lat: 40.7970, lng: -73.9378, outcome: 'Distress turnaround', brand: 'Blue Owl' },
+  { address: '175 W 93rd Street', name: '175 W 93rd Street', type: 'Rental', neighborhood: 'Upper West Side', borough: 'Manhattan', lat: 40.7925, lng: -73.9719, outcome: 'Operations stabilized', brand: 'Blue Owl' },
+  { address: '410 E 6th Street', name: '410 E 6th Street', type: 'Rental', neighborhood: 'East Village', borough: 'Manhattan', lat: 40.7260, lng: -73.9810, outcome: 'Full renovation oversight', brand: 'Blue Owl' },
+  { address: '402 Henry Street', name: '402 Henry Street', type: 'Rental', neighborhood: 'Carroll Gardens', borough: 'Brooklyn', lat: 40.6801, lng: -73.9998, outcome: 'Brooklyn expansion flagship', brand: 'Penn South Capital' },
+  { address: '129 E 10th Street', name: '129 E 10th Street', type: 'Rental', neighborhood: 'East Village', borough: 'Manhattan', lat: 40.7285, lng: -73.9868, outcome: 'Compliance overhaul', brand: 'Penn South Capital' },
+];
+
+function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 3958.8; // Earth radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng/2) * Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function findNearbyPortfolioBuildings(lat: number | null, lng: number | null, borough: string, limit = 5): Array<PortfolioBuilding & { distance: number }> {
+  if (!lat || !lng) {
+    // No geocode — prefer same borough, then return first N
+    const sameBoro = CAMELOT_PORTFOLIO.filter(b => b.borough.toLowerCase() === borough.toLowerCase());
+    const others = CAMELOT_PORTFOLIO.filter(b => b.borough.toLowerCase() !== borough.toLowerCase());
+    return [...sameBoro, ...others].slice(0, limit).map(b => ({ ...b, distance: -1 }));
+  }
+  return CAMELOT_PORTFOLIO
+    .map(b => ({ ...b, distance: haversineDistance(lat, lng, b.lat, b.lng) }))
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, limit);
+}
+
+function buildPortfolioSection(d: MasterReportData): string {
+  const nearby = findNearbyPortfolioBuildings(d.latitude, d.longitude, d.borough, 5);
+  const hasNearby = nearby.length > 0 && nearby[0].distance !== -1 && nearby[0].distance < 10;
+  const caseStudyBldg = nearby.find(b => b.caseStudy) || CAMELOT_PORTFOLIO.find(b => b.caseStudy)!;
+
+  const tableRows = nearby.map(b => {
+    const distLabel = b.distance > 0 ? `${b.distance.toFixed(1)} mi` : (b.distance === -1 ? b.borough : '');
+    const distSpan = distLabel ? ` <span style="color:#A89035;font-size:10px;font-weight:600">(${distLabel})</span>` : '';
+    return `<tr>
+<td style="font-weight:700">${b.address}</td>
+<td>${b.type}</td>
+<td>${b.neighborhood}${distSpan}</td>
+<td style="color:#A89035;font-weight:600">Active</td>
+<td>${b.outcome}</td>
+</tr>`;
+  }).join('\n');
+
+  const nearCount = nearby.filter(b => b.distance >= 0 && b.distance < 3).length;
+  const proximityNote = hasNearby
+    ? `<div style="background:#EDE9DF;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:10px 16px;margin-bottom:14px;font-size:11px;color:#3A4B5B">
+<strong style="color:#A89035">\u2606 Local Presence:</strong> Camelot actively manages <strong>${nearCount} building${nearCount !== 1 ? 's' : ''} within 3 miles</strong> of ${d.buildingName}. Our team, vendors, and operational infrastructure are already embedded in your neighborhood.
+</div>`
+    : `<div style="background:#EDE9DF;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:10px 16px;margin-bottom:14px;font-size:11px;color:#3A4B5B">
+<strong style="color:#A89035">\u2606 Citywide Reach:</strong> Camelot manages 42 properties across all five boroughs \u2014 from Park Avenue penthouses to Brooklyn brownstones to Bronx rental portfolios. Our operations infrastructure means your building gets the same dedicated team, institutional knowledge, and vendor network regardless of location. Some of our most impactful results have come from buildings in new neighborhoods, where we bring fresh perspective and zero legacy bias.
+</div>`;
+
+  const cs = caseStudyBldg?.caseStudy;
+  const caseStudyHTML = cs ? `<div style="background:#3A4B5B;border-radius:8px;padding:18px;margin-top:16px;color:#fff">
+<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#A89035;font-weight:700;margin-bottom:8px">Case Study: ${caseStudyBldg.address} \u2014 Camelot in Action</div>
+<p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong>Situation:</strong> ${cs.situation}</p>
+<p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong>Response:</strong> ${cs.response}</p>
+<p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong style="color:#A89035">Result: ${cs.result}</strong></p>
+<div style="border-top:1px solid rgba(197,165,90,0.3);padding-top:8px;margin-top:8px;font-size:10px;color:#A89035;text-align:center;letter-spacing:1px">${cs.statLine}</div>
+</div>` : '';
+
+  return `<div class="section section-white">
+<div class="section-title">Camelot Portfolio \u2014 Near ${d.buildingName}</div>
+<div class="section-sub">Active buildings we manage, sorted by proximity to your property</div>
+${proximityNote}
+<table class="compare-table">
+<thead><tr>
+<th style="background:#3A4B5B;color:#fff">Building</th>
+<th style="background:#3A4B5B;color:#fff">Type</th>
+<th style="background:#3A4B5B;color:#fff">Neighborhood</th>
+<th style="background:#3A4B5B;color:#fff">Status</th>
+<th style="background:#3A4B5B;color:#fff">Outcome</th>
+</tr></thead>
+<tbody>
+${tableRows}
+</tbody>
+</table>
+${caseStudyHTML}
+</div>`;
+}
+
+// ============================================================
 // Data Builder
 // ============================================================
 
@@ -2629,36 +2749,8 @@ ${d.neighborhoodMarketData ? `
 </div>
 ` : ''}
 
-<!-- PAGE 22: PORTFOLIO REFERENCES + CASE STUDY -->
-<div class="section section-white">
-<div class="section-title">Camelot Portfolio References</div>
-<div class="section-sub">Buildings we manage that serve as operational benchmarks</div>
-
-<table class="compare-table">
-<thead><tr>
-<th style="background:#3A4B5B;color:#fff">Building</th>
-<th style="background:#3A4B5B;color:#fff">Type</th>
-<th style="background:#3A4B5B;color:#fff">Neighborhood</th>
-<th style="background:#3A4B5B;color:#fff">Status</th>
-<th style="background:#3A4B5B;color:#fff">Outcome</th>
-</tr></thead>
-<tbody>
-<tr><td style="font-weight:700">949 Park Avenue</td><td>Condominium</td><td>Carnegie Hill, UES</td><td style="color:#A89035;font-weight:600">Active</td><td>$200K saved in one insurance claim</td></tr>
-<tr><td style="font-weight:700">105 E 29th Street</td><td>Co-operative</td><td>NoMad / Midtown South</td><td style="color:#A89035;font-weight:600">Active</td><td>Vendor rebid: 14% savings Yr 1</td></tr>
-<tr><td style="font-weight:700">201 E 15th Street</td><td>Co-operative</td><td>Gramercy Park</td><td style="color:#A89035;font-weight:600">Active</td><td>Insurance restructure: 18% reduction</td></tr>
-<tr><td style="font-weight:700">165 E 7th Street</td><td>Condominium</td><td>East Village</td><td style="color:#A89035;font-weight:600">Active</td><td>LL97 roadmap delivered in 60 days</td></tr>
-<tr><td style="font-weight:700">137 Franklin Street</td><td>Co-operative</td><td>Tribeca</td><td style="color:#A89035;font-weight:600">Active</td><td>&ldquo;Best and most knowledgeable PMs&rdquo;</td></tr>
-</tbody>
-</table>
-
-<div style="background:#3A4B5B;border-radius:8px;padding:18px;margin-top:16px;color:#fff">
-<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#A89035;font-weight:700;margin-bottom:8px">Case Study: 949 Park Avenue — Camelot in Action</div>
-<p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong>Situation:</strong> A 9th-floor window shattered unexpectedly, triggering FDNY emergency response and creating an immediate pedestrian safety risk on Park Avenue.</p>
-<p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong>Response:</strong> Within hours, Camelot secured the area with a sidewalk bridge, commissioned a professional engineering assessment, and coordinated directly with the insurance carrier.</p>
-<p style="font-size:12px;line-height:1.7;margin-bottom:8px"><strong style="color:#A89035">Result: 949 Park Avenue saved $200,000.</strong> Full replacement cost covered by insurance. Updated house rules and improved 32BJ staff accountability.</p>
-<div style="border-top:1px solid rgba(197,165,90,0.3);padding-top:8px;margin-top:8px;font-size:10px;color:#A89035;text-align:center;letter-spacing:1px">$200,000 SAVED \u00B7 ZERO DISRUPTION TO RESIDENTS \u00B7 PARK AVENUE PORTFOLIO \u2014 CAMELOT ACTIVE</div>
-</div>
-</div>
+<!-- PAGE 22: PORTFOLIO REFERENCES + CASE STUDY (DYNAMIC) -->
+${buildPortfolioSection(d)}
 
 <!-- PAGE 23: BANKING PARTNER -->
 <div class="section section-cream">
@@ -2814,6 +2906,252 @@ ${d.neighborhoodMarketData ? `
 </div>
 
 </div>
+
+<!-- FLOATING PROPOSAL BUTTON -->
+<div style="position:fixed;bottom:32px;right:32px;z-index:9999;display:flex;flex-direction:column;align-items:flex-end;gap:8px" class="no-print">
+<button onclick="generateProposal()" style="background:linear-gradient(135deg,#A89035,#C5A55A);color:#fff;border:none;padding:16px 28px;border-radius:50px;font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(168,144,53,0.4);display:flex;align-items:center;gap:10px;transition:all 0.3s;letter-spacing:0.3px" onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 6px 28px rgba(168,144,53,0.5)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(168,144,53,0.4)'">
+\uD83D\uDCCB Proposal of Services
+</button>
+</div>
+
+<script>
+function generateProposal() {
+  var d = {
+    buildingName: ${JSON.stringify(d.buildingName)},
+    address: ${JSON.stringify(d.address)},
+    borough: ${JSON.stringify(d.borough)},
+    units: ${d.units},
+    yearBuilt: ${d.yearBuilt},
+    buildingClass: ${JSON.stringify(d.buildingClass)},
+    propertyType: ${JSON.stringify(d.propertyType)},
+    stories: ${d.stories},
+    buildingArea: ${d.buildingArea},
+    managementCompany: ${JSON.stringify(d.managementCompany || '')},
+    registrationOwner: ${JSON.stringify(d.registrationOwner || '')},
+    dofOwner: ${JSON.stringify(d.dofOwner || '')},
+    violationsOpen: ${d.violationsOpen},
+    violationsTotal: ${d.violationsTotal},
+    violationClassC: ${d.violationClassC},
+    ecbPenaltyBalance: ${d.ecbPenaltyBalance},
+    scoutGrade: ${JSON.stringify(d.scoutGrade)},
+    isRentStabilized: ${d.isRentStabilized},
+    pricePerUnit: ${d.pricePerUnit},
+    monthlyFee: ${d.monthlyFee},
+    annualFee: ${d.annualFee},
+    boardMembers: ${JSON.stringify(d.boardMembers || [])},
+    buildingStaff: ${JSON.stringify(d.buildingStaff || [])},
+    ll97Status: ${JSON.stringify(d.ll97?.complianceStatus || 'unknown')},
+    date: ${JSON.stringify(d.date)},
+  };
+
+  var owner = d.registrationOwner || d.dofOwner || 'Board of Directors';
+  var boardList = (d.boardMembers || []).map(function(b){ return b.name + (b.title ? ' (' + b.title + ')' : ''); }).join(', ') || 'To be confirmed';
+
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Proposal of Services — ' + d.buildingName + '</title>' +
+  '<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">' +
+  '<style>' +
+  '*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }' +
+  'body { font-family: "DM Sans", -apple-system, sans-serif; color: #2C3240; line-height: 1.6; }' +
+  'h1,h2,h3,h4 { font-family: "Plus Jakarta Sans", -apple-system, sans-serif; }' +
+  '.page { page-break-after: always; padding: 48px; min-height: 100vh; position: relative; }' +
+  '.page:last-child { page-break-after: auto; }' +
+  '.cover { background: linear-gradient(135deg, #3A4B5B 0%, #2C3240 100%); color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }' +
+  '.cover h1 { font-size: 32px; font-weight: 800; color: #A89035; margin-bottom: 8px; }' +
+  '.section-title { font-size: 20px; font-weight: 700; color: #3A4B5B; border-left: 4px solid #A89035; padding-left: 16px; margin-bottom: 16px; }' +
+  '.scope-item { display: flex; gap: 12px; margin-bottom: 10px; padding: 10px 14px; background: #F5F0E5; border-radius: 8px; }' +
+  '.scope-icon { width: 28px; height: 28px; background: #A89035; color: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }' +
+  '.tier-card { border: 2px solid #E5E3DE; border-radius: 10px; padding: 20px; text-align: center; }' +
+  '.tier-card.recommended { border-color: #A89035; background: linear-gradient(to bottom, #FAF8F5, #F5F0E5); }' +
+  '.timeline-item { display: flex; gap: 14px; margin-bottom: 14px; }' +
+  '.timeline-dot { width: 32px; height: 32px; background: #A89035; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }' +
+  '.sig-block { border-top: 1px solid #ccc; padding-top: 20px; margin-top: 40px; }' +
+  '.sig-line { border-bottom: 1px solid #2C3240; width: 300px; height: 40px; margin-bottom: 4px; }' +
+  '@media print { @page { margin: 0.5in; } .no-print { display: none !important; } }' +
+  '</style></head><body>' +
+
+  // COVER
+  '<div class="page cover">' +
+  '<div style="font-size:12px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:24px">Camelot Realty Group</div>' +
+  '<h1>' + d.buildingName + '</h1>' +
+  '<div style="font-size:16px;color:#fff;margin-top:8px;font-weight:600">Proposal of Services</div>' +
+  '<div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:16px">' + d.address + ' | ' + (d.borough || 'New York') + '</div>' +
+  '<div style="margin-top:40px;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.8">' +
+  'Prepared for: ' + owner + '<br>' +
+  'Prepared by: David A. Goldoff, President<br>' +
+  'Date: ' + d.date + '<br>' +
+  '<span style="color:#A89035;font-weight:600">Valid for 10 business days</span>' +
+  '</div>' +
+  '<div style="margin-top:auto;padding-top:32px;font-size:10px;color:rgba(255,255,255,0.3)">477 Madison Avenue, 6th Fl | New York, NY 10022 | (212) 206-9939 | www.camelot.nyc</div>' +
+  '</div>' +
+
+  // SECTION 1: ABOUT YOUR PROPERTY
+  '<div class="page">' +
+  '<div class="section-title">About Your Property</div>' +
+  '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">' +
+  '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;width:40%;color:#3A4B5B">Address</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.address + ', ' + (d.borough || 'New York') + '</td></tr>' +
+  '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Units</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.units + '</td></tr>' +
+  '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Year Built</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.yearBuilt + '</td></tr>' +
+  '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Stories</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.stories + '</td></tr>' +
+  '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Building Class</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.propertyType + ' (' + d.buildingClass + ')</td></tr>' +
+  (d.buildingArea > 0 ? '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Gross Area</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.buildingArea.toLocaleString() + ' SF</td></tr>' : '') +
+  (d.managementCompany ? '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Current Management</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE">' + d.managementCompany + '</td></tr>' : '') +
+  (d.isRentStabilized ? '<tr><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;font-weight:600;color:#3A4B5B">Rent Stabilized</td><td style="padding:8px 12px;border-bottom:1px solid #E5E3DE;color:#A89035;font-weight:600">Yes</td></tr>' : '') +
+  '</table>' +
+
+  '<div style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:10px">Key Findings</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:' + (d.violationsOpen > 20 ? '#dc2626' : d.violationsOpen > 5 ? '#A89035' : '#16a34a') + '">' + d.violationsOpen + '</div><div style="font-size:10px;color:#888;text-transform:uppercase">Open Violations</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#3A4B5B">' + d.scoutGrade + '</div><div style="font-size:10px;color:#888;text-transform:uppercase">Scout Grade</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#A89035">' + d.violationClassC + '</div><div style="font-size:10px;color:#888;text-transform:uppercase">Class C (Hazardous)</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:#3A4B5B">$' + d.ecbPenaltyBalance.toLocaleString() + '</div><div style="font-size:10px;color:#888;text-transform:uppercase">ECB Penalties</div></div>' +
+  '</div>' +
+
+  (d.boardMembers.length > 0 ? '<div style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">Contacts Identified</div><p style="font-size:12px;color:#555;margin-bottom:20px">' + boardList + '</p>' : '') +
+  '</div>' +
+
+  // SECTION 2: SCOPE OF SERVICES
+  '<div class="page">' +
+  '<div class="section-title">Scope of Services \u2014 Property Management</div>' +
+  '<p style="font-size:12px;color:#555;margin-bottom:16px">Camelot will serve as the exclusive managing agent for ' + d.buildingName + ', providing comprehensive front-end and back-end management including:</p>' +
+
+  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Day-to-Day Operations & Oversight</strong><br><span style="font-size:11px;color:#666">Full operational management of building systems, common areas, and staff supervision</span></div></div>' +
+  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Weekly Property Inspections</strong><br><span style="font-size:11px;color:#666">On-site walkthroughs documenting conditions, maintenance needs, and staff performance</span></div></div>' +
+  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Resident Communications & Inquiry Handling</strong><br><span style="font-size:11px;color:#666">24/7 AI-assisted response via ConciergePlus + dedicated property manager for all inquiries</span></div></div>' +
+  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Accounts Receivable & Collections</strong><br><span style="font-size:11px;color:#666">Rent/maintenance collection, arrears tracking, legal coordination for non-payment</span></div></div>' +
+  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Violation Monitoring & Resolution</strong><br><span style="font-size:11px;color:#666">Proactive HPD, DOB, and ECB violation tracking with certified correction filings</span></div></div>' +
+  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Financial Reporting & CPA Oversight</strong><br><span style="font-size:11px;color:#666">Monthly financials, annual budget preparation, in-house CPA review, audit coordination</span></div></div>' +
+  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Board Meeting Attendance & Minutes</strong><br><span style="font-size:11px;color:#666">Preparation of board packages, meeting facilitation, AI-assisted minutes distribution</span></div></div>' +
+  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Vendor Management & 3-Bid Procurement</strong><br><span style="font-size:11px;color:#666">Competitive bidding through Camelot vendor network \u2014 elevator, cleaning, extermination, HVAC</span></div></div>' +
+  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>24/7 Emergency Response</strong><br><span style="font-size:11px;color:#666">After-hours emergency hotline with direct escalation to management and licensed contractors</span></div></div>' +
+  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Insurance Program Oversight</strong><br><span style="font-size:11px;color:#666">Annual coverage review, claims management, independent broker market analysis</span></div></div>' +
+  '<div class="scope-item"><div class="scope-icon">\u2714</div><div><strong>Compliance Monitoring</strong><br><span style="font-size:11px;color:#666">LL97 carbon compliance, LL11/FISP facade inspections, Local Law tracking and filings</span></div></div>' +
+  '</div>' +
+
+  // SECTION 3: VALUE-ADD SERVICES
+  '<div class="page">' +
+  '<div class="section-title">Value-Add Services Available</div>' +
+  '<p style="font-size:12px;color:#555;margin-bottom:16px">Beyond core management, Camelot offers specialized services that create additional value:</p>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035"><strong style="color:#3A4B5B">\uD83C\uDFE0 Licensed Real Estate Brokerage</strong><p style="font-size:11px;color:#666;margin-top:4px">Sales, leasing, and market analysis through Camelot Brokerage Services Corp</p></div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035"><strong style="color:#3A4B5B">\uD83D\uDEE0 Capital Project Management</strong><p style="font-size:11px;color:#666;margin-top:4px">Renovation oversight, capital improvement planning, contractor management up to $50K included in Premier tier</p></div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035"><strong style="color:#3A4B5B">\u2705 LL97 & Environmental Compliance</strong><p style="font-size:11px;color:#666;margin-top:4px">Carbon penalty modeling, compliance roadmaps, Parity energy monitoring integration</p></div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035"><strong style="color:#3A4B5B">\uD83D\uDD27 Construction, Maintenance & Repair</strong><p style="font-size:11px;color:#666;margin-top:4px">General construction, emergency repairs, preventive maintenance programs</p></div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035"><strong style="color:#3A4B5B">\u2728 Cleaning Services</strong><p style="font-size:11px;color:#666;margin-top:4px">Common area cleaning, post-construction cleanup, deep cleaning programs</p></div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035"><strong style="color:#3A4B5B">\uD83D\uDC64 Staffing Services</strong><p style="font-size:11px;color:#666;margin-top:4px">Resident Manager, Superintendent, Porter, Handyman \u2014 direct hire or Camelot-managed</p></div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;border-left:3px solid #A89035;grid-column:1/-1"><strong style="color:#3A4B5B">\uD83D\uDCBB Technology: ConciergePlus + SCOUT Intelligence + Merlin AI</strong><p style="font-size:11px;color:#666;margin-top:4px">26-module resident portal, AI-powered building intelligence, automated compliance tracking, digital board packages</p></div>' +
+  '</div>' +
+  '</div>' +
+
+  // SECTION 4: PRICING
+  '<div class="page">' +
+  '<div class="section-title">Pricing</div>' +
+  '<p style="font-size:12px;color:#555;margin-bottom:20px">Based on our analysis of ' + d.buildingName + ' (' + d.units + ' units), we recommend the following service tiers:</p>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">' +
+
+  '<div class="tier-card"><div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:8px">Tier 1</div><div style="font-size:18px;font-weight:700;color:#3A4B5B">Camelot Classic</div><div style="font-size:28px;font-weight:800;color:#A89035;margin:12px 0">$' + (d.pricePerUnit > 50 ? d.pricePerUnit - 12 : 38) + '\u2013$' + (d.pricePerUnit > 50 ? d.pricePerUnit : 55) + '</div><div style="font-size:10px;color:#888">per unit / month</div><ul style="text-align:left;font-size:11px;color:#555;margin-top:12px;padding-left:16px;line-height:1.8"><li>Full-service management</li><li>In-house CPA</li><li>Weekly inspections</li><li>Compliance monitoring</li><li>Standard tech stack</li></ul></div>' +
+
+  '<div class="tier-card recommended"><div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;margin-bottom:8px">\u2B50 Recommended</div><div style="font-size:18px;font-weight:700;color:#3A4B5B">Camelot Intelligence</div><div style="font-size:28px;font-weight:800;color:#A89035;margin:12px 0">$' + (d.pricePerUnit > 50 ? d.pricePerUnit - 5 : 45) + '\u2013$' + (d.pricePerUnit > 50 ? d.pricePerUnit + 10 : 65) + '</div><div style="font-size:10px;color:#888">per unit / month</div><ul style="text-align:left;font-size:11px;color:#555;margin-top:12px;padding-left:16px;line-height:1.8"><li>Everything in Classic</li><li>ConciergePlus (26 modules)</li><li>Merlin AI assistant</li><li>SCOUT quarterly reports</li><li>LL97 penalty modeling</li><li>Zero bank fees</li><li>FREE $2,500 building inspection</li></ul></div>' +
+
+  '<div class="tier-card"><div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:8px">Tier 3</div><div style="font-size:18px;font-weight:700;color:#3A4B5B">Camelot Premier</div><div style="font-size:28px;font-weight:800;color:#A89035;margin:12px 0">$' + (d.pricePerUnit > 50 ? d.pricePerUnit + 10 : 65) + '\u2013$' + (d.pricePerUnit > 50 ? d.pricePerUnit + 30 : 90) + '</div><div style="font-size:10px;color:#888">per unit / month</div><ul style="text-align:left;font-size:11px;color:#555;margin-top:12px;padding-left:16px;line-height:1.8"><li>Everything in Intelligence</li><li>Dedicated senior PM</li><li>Monthly board reports</li><li>Capital projects up to $50K</li><li>Insurance & vendor rebid guarantee</li><li>Priority 30-min emergency</li><li>Annual session with David</li></ul></div>' +
+
+  '</div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:14px;margin-top:16px;font-size:11px;color:#555">' +
+  '<strong style="color:#A89035">\u2714 Accounting services WAIVED</strong> for the first 12 months<br>' +
+  '<strong style="color:#A89035">\u2714 Technology setup:</strong> $50/unit/mo (FREE first 6 months)<br>' +
+  '<strong style="color:#A89035">\u2714 Management fee</strong> = greater of fixed monthly fee or 5% of gross collected rent' +
+  '</div>' +
+  '</div>' +
+
+  // SECTION 5: 90-DAY TRANSITION PLAN
+  '<div class="page">' +
+  '<div class="section-title">90-Day Transition Plan</div>' +
+  '<p style="font-size:12px;color:#555;margin-bottom:20px">Our proven onboarding process ensures zero disruption to residents and staff:</p>' +
+
+  '<div class="timeline-item"><div class="timeline-dot">1</div><div><strong style="color:#3A4B5B">Days 1\u20137: Kickoff & Discovery</strong><p style="font-size:11px;color:#666;margin-top:4px">Kickoff meeting with board/ownership \u2022 Document collection (financials, leases, vendor contracts, insurance) \u2022 Complete vendor & staff inventory \u2022 Building condition assessment \u2022 Introduce Camelot team</p></div></div>' +
+  '<div class="timeline-item"><div class="timeline-dot">2</div><div><strong style="color:#3A4B5B">Days 8\u201330: System Setup & Audit</strong><p style="font-size:11px;color:#666;margin-top:4px">Deploy MDS, ConciergePlus, AppFolio \u2022 Initiate vendor rebid process \u2022 Compliance audit (HPD, DOB, LL97) \u2022 Insurance review \u2022 Introduce Camelot to staff & residents \u2022 Launch resident portal</p></div></div>' +
+  '<div class="timeline-item"><div class="timeline-dot">3</div><div><strong style="color:#3A4B5B">Days 31\u201360: Operations Live</strong><p style="font-size:11px;color:#666;margin-top:4px">First board report delivered \u2022 Violation resolution program begins \u2022 Financial systems fully live \u2022 Collections process established \u2022 Emergency protocols tested</p></div></div>' +
+  '<div class="timeline-item"><div class="timeline-dot">4</div><div><strong style="color:#3A4B5B">Days 61\u201390: Full Stabilization</strong><p style="font-size:11px;color:#666;margin-top:4px">Full operations stabilized \u2022 First quarterly SCOUT report delivered \u2022 Vendor savings realized \u2022 Technology fully deployed \u2022 First LL97 compliance roadmap (if applicable) \u2022 Resident satisfaction survey</p></div></div>' +
+
+  '<div style="background:#3A4B5B;border-radius:8px;padding:16px;color:#fff;margin-top:20px;text-align:center">' +
+  '<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#A89035;margin-bottom:6px">Our Commitment</div>' +
+  '<div style="font-size:14px;font-weight:600">Zero disruption to residents. Full transparency to the board. Measurable results by Day 90.</div>' +
+  '</div>' +
+  '</div>' +
+
+  // SECTION 6: ABOUT CAMELOT
+  '<div class="page">' +
+  '<div class="section-title">About Camelot Realty Group</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:800;color:#A89035">18+</div><div style="font-size:10px;color:#888;text-transform:uppercase">Years Experience</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:800;color:#A89035">42</div><div style="font-size:10px;color:#888;text-transform:uppercase">Properties Managed</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:800;color:#A89035">5</div><div style="font-size:10px;color:#888;text-transform:uppercase">Boroughs Covered</div></div>' +
+  '<div style="background:#F5F0E5;border-radius:8px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:800;color:#A89035">2006</div><div style="font-size:10px;color:#888;text-transform:uppercase">Founded</div></div>' +
+  '</div>' +
+  '<p style="font-size:12px;color:#555;line-height:1.8;margin-bottom:14px">Camelot Realty Group is a boutique property management firm headquartered at <strong>477 Madison Avenue, 6th Floor, New York, NY 10022</strong>. Founded in 2006 by David A. Goldoff, we specialize in co-op, condo, and rental management with a technology-forward approach that delivers measurable results.</p>' +
+  '<p style="font-size:12px;color:#555;line-height:1.8;margin-bottom:14px"><strong>Banking Partner:</strong> BankUnited \u2014 zero account fees, premium rate matching<br><strong>Awards:</strong> RED Awards 2025, REBNY Leadership Award<br><strong>Technology:</strong> AppFolio, BuildingLink, ConciergePlus+AI, SCOUT, Merlin AI, Parity, Prisma</p>' +
+  '</div>' +
+
+  // SECTION 7: NEXT STEPS
+  '<div class="page">' +
+  '<div class="section-title">Next Steps</div>' +
+  '<div style="background:#3A4B5B;border-radius:10px;padding:28px;color:#fff;text-align:center;margin-bottom:24px">' +
+  '<div style="font-size:18px;font-weight:700;margin-bottom:8px">We must meet in person or virtually to discuss this proposal further.</div>' +
+  '<div style="font-size:12px;color:rgba(255,255,255,0.7)">This proposal is a starting point. We want to learn more about your building, your board, and your priorities before finalizing terms.</div>' +
+  '</div>' +
+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">' +
+  '<a href="https://zoom.us" style="display:block;text-decoration:none;background:#2D8CFF;color:#fff;padding:20px;border-radius:10px;text-align:center;font-weight:700;font-size:14px">\uD83D\uDCF9 Schedule Zoom Meeting</a>' +
+  '<a href="mailto:dgoldoff@camelot.nyc?subject=' + encodeURIComponent('Meeting Request — ' + d.buildingName) + '" style="display:block;text-decoration:none;background:#A89035;color:#fff;padding:20px;border-radius:10px;text-align:center;font-weight:700;font-size:14px">\u2709 Email to Schedule</a>' +
+  '</div>' +
+
+  '<div style="text-align:center;font-size:13px;color:#555;line-height:1.8">' +
+  '<strong style="color:#3A4B5B">David A. Goldoff</strong>, President<br>' +
+  '(212) 206-9939 | (646) 523-9068<br>' +
+  '<a href="mailto:dgoldoff@camelot.nyc" style="color:#A89035">dgoldoff@camelot.nyc</a> | <a href="https://www.camelot.nyc" style="color:#A89035">www.camelot.nyc</a><br>' +
+  '477 Madison Avenue, 6th Floor, New York, NY 10022' +
+  '</div>' +
+  '</div>' +
+
+  // SECTION 8: SIGNATURE PAGE
+  '<div class="page">' +
+  '<div class="section-title">Authorization & Signatures</div>' +
+  '<p style="font-size:12px;color:#555;margin-bottom:24px">Upon execution, this proposal constitutes a mutual letter of intent to enter into a formal Property Management Agreement for ' + d.buildingName + ' at ' + d.address + '. Final terms, including specific fee schedules and service scope, will be documented in a comprehensive management agreement.</p>' +
+
+  '<div class="sig-block">' +
+  '<div style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:16px">CLIENT</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">' +
+  '<div><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Authorized Representative</div><div class="sig-line"></div><div style="font-size:11px;color:#555">Name & Title</div></div>' +
+  '<div><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Date</div><div class="sig-line"></div></div>' +
+  '</div>' +
+  '<div style="margin-top:20px"><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Signature</div><div class="sig-line" style="width:400px"></div></div>' +
+  '<div style="margin-top:12px"><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Property / Entity Name</div><div style="font-size:13px;font-weight:600;color:#3A4B5B">' + d.buildingName + '</div></div>' +
+  '</div>' +
+
+  '<div class="sig-block">' +
+  '<div style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:16px">CAMELOT REALTY GROUP</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">' +
+  '<div><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Authorized Representative</div><div class="sig-line"></div><div style="font-size:11px;color:#555">David A. Goldoff, President</div></div>' +
+  '<div><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Date</div><div class="sig-line"></div></div>' +
+  '</div>' +
+  '<div style="margin-top:20px"><div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px">Signature</div><div class="sig-line" style="width:400px"></div></div>' +
+  '<div style="margin-top:12px;font-size:10px;color:#888">Camelot Realty Group LLC | 477 Madison Avenue, 6th Fl, NY 10022 | License #10491200104</div>' +
+  '</div>' +
+
+  '<div style="margin-top:32px;padding:14px;background:#F5F0E5;border-radius:8px;font-size:10px;color:#888;line-height:1.6">' +
+  'This proposal is confidential and intended solely for the recipient. Terms are valid for 10 business days from the date above. For questions or to request a formal management agreement, contact <a href="mailto:dgoldoff@camelot.nyc" style="color:#A89035">dgoldoff@camelot.nyc</a> or <a href="mailto:management@camelot.nyc" style="color:#A89035">management@camelot.nyc</a>.' +
+  '</div>' +
+  '</div>' +
+
+  '</body></html>';
+
+  var w = window.open('', '_blank');
+  if (w) {
+    w.document.write(html);
+    w.document.close();
+    setTimeout(function() { w.print(); }, 800);
+  }
+}
+</script>
 </body>
 </html>`;
 }
