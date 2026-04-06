@@ -8,6 +8,7 @@ import { fetchFullBuildingReport } from '@/lib/nyc-api';
 import { calculateLL97Penalty, getComplianceStatus, inferBuildingType } from '@/lib/ll97-calculator';
 import { analyzeDistress } from '@/lib/distress-signals';
 import { runGutCheck, generateGutCheckHTML } from '@/lib/gut-check';
+import { findBuildingPhotos, generatePhotoHTML } from '@/lib/building-photos';
 
 // ============================================================
 // Types
@@ -116,6 +117,7 @@ export interface MasterReportData {
   // Fee comparison
   feeComparison: MarketFeeComparison | null;
   // Raw data for advanced usage
+  buildingPhotos: { exterior: string[]; streetView: string; satellite: string; source: string } | null;
   raw: any;
 }
 
@@ -492,9 +494,10 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
 }
 
 export async function buildMasterReport(address: string, borough?: string): Promise<MasterReportData> {
-  const [raw, geo] = await Promise.all([
+  const [raw, geo, buildingPhotos] = await Promise.all([
     fetchFullBuildingReport(address, borough),
     geocodeAddress(address + (borough ? ', ' + borough + ', New York' : ', New York, NY')),
+    findBuildingPhotos(address, address).catch(() => null),
   ]);
 
   const dof = raw.dof;
@@ -744,6 +747,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       ll97Status: ll97Data?.complianceStatus || 'unknown',
       pricePerUnit,
     }),
+    buildingPhotos,
     raw,
   };
 }
@@ -1183,8 +1187,21 @@ body{background:#fff}
 <div class="section-title">The Property</div>
 <div class="section-sub">${d.address} \u2014 ${d.propertyType}</div>
 
-<!-- Hero: Google Street View PHOTO of the actual building -->
-${d.latitude && d.longitude ? `
+<!-- Hero: Building Photo (Wikimedia Commons → Google Street View fallback) -->
+${d.buildingPhotos && d.buildingPhotos.exterior.length > 0 && d.buildingPhotos.source !== 'Google Street View' ? `
+<div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:340px;margin-bottom:16px;position:relative">
+<img src="${d.buildingPhotos.exterior[0]}" alt="${d.buildingName}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<iframe src=\\'https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${d.latitude || '40.7831'},${d.longitude || '-73.9712'}&heading=0&pitch=5&fov=80\\' width=\\'100%\\' height=\\'340\\' style=\\'border:0\\' allowfullscreen loading=\\'lazy\\'></iframe>'">
+<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(58,75,91,0.9));padding:16px 20px 12px;color:#fff">
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:20px;font-weight:700">${d.buildingName}</div>
+<div style="font-size:11px;opacity:0.8">${d.address} \u00B7 ${d.propertyType} \u00B7 ${d.units ? d.units + ' Units' : ''} ${d.stories ? '\u00B7 ' + d.stories + ' Floors' : ''} ${d.yearBuilt ? '\u00B7 Built ' + d.yearBuilt : ''}</div>
+<div style="font-size:8px;opacity:0.4;margin-top:2px">Photo: ${d.buildingPhotos.source}</div>
+</div>
+</div>
+${d.buildingPhotos.exterior.length > 1 ? `
+<div style="display:grid;grid-template-columns:repeat(${Math.min(d.buildingPhotos.exterior.length - 1, 3)},1fr);gap:6px;margin-bottom:12px">
+${d.buildingPhotos.exterior.slice(1, 4).map(url => `<div style="border-radius:6px;overflow:hidden;height:120px;border:1px solid #D5D0C6"><img src="${url}" alt="${d.buildingName}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'"></div>`).join('\n')}
+</div>` : ''}
+` : d.latitude && d.longitude ? `
 <div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:340px;margin-bottom:16px;position:relative">
 <iframe src="https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${d.latitude},${d.longitude}&heading=0&pitch=5&fov=80" width="100%" height="340" style="border:0" allowfullscreen loading="lazy"></iframe>
 <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(58,75,91,0.9));padding:16px 20px 12px;color:#fff">
