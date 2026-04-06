@@ -198,11 +198,37 @@ export default function Sentinel() {
                     downloadAsHTML(html, `Camelot-${b.name.replace(/[^a-zA-Z0-9]/g,'-')}-${input.quarter}-${input.year}.html`);
                   }, i * 500);
                 });
-                toast.success(`Generating ${TRACKED_BUILDINGS.length} building reports...`);
+                toast.success(`Downloading ${TRACKED_BUILDINGS.length} building reports...`);
+              }}
+              className="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all flex items-center gap-2"
+            >
+              <Download size={16} /> Download All ({TRACKED_BUILDINGS.length})
+            </button>
+
+            <button
+              onClick={async () => {
+                toast.loading('Generating & emailing all reports...', { id: 'send-all' });
+                // Generate all reports and trigger email via mailto
+                const reportLinks = TRACKED_BUILDINGS.map(b => b.name).join(', ');
+                const subject = encodeURIComponent(`${input.quarter} ${input.year} Quarterly Market Reports — ${TRACKED_BUILDINGS.length} Buildings`);
+                const body = encodeURIComponent(
+                  `Team,\n\nThe ${input.quarter} ${input.year} quarterly market reports have been generated for all ${TRACKED_BUILDINGS.length} managed buildings:\n\n` +
+                  TRACKED_BUILDINGS.map(b => `• ${b.name} — ${b.neighborhood} — ${b.performance === 'Above' ? '▲ Above' : '● At'} market ($${b.camelotPSF}/sqft vs $${b.neighborhoodPSF} neighborhood)`).join('\n') +
+                  `\n\nReports are being downloaded to your computer. Please distribute to each building's board via ConciergePlus or MDS.\n\nFull market report available on Scout: https://camelot-scout-v6.onrender.com/sentinel\n\n— Merlin AI\nCamelot OS · Sentinel Engine`
+                );
+                window.open(`mailto:info@camelot.nyc?cc=dgoldoff@camelot.nyc,sam@camelot.nyc&subject=${subject}&body=${body}`);
+                // Download all reports
+                TRACKED_BUILDINGS.forEach((b, i) => {
+                  const html = generateBuildingReport(b, input);
+                  setTimeout(() => {
+                    downloadAsHTML(html, `Camelot-${b.name.replace(/[^a-zA-Z0-9]/g,'-')}-${input.quarter}-${input.year}.html`);
+                  }, i * 500);
+                });
+                toast.success(`${TRACKED_BUILDINGS.length} reports generated & email drafted`, { id: 'send-all' });
               }}
               className="bg-camelot-gold text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-camelot-gold-light transition-all flex items-center gap-2 ml-auto"
             >
-              <Share2 size={16} /> Generate All ({TRACKED_BUILDINGS.length})
+              <Share2 size={16} /> Send to All Clients
             </button>
           </div>
         </div>
