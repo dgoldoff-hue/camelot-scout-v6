@@ -4,7 +4,7 @@ import { searchViolations, type ViolationSummary, type ViolationResult } from '@
 import toast from 'react-hot-toast';
 import {
   AlertTriangle, Shield, Search, Loader2, RefreshCw,
-  AlertCircle, Clock, DollarSign, Users, Calendar, FileDown,
+  AlertCircle, Clock, DollarSign, Users, Calendar, FileDown, Printer, Mail,
   Building2, MapPin, ChevronDown, ChevronUp, ExternalLink,
 } from 'lucide-react';
 
@@ -70,6 +70,96 @@ export default function Violations() {
     if (searchText && !v.description?.toLowerCase().includes(searchText.toLowerCase()) && !v.violationId?.toLowerCase().includes(searchText.toLowerCase())) return false;
     return true;
   });
+
+  const generatePDF = () => {
+    if (!result) return;
+    const openV = filteredViolations.filter(v => v.isOpen);
+    const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>'
+      + '@page{margin:.6in;size:letter}'
+      + 'body{font-family:Arial,sans-serif;font-size:11px;color:#222;line-height:1.4}'
+      + '.hdr{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:24px;margin:-.6in -.6in 16px -.6in}'
+      + '.hdr h1{margin:0;font-size:22px;color:#c5a253;letter-spacing:1px}'
+      + '.hdr h2{margin:4px 0 0;font-size:13px;font-weight:400;color:#ccc}'
+      + '.hdr .meta{margin-top:10px;font-size:10px;color:#aaa}'
+      + 'h2{color:#1a1a2e;border-bottom:2px solid #c5a253;padding-bottom:4px;margin-top:20px;font-size:14px}'
+      + '.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}'
+      + '.box{background:#f8f6f0;border-left:3px solid #c5a253;padding:8px 10px}'
+      + '.box .l{font-size:9px;color:#666;text-transform:uppercase}.box .v{font-size:18px;font-weight:700;color:#1a1a2e}'
+      + '.red{border-left-color:#dc3545}.org{border-left-color:#fd7e14}'
+      + 'table{width:100%;border-collapse:collapse;margin:8px 0;font-size:9px}'
+      + 'th{background:#1a1a2e;color:#fff;padding:4px 6px;text-align:left;font-weight:600}'
+      + 'td{padding:3px 6px;border-bottom:1px solid #eee;vertical-align:top}'
+      + 'tr:nth-child(even) td{background:#fafafa}'
+      + '.badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:700;color:#fff}'
+      + '.bc{background:#dc3545}.bb{background:#fd7e14}.ba{background:#ffc107;color:#222}.bd{background:#0d6efd}.be{background:#6c757d}'
+      + '.overdue{color:#dc3545;font-weight:700}'
+      + '.players{margin:10px 0;columns:3;font-size:10px}'
+      + '.footer{margin-top:20px;padding-top:10px;border-top:2px solid #c5a253;font-size:8px;color:#888}'
+      + '.footer .co{color:#c5a253;font-weight:700}'
+      + '</style></head><body>'
+      + '<div class="hdr">'
+      + '<div style="font-size:10px;color:#c5a253;font-weight:700;letter-spacing:2px">CAMELOT PROPERTY MANAGEMENT SERVICES CORP.</div>'
+      + '<h1>VIOLATION &amp; RESOLUTION REPORT</h1>'
+      + `<h2>${result.address} \u2014 ${result.borough}</h2>`
+      + `<div class="meta">Report Date: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</div>`
+      + '</div>'
+      + '<h2>EXECUTIVE SUMMARY</h2>'
+      + '<div class="grid">'
+      + `<div class="box red"><div class="l">Open Violations</div><div class="v">${result.totalOpen}</div></div>`
+      + `<div class="box red"><div class="l">Class C (Critical)</div><div class="v">${result.hpdClassC}</div></div>`
+      + `<div class="box org"><div class="l">Overdue</div><div class="v">${result.overdue}</div></div>`
+      + `<div class="box"><div class="l">Est. Cost</div><div class="v">$${result.costLow.toLocaleString()} - $${result.costHigh.toLocaleString()}</div></div>`
+      + '</div>'
+      + '<div class="grid">'
+      + `<div class="box"><div class="l">HPD Open</div><div class="v">${result.hpdOpen}</div></div>`
+      + `<div class="box"><div class="l">DOB Open</div><div class="v">${result.dobOpen}</div></div>`
+      + `<div class="box"><div class="l">ECB Open</div><div class="v">${result.ecbOpen}</div></div>`
+      + `<div class="box"><div class="l">Total Found</div><div class="v">${result.totalFound}</div></div>`
+      + '</div>'
+      + '<h2>PLAYERS &amp; PROFESSIONALS NEEDED</h2>'
+      + `<div class="players">${result.players.map(p => '<div>\u2022 ' + p + '</div>').join('')}</div>`
+      + `<h2>OPEN VIOLATIONS (${openV.length})</h2>`
+      + '<table><tr><th>#</th><th>Source</th><th>Class</th><th>Unit</th><th>Description</th><th>Deadline</th><th>Est. Cost</th><th>Players</th></tr>'
+      + openV.slice(0,150).map((v: any, i: number) =>
+        `<tr><td>${i+1}</td>`
+        + `<td><span class="badge ${v.source==='HPD'?(v.violationClass==='C'?'bc':v.violationClass==='B'?'bb':'ba'):v.source==='DOB'?'bd':'be'}">${v.source}</span></td>`
+        + `<td>${v.violationClass}</td><td>${v.unit||'Bldg'}</td>`
+        + `<td>${(v.description||'').substring(0,100)}</td>`
+        + `<td>${v.cureDeadline?(v.cureDeadline+(v.isOverdue?' <span class="overdue">OVERDUE</span>':'')):'-'}</td>`
+        + `<td>$${v.costLow.toLocaleString()}-$${v.costHigh.toLocaleString()}</td>`
+        + `<td>${v.players.join(', ')}</td></tr>`
+      ).join('')
+      + '</table>'
+      + (openV.length>150?`<p style="color:#888;text-align:center">Showing 150 of ${openV.length}</p>`:'')
+      + '<div class="footer">'
+      + '<div class="co">CAMELOT PROPERTY MANAGEMENT SERVICES CORP.</div>'
+      + '501 Madison Avenue, Suite 1400 | New York, NY 10022 | (212) 206-9939 | www.camelot.nyc<br>'
+      + 'Generated from NYC Open Data (HPD, DOB, ECB). Verify details with issuing agency.<br>'
+      + `Report generated: ${new Date().toISOString().substring(0,19)} UTC`
+      + '</div></body></html>';
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
+    toast.success('Report opened — use Print to save as PDF, email, or print');
+  };
+
+  const emailReport = () => {
+    if (!result) return;
+    const subject = encodeURIComponent('Violation & Resolution Report: ' + result.address);
+    const body = encodeURIComponent(
+      'Violation & Resolution Report\n' + result.address + ', ' + result.borough + '\n\n'
+      + 'Open Violations: ' + result.totalOpen + '\n'
+      + 'Class C (Critical): ' + result.hpdClassC + '\n'
+      + 'Class B (Hazardous): ' + result.hpdClassB + '\n'
+      + 'Class A: ' + result.hpdClassA + '\n'
+      + 'DOB: ' + result.dobOpen + ' | ECB: ' + result.ecbOpen + '\n'
+      + 'Overdue: ' + result.overdue + '\n'
+      + 'Est. Resolution Cost: $' + result.costLow.toLocaleString() + ' - $' + result.costHigh.toLocaleString() + '\n'
+      + 'Players Needed: ' + result.players.join(', ') + '\n\n'
+      + '— Camelot Property Management Services Corp.'
+    );
+    window.open('mailto:?subject=' + subject + '&body=' + body);
+    toast.success('Email draft opened');
+  };
 
   const exportCSV = () => {
     if (!result) return;
@@ -158,8 +248,14 @@ export default function Violations() {
                 <p className="text-gray-400 text-sm">{result.borough} · Scanned {new Date().toLocaleDateString()}</p>
               </div>
               <div className="flex gap-2">
+                <button onClick={generatePDF} className="flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 hover:bg-red-500/30 text-sm">
+                  <Printer size={14} /> PDF Report
+                </button>
+                <button onClick={emailReport} className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg text-blue-400 hover:bg-blue-500/30 text-sm">
+                  <Mail size={14} /> Email
+                </button>
                 <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-gray-300 hover:bg-white/10 text-sm">
-                  <FileDown size={14} /> Export CSV
+                  <FileDown size={14} /> CSV
                 </button>
                 <button onClick={handleSearch} className="flex items-center gap-2 px-4 py-2 bg-camelot-gold/20 text-camelot-gold rounded-lg hover:bg-camelot-gold/30 text-sm">
                   <RefreshCw size={14} /> Re-scan
