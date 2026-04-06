@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Eye, Download, Share2, BarChart3, Building2, TrendingUp, DollarSign, MapPin, Loader2 } from 'lucide-react';
 import { openBrochureForPrint, downloadAsHTML } from '@/lib/pdf-generator';
 import { generateSentinelReport, generateBuildingReport, TRACKED_BUILDINGS, type SentinelInput, DEFAULT_SENTINEL_INPUT, QUARTERS } from '@/lib/sentinel-report';
+import { generateFullSentinelReport } from '@/lib/sentinel-full-report';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 
@@ -19,12 +20,12 @@ export default function Sentinel() {
   };
 
   const handlePreview = () => {
-    const html = generateSentinelReport(input);
+    const html = generateFullSentinelReport();
     openBrochureForPrint(html, `Camelot-Market-Report-${input.quarter}-${input.year}`);
   };
 
   const handleDownload = () => {
-    const html = generateSentinelReport(input);
+    const html = generateFullSentinelReport();
     downloadAsHTML(html, `Camelot-Market-Report-${input.quarter}-${input.year}.html`);
     toast.success('Report downloaded');
   };
