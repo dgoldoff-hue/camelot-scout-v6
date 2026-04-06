@@ -801,7 +801,7 @@ export function generateFullSentinelReport(): string {
   <div class="footer-divider">
     <div><strong>Boutique. By Design. Powered by Intelligence.</strong></div>
     <div class="disclaimer">
-      © 2026 Camelot Realty Group. All Rights Reserved. This report and all of its contents are the intellectual property of Camelot Realty Group. The information is provided for general informational and educational purposes only and does not constitute investment, financial, or legal advice. Market data is derived from publicly available records and licensed third-party data sources including RealtyMX, ACRIS, and StreetEasy. While Camelot has made reasonable efforts to ensure accuracy, no warranty is made as to completeness or fitness for any particular purpose. Permission requests: <a href="mailto:dgoldoff@camelot.nyc">dgoldoff@camelot.nyc</a>
+      © 2026 Camelot Realty Group. All Rights Reserved. This report and all of its contents are the intellectual property of Camelot Realty Group. The information is provided for general informational and educational purposes only and does not constitute investment, financial, or legal advice. Market data is derived from publicly available records and licensed third-party data sources including RealtyMX, ACRIS, and StreetEasy. While Camelot has made reasonable efforts to ensure accuracy, no warranty is made as to completeness or fitness for any particular purpose. Permission requests: <a href="mailto:info@camelot.nyc">info@camelot.nyc</a>
     </div>
   </div>
 </footer>
