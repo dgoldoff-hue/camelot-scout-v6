@@ -2669,6 +2669,62 @@ ${d.neighborhoodMarketData ? `
 <p style="font-size:12px;color:#A89035;font-weight:600;margin-top:10px">This relationship often delivers meaningful financial value from Day 1.</p>
 </div>
 
+<!-- Select Partnership -->
+<div style="background:#1a1a2e;border:2px solid #A89035;border-radius:10px;padding:24px;margin:20px 0;color:#fff">
+<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+<div style="width:48px;height:48px;background:linear-gradient(135deg,#A89035,#d4af37);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+<span style="color:#1a1a2e;font-weight:900;font-size:16px;font-family:'Plus Jakarta Sans',sans-serif">S</span>
+</div>
+<div>
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#A89035">Select — Exclusive Resident Benefits</div>
+<div style="font-size:11px;color:rgba(255,255,255,0.5)">Private membership · 1.6M+ partner locations · Concierge service</div>
+</div>
+</div>
+<p style="font-size:12px;color:rgba(255,255,255,0.8);line-height:1.8;margin-bottom:14px">Every Camelot-managed building gets access to <strong style="color:#A89035">Select</strong> \u2014 a private membership community offering exclusive pricing, VIP perks, and concierge services at over 1.6 million premier locations worldwide. Residents receive a <strong style="color:#A89035">co-branded titanium card</strong> and app access to unlock savings on hotels, restaurants, entertainment, travel, and more.</p>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+<div style="background:rgba(168,144,53,0.15);border:1px solid rgba(168,144,53,0.3);border-radius:6px;padding:10px;text-align:center">
+<div style="font-size:22px;margin-bottom:4px">\uD83C\uDFE8</div>
+<div style="font-size:10px;font-weight:700;color:#A89035">Hotels</div>
+<div style="font-size:8px;color:rgba(255,255,255,0.5)">Unpublished rates + VIP amenities</div>
+</div>
+<div style="background:rgba(168,144,53,0.15);border:1px solid rgba(168,144,53,0.3);border-radius:6px;padding:10px;text-align:center">
+<div style="font-size:22px;margin-bottom:4px">\uD83C\uDF7D\uFE0F</div>
+<div style="font-size:10px;font-weight:700;color:#A89035">Dining</div>
+<div style="font-size:8px;color:rgba(255,255,255,0.5)">VIP treatment + discounts</div>
+</div>
+<div style="background:rgba(168,144,53,0.15);border:1px solid rgba(168,144,53,0.3);border-radius:6px;padding:10px;text-align:center">
+<div style="font-size:22px;margin-bottom:4px">\uD83C\uDFAD</div>
+<div style="font-size:10px;font-weight:700;color:#A89035">Entertainment</div>
+<div style="font-size:8px;color:rgba(255,255,255,0.5)">Up to 60% off events</div>
+</div>
+<div style="background:rgba(168,144,53,0.15);border:1px solid rgba(168,144,53,0.3);border-radius:6px;padding:10px;text-align:center">
+<div style="font-size:22px;margin-bottom:4px">\uD83D\uDC8E</div>
+<div style="font-size:10px;font-weight:700;color:#A89035">Concierge</div>
+<div style="font-size:8px;color:rgba(255,255,255,0.5)">7-day live support</div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+<div style="text-align:center;padding:8px">
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#A89035">$1,500+</div>
+<div style="font-size:8px;color:rgba(255,255,255,0.5)">Avg member savings/year</div>
+</div>
+<div style="text-align:center;padding:8px">
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#A89035">1.6M</div>
+<div style="font-size:8px;color:rgba(255,255,255,0.5)">Partner locations</div>
+</div>
+<div style="text-align:center;padding:8px">
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#A89035">$200</div>
+<div style="font-size:8px;color:rgba(255,255,255,0.5)">Off for Camelot residents</div>
+</div>
+</div>
+
+<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:12px;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.6">
+<strong style="color:#A89035">For ${d.buildingName} residents:</strong> Camelot-managed buildings receive exclusive $200 off Select membership. Co-branded titanium card + app access. Residents redeem through the ConciergePlus portal or the Select mobile app. Includes: unpublished hotel rates, restaurant VIP perks, up to 60% off entertainment, dedicated concierge team, and members-only social events.
+</div>
+</div>
+
 <div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;color:#A89035;text-align:center;margin-top:16px;font-weight:600">RED Awards 2025: Property Management Company of the Year</div>
 <div style="font-size:11px;color:#888;text-align:center;margin-top:6px">REBNY 2025: David Goldoff Leadership Award &nbsp;\u00B7&nbsp; 42 Properties &nbsp;\u00B7&nbsp; $240M+ AUM &nbsp;\u00B7&nbsp; 18+ Years</div>
 <div style="font-size:10px;color:#999;text-align:center;margin-top:8px">Member: REBNY \u00B7 SPONY \u00B7 NYARM \u00B7 IREM \u00B7 BOMA \u00B7 NARPM \u00B7 NY Apartment Association</div>
