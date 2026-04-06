@@ -2958,9 +2958,27 @@ function generateProposal() {
     date: ${JSON.stringify(d.date)},
   };
 
-  var owner = d.registrationOwner || d.dofOwner || 'Board of Directors';
+  // Title case helper
+  function titleCase(s) {
+    if (!s) return '';
+    return s.toLowerCase().replace(/(?:^|\s|[-/])\S/g, function(c){ return c.toUpperCase(); })
+      .replace(/\b(Ny|Nyc|Nj|Ct|Llc|Corp|Inc|Hpd|Mdr|Dob)\b/gi, function(c){ return c.toUpperCase(); })
+      .replace(/\bOf\b/g, 'of').replace(/\bThe\b/g, 'the').replace(/\bAnd\b/g, 'and')
+      .replace(/^./, function(c){ return c.toUpperCase(); });
+  }
+  // Clean owner — remove "(HPD MDR)", "Corporate Owner", etc.
+  var rawOwner = d.registrationOwner || d.dofOwner || '';
+  var cleanOwner = rawOwner.replace(/\(HPD[^)]*\)/gi, '').replace(/,?\s*Corporate Owner/gi, '').replace(/\s+/g, ' ').trim();
+  var owner = cleanOwner || (d.propertyType.indexOf('Co-op') >= 0 ? 'Board of Directors' : d.propertyType.indexOf('Condo') >= 0 ? 'Board of Managers' : 'Property Owner');
+  owner = titleCase(owner);
   var boardNames = (d.boardMembers || []).map(function(b){ return b.name + (b.title ? ', ' + b.title : ''); });
-  var contactName = boardNames.length > 0 ? boardNames[0].split(',')[0] : owner.split(',')[0].split('/')[0].trim();
+  // Contact name: use first board member, or fallback to generic board greeting
+  var hasRealContact = boardNames.length > 0 && boardNames[0].split(',')[0].trim().length > 2;
+  var contactName = hasRealContact ? titleCase(boardNames[0].split(',')[0]) : '';
+  var greetingName = contactName || (d.propertyType.indexOf('Co-op') >= 0 ? 'Members of the Board' : d.propertyType.indexOf('Condo') >= 0 ? 'Members of the Board' : owner);
+  var buildingNameClean = titleCase(d.buildingName);
+  var addressClean = titleCase(d.address);
+  var boroughClean = titleCase(d.borough || 'New York');
   var isCoop = d.propertyType.indexOf('Co-op') >= 0;
   var isCondo = d.propertyType.indexOf('Condo') >= 0;
   var isBoard = isCoop || isCondo;
@@ -2981,7 +2999,7 @@ function generateProposal() {
     ? '<ul>' + painPoints.map(function(p){ return '<li>' + p + '</li>'; }).join('') + '</ul>'
     : '<p>While the building is in reasonable standing, there are always opportunities to improve operations, reduce costs, and enhance the experience for ' + ownerLabel + '.</p>';
 
-  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Proposal of Services \u2014 ' + d.buildingName + '</title>' +
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Proposal of Services \u2014 ' + buildingNameClean + '</title>' +
   '<style>' +
   '*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }' +
   'body { font-family: Georgia, "Times New Roman", serif; color: #2C3240; line-height: 1.65; font-size: 11px; max-width: 8.5in; margin: 0 auto; padding: 1in; }' +
@@ -3011,7 +3029,7 @@ function generateProposal() {
   '<div style="font-size:9px;color:#A89035;letter-spacing:1.5px">P R O P E R T Y &nbsp; M A N A G E M E N T</div>' +
   '</div>' +
 
-  '<h1>' + d.buildingName + '</h1>' +
+  '<h1>' + buildingNameClean + '</h1>' +
   '<div style="text-align:center;font-size:11px;color:#3A4B5B;font-weight:700;letter-spacing:0.5px;margin-bottom:16px">PROPOSAL OF PROPERTY MANAGEMENT SERVICES</div>' +
   '<div style="text-align:center;font-size:10px;color:#888">Prepared by Camelot Property Management Services Corp.</div>' +
 
@@ -3019,14 +3037,14 @@ function generateProposal() {
 
   '<p style="font-size:10.5px;color:#555"><strong>Date:</strong> ' + d.date + '<br>' +
   '<strong>To:</strong> ' + boardLabel + '<br>' +
-  d.buildingName + '<br>' +
-  'c/o ' + contactName + (boardNames.length > 0 && boardNames[0].indexOf(',') > 0 ? ', ' + boardNames[0].split(',').slice(1).join(',').trim() : '') + '</p>' +
+  buildingNameClean + '<br>' +
+  (contactName ? 'c/o ' + contactName + (boardNames.length > 0 && boardNames[0].indexOf(',') > 0 ? ', ' + boardNames[0].split(',').slice(1).join(',').trim() : '') : 'c/o ' + owner) + '</p>' +
 
   '<p><strong>Re: Management Proposal &amp; Scope of Services</strong></p>' +
 
-  '<p>Dear ' + contactName + (isBoard ? ' and Members of the ' + boardLabel : '') + ',</p>' +
+  '<p>Dear ' + greetingName + ',</p>' +
 
-  '<p>We want to thank you for the opportunity to present this management proposal and for your time in discussing the future of ' + d.buildingName + '. Following our review of the property, Camelot Property Management Services Corp. is pleased to submit this summary outlining our scope of services, dedicated team, and transition plan for the property\u2019s continued success.</p>' +
+  '<p>We want to thank you for the opportunity to present this management proposal and for your time in discussing the future of ' + buildingNameClean + '. Following our review of the property, Camelot Property Management Services Corp. is pleased to submit this summary outlining our scope of services, dedicated team, and transition plan for the property\u2019s continued success.</p>' +
 
   '<p>Warm regards,<br><strong>David A. Goldoff</strong><br>President<br>Camelot Property Management Services Corp.</p>' +
 
@@ -3101,7 +3119,7 @@ function generateProposal() {
   /* ══════════════════════════════════════════════════════════════ */
   /* CLOSING */
   '<h2>Closing</h2>' +
-  '<p>We deeply appreciate the opportunity to partner with ' + d.buildingName + ' and are confident that our experience, resources, and dedicated team will provide measurable improvements in operations, transparency, and service quality.</p>' +
+  '<p>We deeply appreciate the opportunity to partner with ' + buildingNameClean + ' and are confident that our experience, resources, and dedicated team will provide measurable improvements in operations, transparency, and service quality.</p>' +
   '<p>We look forward to meeting ' + (isBoard ? 'the full board' : 'you') + ' soon \u2014 either on-site or via Zoom \u2014 and beginning this next chapter together.</p>' +
 
   /* ══════════════════════════════════════════════════════════════ */
@@ -3174,7 +3192,7 @@ function generateProposal() {
   /* MANAGEMENT PHILOSOPHY */
   '<h2>Management Philosophy &amp; Approach</h2>' +
   '<p>Camelot Realty Group is a boutique, tech-forward, hands-on property management firm with extensive experience managing condominiums, cooperatives, and rental properties across Manhattan, Brooklyn, Queens, the Bronx, Westchester, and beyond. We specialize in implementing modern systems of accountability, financial transparency, and operational efficiency.</p>' +
-  '<p>At ' + d.buildingName + ', we understand the importance of addressing current operational needs' + (painPoints.length > 0 ? ', including:' : '.') + '</p>' +
+  '<p>At ' + buildingNameClean + ', we understand the importance of addressing current operational needs' + (painPoints.length > 0 ? ', including:' : '.') + '</p>' +
   painHTML +
 
   '<div class="hr"></div>' +
@@ -3218,7 +3236,7 @@ function generateProposal() {
   /* ══════════════════════════════════════════════════════════════ */
   /* ACCEPTANCE & SIGNATURES */
   '<h2>Acceptance of Proposal</h2>' +
-  '<p>By signing below, both parties agree to the terms and authorize Camelot Property Management Services Corp. to commence management services for ' + d.buildingName + '.</p>' +
+  '<p>By signing below, both parties agree to the terms and authorize Camelot Property Management Services Corp. to commence management services for ' + buildingNameClean + '.</p>' +
   '<p><strong>Proposed Start Date:</strong> _________________________ (or mutually convenient date)</p>' +
 
   '<div class="sig-row">' +
@@ -3249,7 +3267,7 @@ function generateProposal() {
 
   /* PHASE I */
   '<h2>Phase I \u2014 Discovery &amp; Assessment (Days 1\u201330)</h2>' +
-  '<p>The first 30 days are dedicated to deep discovery \u2014 understanding ' + d.buildingName + ' from every angle.</p>' +
+  '<p>The first 30 days are dedicated to deep discovery \u2014 understanding ' + buildingNameClean + ' from every angle.</p>' +
   '<ul>' +
   '<li><strong>Full file and data transfer</strong> from current management. Camelot sends our standard Transitional Documentation outlining all files and information required.</li>' +
   '<li><strong>Free building inspection</strong> \u2014 Sr. Facilities Manager conducts on-site walkthrough covering property envelope, mechanical systems, deferred maintenance, and capital priorities. Written report delivered at no charge ($2,500 value).</li>' +
@@ -3298,7 +3316,7 @@ function generateProposal() {
   '</ul>' +
 
   /* OUR COMMITMENT */
-  '<h2>Our Commitment to ' + d.buildingName + '</h2>' +
+  '<h2>Our Commitment to ' + buildingNameClean + '</h2>' +
   '<p>Camelot is not the cheapest option \u2014 and we do not aim to be. Our value is the combination of experienced professionals, institutional-quality financial oversight, award-winning management, and a technology infrastructure built specifically for premium residential buildings. Our track record on vendor savings, insurance optimization, LL97 compliance, and resident satisfaction consistently exceeds the cost differential within the first operating year.</p>' +
   '<p style="font-size:10px;color:#A89035;font-weight:700;text-align:center;margin-top:10px">RED Awards \u2014 Property Management Company of the Year &nbsp;\u00B7&nbsp; David Goldoff, REBNY Residential Management Award</p>' +
 
