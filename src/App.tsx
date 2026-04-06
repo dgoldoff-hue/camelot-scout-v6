@@ -24,6 +24,7 @@ import Reports from '@/pages/Reports';
 import ReportCenter from '@/pages/ReportCenter';
 import Agreements from '@/pages/Agreements';
 import Sentinel from '@/pages/Sentinel';
+import Violations from '@/pages/Violations';
 import { useAuth } from '@/hooks/useAuth';
 import { useBuildings } from '@/hooks/useBuildings';
 
@@ -86,6 +87,7 @@ export default function App() {
           <Route path="/report-center" element={<ReportCenter />} />
           <Route path="/agreements" element={<Agreements />} />
           <Route path="/sentinel" element={<Sentinel />} />
+          <Route path="/violations" element={<Violations />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
