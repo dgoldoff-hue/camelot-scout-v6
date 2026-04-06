@@ -3066,19 +3066,26 @@ function generateProposal() {
 
   /* ═══════ PRICING ═══════ */
   '<h2>Pricing</h2>' +
-  '<p>For the services outlined above, based on comparable buildings we manage, unit count, and expected time involved:</p>' +
+  '<p>For the services outlined above, based on comparable buildings we manage, unit count, and expected time involved, our fee is:</p>' +
 
+  '<div class="fee-box">' +
+  '<div class="amt">$' + d.annualFee.toLocaleString() + '.00 annually</div>' +
+  '<div class="note">($' + d.monthlyFee.toLocaleString() + '/month &nbsp;\u00B7&nbsp; $' + d.pricePerUnit + '/unit &nbsp;\u00B7&nbsp; ' + d.units + ' units)</div>' +
+  '<div class="note">Or 5% of gross rent collected, whichever is greater. Paid in monthly installments.</div>' +
+  '</div>' +
+
+  '<p style="font-size:10.5px;color:#555">We also offer enhanced service tiers for buildings that want our full technology platform:</p>' +
   '<div class="tier-row">' +
-  '<div class="tier"><div class="name">Classic</div><div class="price">$' + (d.pricePerUnit > 50 ? d.pricePerUnit - 12 : 38) + '\u2013$' + (d.pricePerUnit > 50 ? d.pricePerUnit : 55) + '</div><div>per unit/mo</div><div style="color:#888;margin-top:4px">Full-service management, CPA, compliance, vendor mgmt</div></div>' +
-  '<div class="tier rec"><div class="name" style="color:#A89035">\u2B50 Intelligence</div><div class="price">$' + (d.pricePerUnit > 50 ? d.pricePerUnit - 5 : 45) + '\u2013$' + (d.pricePerUnit > 50 ? d.pricePerUnit + 10 : 65) + '</div><div>per unit/mo</div><div style="color:#888;margin-top:4px">+ ConciergePlus, Merlin AI, SCOUT reports, $0 bank fees, FREE inspection</div></div>' +
-  '<div class="tier"><div class="name">Premier</div><div class="price">$' + (d.pricePerUnit > 50 ? d.pricePerUnit + 10 : 65) + '\u2013$' + (d.pricePerUnit > 50 ? d.pricePerUnit + 30 : 90) + '</div><div>per unit/mo</div><div style="color:#888;margin-top:4px">+ Dedicated senior PM, capital projects, insurance rebid, monthly reports</div></div>' +
+  '<div class="tier"><div class="name">Classic</div><div class="price">$' + d.pricePerUnit + '</div><div>per unit/mo</div><div style="color:#888;margin-top:4px">Full-service management, CPA, compliance, vendor mgmt</div></div>' +
+  '<div class="tier rec"><div class="name" style="color:#A89035">\u2B50 Intelligence</div><div class="price">$' + (d.pricePerUnit + 10) + '</div><div>per unit/mo</div><div style="color:#888;margin-top:4px">+ ConciergePlus, Merlin AI, SCOUT reports, $0 bank fees, FREE inspection</div></div>' +
+  '<div class="tier"><div class="name">Premier</div><div class="price">$' + (d.pricePerUnit + 25) + '</div><div>per unit/mo</div><div style="color:#888;margin-top:4px">+ Dedicated senior PM, capital projects, insurance rebid, monthly reports</div></div>' +
   '</div>' +
 
   '<div style="font-size:10px;color:#666;text-align:center;margin-bottom:8px">' +
-  'Accounting WAIVED (12 months) &nbsp;\u00B7&nbsp; Tech $50/unit (FREE 6 months) &nbsp;\u00B7&nbsp; Fee = fixed or 5% gross rent, whichever is greater' +
+  'Accounting WAIVED first 12 months &nbsp;\u00B7&nbsp; Technology $50/unit/mo (FREE first 6 months) &nbsp;\u00B7&nbsp; Onboarding fee WAIVED' +
   '</div>' +
 
-  '<p>The terms are spelled out in our standard Management Agreement (contract to follow on a separate cover). Please feel free to reach out to us for any further questions.</p>' +
+  '<p>The terms of our relationship are spelled out in our standard ' + (d.propertyType.indexOf('Condo') >= 0 ? 'Condo' : d.propertyType.indexOf('Co-op') >= 0 ? 'Co-op' : '') + ' Management Agreement (contract to follow on a separate cover). Please feel free to reach out to us for any further questions.</p>' +
 
   '<p>You can visit our company website at <a href="https://www.camelot.nyc" style="color:#A89035">www.camelot.nyc</a>. If you would like to speak with me directly, I can be reached at (212) 206-9939 x 701, Cell (646) 523-9068, or email at <a href="mailto:dgoldoff@camelot.nyc" style="color:#A89035">dgoldoff@camelot.nyc</a>.</p>' +
 
