@@ -1283,7 +1283,7 @@ ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borou
 <span style="font-size:20px">📜</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">NY AG — Offering Plans</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Co-op/condo offering plans, amendments, sponsor info</div></div>
 </a>
-<a href="https://iapps.courts.state.ny.us/nyscef/CaseSearch?TAession=FIND" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<a href="https://iapps.courts.state.ny.us/nyscef/CaseSearch" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
 <span style="font-size:20px">🔍</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">NYSCEF (Court E-Filing)</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Court filings, lawsuits, HP actions</div></div>
 </a>
@@ -1444,7 +1444,7 @@ ${d.distressSignals.length > 0 ? `
 <div style="background:#EDE9DF;border-radius:6px;padding:12px">
 <div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">NYSCEF — Court E-Filings</div>
 <div style="font-size:10px;color:#555;line-height:1.5">NY State Courts Electronic Filing system. Search for active litigation, HP actions (housing court), breach of warranty, and construction disputes.</div>
-<a href="https://iapps.courts.state.ny.us/nyscef/CaseSearch?TAession=FIND" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Search NYSCEF →</a>
+<a href="https://iapps.courts.state.ny.us/nyscef/CaseSearch" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Search NYSCEF →</a>
 </div>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
@@ -1834,28 +1834,39 @@ ${isSelfManaged ? `
 <div style="font-size:10px;color:#999;text-align:center;margin-top:8px">Member: REBNY | SPONY | NYARM | IREM | BOMA | NARPM | NY Apartment Association</div>
 </div>
 
-<!-- PAGE 10: CORE SERVICES -->
+<!-- PAGE 10: CORE SERVICES (with icons + rich styling) -->
 <div class="section section-white">
 <div class="section-title">Core Services</div>
 <div class="section-sub">Comprehensive management tailored to ${d.buildingName}</div>
-<div class="core-svc"><h4>Property &amp; Asset Management</h4><p>Weekly site visits by senior management. Vendor coordination, proactive inspections, and cost reduction. 24/7 emergency response with direct access to decision-makers. Buildings treated like owner-managed assets.</p></div>
-<div class="core-svc"><h4>In-House CPA &amp; Financials</h4><p>Dedicated CPAs \u2014 never outsourced. Monthly board-ready financial reports, 5-year capital planning, real-time arrears tracking, vendor benchmarking, and zero-fee payment processing.</p></div>
-<div class="core-svc"><h4>Compliance &amp; Risk Management</h4><p>LL11/97, FISP Cycle 10, LL152, HPD, RPIE, boiler and elevator compliance. Zero-penalty track record.${d.violationsOpen > 0 ? ` We\u2019ve identified <strong>${d.violationsOpen} compliance items</strong> that our team can address as part of your transition.` : ''}</p></div>
+
+${[
+  { icon: '\uD83C\uDFE2', title: 'Property & Asset Management', desc: 'Weekly site visits by senior management. Vendor coordination, proactive inspections, and cost reduction. 24/7 emergency response with direct access to decision-makers. Buildings treated like owner-managed assets.', color: '#3A4B5B' },
+  { icon: '\uD83D\uDCB0', title: 'In-House CPA & Financials', desc: 'Dedicated CPAs \u2014 never outsourced. Monthly board-ready financial reports, 5-year capital planning, real-time arrears tracking, vendor benchmarking, and zero-fee payment processing.', color: '#A89035' },
+  { icon: '\uD83D\uDEE1\uFE0F', title: 'Compliance & Risk Management', desc: 'LL11/97, FISP Cycle 10, LL152, HPD, RPIE, boiler and elevator compliance. Zero-penalty track record.' + (d.violationsOpen > 0 ? ' We\u2019ve identified <strong>' + d.violationsOpen + ' compliance items</strong> that our team can address.' : ''), color: '#16a34a' },
+].map(s => `<div style="display:flex;gap:16px;align-items:flex-start;background:#FDFAF3;border:1px solid #D5D0C6;border-left:4px solid ${s.color};border-radius:0 10px 10px 0;padding:20px;margin-bottom:14px">
+<div style="font-size:32px;flex-shrink:0;width:48px;height:48px;background:${s.color}10;border-radius:10px;display:flex;align-items:center;justify-content:center">${s.icon}</div>
+<div><h4 style="font-size:15px;font-weight:700;color:#2C3240;margin-bottom:6px">${s.title}</h4><p style="font-size:12px;color:#555;line-height:1.7">${s.desc}</p></div>
+</div>`).join('\n')}
 </div>
 
-<!-- PAGE 11: VALUE-ADDED -->
+<!-- PAGE 11: VALUE-ADDED (with icons) -->
 <div class="section section-cream">
 <div class="section-title">Value-Added Services</div>
 <div class="section-sub">Specialized capabilities included with your management engagement</div>
-<div class="va-grid">
-<div class="va-card"><h5>Brokerage &amp; Sublet Processing</h5><p>Licensed brokers, background checks, flip tax, subletting compliance</p></div>
-<div class="va-card"><h5>Project Management</h5><p>Full construction oversight, contractor coordination, capital projects</p></div>
-<div class="va-card"><h5>Offering Plans &amp; House Rules</h5><p>Drafted, modified, and updated in-house by our legal team</p></div>
-<div class="va-card"><h5>In-House Attorney Advisory</h5><p>Free legal consultation, lease reviews, dispute resolution</p></div>
-<div class="va-card"><h5>Fractional Senior PM / GM</h5><p>Senior-level leadership at a fraction of full-time cost</p></div>
-<div class="va-card"><h5>Licensed Mortgage Broker</h5><p>Shareholder refinancing, board financing, rate analysis</p></div>
-<div class="va-card"><h5>Audits, Analytics &amp; Reports</h5><p>Vendor analysis, market reports, AI-powered meeting minutes</p></div>
-<div class="va-card"><h5>Staff Training &amp; Supervision</h5><p>Written SOPs, performance reviews, 24/7 staff support line</p></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+${[
+  { icon: '\uD83D\uDD11', title: 'Brokerage & Sublet Processing', desc: 'Licensed brokers, background checks, flip tax, subletting compliance' },
+  { icon: '\uD83C\uDFD7\uFE0F', title: 'Project Management', desc: 'Full construction oversight, contractor coordination, capital projects' },
+  { icon: '\uD83D\uDCDC', title: 'Offering Plans & House Rules', desc: 'Drafted, modified, and updated in-house by our legal team' },
+  { icon: '\u2696\uFE0F', title: 'In-House Attorney Advisory', desc: 'Free legal consultation, lease reviews, dispute resolution' },
+  { icon: '\uD83D\uDC64', title: 'Fractional Senior PM / GM', desc: 'Senior-level leadership at a fraction of full-time cost' },
+  { icon: '\uD83C\uDFE6', title: 'Licensed Mortgage Broker', desc: 'Shareholder refinancing, board financing, rate analysis' },
+  { icon: '\uD83D\uDCCA', title: 'Audits, Analytics & Reports', desc: 'Vendor analysis, market reports, AI-powered meeting minutes' },
+  { icon: '\uD83D\uDC77', title: 'Staff Training & Supervision', desc: 'Written SOPs, performance reviews, 24/7 staff support line' },
+].map(s => `<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:16px;display:flex;gap:12px;align-items:flex-start">
+<div style="font-size:24px;flex-shrink:0">${s.icon}</div>
+<div><h5 style="font-size:13px;font-weight:700;color:#2C3240;margin-bottom:4px">${s.title}</h5><p style="font-size:11px;color:#888;line-height:1.5">${s.desc}</p></div>
+</div>`).join('\n')}
 </div>
 </div>
 
@@ -2498,6 +2509,55 @@ ${['MDS Property Codes', 'Auto-Classification', 'Make.com Automation', 'Google D
 <div style="background:#3A4B5B;border-radius:8px;padding:16px;color:#fff;text-align:center">
 <p style="font-size:12px;line-height:1.7;color:rgba(255,255,255,0.8)">Quarterly reports are <strong style="color:#A89035">included at no additional charge</strong> for all Camelot-managed properties. Board members receive a branded PDF and live dashboard access via Camelot Central.</p>
 </div>
+
+<!-- Report Preview — embedded screenshot of actual Sentinel report -->
+<div style="margin-top:20px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600;margin-bottom:10px;padding-left:16px;border-left:4px solid #A89035">Sample Report Preview</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+<div style="background:#0D2240;border-radius:8px;padding:16px;text-align:center;border:1px solid #D5D0C6;position:relative">
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;letter-spacing:3px;color:#B8973A;text-transform:uppercase;margin-bottom:6px">C A M E L O T</div>
+<div style="font-size:7px;color:#B8973A;letter-spacing:2px;margin-bottom:10px">MARKET INTELLIGENCE</div>
+<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:800;color:#B8973A">Q1 2026</div>
+<div style="font-size:7px;color:rgba(255,255,255,0.5);margin-top:4px">NYC Market Report</div>
+<div style="position:absolute;bottom:4px;left:0;right:0;font-size:6px;color:rgba(255,255,255,0.2)">Page 1 of 12</div>
+</div>
+<div style="background:#F5F0E5;border-radius:8px;padding:12px;border:1px solid #D5D0C6">
+<div style="font-size:8px;font-weight:700;color:#B8973A;margin-bottom:6px;border-bottom:1px solid #B8973A;padding-bottom:3px">Neighborhood Benchmarks</div>
+<div style="font-size:6px;color:#555;line-height:1.8">
+Harlem: $892/sf · $2,950 1BR<br>
+Murray Hill: $1,380/sf · $4,200 1BR<br>
+Gramercy: $1,250/sf · $3,800 1BR<br>
+UWS: $1,500/sf · $4,300 1BR<br>
+Tribeca: $2,100/sf · $5,200 1BR
+</div>
+<div style="display:flex;gap:2px;margin-top:6px;height:30px;align-items:flex-end">
+<div style="flex:1;background:#B8973A;height:40%;border-radius:2px 2px 0 0"></div>
+<div style="flex:1;background:#1A6B7C;height:65%;border-radius:2px 2px 0 0"></div>
+<div style="flex:1;background:#B8973A;height:55%;border-radius:2px 2px 0 0"></div>
+<div style="flex:1;background:#1A6B7C;height:70%;border-radius:2px 2px 0 0"></div>
+<div style="flex:1;background:#B8973A;height:100%;border-radius:2px 2px 0 0"></div>
+</div>
+<div style="font-size:5px;color:#888;text-align:center;margin-top:2px">$/Sqft by Neighborhood</div>
+</div>
+<div style="background:#FDFAF3;border-radius:8px;padding:12px;border:1px solid #D5D0C6">
+<div style="font-size:8px;font-weight:700;color:#0D2240;margin-bottom:6px;border-bottom:1px solid #0D2240;padding-bottom:3px">Portfolio Intelligence</div>
+<div style="font-size:6px;color:#555;line-height:1.8">
+\u2714 5 of 6 buildings above market<br>
+\u2714 10.55% avg rent growth<br>
+\u2714 96% portfolio occupancy<br>
+\u2714 42 buildings managed<br>
+\u2714 $240M+ AUM
+</div>
+<div style="background:#0D2240;border-radius:4px;padding:6px;text-align:center;margin-top:6px">
+<div style="font-size:12px;font-weight:800;color:#B8973A">5/6</div>
+<div style="font-size:5px;color:rgba(255,255,255,0.5)">Above market</div>
+</div>
+</div>
+</div>
+<div style="text-align:center;margin-top:8px">
+<a href="https://camelot-market-reports.onrender.com/" target="_blank" style="font-size:11px;color:#A89035;text-decoration:underline;font-weight:600">View full interactive Q1 2026 Market Report \u2192</a>
+</div>
+</div>
 </div>
 
 <!-- PAGE 20: CAMELOT ADVANTAGE QUANTIFIED -->
@@ -2607,7 +2667,7 @@ ${d.neighborhoodMarketData ? `
 <p style="font-size:12px;color:#2C3240;line-height:1.8;margin-bottom:12px">\uD83D\uDD12 This Property Intelligence Report is <strong>confidential and proprietary</strong> to Camelot Realty Group. It is intended solely for the named recipient(s) and may not be reproduced, distributed, or disclosed without prior written consent.</p>
 <p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:12px">\u00A9 ${new Date().getFullYear()} Camelot Realty Group. All rights reserved. Contents are protected by U.S. copyright and trade secret law. SCOUT, Jackie, Merlin AI, ConciergePlus, Prisma, Parity, and Camelot Central are proprietary platforms. This Report is for informational purposes only and does not constitute legal, financial, or investment advice. Data is sourced from NYC Open Data, ACRIS, StreetEasy, RealtyMX, and other third-party databases and is presented &ldquo;as is&rdquo; without warranty. AI-assisted analysis has been reviewed by licensed real estate professionals. Governed by the laws of the State of New York; venue in New York County.</p>
 <div style="text-align:center;margin-top:16px">
-<a href="https://www.camelot.nyc/legal" target="_blank" style="display:inline-block;background:#A89035;color:#fff;padding:10px 28px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.5px">Read Full Legal Terms &amp; Confidentiality Policy \u2192</a>
+<a href="mailto:info@camelot.nyc?subject=Legal%20Terms%20Request" style="display:inline-block;background:#A89035;color:#fff;padding:10px 28px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.5px">Request Full Legal Terms \u2192 info@camelot.nyc</a>
 </div>
 </div>
 
