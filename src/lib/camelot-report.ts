@@ -7,6 +7,7 @@
 import { fetchFullBuildingReport } from '@/lib/nyc-api';
 import { calculateLL97Penalty, getComplianceStatus, inferBuildingType } from '@/lib/ll97-calculator';
 import { analyzeDistress } from '@/lib/distress-signals';
+import { runGutCheck, generateGutCheckHTML } from '@/lib/gut-check';
 
 // ============================================================
 // Types
@@ -1429,6 +1430,12 @@ ${d.distressSignals.length > 0 ? `
 <div style="font-size:9px;color:#888;margin-top:10px;text-align:center">Jackie recommends cross-referencing all databases before engagement. LexisNexis and SiteCompli require subscriptions. AG Offering Plans, NYSCEF, DOB BIS, and Jack Jaffa lookups are publicly accessible.</div>
 </div>
 </div>
+
+<!-- GUT CHECK — Sentinel Market Comparison -->
+${(() => {
+  const gc = runGutCheck(d);
+  return generateGutCheckHTML(gc);
+})()}
 
 <!-- PAGE 5: OWNERSHIP & FINANCIAL -->
 <div class="section section-cream">

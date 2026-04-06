@@ -42,7 +42,7 @@ export const DEFAULT_SENTINEL_INPUT: SentinelInput = {
 // Neighborhood Data (from SCOUT — updated quarterly)
 // ============================================================
 
-interface NeighborhoodBenchmark {
+export interface NeighborhoodBenchmark {
   name: string;
   condoPSF: number;
   coopPSF: number;
@@ -58,7 +58,7 @@ interface NeighborhoodBenchmark {
   yoyChange: number; // % change year over year
 }
 
-const NEIGHBORHOODS: NeighborhoodBenchmark[] = [
+export const NEIGHBORHOODS: NeighborhoodBenchmark[] = [
   { name: 'Upper East Side', condoPSF: 1620, coopPSF: 1140, medianRent1BR: 4600, medianRent2BR: 7200, daysOnMarket: 14, investScore: 6.8, liveScore: 8.8, familyScore: 9.2, workScore: 8.4, momentum: 'Stable', opexRange: '$30–50', yoyChange: 2.1 },
   { name: 'Upper West Side', condoPSF: 1500, coopPSF: 1050, medianRent1BR: 4300, medianRent2BR: 6500, daysOnMarket: 13, investScore: 7.0, liveScore: 8.9, familyScore: 9.0, workScore: 8.0, momentum: 'Stable', opexRange: '$28–44', yoyChange: 1.8 },
   { name: 'Midtown', condoPSF: 1600, coopPSF: 1100, medianRent1BR: 4400, medianRent2BR: 6800, daysOnMarket: 13, investScore: 7.0, liveScore: 7.5, familyScore: 5.5, workScore: 9.5, momentum: 'Stable', opexRange: '$28–45', yoyChange: 1.5 },
@@ -77,7 +77,7 @@ const NEIGHBORHOODS: NeighborhoodBenchmark[] = [
 // Tracked Buildings (Camelot Portfolio)
 // ============================================================
 
-interface TrackedBuilding {
+export interface TrackedBuilding {
   name: string;
   address: string;
   neighborhood: string;
