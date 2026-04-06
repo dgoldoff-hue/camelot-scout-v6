@@ -2984,7 +2984,7 @@ function generateProposal() {
   var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Proposal of Services \u2014 ' + d.buildingName + '</title>' +
   '<style>' +
   '*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }' +
-  'body { font-family: Georgia, "Times New Roman", serif; color: #2C3240; line-height: 1.65; font-size: 11px; max-width: 8.5in; margin: 0 auto; padding: 0.5in 0.7in; }' +
+  'body { font-family: Georgia, "Times New Roman", serif; color: #2C3240; line-height: 1.65; font-size: 11px; max-width: 8.5in; margin: 0 auto; padding: 1in; }' +
   'h1 { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 700; color: #3A4B5B; text-align: center; margin: 20px 0 4px 0; letter-spacing: 1px; }' +
   'h2 { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 11.5px; font-weight: 700; color: #A89035; margin: 16px 0 6px 0; padding-bottom: 3px; border-bottom: 1px solid #A89035; text-transform: uppercase; letter-spacing: 0.5px; }' +
   'h3 { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 700; color: #3A4B5B; margin: 12px 0 4px 0; }' +
@@ -3001,7 +3001,7 @@ function generateProposal() {
   '.phase { background: #F5F0E5; border-left: 3px solid #3A4B5B; padding: 10px 14px; margin: 8px 0; }' +
   '.phase-title { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 700; color: #3A4B5B; font-size: 11px; margin-bottom: 4px; }' +
   '.page-break { page-break-before: always; }' +
-  '@media print { @page { margin: 0.5in 0.6in; } body { padding: 0; } }' +
+  '@media print { @page { size: letter; margin: 1in; } body { padding: 0; max-width: none; font-size: 11px; } }' +
   '</style></head><body>' +
 
   /* ══════════════════════════════════════════════════════════════ */
