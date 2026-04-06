@@ -1,90 +1,36 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { cn, formatCurrency } from '@/lib/utils';
-import { supabase } from '@/lib/supabase';
+import { searchViolations, type ViolationSummary, type ViolationResult } from '@/lib/nyc-violations';
 import toast from 'react-hot-toast';
 import {
-  AlertTriangle, Shield, Search, Building2, Loader2,
-  ChevronDown, ChevronUp, ExternalLink, FileText, RefreshCw,
-  AlertCircle, Clock, DollarSign, Users, Calendar,
+  AlertTriangle, Shield, Search, Loader2, RefreshCw,
+  AlertCircle, Clock, DollarSign, Users, Calendar, FileDown,
+  Building2, MapPin, ChevronDown, ChevronUp, ExternalLink,
 } from 'lucide-react';
 
-interface ViolationReport {
-  id: string;
-  address: string;
-  borough: string;
-  bbl: string;
-  report_date: string;
-  total_violations: number;
-  open_violations: number;
-  hpd_open: number;
-  hpd_class_c: number;
-  hpd_class_b: number;
-  hpd_class_a: number;
-  dob_open: number;
-  ecb_open: number;
-  total_penalties: number;
-  total_interest: number;
-  estimated_cost_low: number;
-  estimated_cost_high: number;
-  overdue_count: number;
-  upcoming_hearings: number;
-  estimated_timeline: string;
-  players_needed: string[];
-}
+const BOROUGHS = ['MANHATTAN', 'BROOKLYN', 'BRONX', 'QUEENS', 'STATEN ISLAND'];
 
-interface Violation {
-  id: string;
-  report_id: string;
-  address: string;
-  source: string;
-  violation_class: string;
-  violation_type: string;
-  violation_id: string;
-  unit_name: string;
-  description: string;
-  status: string;
-  is_open: boolean;
-  is_overdue: boolean;
-  severity_level: number;
-  severity_label: string;
-  inspection_date: string;
-  cure_deadline: string;
-  penalty_balance: number;
-  cost_estimate_low: number;
-  cost_estimate_high: number;
-  players: string[];
-  resolution_status: string;
-}
-
-function SeverityBadge({ level, label }: { level: number; label: string }) {
-  const colors = {
-    3: 'bg-red-500/20 text-red-400 border-red-500/30',
-    2: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-    1: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    0: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+function SeverityBadge({ level, label }: { level: number; label?: string }) {
+  const config: Record<number, { bg: string; text: string }> = {
+    3: { bg: 'bg-red-500/20 border-red-500/30', text: 'text-red-400' },
+    2: { bg: 'bg-orange-500/20 border-orange-500/30', text: 'text-orange-400' },
+    1: { bg: 'bg-yellow-500/20 border-yellow-500/30', text: 'text-yellow-400' },
+    0: { bg: 'bg-gray-500/20 border-gray-500/30', text: 'text-gray-400' },
   };
-  return (
-    <span className={cn('px-2 py-0.5 rounded text-xs font-medium border', colors[level as keyof typeof colors] || colors[0])}>
-      {label || `Level ${level}`}
-    </span>
-  );
+  const c = config[level] || config[0];
+  return <span className={cn('px-2 py-0.5 rounded text-xs font-medium border', c.bg, c.text)}>{label || `Level ${level}`}</span>;
 }
 
 function StatCard({ icon: Icon, label, value, sub, color = 'gold' }: {
   icon: any; label: string; value: string | number; sub?: string; color?: string;
 }) {
-  const borderColors = {
-    gold: 'border-camelot-gold/30',
-    red: 'border-red-500/30',
-    orange: 'border-orange-500/30',
-    green: 'border-green-500/30',
+  const borders: Record<string, string> = {
+    gold: 'border-camelot-gold/30', red: 'border-red-500/30',
+    orange: 'border-orange-500/30', green: 'border-green-500/30', blue: 'border-blue-500/30',
   };
   return (
-    <div className={cn('bg-camelot-navy-light rounded-lg p-4 border', borderColors[color as keyof typeof borderColors])}>
-      <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
-        <Icon size={14} />
-        <span>{label}</span>
-      </div>
+    <div className={cn('bg-camelot-navy-light rounded-lg p-4 border', borders[color] || borders.gold)}>
+      <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><Icon size={14} /><span>{label}</span></div>
       <div className="text-2xl font-bold text-white">{value}</div>
       {sub && <div className="text-xs text-gray-500 mt-1">{sub}</div>}
     </div>
@@ -92,299 +38,273 @@ function StatCard({ icon: Icon, label, value, sub, color = 'gold' }: {
 }
 
 export default function Violations() {
-  const [reports, setReports] = useState<ViolationReport[]>([]);
-  const [violations, setViolations] = useState<Violation[]>([]);
-  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingViolations, setIsLoadingViolations] = useState(false);
-  const [expandedViolation, setExpandedViolation] = useState<string | null>(null);
-  const [filterSource, setFilterSource] = useState<string>('all');
-  const [filterSeverity, setFilterSeverity] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [address, setAddress] = useState('');
+  const [borough, setBorough] = useState('BROOKLYN');
+  const [isSearching, setIsSearching] = useState(false);
+  const [result, setResult] = useState<ViolationSummary | null>(null);
+  const [filterSource, setFilterSource] = useState('all');
+  const [filterSeverity, setFilterSeverity] = useState('all');
+  const [filterOpen, setFilterOpen] = useState(true);
+  const [searchText, setSearchText] = useState('');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Load portfolio summary
-  const loadReports = useCallback(async () => {
-    setIsLoading(true);
+  const handleSearch = useCallback(async () => {
+    if (!address.trim()) { toast.error('Enter an address'); return; }
+    setIsSearching(true);
+    setResult(null);
     try {
-      const { data, error } = await supabase
-        .from('violation_reports')
-        .select('*')
-        .order('open_violations', { ascending: false });
-
-      if (error) throw error;
-      setReports(data || []);
+      const data = await searchViolations(address.trim(), borough);
+      setResult(data);
+      toast.success(`Found ${data.totalFound} violations (${data.totalOpen} open)`);
     } catch (err: any) {
-      toast.error('Failed to load violation reports');
-      console.error(err);
+      toast.error('Search failed: ' + (err.message || 'Unknown error'));
     } finally {
-      setIsLoading(false);
+      setIsSearching(false);
     }
-  }, []);
+  }, [address, borough]);
 
-  // Load violations for a specific building
-  const loadViolations = useCallback(async (address: string) => {
-    setIsLoadingViolations(true);
-    setSelectedAddress(address);
-    try {
-      const report = reports.find(r => r.address === address);
-      if (!report) return;
-
-      const { data, error } = await supabase
-        .from('violations')
-        .select('*')
-        .eq('report_id', report.id)
-        .eq('is_open', true)
-        .order('severity_level', { ascending: false });
-
-      if (error) throw error;
-      setViolations(data || []);
-    } catch (err: any) {
-      toast.error('Failed to load violations');
-      console.error(err);
-    } finally {
-      setIsLoadingViolations(false);
-    }
-  }, [reports]);
-
-  useEffect(() => {
-    loadReports();
-  }, [loadReports]);
-
-  // Portfolio totals
-  const totals = reports.reduce((acc, r) => ({
-    open: acc.open + (r.open_violations || 0),
-    classC: acc.classC + (r.hpd_class_c || 0),
-    classB: acc.classB + (r.hpd_class_b || 0),
-    classA: acc.classA + (r.hpd_class_a || 0),
-    overdue: acc.overdue + (r.overdue_count || 0),
-    costLow: acc.costLow + Number(r.estimated_cost_low || 0),
-    costHigh: acc.costHigh + Number(r.estimated_cost_high || 0),
-    penalties: acc.penalties + Number(r.total_penalties || 0),
-  }), { open: 0, classC: 0, classB: 0, classA: 0, overdue: 0, costLow: 0, costHigh: 0, penalties: 0 });
-
-  // Filter violations
-  const filteredViolations = violations.filter(v => {
+  const filteredViolations = (result?.violations || []).filter(v => {
+    if (filterOpen && !v.isOpen) return false;
     if (filterSource !== 'all' && v.source !== filterSource) return false;
-    if (filterSeverity !== 'all' && String(v.severity_level) !== filterSeverity) return false;
-    if (searchQuery && !v.description?.toLowerCase().includes(searchQuery.toLowerCase()) && !v.violation_id?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (filterSeverity !== 'all' && String(v.severityLevel) !== filterSeverity) return false;
+    if (searchText && !v.description?.toLowerCase().includes(searchText.toLowerCase()) && !v.violationId?.toLowerCase().includes(searchText.toLowerCase())) return false;
     return true;
   });
+
+  const exportCSV = () => {
+    if (!result) return;
+    const rows = [['Source', 'Class', 'Unit', 'Description', 'Status', 'Overdue', 'Deadline', 'Cost Low', 'Cost High', 'Players']];
+    for (const v of filteredViolations) {
+      rows.push([v.source, v.violationClass, v.unit, `"${(v.description || '').replace(/"/g, '""').substring(0, 200)}"`, v.status, v.isOverdue ? 'YES' : '', v.cureDeadline || '', String(v.costLow), String(v.costHigh), `"${v.players.join(', ')}"`]);
+    }
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `violations-${result.address.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exported');
+  };
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Shield className="text-camelot-gold" size={28} />
-            Violation & Resolution Center
-          </h1>
-          <p className="text-gray-400 text-sm mt-1">
-            Portfolio-wide violation tracking, analysis, and resolution planning
-          </p>
-        </div>
-        <button
-          onClick={loadReports}
-          className="flex items-center gap-2 px-4 py-2 bg-camelot-gold/20 text-camelot-gold rounded-lg hover:bg-camelot-gold/30 transition-colors"
-        >
-          <RefreshCw size={16} />
-          Refresh
-        </button>
-      </div>
-
-      {/* Portfolio Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        <StatCard icon={AlertTriangle} label="Open Violations" value={totals.open.toLocaleString()} sub={`${reports.length} buildings`} color="red" />
-        <StatCard icon={AlertCircle} label="Class C (Critical)" value={totals.classC} sub="Immediately hazardous" color="red" />
-        <StatCard icon={Clock} label="Overdue" value={totals.overdue.toLocaleString()} sub="Past cure deadline" color="orange" />
-        <StatCard icon={Shield} label="Class B" value={totals.classB} sub="Hazardous" color="orange" />
-        <StatCard icon={DollarSign} label="Est. Cost (Low)" value={formatCurrency(totals.costLow)} sub="Resolution estimate" color="gold" />
-        <StatCard icon={DollarSign} label="Est. Cost (High)" value={formatCurrency(totals.costHigh)} sub="Resolution estimate" color="gold" />
-      </div>
-
-      {/* Building Cards */}
       <div>
-        <h2 className="text-lg font-semibold text-white mb-4">Buildings</h2>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="animate-spin text-camelot-gold" size={32} />
+        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <Shield className="text-camelot-gold" size={28} />
+          Violation & Resolution Center
+        </h1>
+        <p className="text-gray-400 text-sm mt-1">
+          Search any NYC property to pull violations, analyze severity, and generate resolution reports
+        </p>
+      </div>
+
+      {/* Search Box */}
+      <div className="bg-camelot-navy-light rounded-xl p-6 border border-white/10">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <label className="text-gray-400 text-xs mb-1 block">Property Address</label>
+            <div className="relative">
+              <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={address}
+                onChange={e => setAddress(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                placeholder="e.g. 533 Washington Avenue"
+                className="w-full pl-10 pr-4 py-3 bg-camelot-navy border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-camelot-gold/50 outline-none text-lg"
+              />
+            </div>
           </div>
-        ) : reports.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <Shield size={48} className="mx-auto mb-4 opacity-50" />
-            <p>No violation reports found.</p>
-            <p className="text-sm mt-2">Run a violation scan to populate this dashboard.</p>
+          <div className="w-full md:w-48">
+            <label className="text-gray-400 text-xs mb-1 block">Borough</label>
+            <select
+              value={borough}
+              onChange={e => setBorough(e.target.value)}
+              className="w-full px-4 py-3 bg-camelot-navy border border-white/10 rounded-lg text-white outline-none text-lg"
+            >
+              {BOROUGHS.map(b => <option key={b} value={b}>{b}</option>)}
+            </select>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {reports.map(report => (
-              <div
-                key={report.id}
-                onClick={() => loadViolations(report.address)}
-                className={cn(
-                  'bg-camelot-navy-light rounded-lg p-4 border cursor-pointer transition-all hover:border-camelot-gold/50',
-                  selectedAddress === report.address ? 'border-camelot-gold' : 'border-white/10'
-                )}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-white font-semibold">{report.address}</h3>
-                    <p className="text-gray-400 text-xs">{report.borough} · {new Date(report.report_date).toLocaleDateString()}</p>
-                  </div>
-                  <div className={cn(
-                    'px-2 py-1 rounded text-xs font-bold',
-                    report.hpd_class_c > 0 ? 'bg-red-500/20 text-red-400' : report.open_violations > 100 ? 'bg-orange-500/20 text-orange-400' : 'bg-green-500/20 text-green-400'
-                  )}>
-                    {report.open_violations} Open
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-4 gap-2 text-center">
-                  <div>
-                    <div className="text-red-400 font-bold text-lg">{report.hpd_class_c}</div>
-                    <div className="text-gray-500 text-[10px]">Class C</div>
-                  </div>
-                  <div>
-                    <div className="text-orange-400 font-bold text-lg">{report.hpd_class_b}</div>
-                    <div className="text-gray-500 text-[10px]">Class B</div>
-                  </div>
-                  <div>
-                    <div className="text-yellow-400 font-bold text-lg">{report.hpd_class_a}</div>
-                    <div className="text-gray-500 text-[10px]">Class A</div>
-                  </div>
-                  <div>
-                    <div className="text-blue-400 font-bold text-lg">{report.ecb_open}</div>
-                    <div className="text-gray-500 text-[10px]">ECB</div>
-                  </div>
-                </div>
-
-                <div className="mt-3 pt-3 border-t border-white/5 flex justify-between text-xs text-gray-400">
-                  <span>Overdue: <span className="text-red-400 font-medium">{report.overdue_count}</span></span>
-                  <span>Est: {formatCurrency(Number(report.estimated_cost_low))} - {formatCurrency(Number(report.estimated_cost_high))}</span>
-                </div>
-
-                {report.estimated_timeline && (
-                  <div className="mt-2 text-xs text-gray-500">
-                    <Calendar size={12} className="inline mr-1" />
-                    Timeline: {report.estimated_timeline}
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="flex items-end">
+            <button
+              onClick={handleSearch}
+              disabled={isSearching}
+              className="w-full md:w-auto px-8 py-3 bg-camelot-gold text-camelot-navy font-bold rounded-lg hover:bg-camelot-gold/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {isSearching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+              {isSearching ? 'Searching...' : 'Search'}
+            </button>
+          </div>
+        </div>
+        {isSearching && (
+          <div className="mt-4 text-center text-gray-400 text-sm">
+            <Loader2 size={20} className="animate-spin inline mr-2" />
+            Pulling violations from HPD, DOB, and ECB databases...
           </div>
         )}
       </div>
 
-      {/* Violation Detail Table */}
-      {selectedAddress && (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">
-              {selectedAddress} — Open Violations ({filteredViolations.length})
-            </h2>
-            <div className="flex gap-2">
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search violations..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-3 py-1.5 bg-camelot-navy-light border border-white/10 rounded text-sm text-white placeholder-gray-500 focus:border-camelot-gold/50 outline-none"
-                />
+      {/* Results */}
+      {result && (
+        <>
+          {/* Summary Header */}
+          <div className="bg-camelot-navy-light rounded-xl p-4 border border-camelot-gold/20">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-white">{result.address}</h2>
+                <p className="text-gray-400 text-sm">{result.borough} · Scanned {new Date().toLocaleDateString()}</p>
               </div>
-              <select
-                value={filterSource}
-                onChange={e => setFilterSource(e.target.value)}
-                className="px-3 py-1.5 bg-camelot-navy-light border border-white/10 rounded text-sm text-white outline-none"
-              >
-                <option value="all">All Sources</option>
-                <option value="HPD">HPD</option>
-                <option value="DOB">DOB</option>
-                <option value="ECB">ECB</option>
-              </select>
-              <select
-                value={filterSeverity}
-                onChange={e => setFilterSeverity(e.target.value)}
-                className="px-3 py-1.5 bg-camelot-navy-light border border-white/10 rounded text-sm text-white outline-none"
-              >
-                <option value="all">All Severity</option>
-                <option value="3">Class C (Critical)</option>
-                <option value="2">Class B / DOB / ECB</option>
-                <option value="1">Class A</option>
-              </select>
+              <div className="flex gap-2">
+                <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-gray-300 hover:bg-white/10 text-sm">
+                  <FileDown size={14} /> Export CSV
+                </button>
+                <button onClick={handleSearch} className="flex items-center gap-2 px-4 py-2 bg-camelot-gold/20 text-camelot-gold rounded-lg hover:bg-camelot-gold/30 text-sm">
+                  <RefreshCw size={14} /> Re-scan
+                </button>
+              </div>
+            </div>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+              <StatCard icon={AlertTriangle} label="Total Found" value={result.totalFound.toLocaleString()} color="gold" />
+              <StatCard icon={AlertCircle} label="Open" value={result.totalOpen.toLocaleString()} color="red" />
+              <StatCard icon={Shield} label="Class C" value={result.hpdClassC} sub="Critical" color="red" />
+              <StatCard icon={Shield} label="Class B" value={result.hpdClassB} sub="Hazardous" color="orange" />
+              <StatCard icon={Shield} label="Class A" value={result.hpdClassA} sub="Non-hazardous" color="gold" />
+              <StatCard icon={Clock} label="Overdue" value={result.overdue} color="red" />
+              <StatCard icon={DollarSign} label="Est. Low" value={formatCurrency(result.costLow)} color="gold" />
+              <StatCard icon={DollarSign} label="Est. High" value={formatCurrency(result.costHigh)} color="orange" />
             </div>
           </div>
 
-          {isLoadingViolations ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="animate-spin text-camelot-gold" size={32} />
-            </div>
-          ) : (
-            <div className="bg-camelot-navy-light rounded-lg border border-white/10 overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="text-left px-4 py-3 text-gray-400 font-medium">Source</th>
-                    <th className="text-left px-4 py-3 text-gray-400 font-medium">Class</th>
-                    <th className="text-left px-4 py-3 text-gray-400 font-medium">Unit</th>
-                    <th className="text-left px-4 py-3 text-gray-400 font-medium">Description</th>
-                    <th className="text-left px-4 py-3 text-gray-400 font-medium">Deadline</th>
-                    <th className="text-left px-4 py-3 text-gray-400 font-medium">Est. Cost</th>
-                    <th className="text-left px-4 py-3 text-gray-400 font-medium">Players</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredViolations.slice(0, 100).map(v => (
-                    <tr
-                      key={v.id}
-                      className={cn(
-                        'border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors',
-                        v.is_overdue && 'bg-red-500/5'
-                      )}
-                      onClick={() => setExpandedViolation(expandedViolation === v.id ? null : v.id)}
-                    >
-                      <td className="px-4 py-2">
-                        <span className={cn(
-                          'px-2 py-0.5 rounded text-xs font-medium',
-                          v.source === 'HPD' ? 'bg-purple-500/20 text-purple-400' :
-                          v.source === 'DOB' ? 'bg-blue-500/20 text-blue-400' :
-                          'bg-orange-500/20 text-orange-400'
-                        )}>
-                          {v.source}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2">
-                        <SeverityBadge level={v.severity_level} label={v.violation_class || v.severity_label} />
-                      </td>
-                      <td className="px-4 py-2 text-gray-300 text-xs">{v.unit_name || 'Bldg'}</td>
-                      <td className="px-4 py-2 text-gray-300 text-xs max-w-xs truncate">{v.description?.substring(0, 80)}</td>
-                      <td className="px-4 py-2 text-xs">
-                        {v.cure_deadline ? (
-                          <span className={cn(v.is_overdue ? 'text-red-400 font-bold' : 'text-gray-400')}>
-                            {new Date(v.cure_deadline).toLocaleDateString()}
-                            {v.is_overdue && ' ⚠️'}
-                          </span>
-                        ) : '—'}
-                      </td>
-                      <td className="px-4 py-2 text-gray-300 text-xs">
-                        {formatCurrency(Number(v.cost_estimate_low))} - {formatCurrency(Number(v.cost_estimate_high))}
-                      </td>
-                      <td className="px-4 py-2 text-gray-400 text-xs">
-                        {v.players?.slice(0, 2).join(', ')}
-                        {v.players?.length > 2 && ` +${v.players.length - 2}`}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {filteredViolations.length > 100 && (
-                <div className="px-4 py-3 text-center text-gray-400 text-sm border-t border-white/10">
-                  Showing 100 of {filteredViolations.length} violations
-                </div>
-              )}
+          {/* Players Needed */}
+          {result.players.length > 0 && (
+            <div className="bg-camelot-navy-light rounded-lg p-4 border border-white/10">
+              <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2"><Users size={14} /> Players Needed for Resolution</h3>
+              <div className="flex flex-wrap gap-2">
+                {result.players.map(p => (
+                  <span key={p} className="px-3 py-1 bg-camelot-gold/10 border border-camelot-gold/20 rounded-full text-xs text-camelot-gold">{p}</span>
+                ))}
+              </div>
             </div>
           )}
+
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Filter violations..."
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 bg-camelot-navy-light border border-white/10 rounded text-sm text-white placeholder-gray-500 focus:border-camelot-gold/50 outline-none"
+              />
+            </div>
+            <select value={filterSource} onChange={e => setFilterSource(e.target.value)} className="px-3 py-2 bg-camelot-navy-light border border-white/10 rounded text-sm text-white outline-none">
+              <option value="all">All Sources</option>
+              <option value="HPD">HPD</option>
+              <option value="DOB">DOB</option>
+              <option value="ECB">ECB</option>
+            </select>
+            <select value={filterSeverity} onChange={e => setFilterSeverity(e.target.value)} className="px-3 py-2 bg-camelot-navy-light border border-white/10 rounded text-sm text-white outline-none">
+              <option value="all">All Severity</option>
+              <option value="3">Class C (Critical)</option>
+              <option value="2">Class B / DOB / ECB</option>
+              <option value="1">Class A</option>
+            </select>
+            <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+              <input type="checkbox" checked={filterOpen} onChange={e => setFilterOpen(e.target.checked)} className="rounded" />
+              Open only
+            </label>
+            <span className="text-gray-500 text-sm">{filteredViolations.length} violations</span>
+          </div>
+
+          {/* Violation Table */}
+          <div className="bg-camelot-navy-light rounded-lg border border-white/10 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/5">
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium w-16">Source</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium w-20">Class</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium w-20">Unit</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Description</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium w-24">Status</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium w-28">Deadline</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium w-32">Est. Cost</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium w-40">Players</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredViolations.slice(0, 200).map((v, i) => (
+                  <tr
+                    key={`${v.source}-${v.violationId}-${i}`}
+                    className={cn(
+                      'border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors',
+                      v.isOverdue && v.isOpen && 'bg-red-500/5'
+                    )}
+                    onClick={() => setExpandedId(expandedId === `${v.source}-${v.violationId}-${i}` ? null : `${v.source}-${v.violationId}-${i}`)}
+                  >
+                    <td className="px-4 py-2">
+                      <span className={cn('px-2 py-0.5 rounded text-xs font-medium',
+                        v.source === 'HPD' ? 'bg-purple-500/20 text-purple-400' :
+                        v.source === 'DOB' ? 'bg-blue-500/20 text-blue-400' :
+                        'bg-orange-500/20 text-orange-400'
+                      )}>{v.source}</span>
+                    </td>
+                    <td className="px-4 py-2"><SeverityBadge level={v.severityLevel} label={v.violationClass} /></td>
+                    <td className="px-4 py-2 text-gray-300 text-xs">{v.unit || 'Bldg'}</td>
+                    <td className="px-4 py-2 text-gray-300 text-xs max-w-xs truncate">{v.description?.substring(0, 100)}</td>
+                    <td className="px-4 py-2">
+                      <span className={cn('text-xs font-medium', v.isOpen ? 'text-red-400' : 'text-green-400')}>
+                        {v.isOpen ? 'OPEN' : 'CLOSED'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 text-xs">
+                      {v.cureDeadline ? (
+                        <span className={cn(v.isOverdue ? 'text-red-400 font-bold' : 'text-gray-400')}>
+                          {v.cureDeadline} {v.isOverdue && '⚠️'}
+                        </span>
+                      ) : '—'}
+                    </td>
+                    <td className="px-4 py-2 text-gray-300 text-xs">{formatCurrency(v.costLow)} - {formatCurrency(v.costHigh)}</td>
+                    <td className="px-4 py-2 text-gray-400 text-xs">{v.players?.slice(0, 2).join(', ')}{v.players?.length > 2 ? ` +${v.players.length - 2}` : ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filteredViolations.length > 200 && (
+              <div className="px-4 py-3 text-center text-gray-400 text-sm border-t border-white/10">
+                Showing 200 of {filteredViolations.length} violations
+              </div>
+            )}
+            {filteredViolations.length === 0 && (
+              <div className="px-4 py-8 text-center text-gray-500">No violations match your filters</div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Empty state */}
+      {!result && !isSearching && (
+        <div className="text-center py-16 text-gray-500">
+          <Building2 size={64} className="mx-auto mb-4 opacity-30" />
+          <p className="text-lg">Enter a property address and borough above</p>
+          <p className="text-sm mt-2">We'll pull all HPD, DOB, and ECB violations from NYC Open Data in real-time</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            {['533 Washington Avenue', '538 Pacific Street', '555 Pacific Street'].map(addr => (
+              <button
+                key={addr}
+                onClick={() => { setAddress(addr); setBorough('BROOKLYN'); }}
+                className="px-3 py-1.5 bg-white/5 border border-white/10 rounded text-xs text-gray-400 hover:text-camelot-gold hover:border-camelot-gold/30 transition-colors"
+              >
+                {addr}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
