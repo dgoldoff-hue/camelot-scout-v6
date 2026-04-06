@@ -9,6 +9,7 @@ import { calculateLL97Penalty, getComplianceStatus, inferBuildingType } from '@/
 import { analyzeDistress } from '@/lib/distress-signals';
 import { runGutCheck, generateGutCheckHTML } from '@/lib/gut-check';
 import { findBuildingPhotos, generatePhotoHTML } from '@/lib/building-photos';
+import { getNeighborhoodIntel, generateNeighborhoodIntelHTML } from '@/lib/neighborhood-intel';
 
 // ============================================================
 // Types
@@ -118,6 +119,7 @@ export interface MasterReportData {
   feeComparison: MarketFeeComparison | null;
   // Raw data for advanced usage
   buildingPhotos: { exterior: string[]; streetView: string; satellite: string; source: string } | null;
+  neighborhoodIntel: { crimeScore: number; qualityScore: number; transitScore: number; crimeTotal: number; complaints311Total: number; crimeBreakdown: Array<{type: string; count: number}>; topComplaints: Array<{type: string; count: number}>; landmarks: Array<{name: string; type: string; date: string}>; crimePrecinct: string; scoreExplanation: string } | null;
   raw: any;
 }
 
@@ -500,6 +502,16 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     findBuildingPhotos(address, address).catch(() => null),
   ]);
 
+  // Fetch neighborhood intelligence (crime, 311, landmarks)
+  // Determine precinct and ZIP from raw DOF data
+  const rawDof = raw.dof ? (raw as any).raw?.dof : null;
+  const zip = (raw as any).dofAbatement?.raw?.zip_code || '';
+  const precinct = '';
+  const neighborhoodIntel = (zip || precinct) ? await getNeighborhoodIntel(
+    precinct || '0', zip || '10001',
+    geo?.lat, geo?.lng
+  ).catch(() => null) : null;
+
   const dof = raw.dof;
 
   // Cascade unit count from multiple sources — never show 0 if ANY source has data
@@ -748,6 +760,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       pricePerUnit,
     }),
     buildingPhotos,
+    neighborhoodIntel,
     raw,
   };
 }
@@ -1363,6 +1376,8 @@ Price Momentum: <strong style="color:${d.neighborhoodMarketData.momentum === 'Ve
 &nbsp;&nbsp;|&nbsp;&nbsp;Operating Costs: <strong>${d.neighborhoodMarketData.opexRange}</strong>
 </div>
 ` : ''}
+
+${d.neighborhoodIntel ? generateNeighborhoodIntelHTML(d.neighborhoodIntel, d.neighborhoodName || d.borough || 'NYC') : ''}
 </div>
 
 <!-- PAGE 3: PROPERTY OVERVIEW -->
