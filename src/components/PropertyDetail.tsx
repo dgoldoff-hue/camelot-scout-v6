@@ -102,16 +102,17 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 
-function getSocialLinks(contact: Contact) {
+function getSocialLinks(contact: Contact, address?: string) {
   const name = contact.name || '';
   const company = contact.company || '';
+  const context = [name, company, address].filter(Boolean).join(' ');
 
   const linkedinUrl = contact.linkedin_url || contact.linkedin
-    || `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(name + (company ? ' ' + company : ''))}`;
+    || `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(context)}`;
   const facebookUrl = contact.facebook_url
-    || `https://www.facebook.com/search/people/?q=${encodeURIComponent(name)}`;
+    || `https://www.facebook.com/search/people/?q=${encodeURIComponent(name + (company ? ' ' + company : ''))}`;
   const instagramUrl = contact.instagram_url
-    || `https://www.instagram.com/${name.toLowerCase().replace(/\s+/g, '')}/`;
+    || `https://www.instagram.com/explore/tags/${encodeURIComponent(name.toLowerCase().replace(/\s+/g, ''))}/`;
 
   return { linkedinUrl, facebookUrl, instagramUrl };
 }
@@ -985,7 +986,7 @@ function ContactsTab({
                 </h4>
                 <div className="space-y-2">
                   {catContacts.map((contact, i) => {
-                    const social = getSocialLinks(contact);
+                    const social = getSocialLinks(contact, building.address);
                     const roleBadgeColors = colors;
 
                     return (

@@ -2218,10 +2218,10 @@ ${[
 <div class="section-sub">Projected annual value creation — based on Camelot portfolio benchmarks</div>
 
 <div class="stats-row">
-<div class="stat-box"><div class="val gold">$${(d.units * 50).toLocaleString()}/mo</div><div class="lbl">Proposed Mgmt Fee</div></div>
+<div class="stat-box"><div class="val gold">$${d.monthlyFee.toLocaleString()}/mo</div><div class="lbl">Proposed Mgmt Fee ($${d.pricePerUnit}/unit)</div></div>
 <div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(d.units * 5750).toLocaleString()}/yr</div><div class="lbl">Est. Retention Savings</div></div>
 <div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(d.units * 850).toLocaleString()}/yr</div><div class="lbl">Est. Payment Recovery</div></div>
-<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(d.buildingArea * 2).toLocaleString()}/yr</div><div class="lbl">Est. Energy Savings</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${(d.buildingArea > 0 ? Math.round(d.buildingArea * 2).toLocaleString() : '15,000–35,000')}/yr</div><div class="lbl">Est. Energy Savings</div></div>
 </div>
 
 <table class="invest-table" style="margin-top:16px">
@@ -2231,14 +2231,22 @@ ${[
 <tr><td>Vendor Contract Rebidding</td><td style="color:#16a34a;font-weight:700">$35K–75K/yr</td><td>★★★ High</td><td>Elevator, cleaning, extermination — competitive 3-bid process via Camelot network</td></tr>
 <tr><td>Energy Optimization (Parity)</td><td style="color:#16a34a;font-weight:700">$15K–35K/yr</td><td>★★ Medium</td><td>HVAC monitoring, demand-side savings, LL97 compliance pathway</td></tr>
 <tr><td>Non-Maintenance Revenue</td><td style="color:#16a34a;font-weight:700">$15K–40K/yr</td><td>★★ Medium</td><td>Laundry, storage, alteration fees, sublet charges, flip tax review</td></tr>
-<tr><td>Resident Retention (Merlin AI)</td><td style="color:#16a34a;font-weight:700">$${Math.round(d.units * 5.75).toLocaleString()}K/yr</td><td>★★★ High</td><td>AI-powered communication reduces turnover — saving 1–2 months rent/unit</td></tr>
 <tr><td>Process &amp; Admin Efficiency</td><td style="color:#16a34a;font-weight:700">$8K–18K/yr</td><td>★ Lower</td><td>Digital document management, automated billing, AI board minutes</td></tr>
 </tbody>
 </table>
 
+<div style="background:#EDE9DF;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:14px 18px;margin-top:12px">
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+<div><span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#888">Resident Retention (Merlin AI)</span><br>
+<span style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:20px;font-weight:700;color:#16a34a">$${Math.round(d.units * 3500).toLocaleString()} – $${Math.round(d.units * 8000).toLocaleString()}/yr</span>
+<span style="display:block;font-size:10px;color:#555;margin-top:2px">${d.units} units × $3,500–$8,000 avg turnover cost avoided per unit</span></div>
+<div style="text-align:right"><span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#888">Priority</span><br><span style="font-size:14px;font-weight:700;color:#A89035">★★★ High</span></div>
+</div>
+</div>
+
 <div style="background:#16a34a;color:#fff;border-radius:8px;padding:14px 20px;margin-top:16px;text-align:center">
-<span style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;font-weight:700">Total Year 1 Opportunity: $98,000 – $223,000+</span>
-<span style="display:block;font-size:11px;opacity:0.9;margin-top:4px">In combined cost reduction and revenue improvement — achievable without any maintenance increase</span>
+<span style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;font-weight:700">Total Year 1 Opportunity: $${(98000 + Math.round(d.units * 3500)).toLocaleString()} – $${(223000 + Math.round(d.units * 8000)).toLocaleString()}+</span>
+<span style="display:block;font-size:11px;opacity:0.9;margin-top:4px">$98K–$223K operational savings + $${Math.round(d.units * 3500 / 1000)}K–$${Math.round(d.units * 8000 / 1000)}K resident retention value</span>
 </div>
 </div>
 
