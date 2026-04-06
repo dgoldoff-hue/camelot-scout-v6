@@ -182,6 +182,10 @@ export default function Results() {
                 onViewDetails={() => setDetailBuilding(building)}
                 onEmail={() => toast.success('Opening email composer...')}
                 onEnrich={() => toast.success('Enrichment started...')}
+                onGutCheck={() => {
+                  toast.success(`Running Gut Check for ${building.name || building.address}...`);
+                  window.open(`#/report-center?address=${encodeURIComponent(building.address)}&gutcheck=true`, '_blank');
+                }}
                 onAddToPipeline={() => {
                   updateBuilding(building.id, { pipeline_stage: 'scored' });
                   toast.success(`${building.name || building.address} moved to Scored`);

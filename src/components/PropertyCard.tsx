@@ -2,7 +2,7 @@ import { Building } from '@/types';
 import { cn, gradeBg, formatCurrency, formatNumber } from '@/lib/utils';
 import {
   Eye, Mail, FileDown, Plus, Sparkles, MapPin, Building2,
-  AlertTriangle, Users, CheckSquare, Square,
+  AlertTriangle, Users, CheckSquare, Square, BarChart3,
 } from 'lucide-react';
 
 interface PropertyCardProps {
@@ -13,6 +13,7 @@ interface PropertyCardProps {
   onEmail?: () => void;
   onEnrich?: () => void;
   onAddToPipeline?: () => void;
+  onGutCheck?: () => void;
 }
 
 export default function PropertyCard({
@@ -23,6 +24,7 @@ export default function PropertyCard({
   onEmail,
   onEnrich,
   onAddToPipeline,
+  onGutCheck,
 }: PropertyCardProps) {
   return (
     <div
@@ -175,6 +177,14 @@ export default function PropertyCard({
         >
           <Sparkles size={13} /> Enrich
         </button>
+        {onGutCheck && (
+          <button
+            onClick={onGutCheck}
+            className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md hover:bg-teal-50 text-teal-600 font-medium transition-colors"
+          >
+            <BarChart3 size={13} /> Gut Check
+          </button>
+        )}
         <button
           onClick={onAddToPipeline}
           className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md hover:bg-green-50 text-green-600 ml-auto transition-colors"
