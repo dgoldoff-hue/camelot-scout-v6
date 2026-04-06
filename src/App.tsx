@@ -18,6 +18,7 @@ import Tutorials from '@/pages/Tutorials';
 import Compliance from '@/pages/Compliance';
 import Alerts from '@/pages/Alerts';
 import Proposals from '@/pages/Proposals';
+import InstantProposal from '@/pages/InstantProposal';
 import Intelligence from '@/pages/Intelligence';
 import Reports from '@/pages/Reports';
 import ReportCenter from '@/pages/ReportCenter';
@@ -78,6 +79,7 @@ export default function App() {
           <Route path="/tutorials" element={<Tutorials />} />
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/alerts" element={<Alerts />} />
+          <Route path="/instant-proposal" element={<InstantProposal />} />
           <Route path="/proposals" element={<Proposals />} />
           <Route path="/intelligence" element={<Intelligence />} />
           <Route path="/reports" element={<Reports />} />
