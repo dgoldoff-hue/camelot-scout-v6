@@ -129,15 +129,22 @@ export default function InstantProposal() {
     toast.success('Proposal downloaded');
   };
 
-  // Export: Email draft
+  // Export: Email — download PDF first, then open Gmail
   const handleEmail = () => {
-    const subject = encodeURIComponent(`Proposal of Services — ${reportData?.buildingName || 'Property'} | Camelot Realty Group`);
-    const body = encodeURIComponent(
-      `Dear Board,\n\nPlease find attached our Proposal of Property Management Services for ${reportData?.buildingName || 'your property'}.\n\n` +
-      `We look forward to discussing this with you.\n\nWarm regards,\nDavid A. Goldoff\nPresident\nCamelot Property Management Services Corp.\n(212) 206-9939 | dgoldoff@camelot.nyc`
-    );
-    window.open(`https://mail.google.com/mail/?view=cm&su=${subject}&body=${body}`, '_blank');
-    toast('Gmail opened — attach the downloaded PDF to your email');
+    // First trigger PDF download so user has the file
+    handlePrint();
+    // Then open Gmail after a brief delay
+    setTimeout(() => {
+      const subject = encodeURIComponent(`Proposal of Services — ${reportData?.buildingName || 'Property'} | Camelot Realty Group`);
+      const body = encodeURIComponent(
+        `Dear Board,\n\nPlease find attached our Proposal of Property Management Services for ${reportData?.buildingName || 'your property'}.\n\n` +
+        `We have taken the time to research your building and are confident that Camelot can deliver measurable improvements in operations, transparency, and service quality.\n\n` +
+        `We look forward to meeting with you — either in person or via Zoom — to discuss this proposal further.\n\n` +
+        `Warm regards,\nDavid A. Goldoff\nPresident\nCamelot Property Management Services Corp.\n(212) 206-9939 x 701 | (646) 523-9068\ndgoldoff@camelot.nyc | www.camelot.nyc\n477 Madison Avenue, 6th Floor, New York, NY 10022`
+      );
+      window.open(`https://mail.google.com/mail/?view=cm&su=${subject}&body=${body}`, '_blank');
+      toast.success('Step 1: Save the proposal as PDF.\nStep 2: Attach it in Gmail.');
+    }, 1000);
   };
 
   const d = reportData;
@@ -373,9 +380,9 @@ export default function InstantProposal() {
               <FileText size={24} className="text-camelot-navy" />
               <span className="text-xs font-semibold text-camelot-navy">Download HTML</span>
             </button>
-            <button onClick={handleEmail} className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+            <button onClick={handleEmail} className="flex flex-col items-center gap-2 p-4 bg-red-50 rounded-xl hover:bg-red-100 transition-colors border border-red-200">
               <Mail size={24} className="text-red-500" />
-              <span className="text-xs font-semibold text-camelot-navy">Email via Gmail</span>
+              <span className="text-xs font-semibold text-camelot-navy">Save PDF + Email</span>
             </button>
           </div>
 
