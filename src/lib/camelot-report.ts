@@ -3219,6 +3219,7 @@ function generateProposal() {
   /* ACCEPTANCE & SIGNATURES */
   '<h2>Acceptance of Proposal</h2>' +
   '<p>By signing below, both parties agree to the terms and authorize Camelot Property Management Services Corp. to commence management services for ' + d.buildingName + '.</p>' +
+  '<p><strong>Proposed Start Date:</strong> _________________________ (or mutually convenient date)</p>' +
 
   '<div class="sig-row">' +
   '<div class="sig-col">' +
@@ -3236,7 +3237,85 @@ function generateProposal() {
   '</div>' +
 
   '<div class="hr"></div>' +
-  '<p style="font-size:9px;color:#888;text-align:center">Please refer to our property management agreement for a detailed description of all terms, conditions, and rates.<br>Camelot Property Management Services Corp. &nbsp;\u00B7&nbsp; 477 Madison Avenue, 6th Floor, New York, NY 10022 &nbsp;\u00B7&nbsp; (212) 206-9939 &nbsp;\u00B7&nbsp; www.camelot.nyc</p>' +
+
+  /* ══════════════════════════════════════════════════════════════ */
+  /* POST-SIGNATURE: WORKING WITH CAMELOT */
+  '<div class="page-break"></div>' +
+
+  '<div style="text-align:center;margin-bottom:16px"><div class="cover-title">C A M E L O T</div><div style="font-size:9px;color:#A89035;letter-spacing:1.5px">W O R K I N G &nbsp; W I T H &nbsp; U S</div></div>' +
+
+  '<h2>Next Steps \u2014 Working with Camelot</h2>' +
+  '<p>Upon execution of this proposal, Camelot begins a structured onboarding process designed to ensure zero disruption to residents and staff. Below is our proven 90-day transition and optimization plan.</p>' +
+
+  /* PHASE I */
+  '<h2>Phase I \u2014 Discovery &amp; Assessment (Days 1\u201330)</h2>' +
+  '<p>The first 30 days are dedicated to deep discovery \u2014 understanding ' + d.buildingName + ' from every angle.</p>' +
+  '<ul>' +
+  '<li><strong>Full file and data transfer</strong> from current management. Camelot sends our standard Transitional Documentation outlining all files and information required.</li>' +
+  '<li><strong>Free building inspection</strong> \u2014 Sr. Facilities Manager conducts on-site walkthrough covering property envelope, mechanical systems, deferred maintenance, and capital priorities. Written report delivered at no charge ($2,500 value).</li>' +
+  '<li><strong>Financial &amp; budget review</strong> \u2014 Line-item analysis vs. comparable buildings we manage. AR/AP audit, reserve fund assessment, and revenue gap analysis.</li>' +
+  '<li><strong>Vendor contract review</strong> \u2014 Priority targets for rebidding: elevator (10\u201318% savings), insurance (12\u201320%), cleaning (8\u201315%), HVAC/boiler (10\u201315%), extermination (10\u201320%), and legal (5\u201310%).</li>' +
+  '<li><strong>Compliance checklist</strong> \u2014 HPD registrations, DOB filings, fire safety, LL11/FISP, LL97 carbon compliance' + (d.buildingArea > 25000 ? ' (critical at ' + d.buildingArea.toLocaleString() + ' SF)' : '') + ', and all open violations.</li>' +
+  '<li><strong>Staff audit</strong> \u2014 Meet with on-site staff, review employment/payroll, establish written SOPs and weekly task schedules.</li>' +
+  '<li><strong>Bank account setup</strong> \u2014 Establish BankUnited accounts (no fees, higher interest), configure automated billing through Zego payment portal.</li>' +
+  '<li><strong>Resident notification</strong> \u2014 Formal notice of management change distributed to all ' + ownerLabel + '.</li>' +
+  '</ul>' +
+
+  /* PHASE II */
+  '<h2>Phase II \u2014 Optimization &amp; Technology (Days 31\u201360)</h2>' +
+  '<p>Phase 2 activates our full technology stack and launches vendor optimization. Measurable value creation begins here.</p>' +
+  '<ul>' +
+  '<li><strong>Technology deployment</strong> \u2014 AppFolio (financials), BuildingLink (resident communications), Zego (payments), Board Packager (digital board packages). ConciergePlus + Camelot AI rollout in 2026.</li>' +
+  '<li><strong>Vendor rebidding</strong> \u2014 RFPs issued for all priority categories. 3 competitive bids per category with scope-matched comparisons.</li>' +
+  '<li><strong>Insurance review</strong> \u2014 Full coverage audit through independent broker. Competitive quotes targeting 12\u201320% premium reduction.</li>' +
+  '<li><strong>Financial systems live</strong> \u2014 AppFolio fully migrated; Zego billing activated; first Camelot monthly report delivered to ' + (isBoard ? 'board' : 'ownership') + '.</li>' +
+  '<li><strong>' + (isBoard ? 'Board' : 'Owner') + ' portal launched</strong> \u2014 Contracts, financials, minutes, and documents accessible 24/7 through Board Packager.</li>' +
+  '<li><strong>AI board meeting support</strong> \u2014 Meetings recorded, summarized, and formal minutes generated automatically \u2014 complimentary service.</li>' +
+  '</ul>' +
+
+  /* PHASE III */
+  '<h2>Phase III \u2014 Stabilization &amp; Value Creation (Days 61\u201390)</h2>' +
+  '<p>Phase 3 delivers the first measurable proof of value. Vendor contracts are finalized, and ' + (isBoard ? 'the board' : 'ownership') + ' receives a comprehensive 90-day performance report.</p>' +
+  '<ul>' +
+  '<li><strong>New vendor contracts executed</strong> \u2014 All rebid savings documented and board-approved. Seamless transition with no service interruption.</li>' +
+  '<li><strong>Revenue enhancement review</strong> \u2014 Storage, sublets, alterations, flip tax, laundry, and vendor shared revenue opportunities analyzed.</li>' +
+  '<li><strong>Resident satisfaction survey</strong> \u2014 Baseline measurement with benchmark comparison and action plan.</li>' +
+  '<li><strong>Compliance roadmap delivered</strong> \u2014 LL97 compliance through 2030, energy baseline established, violation clearance plan in progress.</li>' +
+  '<li><strong>90-Day Board Presentation</strong> \u2014 Live presentation covering: Financial Health Scorecard, Cost Reduction Summary, Technology Deployment Report, Compliance Dashboard, 12-Month Operating Plan, and Resident Satisfaction Baseline.</li>' +
+  '</ul>' +
+
+  /* LONG-TERM */
+  '<h2>Ongoing \u2014 Optimization (Months 4\u201318)</h2>' +
+  '<ul>' +
+  '<li>Full adoption of Camelot automation systems for maintenance requests, vendor payments, and resident communications.</li>' +
+  '<li>AI-assisted board meeting transcription and minutes for permanent recordkeeping.</li>' +
+  '<li>Review and amend bylaws and house rules to reflect new management procedures.</li>' +
+  '<li>Partner with BankUnited to optimize reserve yields and evaluate capital project financing.</li>' +
+  '<li>Oversee compliance with Local Laws 11, 33, 97, and 157 (fa\u00E7ade, energy, gas safety).</li>' +
+  '<li>Supervise capital improvement projects as prioritized by ' + (isBoard ? 'the board' : 'ownership') + '.</li>' +
+  '<li>Explore new income opportunities: storage, roof deck, laundry expansion, amenity leasing.</li>' +
+  '<li>Deliver comprehensive Year 1 performance review and recommendations.</li>' +
+  '</ul>' +
+
+  /* OUR COMMITMENT */
+  '<h2>Our Commitment to ' + d.buildingName + '</h2>' +
+  '<p>Camelot is not the cheapest option \u2014 and we do not aim to be. Our value is the combination of experienced professionals, institutional-quality financial oversight, award-winning management, and a technology infrastructure built specifically for premium residential buildings. Our track record on vendor savings, insurance optimization, LL97 compliance, and resident satisfaction consistently exceeds the cost differential within the first operating year.</p>' +
+  '<p style="font-size:10px;color:#A89035;font-weight:700;text-align:center;margin-top:10px">RED Awards \u2014 Property Management Company of the Year &nbsp;\u00B7&nbsp; David Goldoff, REBNY Residential Management Award</p>' +
+
+  '<div class="hr"></div>' +
+
+  /* TRANSITIONAL DOCUMENTS */
+  '<h2>Transitional Documents</h2>' +
+  '<p>Upon being retained, Camelot will provide our standard Transitional Documentation outlining all files and information required from the outgoing management company. All building files and records should be sent to:</p>' +
+  '<div style="background:#F5F0E5;border-left:3px solid #A89035;padding:10px 14px;margin:8px 0;font-size:10.5px">' +
+  '<strong>Camelot Property Management Services Corp.</strong><br>' +
+  'Att: Sam Lodge, Office Manager<br>' +
+  '477 Madison Avenue, 6th Floor, New York, NY 10022<br>' +
+  'Email: <a href="mailto:management@camelot.nyc" style="color:#A89035">management@camelot.nyc</a> &nbsp;|&nbsp; Tel: (212) 206-9939</p>' +
+  '</div>' +
+
+  '<div class="hr"></div>' +
+  '<p style="font-size:9px;color:#888;text-align:center">Please refer to our property management agreement for a detailed description of all terms, conditions, and rates.<br>Camelot Property Management Services Corp. &nbsp;\u00B7&nbsp; 477 Madison Avenue, 6th Floor, New York, NY 10022 &nbsp;\u00B7&nbsp; (212) 206-9939 &nbsp;\u00B7&nbsp; www.camelot.nyc &nbsp;\u00B7&nbsp; Licensed Broker ID #10491200104</p>' +
 
   '</body></html>';
 
