@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Search, CheckCircle, FileText, Edit3, Download, Printer, Mail, Loader2, ChevronRight, ArrowLeft, Zap } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import { Search, CheckCircle, FileText, Edit3, Download, Printer, Mail, Loader2, ChevronRight, ArrowLeft, Zap, X, ExternalLink, Copy } from 'lucide-react';
 import { buildMasterReport, generateBrochureHTML, type MasterReportData } from '@/lib/camelot-report';
 import toast from 'react-hot-toast';
 
@@ -13,6 +13,34 @@ const STEPS: { key: Step; label: string; icon: typeof Search }[] = [
   { key: 'export', label: 'Export', icon: Download },
 ];
 
+/**
+ * Full-screen modal for displaying HTML reports inline.
+ * Replaces all window.open() calls for mobile compatibility.
+ */
+function ReportModal({ html, title, onClose }: { html: string; title: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col">
+      {/* Header bar */}
+      <div className="flex items-center justify-between px-4 py-3 bg-camelot-navy text-white flex-shrink-0">
+        <h3 className="text-sm font-bold truncate">{title}</h3>
+        <button
+          onClick={onClose}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+        >
+          <X size={18} />
+        </button>
+      </div>
+      {/* Report content in sandboxed iframe */}
+      <iframe
+        srcDoc={html}
+        title={title}
+        className="flex-1 w-full bg-white"
+        sandbox="allow-same-origin"
+      />
+    </div>
+  );
+}
+
 export default function InstantProposal() {
   const [step, setStep] = useState<Step>('search');
   const [address, setAddress] = useState('');
@@ -21,6 +49,9 @@ export default function InstantProposal() {
   const [reportData, setReportData] = useState<MasterReportData | null>(null);
   const [proposalHTML, setProposalHTML] = useState('');
   const [jackieHTML, setJackieHTML] = useState('');
+  const [showJackieModal, setShowJackieModal] = useState(false);
+  const [showProposalModal, setShowProposalModal] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const draftRef = useRef<HTMLDivElement>(null);
 
   const stepIndex = STEPS.findIndex(s => s.key === step);
@@ -48,7 +79,6 @@ export default function InstantProposal() {
     try {
       const html = generateBrochureHTML(reportData);
       setJackieHTML(html);
-      // Extract proposal from the Jackie report's generateProposal script
       setStep('jackie');
       toast.success('Jackie report generated');
     } catch (e: any) {
@@ -61,31 +91,27 @@ export default function InstantProposal() {
   // Step 3→4: Generate proposal draft
   const handleGenerateDraft = () => {
     if (!reportData) return;
-    // Open the Jackie report in a hidden iframe and trigger generateProposal
-    // For now, we'll build the proposal HTML directly
+    // Render Jackie HTML in a hidden iframe to extract the proposal
     const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
+    iframe.style.cssText = 'position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none;';
     document.body.appendChild(iframe);
     iframe.contentDocument?.write(jackieHTML);
     iframe.contentDocument?.close();
-    // Try to call generateProposal from the iframe context
     try {
       const win = iframe.contentWindow as any;
       if (win && typeof win.generateProposal === 'function') {
-        // Intercept window.open
-        const origOpen = win.window.open;
+        // Intercept window.open inside the iframe so it captures HTML instead of opening a popup
         let capturedHTML = '';
-        win.window.open = function() {
+        win.window.open = function () {
           return {
             document: {
-              write: function(h: string) { capturedHTML = h; },
-              close: function() {},
+              write: function (h: string) { capturedHTML = h; },
+              close: function () {},
             },
-            print: function() {},
+            print: function () {},
           };
         };
         win.generateProposal();
-        win.window.open = origOpen;
         if (capturedHTML) {
           setProposalHTML(capturedHTML);
           setStep('draft');
@@ -93,6 +119,8 @@ export default function InstantProposal() {
         } else {
           toast.error('Could not generate proposal');
         }
+      } else {
+        toast.error('Proposal generation not available');
       }
     } catch (e) {
       toast.error('Proposal generation error');
@@ -100,57 +128,137 @@ export default function InstantProposal() {
     document.body.removeChild(iframe);
   };
 
-  // Export: Print
-  const handlePrint = () => {
-    const content = draftRef.current?.innerHTML || proposalHTML;
-    const w = window.open('', '_blank');
-    if (w) {
-      w.document.write(content);
-      w.document.close();
-      setTimeout(() => w.print(), 600);
-    }
-  };
+  // Get the current draft content (edited or original)
+  const getDraftContent = useCallback(() => {
+    return draftRef.current?.innerHTML || proposalHTML;
+  }, [proposalHTML]);
 
-  // Export: Download PDF (via print)
-  const handleDownloadPDF = () => {
-    handlePrint(); // Browser print dialog allows Save as PDF
-    toast('Use "Save as PDF" in the print dialog');
+  // Generate filename base
+  const getFilenameBase = useCallback(() => {
+    return `Camelot_Proposal_${reportData?.buildingName?.replace(/[^a-zA-Z0-9]/g, '_') || 'draft'}`;
+  }, [reportData]);
+
+  // Export: Download PDF directly (no popup)
+  const handleDownloadPDF = async () => {
+    const content = getDraftContent();
+    if (!content) { toast.error('No proposal content'); return; }
+    setPdfLoading(true);
+    try {
+      const html2pdf = (await import('html2pdf.js')).default;
+      // Create a temporary container for rendering
+      const container = document.createElement('div');
+      container.innerHTML = content;
+      container.style.cssText = 'position:absolute;left:-9999px;top:0;width:800px;';
+      document.body.appendChild(container);
+
+      await html2pdf()
+        .set({
+          margin: [0.5, 0.5, 0.5, 0.5],
+          filename: `${getFilenameBase()}.pdf`,
+          image: { type: 'jpeg', quality: 0.95 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+        })
+        .from(container)
+        .save();
+
+      document.body.removeChild(container);
+      toast.success('PDF downloaded');
+    } catch (e: any) {
+      console.error('PDF generation error:', e);
+      toast.error('PDF download failed — try Download HTML instead');
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   // Export: Download HTML
   const handleDownloadHTML = () => {
-    const content = draftRef.current?.innerHTML || proposalHTML;
+    const content = getDraftContent();
     const blob = new Blob([content], { type: 'text/html' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `Camelot_Proposal_${reportData?.buildingName?.replace(/[^a-zA-Z0-9]/g, '_') || 'draft'}.html`;
+    a.download = `${getFilenameBase()}.html`;
     a.click();
     URL.revokeObjectURL(a.href);
     toast.success('Proposal downloaded');
   };
 
-  // Export: Email — download PDF first, then open Gmail
-  const handleEmail = () => {
-    // First trigger PDF download so user has the file
-    handlePrint();
-    // Then open Gmail after a brief delay
-    setTimeout(() => {
-      const subject = encodeURIComponent(`Proposal of Services — ${reportData?.buildingName || 'Property'} | Camelot Realty Group`);
-      const body = encodeURIComponent(
-        `Dear Board,\n\nPlease find attached our Proposal of Property Management Services for ${reportData?.buildingName || 'your property'}.\n\n` +
-        `We have taken the time to research your building and are confident that Camelot can deliver measurable improvements in operations, transparency, and service quality.\n\n` +
-        `We look forward to meeting with you — either in person or via Zoom — to discuss this proposal further.\n\n` +
-        `Warm regards,\nDavid A. Goldoff\nPresident\nCamelot Property Management Services Corp.\n(212) 206-9939 x 701 | (646) 523-9068\ndgoldoff@camelot.nyc | www.camelot.nyc\n477 Madison Avenue, 6th Floor, New York, NY 10022`
-      );
-      window.open(`https://mail.google.com/mail/?view=cm&su=${subject}&body=${body}`, '_blank');
-      toast.success('Step 1: Save the proposal as PDF.\nStep 2: Attach it in Gmail.');
-    }, 1000);
+  // Export: Print using hidden iframe (works on mobile — triggers native print sheet)
+  const handlePrint = () => {
+    const content = getDraftContent();
+    if (!content) return;
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (doc) {
+      doc.write(`<!DOCTYPE html><html><head><title>Print Proposal</title></head><body>${content}</body></html>`);
+      doc.close();
+      // Wait for content to render, then trigger native print
+      setTimeout(() => {
+        iframe.contentWindow?.print();
+        // Clean up after print dialog closes
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      }, 500);
+    }
+    toast.success('Print dialog opening...');
+  };
+
+  // Export: Email — build email body, copy to clipboard + open mailto link
+  const handleEmail = async () => {
+    const buildingName = reportData?.buildingName || 'Property';
+    const emailBody =
+      `Dear Board,\n\n` +
+      `Please find attached our Proposal of Property Management Services for ${buildingName}.\n\n` +
+      `We have taken the time to research your building and are confident that Camelot can deliver measurable improvements in operations, transparency, and service quality.\n\n` +
+      `We look forward to meeting with you — either in person or via Zoom — to discuss this proposal further.\n\n` +
+      `Warm regards,\nDavid A. Goldoff\nPresident\nCamelot Property Management Services Corp.\n(212) 206-9939 x 701 | (646) 523-9068\ndgoldoff@camelot.nyc | www.camelot.nyc\n477 Madison Avenue, 6th Floor, New York, NY 10022`;
+
+    const subject = `Proposal of Services — ${buildingName} | Camelot Realty Group`;
+
+    // First download the PDF so they have the attachment ready
+    await handleDownloadPDF();
+
+    // Copy email body to clipboard as fallback
+    try {
+      await navigator.clipboard.writeText(emailBody);
+      toast.success('Email text copied to clipboard');
+    } catch {
+      // Clipboard may not be available
+    }
+
+    // Use mailto: link (works on mobile — opens default mail app)
+    const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+    window.location.href = mailto;
+
+    toast.success('Attach the downloaded PDF to your email');
   };
 
   const d = reportData;
 
   return (
     <div className="max-w-5xl mx-auto">
+      {/* Jackie Report Modal */}
+      {showJackieModal && jackieHTML && (
+        <ReportModal
+          html={jackieHTML}
+          title={`Jackie Report — ${d?.buildingName || 'Property'}`}
+          onClose={() => setShowJackieModal(false)}
+        />
+      )}
+
+      {/* Proposal Preview Modal */}
+      {showProposalModal && proposalHTML && (
+        <ReportModal
+          html={getDraftContent()}
+          title={`Proposal Preview — ${d?.buildingName || 'Property'}`}
+          onClose={() => setShowProposalModal(false)}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-camelot-gold rounded-lg flex items-center justify-center">
@@ -192,7 +300,7 @@ export default function InstantProposal() {
         <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center">
           <h2 className="text-lg font-bold text-camelot-navy mb-2">Enter Property Address</h2>
           <p className="text-sm text-gray-500 mb-6">We'll pull all available data from NYC open data sources</p>
-          <div className="flex gap-3 max-w-xl mx-auto">
+          <div className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
             <input
               type="text"
               placeholder="e.g. 1770 Grand Concourse, Bronx"
@@ -253,7 +361,7 @@ export default function InstantProposal() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-4">
             <div className="border border-gray-100 rounded-lg p-3">
               <span className="text-gray-500">Address:</span> <strong>{d.address}</strong>
             </div>
@@ -309,19 +417,27 @@ export default function InstantProposal() {
               <p className="text-xs text-green-600">{d?.units} units · {d?.violationsOpen} violations · Scout Grade {d?.scoutGrade} · Fee ${d?.monthlyFee.toLocaleString()}/mo</p>
             </div>
           </div>
-          <div className="flex gap-3">
+
+          {/* Inline Jackie report preview */}
+          <div className="border border-gray-200 rounded-xl overflow-hidden mb-4" style={{ height: '50vh' }}>
+            <iframe
+              srcDoc={jackieHTML}
+              title="Jackie Report Preview"
+              className="w-full h-full"
+              sandbox="allow-same-origin"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
-              onClick={() => {
-                const w = window.open('', '_blank');
-                if (w) { w.document.write(jackieHTML); w.document.close(); }
-              }}
-              className="px-4 py-2 bg-camelot-navy/10 text-camelot-navy rounded-lg text-sm font-semibold hover:bg-camelot-navy/20 transition-colors"
+              onClick={() => setShowJackieModal(true)}
+              className="px-4 py-2 bg-camelot-navy/10 text-camelot-navy rounded-lg text-sm font-semibold hover:bg-camelot-navy/20 transition-colors flex items-center gap-2 justify-center"
             >
-              View Full Jackie Report
+              <ExternalLink size={14} /> View Full Screen
             </button>
             <button
               onClick={handleGenerateDraft}
-              className="px-6 py-2.5 bg-camelot-gold text-white rounded-xl font-semibold text-sm hover:bg-camelot-gold/90 transition-colors flex items-center gap-2 ml-auto"
+              className="px-6 py-2.5 bg-camelot-gold text-white rounded-xl font-semibold text-sm hover:bg-camelot-gold/90 transition-colors flex items-center gap-2 sm:ml-auto justify-center"
             >
               Generate Proposal Draft <ChevronRight size={14} />
             </button>
@@ -339,6 +455,12 @@ export default function InstantProposal() {
                 <ArrowLeft size={14} /> Back
               </button>
               <button
+                onClick={() => setShowProposalModal(true)}
+                className="px-3 py-1.5 bg-camelot-navy/10 text-camelot-navy rounded-lg text-xs font-semibold hover:bg-camelot-navy/20 transition-colors flex items-center gap-1"
+              >
+                <ExternalLink size={12} /> Preview
+              </button>
+              <button
                 onClick={() => setStep('export')}
                 className="px-4 py-2 bg-camelot-gold text-white rounded-lg text-sm font-semibold hover:bg-camelot-gold/90 transition-colors flex items-center gap-1"
               >
@@ -346,13 +468,13 @@ export default function InstantProposal() {
               </button>
             </div>
           </div>
-          <p className="text-xs text-gray-400 mb-3">Click any text below to edit it directly. Changes are preserved when you export.</p>
+          <p className="text-xs text-gray-400 mb-3">Tap any text below to edit it directly. Changes are preserved when you export.</p>
           <div
             ref={draftRef}
             contentEditable
             suppressContentEditableWarning
-            className="border-2 border-gray-200 rounded-xl p-1 max-h-[70vh] overflow-y-auto focus:outline-none focus:border-camelot-gold/50"
-            style={{ minHeight: '500px' }}
+            className="border-2 border-gray-200 rounded-xl p-1 max-h-[70vh] overflow-y-auto focus:outline-none focus:border-camelot-gold/50 -webkit-overflow-scrolling-touch"
+            style={{ minHeight: '400px' }}
             dangerouslySetInnerHTML={{ __html: proposalHTML }}
           />
         </div>
@@ -372,9 +494,19 @@ export default function InstantProposal() {
               <Printer size={24} className="text-camelot-navy" />
               <span className="text-xs font-semibold text-camelot-navy">Print</span>
             </button>
-            <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-              <Download size={24} className="text-camelot-gold" />
-              <span className="text-xs font-semibold text-camelot-navy">Save as PDF</span>
+            <button
+              onClick={handleDownloadPDF}
+              disabled={pdfLoading}
+              className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors disabled:opacity-50"
+            >
+              {pdfLoading ? (
+                <Loader2 size={24} className="text-camelot-gold animate-spin" />
+              ) : (
+                <Download size={24} className="text-camelot-gold" />
+              )}
+              <span className="text-xs font-semibold text-camelot-navy">
+                {pdfLoading ? 'Generating...' : 'Save as PDF'}
+              </span>
             </button>
             <button onClick={handleDownloadHTML} className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
               <FileText size={24} className="text-camelot-navy" />
@@ -382,7 +514,7 @@ export default function InstantProposal() {
             </button>
             <button onClick={handleEmail} className="flex flex-col items-center gap-2 p-4 bg-red-50 rounded-xl hover:bg-red-100 transition-colors border border-red-200">
               <Mail size={24} className="text-red-500" />
-              <span className="text-xs font-semibold text-camelot-navy">Save PDF + Email</span>
+              <span className="text-xs font-semibold text-camelot-navy">PDF + Email</span>
             </button>
           </div>
 
