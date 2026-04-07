@@ -74,8 +74,11 @@ export default function Violations() {
   const generatePDF = () => {
     if (!result) return;
     const openV = filteredViolations.filter(v => v.isOpen);
-    const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>'
-      + '@page{margin:.75in;size:letter}'
+    const reportDate = new Date().toISOString().split('T')[0];
+    const cleanAddr = result.address.replace(/\s+/g, '-');
+    const pdfTitle = `Camelot-Scout___${cleanAddr}___Violation-Report___${reportDate}`;
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${pdfTitle}</title><style>`
+      + '@page{margin:.75in;size:letter} @media print{.no-print{display:none!important}}'
       + 'body{font-family:Arial,sans-serif;font-size:10px;color:#222;line-height:1.4;max-width:100%;overflow:hidden}'
       + '.hdr{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:20px;margin:0 0 16px 0;border-radius:4px}'
       + '.hdr h1{margin:0;font-size:22px;color:#c5a253;letter-spacing:1px}'
@@ -102,6 +105,10 @@ export default function Violations() {
       + '<h1>VIOLATION &amp; RESOLUTION REPORT</h1>'
       + `<h2>${result.address} \u2014 ${result.borough}</h2>`
       + `<div class="meta">Report Date: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</div>`
+      + '</div>'
+      + '<div style="display:flex;gap:8px;margin:12px 0;justify-content:flex-end" class="no-print">'
+      + '<button onclick="window.print()" style="padding:8px 20px;background:#c5a253;color:#1a1a2e;border:none;border-radius:4px;font-weight:700;cursor:pointer;font-size:12px">\u{1F5A8} Print</button>'
+      + '<button onclick="window.print()" style="padding:8px 20px;background:#1a1a2e;color:#fff;border:1px solid #c5a253;border-radius:4px;font-weight:700;cursor:pointer;font-size:12px">\u{1F4BE} Save as PDF</button>'
       + '</div>'
       + '<h2>EXECUTIVE SUMMARY</h2>'
       + '<div class="grid">'
@@ -138,14 +145,13 @@ export default function Violations() {
       + `Report generated: ${new Date().toISOString().substring(0,19)} UTC`
       + '</div></body></html>';
     const w = window.open('', '_blank');
-    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
+    if (w) { w.document.write(html); w.document.close(); }
     toast.success('Report opened — use Print to save as PDF, email, or print');
   };
 
   const emailReport = () => {
     if (!result) return;
-    // First trigger PDF download
-    generatePDF();
+    // PDF opens separately via PDF/Print button
     // Open Gmail compose with professional body
     const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const subject = encodeURIComponent(`Violation & Resolution Report: ${result.address}, ${result.borough}`);
