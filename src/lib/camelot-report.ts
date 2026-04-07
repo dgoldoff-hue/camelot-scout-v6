@@ -734,10 +734,47 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   if (raw.rentStabilization?.isStabilized) score += 5;
   const grade = score >= 75 ? 'A' : score >= 50 ? 'B' : 'C';
 
+  // ---------------------------------------------------------------------------
+  // Derive a sensible building name.
+  // The LL84 energy benchmarking `property_name` often contains the management
+  // company name (e.g. "Halstead") rather than the actual building name, so we
+  // can't blindly trust it. We only use it when it looks like a real building
+  // name — i.e. it contains a number (street address) or known building-name
+  // keywords, and does NOT match the management company already on file.
+  // ---------------------------------------------------------------------------
+  function deriveBuildingName(addr: string, data: any): string {
+    const energyName = (data.energy?.propertyName || '').trim();
+    if (!energyName) return addr;
+
+    const mgmtCo = (data.registration?.managementCompany || '').trim().toLowerCase();
+    const ownerName = (data.registration?.owner || '').trim().toLowerCase();
+    const dofOwnerName = (data.dof?.owner || '').trim().toLowerCase();
+    const nameLower = energyName.toLowerCase();
+
+    // Reject if it matches the management company or owner name
+    if (mgmtCo && (nameLower.includes(mgmtCo) || mgmtCo.includes(nameLower))) return addr;
+    if (ownerName && (nameLower.includes(ownerName) || ownerName.includes(nameLower))) return addr;
+    if (dofOwnerName && (nameLower.includes(dofOwnerName) || dofOwnerName.includes(nameLower))) return addr;
+
+    // Reject common management/company suffixes that indicate it's a company, not a building
+    const companyPatterns = /\b(management|mgmt|realty|properties|property\s+group|associates|llc|corp|inc|holdings|advisors|capital|group|services)\b/i;
+    if (companyPatterns.test(energyName)) return addr;
+
+    // Accept if it contains a street number or well-known building name patterns
+    const looksLikeBuilding = /\d/.test(energyName) || /\b(tower|towers|plaza|house|court|terrace|gardens|hall|manor|place|park|residence|residences)\b/i.test(energyName);
+    if (looksLikeBuilding) return energyName;
+
+    // If it's very short (single word) and doesn't look like a building, prefer address
+    if (energyName.split(/\s+/).length <= 2 && !looksLikeBuilding) return addr;
+
+    // Default: use the energy name if it passed all rejection filters
+    return energyName;
+  }
+
   return {
     address,
     borough: borough || '',
-    buildingName: raw.energy?.propertyName || address,
+    buildingName: deriveBuildingName(address, raw),
     date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     units,
     stories,
