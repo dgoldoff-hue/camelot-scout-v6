@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Search, FileText, Download, Mail, Phone, Table2, Link2, Loader2, Eye, Copy, Check, X } from 'lucide-react';
 import { buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, type MasterReportData } from '@/lib/camelot-report';
 import { generatePitchReport, generatePitchEmail } from '@/lib/pitch-report';
+import { generatePitchDeck } from '@/lib/pitch-deck-pptx';
 import { openBrochureForPrint, downloadAsHTML, triggerCSVDownload, copyToClipboard } from '@/lib/pdf-generator';
 import toast from 'react-hot-toast';
 
@@ -66,6 +67,19 @@ export default function ReportCenter() {
     const email = generatePitchEmail(d);
     copyToClipboard(email);
     toast.success('Pitch email copied to clipboard');
+  };
+
+  const handlePitchDeckPPTX = async () => {
+    const d = getDataWithPhotos();
+    if (!d) return;
+    toast.loading('Generating PowerPoint deck...', { id: 'pptx' });
+    try {
+      await generatePitchDeck(d);
+      toast.success('PowerPoint pitch deck downloaded!', { id: 'pptx' });
+    } catch (err) {
+      console.error('PPTX generation failed:', err);
+      toast.error('Failed to generate PowerPoint deck', { id: 'pptx' });
+    }
   };
 
   const handleDownloadHTML = () => {
@@ -242,6 +256,9 @@ export default function ReportCenter() {
                 </button>
                 <button onClick={handleDownloadPitchHTML} className="px-4 py-2 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] text-sm font-medium flex items-center gap-2">
                   <Download className="w-4 h-4" /> Download Pitch PDF
+                </button>
+                <button onClick={handlePitchDeckPPTX} className="px-4 py-2 bg-[#7C3AED] text-white rounded-lg hover:bg-[#6D28D9] text-sm font-medium flex items-center gap-2">
+                  <Download className="w-4 h-4" /> 📊 PowerPoint Deck
                 </button>
               </div>
             </div>
