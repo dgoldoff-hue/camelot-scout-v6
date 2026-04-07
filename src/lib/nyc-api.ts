@@ -34,6 +34,25 @@ const BOROUGH_CODES: Record<string, string> = {
   'staten island': '5',
 };
 
+// PLUTO/DOF borough abbreviations (different from HPD numeric codes)
+const PLUTO_BOROUGH_CODES: Record<string, string> = {
+  manhattan: 'MN',
+  bronx: 'BX',
+  brooklyn: 'BK',
+  queens: 'QN',
+  'staten island': 'SI',
+  mn: 'MN',
+  bx: 'BX',
+  bk: 'BK',
+  qn: 'QN',
+  si: 'SI',
+  '1': 'MN',
+  '2': 'BX',
+  '3': 'BK',
+  '4': 'QN',
+  '5': 'SI',
+};
+
 // ---- Named-number avenue mapping ----
 const NAMED_AVENUE_MAP: Record<string, string> = {
   FIRST: '1',
@@ -239,7 +258,9 @@ export async function fetchDOFProperty(address: string, borough?: string): Promi
 
     let where = `upper(address) like '${encodeURIComponent(pattern)}'`;
     if (borough) {
-      where += ` AND upper(borough)='${borough.toUpperCase()}'`;
+      // PLUTO uses abbreviated borough codes: MN, BK, QN, BX, SI
+      const plutoCode = PLUTO_BOROUGH_CODES[borough.toLowerCase()] || borough.toUpperCase();
+      where += ` AND borough='${plutoCode}'`;
     }
 
     let url = `${ENDPOINTS.dofProperty}?$limit=10&$where=${where}`;
@@ -256,7 +277,10 @@ export async function fetchDOFProperty(address: string, borough?: string): Promi
       if (numericTokens.length > 0) {
         const fallbackPattern = buildLikePattern([number, ...numericTokens]);
         let fallbackWhere = `upper(address) like '${encodeURIComponent(fallbackPattern)}'`;
-        if (borough) fallbackWhere += ` AND upper(borough)='${borough.toUpperCase()}'`;
+        if (borough) {
+          const plutoCode = PLUTO_BOROUGH_CODES[borough.toLowerCase()] || borough.toUpperCase();
+          fallbackWhere += ` AND borough='${plutoCode}'`;
+        }
         const fb = await fetch(`${ENDPOINTS.dofProperty}?$limit=10&$where=${fallbackWhere}`);
         if (fb.ok) {
           const fbResults: DOFProperty[] = await fb.json();
