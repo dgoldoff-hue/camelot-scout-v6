@@ -76,7 +76,7 @@ export default function Violations() {
     const openV = filteredViolations.filter(v => v.isOpen);
     const reportDate = new Date().toISOString().split('T')[0];
     const cleanAddr = result.address.replace(/\s+/g, '-');
-    const pdfTitle = `Camelot-Scout___${cleanAddr}___Violation-Report___${reportDate}`;
+    const pdfTitle = `${cleanAddr}_CamelotOS_ViolationReport_${reportDate}`;
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${pdfTitle}</title><style>`
       + '@page{margin:.75in;size:letter} @media print{.no-print{display:none!important}}'
       + 'body{font-family:Arial,sans-serif;font-size:10px;color:#222;line-height:1.4;max-width:100%;overflow:hidden}'
