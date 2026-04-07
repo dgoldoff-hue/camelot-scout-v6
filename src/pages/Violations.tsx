@@ -144,21 +144,49 @@ export default function Violations() {
 
   const emailReport = () => {
     if (!result) return;
-    const subject = encodeURIComponent('Violation & Resolution Report: ' + result.address);
+    // First trigger PDF download
+    generatePDF();
+    // Open Gmail compose with professional body
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const subject = encodeURIComponent(`Violation & Resolution Report: ${result.address}, ${result.borough}`);
+    const nl = '%0A';
     const body = encodeURIComponent(
-      'Violation & Resolution Report\n' + result.address + ', ' + result.borough + '\n\n'
-      + 'Open Violations: ' + result.totalOpen + '\n'
-      + 'Class C (Critical): ' + result.hpdClassC + '\n'
-      + 'Class B (Hazardous): ' + result.hpdClassB + '\n'
-      + 'Class A: ' + result.hpdClassA + '\n'
-      + 'DOB: ' + result.dobOpen + ' | ECB: ' + result.ecbOpen + '\n'
-      + 'Overdue: ' + result.overdue + '\n'
-      + 'Est. Resolution Cost: $' + result.costLow.toLocaleString() + ' - $' + result.costHigh.toLocaleString() + '\n'
-      + 'Players Needed: ' + result.players.join(', ') + '\n\n'
-      + '— Camelot Property Management Services Corp.'
+      `Dear ___,`
+      + `\n\nPlease find attached the Violation & Resolution Report for ${result.address}, ${result.borough}, prepared by Camelot Property Management Services Corp.`
+      + `\n\nREPORT SUMMARY\n${'\u2501'.repeat(30)}`
+      + `\nProperty: ${result.address}, ${result.borough}`
+      + `\nReport Date: ${date}`
+      + `\nTotal Violations Found: ${result.totalFound}`
+      + `\nOpen Violations: ${result.totalOpen}`
+      + `\n  \u2022 HPD Class C (Immediately Hazardous): ${result.hpdClassC}`
+      + `\n  \u2022 HPD Class B (Hazardous): ${result.hpdClassB}`
+      + `\n  \u2022 HPD Class A (Non-Hazardous): ${result.hpdClassA}`
+      + `\n  \u2022 DOB Violations: ${result.dobOpen}`
+      + `\n  \u2022 ECB Violations: ${result.ecbOpen}`
+      + `\nOverdue (Past Cure Deadline): ${result.overdue}`
+      + `\nEstimated Resolution Cost: $${result.costLow.toLocaleString()} \u2013 $${result.costHigh.toLocaleString()}`
+      + `\n\nWHAT THIS REPORT CONTAINS\n${'\u2501'.repeat(30)}`
+      + `\nThis report provides a comprehensive analysis of all open violations issued by NYC agencies (HPD, DOB, ECB) for the above property. Each violation is classified by severity, with cure deadlines, estimated resolution costs, and the specific professionals required to resolve each item.`
+      + `\n\nRECOMMENDATIONS\n${'\u2501'.repeat(30)}`
+      + (result.hpdClassC > 0 ? `\n\u26A0\uFE0F IMMEDIATE ACTION REQUIRED: There are ${result.hpdClassC} Class C (Immediately Hazardous) violations that must be addressed within 24 hours of issuance. These may include lead paint hazards, gas leaks, heat/hot water failures, or fire safety issues.` : '')
+      + (result.overdue > 0 ? `\n\n\u26A0\uFE0F OVERDUE VIOLATIONS: ${result.overdue} violations are past their cure deadline. We recommend prioritizing these to avoid compounding fines and ECB hearings.` : '')
+      + `\n\nWe recommend a phased approach to resolution:`
+      + `\n  Phase 1 (Weeks 1-2): Address all Class C and overdue violations immediately`
+      + `\n  Phase 2 (Weeks 3-8): Resolve Class B violations and DOB/ECB matters`
+      + `\n  Phase 3 (Weeks 9+): Clear remaining Class A violations through scheduled maintenance`
+      + `\n\nPROFESSIONALS NEEDED\n${'\u2501'.repeat(30)}`
+      + `\n` + result.players.map(p => `  \u2022 ${p}`).join('\n')
+      + `\n\nPlease review the attached PDF for the complete violation-by-violation breakdown, including specific descriptions, unit locations, cure deadlines, and cost estimates.`
+      + `\n\nWe are available to discuss a resolution strategy at your convenience.`
+      + `\n\nBest regards,`
+      + `\n\nDavid A. Goldoff`
+      + `\nPresident`
+      + `\nCamelot Property Management Services Corp.`
+      + `\n501 Madison Avenue, Suite 1400 | New York, NY 10022`
+      + `\n(646) 523-9068 | dgoldoff@camelot.nyc | www.camelot.nyc`
     );
-    window.open('mailto:?subject=' + subject + '&body=' + body);
-    toast.success('Email draft opened');
+    window.open(`https://mail.google.com/mail/?view=cm&su=${subject}&body=${body}`, '_blank');
+    toast.success('Gmail opened \u2014 attach the downloaded PDF report');
   };
 
   const exportCSV = () => {
@@ -249,10 +277,10 @@ export default function Violations() {
               </div>
               <div className="flex gap-2">
                 <button onClick={generatePDF} className="flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 hover:bg-red-500/30 text-sm">
-                  <Printer size={14} /> PDF Report
+                  <Printer size={14} /> PDF / Print
                 </button>
                 <button onClick={emailReport} className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg text-blue-400 hover:bg-blue-500/30 text-sm">
-                  <Mail size={14} /> Email
+                  <Mail size={14} /> Email Report
                 </button>
                 <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-gray-300 hover:bg-white/10 text-sm">
                   <FileDown size={14} /> CSV
