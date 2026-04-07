@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Search, FileText, Download, Mail, Phone, Table2, Link2, Loader2, Eye, Copy, Check, X } from 'lucide-react';
 import { buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, type MasterReportData } from '@/lib/camelot-report';
+import { generatePitchReport, generatePitchEmail } from '@/lib/pitch-report';
 import { openBrochureForPrint, downloadAsHTML, triggerCSVDownload, copyToClipboard } from '@/lib/pdf-generator';
 import toast from 'react-hot-toast';
 
@@ -43,6 +44,28 @@ export default function ReportCenter() {
     if (!d) return;
     const html = generateBrochureHTML(d);
     openBrochureForPrint(html, `Jackie-Report-${d.buildingName}`);
+  };
+
+  const handlePreviewPitch = () => {
+    const d = getDataWithPhotos();
+    if (!d) return;
+    const html = generatePitchReport(d);
+    openBrochureForPrint(html, `Camelot-Pitch-${d.buildingName}`);
+  };
+
+  const handleDownloadPitchHTML = () => {
+    const d = getDataWithPhotos();
+    if (!d) return;
+    const html = generatePitchReport(d);
+    downloadAsHTML(html, `Camelot-Pitch-${(d.buildingName || d.address).replace(/[^a-zA-Z0-9]/g, '-')}.html`);
+  };
+
+  const handlePitchEmail = () => {
+    const d = getDataWithPhotos();
+    if (!d) return;
+    const email = generatePitchEmail(d);
+    copyToClipboard(email);
+    toast.success('Pitch email copied to clipboard');
   };
 
   const handleDownloadHTML = () => {
@@ -210,12 +233,15 @@ export default function ReportCenter() {
           <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
             <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Jackie Property Intelligence Report</h2>
-              <div className="flex items-center gap-2">
-                <button onClick={handlePreviewBrochure} className="px-4 py-2 bg-[#A89035] text-white rounded-lg hover:bg-[#8A7A2C] text-sm font-medium flex items-center gap-2">
-                  <Eye className="w-4 h-4" /> Preview Full Report
+              <div className="flex items-center gap-2 flex-wrap">
+                <button onClick={handlePreviewPitch} className="px-4 py-2 bg-[#0D2240] text-white rounded-lg hover:bg-[#1a3a5c] text-sm font-medium flex items-center gap-2">
+                  <Eye className="w-4 h-4" /> ✨ Pitch Report (5-Page)
                 </button>
-                <button onClick={handleDownloadHTML} className="px-4 py-2 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] text-sm font-medium flex items-center gap-2">
-                  <Download className="w-4 h-4" /> Download PDF
+                <button onClick={handlePreviewBrochure} className="px-4 py-2 bg-[#A89035] text-white rounded-lg hover:bg-[#8A7A2C] text-sm font-medium flex items-center gap-2">
+                  <Eye className="w-4 h-4" /> Full Report (Internal)
+                </button>
+                <button onClick={handleDownloadPitchHTML} className="px-4 py-2 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] text-sm font-medium flex items-center gap-2">
+                  <Download className="w-4 h-4" /> Download Pitch PDF
                 </button>
               </div>
             </div>
@@ -306,11 +332,14 @@ export default function ReportCenter() {
           <div className="bg-white rounded-xl border p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              <button onClick={handlePreviewBrochure} className="px-4 py-3 bg-[#A89035] text-white rounded-lg hover:bg-[#8A7A2C] font-medium flex flex-col items-center gap-1 text-sm">
-                <Eye className="w-5 h-5" /> Preview Report
+              <button onClick={handlePreviewPitch} className="px-4 py-3 bg-[#0D2240] text-white rounded-lg hover:bg-[#1a3a5c] font-medium flex flex-col items-center gap-1 text-sm">
+                <Eye className="w-5 h-5" /> ✨ Pitch Report
               </button>
-              <button onClick={handleDownloadHTML} className="px-4 py-3 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] font-medium flex flex-col items-center gap-1 text-sm">
-                <Download className="w-5 h-5" /> Download PDF
+              <button onClick={handlePreviewBrochure} className="px-4 py-3 bg-[#A89035] text-white rounded-lg hover:bg-[#8A7A2C] font-medium flex flex-col items-center gap-1 text-sm">
+                <Eye className="w-5 h-5" /> Full Report
+              </button>
+              <button onClick={handleDownloadPitchHTML} className="px-4 py-3 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] font-medium flex flex-col items-center gap-1 text-sm">
+                <Download className="w-5 h-5" /> Download Pitch
               </button>
               <button onClick={() => setShowEmailModal(true)} className="px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex flex-col items-center gap-1 text-sm">
                 <Mail className="w-5 h-5" /> Email Draft
