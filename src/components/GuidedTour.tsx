@@ -36,7 +36,7 @@ const TOUR_STEPS: TourStep[] = [
   },
   {
     target: 'scout-ai',
-    title: 'Scout AI',
+    title: 'Merlin AI',
     description: 'Ask questions about your pipeline, get lead suggestions, draft emails',
     icon: '🤖',
   },

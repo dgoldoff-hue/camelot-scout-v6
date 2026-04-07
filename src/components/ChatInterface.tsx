@@ -50,7 +50,7 @@ export default function ChatInterface() {
 
     const top5 = [...active].sort((a, b) => b.score - a.score).slice(0, 5);
 
-    return `Current Scout Database Context:
+    return `Current Camelot OS Database Context:
 - Total active buildings: ${active.length}
 - Pipeline: ${Object.entries(byStage).map(([k, v]) => `${k}: ${v}`).join(', ')}
 - Top 5 by score: ${top5.map((b) => `${b.name || b.address} (score: ${b.score}, grade: ${b.grade}, stage: ${b.pipeline_stage})`).join('; ')}
@@ -193,7 +193,7 @@ export default function ChatInterface() {
               <Bot size={20} className="text-camelot-gold" />
             </div>
             <div>
-              <h2 className="font-bold text-lg">Scout AI</h2>
+              <h2 className="font-bold text-lg">Merlin AI</h2>
               {aiConfigured ? (
                 <p className="text-xs text-green-600 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Connected
@@ -304,7 +304,7 @@ export default function ChatInterface() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask Scout AI anything..."
+                placeholder="Ask Merlin AI anything..."
                 rows={1}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-camelot-gold/50 focus:border-camelot-gold"
                 style={{ minHeight: '48px', maxHeight: '120px' }}
@@ -319,7 +319,7 @@ export default function ChatInterface() {
             </button>
           </div>
           <p className="text-[10px] text-gray-400 mt-2 text-center">
-            Scout AI has access to your building database for contextual answers
+            Merlin AI has access to your building database for contextual answers
           </p>
         </div>
       </div>

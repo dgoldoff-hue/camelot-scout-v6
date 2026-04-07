@@ -23,16 +23,16 @@ const TUTORIALS: Tutorial[] = [
   {
     id: 'getting-started',
     icon: <Sparkles size={24} className="text-camelot-gold" />,
-    title: 'Getting Started with Scout',
-    description: 'What is Scout? How to navigate the app. Everything you need to know in 2 minutes.',
+    title: 'Getting Started with Camelot OS',
+    description: 'What is Camelot OS? How to navigate the platform. Everything you need to know in 2 minutes.',
     time: '2 min',
     content: [
       {
-        heading: '🏰 What Is Scout?',
+        heading: '🏰 What Is Camelot OS?',
         steps: [
           'Scout is Camelot\'s property intelligence platform. Think of it like a search engine — but instead of searching the internet, you search **every building in New York City**.',
           'It pulls real data from the city (violations, taxes, permits, energy usage) and organizes it so you can find buildings that need better management.',
-          'Scout is used by the Camelot team to find new business, research properties, and generate proposals — all in one place.',
+          'Camelot OS is used by the Camelot team to find new business, research properties, and generate proposals — all in one place.',
         ],
       },
       {
@@ -590,7 +590,7 @@ const TUTORIALS: Tutorial[] = [
     time: '2 min',
     content: [
       {
-        heading: '🤖 What Is Scout AI?',
+        heading: '🤖 What Is Merlin AI?',
         steps: [
           'Scout AI is a built-in chat assistant. You can ask it questions about buildings, get help writing emails, or brainstorm strategy.',
           'It knows about all the buildings in your Pipeline and can pull live data.',
@@ -654,8 +654,8 @@ export default function Tutorials() {
               <BookOpen size={24} className="text-camelot-gold" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Scout Academy</h1>
-              <p className="text-gray-400">Learn Camelot Scout — master every feature</p>
+              <h1 className="text-3xl font-bold">Camelot OS Academy</h1>
+              <p className="text-gray-400">Learn Camelot OS — master every feature</p>
             </div>
           </div>
           <div className="flex items-center gap-4 mt-4 text-sm text-gray-400">

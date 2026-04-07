@@ -485,9 +485,9 @@ export default function Search() {
             <div className="h-8 w-px bg-white/20" />
             <div>
               <h1 className="text-2xl font-heading font-bold tracking-wide text-camelot-gold">
-                SCOUT
+                CAMELOT OS
               </h1>
-              <p className="text-[10px] text-gray-400 tracking-[0.2em] uppercase font-body">Property Intelligence &amp; Lead Generation</p>
+              <p className="text-[10px] text-gray-400 tracking-[0.2em] uppercase font-body">The Operating System for Property Management</p>
             </div>
           </div>
 
@@ -498,7 +498,7 @@ export default function Search() {
                 Find, analyze, and win new management contracts — powered by live NYC building data.
               </h2>
               <p className="text-gray-400 font-body leading-relaxed mb-4">
-                Scout pulls real-time data from 14 NYC agencies — HPD violations, DOB permits, DOF assessments, LL97 energy compliance, ACRIS ownership records, ECB fines, housing litigation, and more — and packages it into ready-to-send management proposals, cold caller scripts, and compliance alerts.
+                Camelot OS pulls real-time data from 14 NYC agencies — HPD violations, DOB permits, DOF assessments, LL97 energy compliance, ACRIS ownership records, ECB fines, housing litigation, and more — and packages it into ready-to-send management proposals, cold caller scripts, and compliance alerts.
               </p>
               <div className="flex flex-wrap gap-4 text-sm font-body">
                 <div className="flex items-center gap-2 text-camelot-gold">
