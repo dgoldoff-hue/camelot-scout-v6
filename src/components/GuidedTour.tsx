@@ -221,7 +221,7 @@ export default function GuidedTour({ isOpen, onClose }: GuidedTourProps) {
                 <Sparkles size={32} className="text-camelot-gold" />
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                Welcome to Camelot Scout v6
+                Welcome to Camelot OS
               </h2>
               <p className="text-gray-500 mb-8 leading-relaxed">
                 Your property intelligence platform. Let us give you a quick tour of the key features.

@@ -15,7 +15,7 @@ export interface AIConfig {
   model: string;
 }
 
-const SCOUT_SYSTEM_PROMPT = `You are Scout AI, the intelligent assistant for Camelot Property Management's business development platform — Camelot Scout v6.
+const SCOUT_SYSTEM_PROMPT = `You are Merlin, the AI brain of Camelot OS — the operating system for property management by Camelot Realty Group.
 
 You help the Camelot team with:
 - Analyzing properties and lead scores

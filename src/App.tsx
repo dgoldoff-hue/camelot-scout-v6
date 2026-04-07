@@ -44,8 +44,8 @@ export default function App() {
       <div className="h-screen w-screen flex items-center justify-center bg-camelot-navy">
         <div className="text-center">
           <div className="text-4xl mb-4">🏰</div>
-          <h1 className="text-2xl font-bold text-white mb-2">Camelot Scout</h1>
-          <p className="text-gray-400">Loading...</p>
+          <h1 className="text-2xl font-bold text-white mb-2">Camelot OS</h1>
+          <p className="text-gray-400">Property Management System</p>
         </div>
       </div>
     );

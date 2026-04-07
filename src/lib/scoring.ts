@@ -1,7 +1,7 @@
 import type { Building, BuildingGrade } from '@/types';
 
 /**
- * Lead Scoring Algorithm for Camelot Scout
+ * Lead Scoring Algorithm for Camelot OS
  * Score 0-100, Grade A (75+), B (50-74), C (below 50)
  *
  * Factors:

@@ -1,5 +1,5 @@
 /**
- * Client-side PDF/HTML/CSV helpers for Camelot Scout reports
+ * Client-side PDF/HTML/CSV helpers for Camelot OS reports
  */
 
 /** Open HTML in a new tab for preview (no auto-print) */
