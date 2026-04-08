@@ -2472,19 +2472,19 @@ ${[
 
 <div class="stats-row">
 <div class="stat-box"><div class="val gold">$${d.monthlyFee.toLocaleString()}/mo</div><div class="lbl">Proposed Mgmt Fee ($${d.pricePerUnit}/unit)</div></div>
-<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(d.units * 5750).toLocaleString()}/yr</div><div class="lbl">Est. Retention Savings</div></div>
-<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(d.units * 850).toLocaleString()}/yr</div><div class="lbl">Est. Payment Recovery</div></div>
-<div class="stat-box"><div class="val" style="color:#16a34a">$${(d.buildingArea > 0 ? Math.round(d.buildingArea * 2).toLocaleString() : '15,000–35,000')}/yr</div><div class="lbl">Est. Energy Savings</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(d.units * 4500).toLocaleString()}/yr</div><div class="lbl">Est. Retention Savings</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(d.units * 750).toLocaleString()}/yr</div><div class="lbl">Est. Payment Recovery</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${(d.buildingArea > 0 ? Math.round(d.buildingArea * 0.40).toLocaleString() : Math.round(d.units * 250).toLocaleString())}/yr</div><div class="lbl">Est. Energy Savings</div></div>
 </div>
 
 <table class="invest-table" style="margin-top:16px">
 <thead><tr><th>Opportunity Area</th><th>Est. Annual Impact</th><th>Priority</th><th>Camelot Approach</th></tr></thead>
 <tbody>
-<tr><td>Insurance Portfolio Review</td><td style="color:#16a34a;font-weight:700">$25K–55K/yr</td><td>★★★ High</td><td>Full coverage audit + independent broker market review</td></tr>
-<tr><td>Vendor Contract Rebidding</td><td style="color:#16a34a;font-weight:700">$35K–75K/yr</td><td>★★★ High</td><td>Elevator, cleaning, extermination — competitive 3-bid process via Camelot network</td></tr>
-<tr><td>Energy Optimization (Parity)</td><td style="color:#16a34a;font-weight:700">$15K–35K/yr</td><td>★★ Medium</td><td>HVAC monitoring, demand-side savings, LL97 compliance pathway</td></tr>
-<tr><td>Non-Maintenance Revenue</td><td style="color:#16a34a;font-weight:700">$15K–40K/yr</td><td>★★ Medium</td><td>Laundry, storage, alteration fees, sublet charges, flip tax review</td></tr>
-<tr><td>Process &amp; Admin Efficiency</td><td style="color:#16a34a;font-weight:700">$8K–18K/yr</td><td>★ Lower</td><td>Digital document management, automated billing, AI board minutes</td></tr>
+<tr><td>Insurance Portfolio Review</td><td style="color:#16a34a;font-weight:700">$${Math.round(d.units * 200 / 1000)}K–$${Math.round(d.units * 500 / 1000)}K/yr</td><td>★★★ High</td><td>Full coverage audit + independent broker market review</td></tr>
+<tr><td>Vendor Contract Rebidding</td><td style="color:#16a34a;font-weight:700">$${Math.round(d.units * 300 / 1000)}K–$${Math.round(d.units * 650 / 1000)}K/yr</td><td>★★★ High</td><td>Elevator, cleaning, extermination — competitive 3-bid process via Camelot network</td></tr>
+<tr><td>Energy Optimization (Parity)</td><td style="color:#16a34a;font-weight:700">$${Math.round(d.units * 120 / 1000)}K–$${Math.round(d.units * 300 / 1000)}K/yr</td><td>★★ Medium</td><td>HVAC monitoring, demand-side savings, LL97 compliance pathway</td></tr>
+<tr><td>Non-Maintenance Revenue</td><td style="color:#16a34a;font-weight:700">$${Math.round(d.units * 130 / 1000)}K–$${Math.round(d.units * 350 / 1000)}K/yr</td><td>★★ Medium</td><td>Laundry, storage, alteration fees, sublet charges, flip tax review</td></tr>
+<tr><td>Process &amp; Admin Efficiency</td><td style="color:#16a34a;font-weight:700">$${Math.round(d.units * 70 / 1000)}K–$${Math.round(d.units * 160 / 1000)}K/yr</td><td>★ Lower</td><td>Digital document management, automated billing, AI board minutes</td></tr>
 </tbody>
 </table>
 
@@ -2512,9 +2512,9 @@ ${[
 <div style="margin-bottom:28px">
 <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600;margin-bottom:14px;padding-left:16px;border-left:4px solid #A89035">Projected Annual Savings by Category</div>
 ${[
-  { label: 'Vendor Rebidding', low: 35000, high: 75000, color: '#A89035' },
-  { label: 'Insurance Review', low: 25000, high: 55000, color: '#3A4B5B' },
-  { label: 'Energy (Parity)', low: 15000, high: 35000, color: '#16a34a' },
+  { label: 'Vendor Rebidding', low: Math.round(d.units * 300), high: Math.round(d.units * 650), color: '#A89035' },
+  { label: 'Insurance Review', low: Math.round(d.units * 200), high: Math.round(d.units * 500), color: '#3A4B5B' },
+  { label: 'Energy (Parity)', low: Math.round(d.units * 120), high: Math.round(d.units * 300), color: '#16a34a' },
   { label: 'Revenue Recovery', low: 15000, high: 40000, color: '#0073b7' },
   { label: 'Retention Savings', low: Math.round(d.units * 3500), high: Math.round(d.units * 8000), color: '#e63946' },
   { label: 'Admin Efficiency', low: 8000, high: 18000, color: '#888' },
@@ -2538,7 +2538,9 @@ ${[
 <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600;margin-bottom:14px;padding-left:16px;border-left:4px solid #A89035">5-Year Financial Pro Forma</div>
 ${(() => {
   const mgmtFee = d.monthlyFee * 12;
-  const yr1Low = 98000; const yr1High = 223000;
+  // Dynamic savings: scale with units — insurance ($200-500/unit) + vendor ($300-650/unit) + energy ($120-300/unit) + revenue ($130-350/unit) + admin ($70-160/unit)
+  const yr1Low = Math.round(d.units * 820); // conservative: $820/unit/year in total savings
+  const yr1High = Math.round(d.units * 1960); // optimistic
   const yr1Mid = Math.round((yr1Low + yr1High) / 2);
   const growth = 1.04; // 4% annual improvement
   const years = [1, 2, 3, 4, 5];
