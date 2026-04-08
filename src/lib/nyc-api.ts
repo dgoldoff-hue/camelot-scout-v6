@@ -108,6 +108,10 @@ function normalizeAddress(address: string): string {
   // Strip ordinal suffixes: "79TH" → "79", "1ST" → "1" etc.
   norm = stripOrdinal(norm);
 
+  // Strip city/state/zip suffixes that users commonly append
+  norm = norm.replace(/,?\s*(NEW YORK|NYC|NY|MANHATTAN|BROOKLYN|QUEENS|BRONX|STATEN ISLAND|NEW YORK CITY)\s*$/gi, '');
+  norm = norm.replace(/,?\s*\d{5}(-\d{4})?\s*$/, ''); // ZIP code
+
   // Remove street type suffixes — we'll search without them for broader matching
   // Keep them in the normalized form but they'll be stripped when building search keys
   // Collapse multiple spaces

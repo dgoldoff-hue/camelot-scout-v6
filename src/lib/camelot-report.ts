@@ -373,7 +373,8 @@ function classifyBuildingType(buildingClass: string): string {
   if (!buildingClass) return 'Residential';
   const cls = buildingClass.toUpperCase().trim();
   const first = cls.charAt(0);
-  if (cls.startsWith('R') && cls.length >= 2 && /[0-9]/.test(cls.charAt(1))) return 'Condominium';
+  // R-class = Condominiums: R0 (common area), R1-R9 (units), RA (cultural), RM (mixed), RR (rental condo), etc.
+  if (first === 'R') return 'Condominium';
   if (first === 'D') return 'Elevator Apartment';
   if (first === 'C') return 'Walk-Up Apartment';
   if (first === 'S') return 'Mixed-Use Residential';

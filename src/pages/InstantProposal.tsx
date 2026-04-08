@@ -356,7 +356,7 @@ export default function InstantProposal() {
             </div>
             <div className="bg-camelot-cream rounded-lg p-3 text-center">
               <div className="text-2xl font-bold text-camelot-navy">{d.scoutGrade}</div>
-              <div className="text-[10px] text-gray-500 uppercase">Scout Grade</div>
+              <div className="text-[10px] text-gray-500 uppercase">Grade</div>
             </div>
           </div>
 
@@ -365,7 +365,7 @@ export default function InstantProposal() {
               <span className="text-gray-500">Address:</span> <strong>{d.address}</strong>
             </div>
             <div className="border border-gray-100 rounded-lg p-3">
-              <span className="text-gray-500">BBL:</span> <strong>{d.bbl || 'N/A'}</strong>
+              <span className="text-gray-500">BBL:</span> <strong>{d.bbl ? String(d.bbl).replace(/\.0+$/, '') : 'N/A'}</strong>
             </div>
             <div className="border border-gray-100 rounded-lg p-3">
               <span className="text-gray-500">Type:</span> <strong>{d.propertyType}</strong>
@@ -413,7 +413,7 @@ export default function InstantProposal() {
             <CheckCircle size={20} className="text-green-600" />
             <div>
               <p className="font-semibold text-green-800 text-sm">Jackie report ready — {d?.buildingName}</p>
-              <p className="text-xs text-green-600">{d?.units} units · {d?.violationsOpen} violations · Scout Grade {d?.scoutGrade} · Fee ${d?.monthlyFee.toLocaleString()}/mo</p>
+              <p className="text-xs text-green-600">{d?.units} units · {d?.violationsOpen} violations · Grade {d?.scoutGrade} · Fee ${d?.monthlyFee.toLocaleString()}/mo</p>
             </div>
           </div>
 
