@@ -510,10 +510,12 @@ const DOF_TAX_LIEN_ENDPOINT = `${NYC_BASE}/9rz4-mjek.json`;
 export interface DOFAbatementData {
   hasAbatement: boolean;
   currentExemption: number;     // current year exempt amount
+  abatementType: string;        // "421-a", "J-51", "Condo/Co-op Abatement", "None"
   taxClass: string;
   coopApts: number;
   yearBuilt: number;
   ownerName: string;
+  condoNumber: string;
   raw: any;
 }
 
@@ -538,13 +540,18 @@ export async function fetchDOFExemptions(borough: string, block: string, lot: st
     if (!data || data.length === 0) return null;
     const d = data[0];
     const exemption = parseFloat(d.curactextot) || 0;
+    // Tax flags: "A" = Abatement active, "T" = Taxable (no abatement)
+    // For condos, the abatement may show $0 on the parent lot but "A" on the flag
+    const taxFlagIndicatesAbatement = (d.curtaxflag === 'A' || d.cbntaxflag === 'A' || d.fintaxflag === 'A');
     return {
-      hasAbatement: exemption > 0,
+      hasAbatement: exemption > 0 || taxFlagIndicatesAbatement,
       currentExemption: exemption,
+      abatementType: taxFlagIndicatesAbatement ? (d.cbntaxflag === 'A' ? 'Condo/Co-op Abatement (421-a or similar)' : 'Tax Abatement Active') : 'None',
       taxClass: d.curtaxclass || '',
       coopApts: parseInt(d.coop_apts) || 0,
       yearBuilt: parseInt(d.yrbuilt) || 0,
       ownerName: d.owner || '',
+      condoNumber: d.condo_number || '',
       raw: d,
     };
   } catch (err) {
