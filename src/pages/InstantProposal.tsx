@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { Search, CheckCircle, FileText, Edit3, Download, Printer, Mail, Loader2, ChevronRight, ArrowLeft, Zap, X, ExternalLink, Copy } from 'lucide-react';
 import { buildMasterReport, generateBrochureHTML, type MasterReportData } from '@/lib/camelot-report';
+import { generatePitchReport } from '@/lib/pitch-report';
 import toast from 'react-hot-toast';
 
 type Step = 'search' | 'verify' | 'jackie' | 'draft' | 'export';
@@ -49,6 +50,8 @@ export default function InstantProposal() {
   const [reportData, setReportData] = useState<MasterReportData | null>(null);
   const [proposalHTML, setProposalHTML] = useState('');
   const [jackieHTML, setJackieHTML] = useState('');
+  const [pitchHTML, setPitchHTML] = useState('');
+  const [fullJackieHTML, setFullJackieHTML] = useState('');
   const [showJackieModal, setShowJackieModal] = useState(false);
   const [showProposalModal, setShowProposalModal] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -77,8 +80,11 @@ export default function InstantProposal() {
     if (!reportData) return;
     setLoading(true);
     try {
-      const html = generateBrochureHTML(reportData);
-      setJackieHTML(html);
+      const pitchHtml = generatePitchReport(reportData);
+      const fullHtml = generateBrochureHTML(reportData);
+      setJackieHTML(pitchHtml);
+      setPitchHTML(pitchHtml);
+      setFullJackieHTML(fullHtml);
       setStep('jackie');
       toast.success('Jackie report generated');
     } catch (e: any) {
@@ -413,7 +419,7 @@ export default function InstantProposal() {
             <CheckCircle size={20} className="text-green-600" />
             <div>
               <p className="font-semibold text-green-800 text-sm">Jackie report ready — {d?.buildingName}</p>
-              <p className="text-xs text-green-600">{d?.units} units · {d?.violationsOpen} violations · Grade {d?.scoutGrade} · Fee ${d?.monthlyFee.toLocaleString()}/mo</p>
+              <p className="text-xs text-green-600">{d?.units} units · {d?.violationsOpen} open violations · Grade {d?.scoutGrade} · {d?.propertyType} · Fee ${d?.monthlyFee.toLocaleString()}/mo · Mgmt: {d?.managementCompany || 'Self-Managed'}</p>
             </div>
           </div>
 
@@ -425,6 +431,21 @@ export default function InstantProposal() {
               className="w-full h-full"
               sandbox="allow-same-origin"
             />
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-3">
+            <button
+              onClick={() => setJackieHTML(pitchHTML)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${jackieHTML === pitchHTML ? 'bg-camelot-navy text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            >
+              ✨ Pitch Report (External)
+            </button>
+            <button
+              onClick={() => setJackieHTML(fullJackieHTML)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${jackieHTML === fullJackieHTML ? 'bg-camelot-navy text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            >
+              Full Report (Internal)
+            </button>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
