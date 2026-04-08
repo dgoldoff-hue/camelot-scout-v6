@@ -2548,7 +2548,7 @@ ${(() => {
   const years = [1, 2, 3, 4, 5];
   const projections = years.map(y => {
     const savings = Math.round(yr1Mid * Math.pow(growth, y - 1));
-    const fee = Math.round(mgmtFee * Math.pow(1.02, y - 1)); // 2% fee escalation
+    const fee = Math.round(mgmtFee * Math.pow(1.04, y - 1)); // 4% annual escalation (3-5% per board agreement)
     const net = savings - fee;
     const roi = Math.round((savings / fee) * 100);
     return { year: y, savings, fee, net, roi };
@@ -2633,7 +2633,7 @@ ${[
 </div>
 
 <div style="background:#EDE9DF;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:12px 16px;margin-top:20px">
-<p style="font-size:11px;color:#555;line-height:1.6"><strong style="color:#A89035">Note:</strong> All projections are estimates based on Camelot portfolio benchmarks across 42 managed properties. Actual results vary by building. Year 1 estimates are conservative; savings typically compound as vendor contracts are rebid, energy optimization matures, and resident retention improves. Management fee assumes 2% annual escalation; value creation assumes 4% annual improvement.</p>
+<p style="font-size:11px;color:#555;line-height:1.6"><strong style="color:#A89035">Note:</strong> All projections are estimates based on Camelot portfolio benchmarks across 42 managed properties. Actual results vary by building. Year 1 estimates are conservative; savings typically compound as vendor contracts are rebid, energy optimization matures, and resident retention improves. Management fee assumes 4% annual escalation (3–5% per board agreement); value creation assumes 4% annual improvement.</p>
 </div>
 </div>
 
@@ -2849,10 +2849,10 @@ Tribeca: $2,100/sf · $5,200 1BR
 <thead><tr><th>Value Driver</th><th>Estimated Impact</th><th>Applied to ${d.buildingName}</th></tr></thead>
 <tbody>
 <tr><td>Compliance Management (zero violations)</td><td>+3–8% sale premium on units</td><td style="color:#16a34a;font-weight:600">${d.units > 0 ? `${d.units} units \u00D7 avg value = significant portfolio uplift` : 'Premium positioning for all units'}</td></tr>
-<tr><td>Resident Retention (Merlin AI)</td><td>+$3,500–8,000 per unit/yr</td><td style="color:#16a34a;font-weight:600">${d.units} units \u00D7 $5,750 avg = ~$${Math.round(d.units * 5750).toLocaleString()}/yr saved</td></tr>
-<tr><td>Online Payments (Prisma)</td><td>90% NSF reduction</td><td style="color:#16a34a;font-weight:600">${d.units} units \u00D7 $850 avg = ~$${Math.round(d.units * 850).toLocaleString()}/yr</td></tr>
-<tr><td>Technology Premium (ConciergePlus)</td><td>+$50–150/sqft building value</td><td style="color:#16a34a;font-weight:600">${d.buildingArea > 0 ? `${d.buildingArea.toLocaleString()} SF \u00D7 $100 = ~$${Math.round(d.buildingArea * 100).toLocaleString()}` : 'Measurable value uplift'}</td></tr>
-<tr><td>Energy Optimization (Parity)</td><td>+$1–3/sqft/yr savings</td><td style="color:#16a34a;font-weight:600">${d.buildingArea > 0 ? `${d.buildingArea.toLocaleString()} SF \u00D7 $2 = ~$${Math.round(d.buildingArea * 2).toLocaleString()}/yr` : 'Utility cost reduction'}</td></tr>
+<tr><td>Resident Retention (Merlin AI)</td><td>+$3,500–8,000 per unit/yr</td><td style="color:#16a34a;font-weight:600">${d.units} units \u00D7 $4,500 avg = ~$${Math.round(d.units * 4500).toLocaleString()}/yr saved</td></tr>
+<tr><td>Online Payments (Prisma)</td><td>90% NSF reduction</td><td style="color:#16a34a;font-weight:600">${d.units} units \u00D7 $750 avg = ~$${Math.round(d.units * 750).toLocaleString()}/yr</td></tr>
+<tr><td>Technology Premium (ConciergePlus)</td><td>+2–5% building value premium</td><td style="color:#16a34a;font-weight:600">${d.buildingArea > 0 ? `${d.units} units — tech-enabled management increases building appeal and resale value` : 'Measurable value uplift'}</td></tr>
+<tr><td>Energy Optimization (Parity)</td><td>+$0.25–0.75/sqft/yr savings</td><td style="color:#16a34a;font-weight:600">${d.buildingArea > 0 ? `${d.buildingArea.toLocaleString()} SF \u00D7 $0.40 = ~$${Math.round(d.buildingArea * 0.4).toLocaleString()}/yr` : 'Utility cost reduction'}</td></tr>
 <tr><td>Technology-Enabled Leasing</td><td>20–30% faster absorption</td><td>Fewer vacant months; stronger maintenance fee sustainability</td></tr>
 <tr><td>Camelot Capital Advisory</td><td>+5–15% building value</td><td>Strategic refinancing + capital planning = lower shareholder cost</td></tr>
 </tbody>
@@ -3238,10 +3238,10 @@ function generateProposal() {
   '<div class="fee-box">' +
   '<strong>Base Management Fee:</strong> $' + d.monthlyFee.toLocaleString() + ' per month ($' + d.annualFee.toLocaleString() + ' annually)<br>' +
   '<strong>Units Managed:</strong> ' + unitDesc + '<br>' +
-  '<strong>Fee Basis:</strong> Management fee or 5% of gross ' + chargeLabel + ' collected, whichever is greater<br>' +
+  '<strong>Fee Basis:</strong> Flat fee based on building type, size, and service tier. Annual escalation of 3–5% as agreed upon by board and management.<br>' +
   '<strong>Ancillary Fees:</strong> As outlined in Schedule A of the management agreement<br>' +
   '<strong>Accounting:</strong> WAIVED for the first 12 months<br>' +
-  '<strong>Technology:</strong> $50/unit/month (FREE for first 6 months)' +
+  '<strong>Technology:</strong> Included — Camelot OS + ConciergePlus portal + Merlin AI (no additional charge)' +
   '</div>' +
 
   '<div class="hr"></div>' +
