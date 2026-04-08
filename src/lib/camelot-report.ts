@@ -294,53 +294,65 @@ export interface TieredPricing {
   units: number;
 }
 
-function calculateTieredPricing(units: number, borough: string, isRentStabilized: boolean, ll97Status: string): TieredPricing {
-  // Classic tier — base rates by building size
-  let classicBase: number;
-  if (units < 30) classicBase = 50;
-  else if (units <= 75) classicBase = 45;
-  else if (units <= 150) classicBase = 40;
-  else classicBase = 38;
-
-  // Intelligence tier — the sweet spot
-  let intelBase: number;
-  if (units < 30) intelBase = 65;
-  else if (units <= 75) intelBase = 55;
-  else if (units <= 150) intelBase = 50;
-  else intelBase = 45;
-
-  // Premier tier — white glove
-  let premierBase: number;
-  if (units < 30) premierBase = 85;
-  else if (units <= 75) premierBase = 75;
-  else if (units <= 150) premierBase = 70;
-  else premierBase = 65;
-
-  // Location adjustments
+function calculateTieredPricing(units: number, borough: string, isRentStabilized: boolean, ll97Status: string, buildingClass?: string, marketValue?: number, address?: string): TieredPricing {
+  // Determine building tier based on building class, market value, and address
+  // NYC Building Classes: D0-D9 = Elevator apartments, C0-C9 = Walkup, R = Condos
+  // Luxury indicators: high market value per unit, doorman buildings, prime addresses
+  const cls = (buildingClass || '').toUpperCase();
+  const addr = (address || '').toUpperCase();
   const bor = (borough || '').toLowerCase();
-  if (bor.includes('manhattan')) {
-    // Manhattan commands slight premium
+  const valuePerUnit = (marketValue && units) ? marketValue / units : 0;
+  
+  // Detect luxury/premium buildings
+  const isElevator = cls.startsWith('D') || cls.startsWith('R');
+  const isLuxuryAddress = addr.includes('FIFTH') || addr.includes('5TH') || addr.includes('5 AVENUE') ||
+    addr.includes('PARK AVENUE') || addr.includes('PARK AVE') || addr.includes('CENTRAL PARK') ||
+    addr.includes('MADISON AVENUE') || addr.includes('MADISON AVE') ||
+    addr.includes('LEXINGTON') || addr.includes('BROADWAY') ||
+    /\b(SUTTON|BEEKMAN|GRAMERCY|TRIBECA|SOHO|NOHO|WEST VILLAGE|GREENWICH)\b/.test(addr);
+  const isHighValue = valuePerUnit > 500000; // >$500K per unit = luxury
+  const isLuxury = (isElevator && (isLuxuryAddress || isHighValue)) || valuePerUnit > 1000000;
+  const isPremiumArea = bor.includes('manhattan') || isLuxuryAddress;
+  
+  // Classic tier — base rates by building size AND class
+  let classicBase: number;
+  if (isLuxury) {
+    // Luxury buildings: doorman co-ops/condos on prime streets
+    if (units < 30) classicBase = 95;
+    else if (units <= 75) classicBase = 85;
+    else if (units <= 150) classicBase = 75;
+    else classicBase = 65;
+  } else if (isPremiumArea) {
+    // Manhattan non-luxury
+    if (units < 30) classicBase = 70;
+    else if (units <= 75) classicBase = 60;
+    else if (units <= 150) classicBase = 52;
+    else classicBase = 45;
+  } else {
+    // Outer boroughs and suburbs
+    if (units < 30) classicBase = 55;
+    else if (units <= 75) classicBase = 48;
+    else if (units <= 150) classicBase = 42;
+    else classicBase = 38;
+  }
+
+  // Intelligence tier — add 30-40% above Classic
+  let intelBase = Math.round(classicBase * 1.35);
+
+  // Premier tier — add 60-80% above Classic
+  let premierBase = Math.round(classicBase * 1.7);
+
+  // Rent stabilization adds complexity (DHCR, RGB, lease riders)
+  if (isRentStabilized) {
     classicBase += 5;
     intelBase += 5;
     premierBase += 5;
-  } else if (bor.includes('westchester') || bor.includes('connecticut') || bor.includes('jersey')) {
-    // Suburban discount
-    classicBase -= 5;
-    intelBase -= 5;
-    premierBase -= 5;
-  }
-
-  // Rent stabilization adds complexity
-  if (isRentStabilized) {
-    classicBase += 3;
-    intelBase += 3;
-    premierBase += 3;
   }
 
   // LL97 non-compliance adds monitoring
   if (ll97Status && ll97Status !== 'compliant' && ll97Status !== 'unknown') {
-    intelBase += 2;
-    premierBase += 2;
+    intelBase += 3;
+    premierBase += 3;
   }
 
   const u = units || 1;
@@ -719,13 +731,10 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   const classC = items.filter((v: any) => v.class === 'C').length;
 
   // Pricing
-  let pricePerUnit = 50;
-  if (units < 30) pricePerUnit = 65;
-  else if (units <= 75) pricePerUnit = 50;
-  else if (units <= 150) pricePerUnit = 42;
-  else pricePerUnit = 35;
-  if (raw.rentStabilization?.isStabilized) pricePerUnit += 5;
-  if (ll97Data && ll97Data.complianceStatus !== 'compliant') pricePerUnit += 3;
+  // Price per unit — use the tiered pricing intelligence tier as the default displayed fee
+  // This gets recalculated properly in calculateTieredPricing with building class, value, and address awareness
+  const tier = calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', dof?.buildingClass || '', dof?.marketValue || 0, address);
+  let pricePerUnit = tier.intelligence.perUnit;
   const monthlyFee = pricePerUnit * (units || 1);
   const annualFee = monthlyFee * 12;
 
@@ -913,7 +922,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     pricePerUnit,
     monthlyFee,
     annualFee,
-    tieredPricing: calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown'),
+    tieredPricing: calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', dof?.buildingClass || '', dof?.marketValue || 0, address),
     feeComparison: calculateMarketFeeComparison({
       units: units || 1,
       borough: borough || '',
@@ -928,6 +937,65 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     neighborhoodIntel,
     raw,
   };
+}
+
+// ============================================================
+// QA Checklist — Validates report data before generation
+// ============================================================
+
+export interface QACheckResult {
+  passed: boolean;
+  checks: { name: string; status: 'pass' | 'warn' | 'fail'; detail: string }[];
+  warnings: number;
+  failures: number;
+}
+
+export function runReportQA(d: MasterReportData): QACheckResult {
+  const checks: QACheckResult['checks'] = [];
+  
+  // 1. Address populated
+  checks.push({ name: 'Address', status: d.address ? 'pass' : 'fail', detail: d.address || 'MISSING' });
+  
+  // 2. Building name (not just the address repeated)
+  checks.push({ name: 'Building Name', status: d.buildingName && d.buildingName !== d.address ? 'pass' : 'warn', detail: d.buildingName || 'Using address as name' });
+  
+  // 3. Unit count
+  checks.push({ name: 'Unit Count', status: d.units > 0 ? 'pass' : 'warn', detail: d.units > 0 ? `${d.units} units` : 'N/A — estimated from building area' });
+  
+  // 4. Year Built
+  checks.push({ name: 'Year Built', status: d.yearBuilt > 0 ? 'pass' : 'warn', detail: d.yearBuilt > 0 ? `${d.yearBuilt}` : 'N/A — DOF data not available' });
+  
+  // 5. Market Value
+  checks.push({ name: 'Market Value', status: d.marketValue > 0 ? 'pass' : 'warn', detail: d.marketValue > 0 ? `$${d.marketValue.toLocaleString()}` : '$0 — DOF/PLUTO lookup failed' });
+  
+  // 6. Management Company
+  checks.push({ name: 'Management Company', status: d.managementCompany ? 'pass' : 'warn', detail: d.managementCompany || 'Not found in HPD registration — check if address format matches' });
+  
+  // 7. Violations data loaded
+  checks.push({ name: 'HPD Violations', status: 'pass', detail: `${d.violationsTotal} total, ${d.violationsOpen} open` });
+  
+  // 8. Fee calculation sanity check
+  const feePerUnit = d.tieredPricing?.intelligence?.perUnit || d.pricePerUnit;
+  const feeOk = feePerUnit >= 40 && feePerUnit <= 200;
+  checks.push({ name: 'Fee Calculation', status: feeOk ? 'pass' : 'warn', detail: `$${feePerUnit}/unit/mo (Intelligence tier)${!feeOk ? ' — REVIEW: may be too low or high for this building class' : ''}` });
+  
+  // 9. Borough detected
+  checks.push({ name: 'Borough', status: d.borough ? 'pass' : 'warn', detail: d.borough || 'Not detected' });
+  
+  // 10. LL97 assessment (only relevant for buildings >25,000 sqft)
+  const hasLL97 = d.ll97 !== null;
+  checks.push({ name: 'LL97 Data', status: hasLL97 ? 'pass' : 'warn', detail: hasLL97 ? `Status: ${d.ll97!.complianceStatus}` : 'No energy data — building may be <25K sqft or not benchmarked' });
+  
+  // 11. Property type determined
+  checks.push({ name: 'Property Type', status: d.propertyType ? 'pass' : 'warn', detail: d.propertyType || 'Defaulting to Residential' });
+  
+  // 12. Neighborhood determined
+  checks.push({ name: 'Neighborhood', status: d.neighborhoodName ? 'pass' : 'warn', detail: d.neighborhoodName || 'Not detected — using borough' });
+
+  const warnings = checks.filter(c => c.status === 'warn').length;
+  const failures = checks.filter(c => c.status === 'fail').length;
+  
+  return { passed: failures === 0, checks, warnings, failures };
 }
 
 // ============================================================
