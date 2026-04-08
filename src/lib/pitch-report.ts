@@ -140,17 +140,32 @@ export function generatePitchReport(d: MasterReportData): string {
 </head>
 <body>
 
-<!-- SLIDE 1: Cover (Dark) -->
-<div class="slide slide-dark">
+<!-- SLIDE 1: Cover (Dark with Street View background) -->
+<div class="slide slide-dark" style="background:linear-gradient(135deg, rgba(13,34,64,0.85) 0%, rgba(61,79,95,0.80) 100%), url('${svUrl}') center/cover no-repeat; background-size:cover;">
   <div class="logo-badge"><div class="logo-badge-text">CAMELOT<span class="logo-badge-sub">REALTY GROUP</span></div></div>
-  <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100%;text-align:center;padding:60px">
-    <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:52px;letter-spacing:12px;font-weight:400;margin-bottom:6px">C A M E L O T</div>
-    <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;color:#B8973A;font-style:italic;margin-bottom:60px">Property Management</div>
-    <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:48px;color:#B8973A;font-style:italic;font-weight:600;margin-bottom:16px">${d.buildingName || d.address}</div>
-    <div style="font-size:22px;font-weight:300;margin-bottom:8px">Management Proposal</div>
-    <div style="font-size:16px;color:rgba(255,255,255,0.6);margin-bottom:4px">${hood}  |  ${boroDisplay}  |  NY</div>
-    <div style="font-size:16px;color:rgba(255,255,255,0.6)">${bldgDesc}</div>
-    <div style="margin-top:60px;font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:16px;color:rgba(255,255,255,0.4)">Prepared exclusively for the Board of Directors</div>
+  <div style="display:flex;height:100%">
+    <!-- Left side: text -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:60px 40px 60px 60px">
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:42px;letter-spacing:10px;font-weight:400;margin-bottom:4px">C A M E L O T</div>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:16px;color:#B8973A;font-style:italic;margin-bottom:50px">Property Management</div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:3px;margin-bottom:10px">Property Intelligence Report</div>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:44px;color:#B8973A;font-style:italic;font-weight:600;margin-bottom:12px;line-height:1.15">${d.buildingName || d.address}</div>
+      <div style="font-size:16px;color:rgba(255,255,255,0.7);margin-bottom:40px">${d.address} · ${hood} · ${boroDisplay}</div>
+      <div style="display:flex;gap:28px">
+        <div><div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:36px;font-weight:600;color:#B8973A">${d.units || '—'}</div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">Units</div></div>
+        <div><div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:36px;font-weight:600;color:#B8973A">${d.violationsTotal}</div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">HPD Violations</div></div>
+        <div><div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:36px;font-weight:600;color:${d.violationsOpen > 0 ? '#ef4444' : '#B8973A'}">${d.violationsOpen}</div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">Open</div></div>
+        <div><div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:36px;font-weight:600;color:#B8973A">${d.yearBuilt || '—'}</div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">Year Built</div></div>
+        ${d.marketValue ? `<div><div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:36px;font-weight:600;color:#B8973A">${fmt$(d.marketValue)}</div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">Market Value</div></div>` : ''}
+      </div>
+    </div>
+    <!-- Right side: building photo -->
+    <div style="flex:0 0 440px;display:flex;align-items:center;justify-content:center;padding:40px 50px 40px 0">
+      <img src="${svUrl}" style="width:400px;height:500px;object-fit:cover;border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,0.4);border:2px solid rgba(184,151,58,0.3)" onerror="this.parentElement.style.display='none'" />
+    </div>
+  </div>
+  <div style="position:absolute;bottom:20px;left:60px;right:60px;font-size:11px;color:rgba(255,255,255,0.35);border-top:1px solid rgba(255,255,255,0.1);padding-top:12px">
+    Prepared exclusively for the ownership and board of ${d.buildingName || d.address} · ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} · Camelot Realty Group · 501 Madison Avenue, Suite 1400, NYC · (212) 206-9939 · Powered by Camelot OS
   </div>
 </div>
 
