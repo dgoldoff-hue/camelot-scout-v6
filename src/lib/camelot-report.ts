@@ -734,7 +734,8 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   // Price per unit — use the tiered pricing intelligence tier as the default displayed fee
   // This gets recalculated properly in calculateTieredPricing with building class, value, and address awareness
   const tier = calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', dof?.buildingClass || '', dof?.marketValue || 0, address);
-  let pricePerUnit = tier.intelligence.perUnit;
+  // Use Classic tier as the default displayed fee — David's target: ~$900/unit/year ($75/unit/mo)
+  let pricePerUnit = tier.classic.perUnit;
   const monthlyFee = pricePerUnit * (units || 1);
   const annualFee = monthlyFee * 12;
 
