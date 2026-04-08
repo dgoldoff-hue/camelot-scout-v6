@@ -48,7 +48,8 @@ export function generatePitchReport(d: MasterReportData): string {
   const mgmt = d.managementCompany || 'Self-Managed';
   
   // Street view URLs
-  const svUrl = d.geocode ? `https://maps.googleapis.com/maps/api/streetview?size=800x500&location=${d.geocode.lat},${d.geocode.lng}&fov=90&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8` : '';
+  // Use address-based Street View (no geocode dependency)
+  const svUrl = `https://maps.googleapis.com/maps/api/streetview?size=800x500&location=${encodeURIComponent(d.address + ', New York, NY')}&fov=90&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`;
 
   // Dynamic pain points for "A Fresh Set of Eyes" slide
   const hookLines: string[] = [];
