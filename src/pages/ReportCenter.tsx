@@ -368,30 +368,26 @@ export default function ReportCenter() {
                 <Table2 className="w-5 h-5" /> CSV Export
               </button>
               <button onClick={async () => {
-                const apiKey = import.meta.env.VITE_HUBSPOT_API_KEY || '';
-                if (!apiKey) {
-                  toast.error('HubSpot API key not configured. Go to Settings → Integrations or set VITE_HUBSPOT_API_KEY in Render environment.');
-                  return;
-                }
                 try {
                   toast.loading('Pushing to HubSpot...');
-                  const contactRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
+                  // Use server-side proxy to avoid CORS issues
+                  const contactRes = await fetch('/api/hubspot/contacts', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ properties: {
                       company: data.buildingName || data.address,
                       address: data.address,
                       city: 'New York',
                       state: data.borough || 'NY',
                       hs_lead_status: 'NEW',
-                      notes_last_contacted: `Scout Grade: ${data.scoutGrade} (${data.scoutScore}/100) | Units: ${data.units} | Violations: ${data.violationsTotal} (${data.violationsOpen} open) | Mgmt: ${data.managementCompany || 'Unknown'} | Market Value: $${data.marketValue.toLocaleString()} | Proposed Fee: $${data.monthlyFee}/mo`,
+                      notes_last_contacted: `Camelot OS Grade: ${data.scoutGrade} (${data.scoutScore}/100) | Units: ${data.units} | Violations: ${data.violationsTotal} (${data.violationsOpen} open) | Mgmt: ${data.managementCompany || 'Unknown'} | Market Value: $${data.marketValue.toLocaleString()} | Proposed Fee: $${data.monthlyFee}/mo`,
                     }}),
                   });
-                  if (!contactRes.ok) { const err = await contactRes.json(); throw new Error(err.message || contactRes.statusText); }
+                  if (!contactRes.ok) { const err = await contactRes.json(); throw new Error(err.message || err.error || contactRes.statusText); }
                   const contact = await contactRes.json();
-                  const dealRes = await fetch('https://api.hubapi.com/crm/v3/objects/deals', {
+                  const dealRes = await fetch('/api/hubspot/deals', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ properties: {
                       dealname: `Camelot Management — ${data.buildingName || data.address}`,
                       pipeline: 'default',
@@ -400,7 +396,7 @@ export default function ReportCenter() {
                       description: `${data.units} units | ${data.propertyType} | ${data.address} | Grade: ${data.scoutGrade} | Violations: ${data.violationsOpen} open | Distress: ${data.distressLevel}`,
                     }, associations: [{ to: { id: contact.id }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }] }] }),
                   });
-                  if (!dealRes.ok) { const err = await dealRes.json(); throw new Error(err.message || dealRes.statusText); }
+                  if (!dealRes.ok) { const err = await dealRes.json(); throw new Error(err.message || err.error || dealRes.statusText); }
                   toast.dismiss();
                   toast.success(`Pushed to HubSpot — Contact #${contact.id} + Deal created`);
                 } catch (err: any) {
