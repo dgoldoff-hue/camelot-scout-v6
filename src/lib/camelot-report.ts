@@ -10,6 +10,7 @@ import { analyzeDistress } from '@/lib/distress-signals';
 import { runGutCheck, generateGutCheckHTML } from '@/lib/gut-check';
 import { findBuildingPhotos, generatePhotoHTML } from '@/lib/building-photos';
 import { getNeighborhoodIntel, generateNeighborhoodIntelHTML } from '@/lib/neighborhood-intel';
+import { fetchStreetEasyBuilding, type StreetEasyBuilding } from '@/lib/streeteasy';
 
 // ============================================================
 // Types
@@ -117,6 +118,8 @@ export interface MasterReportData {
   tieredPricing: TieredPricing;
   // Fee comparison
   feeComparison: MarketFeeComparison | null;
+  // StreetEasy data
+  streetEasy: StreetEasyBuilding | null;
   // Raw data for advanced usage
   buildingPhotos: { exterior: string[]; streetView: string; satellite: string; source: string } | null;
   neighborhoodIntel: { crimeScore: number; qualityScore: number; transitScore: number; crimeTotal: number; complaints311Total: number; crimeBreakdown: Array<{type: string; count: number}>; topComplaints: Array<{type: string; count: number}>; landmarks: Array<{name: string; type: string; date: string}>; crimePrecinct: string; scoreExplanation: string } | null;
@@ -616,10 +619,11 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
 }
 
 export async function buildMasterReport(address: string, borough?: string): Promise<MasterReportData> {
-  const [raw, geo, buildingPhotos] = await Promise.all([
+  const [raw, geo, buildingPhotos, streetEasy] = await Promise.all([
     fetchFullBuildingReport(address, borough),
     geocodeAddress(address + (borough ? ', ' + borough + ', New York' : ', New York, NY')),
     findBuildingPhotos(address, address).catch(() => null),
+    fetchStreetEasyBuilding(address, borough).catch(() => null),
   ]);
 
   // Fetch neighborhood intelligence (crime, 311, landmarks)
@@ -644,14 +648,17 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     // Energy benchmarking data exists — building is definitely real, try number_of_units
     units = parseInt((raw as any).energy?.number_of_units) || 0;
   }
+  // StreetEasy fallback for units
+  if (!units && streetEasy?.units) units = streetEasy.units;
   // Last resort: estimate from building area (~850 SF per avg unit in NYC multifamily)
   if (!units && dof?.buildingArea && dof.buildingArea > 2000) {
     units = Math.round(dof.buildingArea / 850);
   }
 
-  // Cascade stories from DOF → DOB
+  // Cascade stories from DOF → DOB → StreetEasy
   let stories = dof?.stories || 0;
   if (!stories && raw.dobStories) stories = raw.dobStories;
+  if (!stories && streetEasy?.stories) stories = streetEasy.stories;
 
   const gfa = dof?.buildingArea || 0;
 
@@ -778,7 +785,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     units,
     stories,
-    yearBuilt: dof?.yearBuilt || 0,
+    yearBuilt: dof?.yearBuilt || streetEasy?.yearBuilt || 0,
     buildingClass: dof?.buildingClass || '',
     taxClass: dof?.taxClass || '',
     marketValue: dof?.marketValue || 0,
@@ -829,8 +836,8 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     complaint311Count: 0,
     latitude: geo?.lat ?? null,
     longitude: geo?.lng ?? null,
-    propertyType: classifyBuildingType(dof?.buildingClass || ''),
-    neighborhoodName: detectNeighborhood(address, borough || ''),
+    propertyType: streetEasy?.buildingType || classifyBuildingType(dof?.buildingClass || ''),
+    neighborhoodName: streetEasy?.neighborhood || detectNeighborhood(address, borough || ''),
     neighborhoodMarketData: lookupNeighborhoodData(detectNeighborhood(address, borough || '')),
     registrationDate: raw.registration?.registrationId ? null : null,
     managementDuration: null,
@@ -916,6 +923,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       ll97Status: ll97Data?.complianceStatus || 'unknown',
       pricePerUnit,
     }),
+    streetEasy,
     buildingPhotos,
     neighborhoodIntel,
     raw,
@@ -1483,6 +1491,26 @@ ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borou
 <div class="stat-box"><div class="val">${d.stories || 'N/A'}</div><div class="lbl">Floors</div></div>
 <div class="stat-box"><div class="val">${d.yearBuilt || 'N/A'}</div><div class="lbl">Year Built</div></div>
 </div>
+
+${d.streetEasy ? `
+<!-- StreetEasy Building Profile -->
+<div style="background:#f8f6f0;border:1px solid #D5D0C6;border-radius:8px;padding:18px 20px;margin-top:12px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+<span style="font-size:16px">🏠</span>
+<span style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#A89035;font-weight:700">StreetEasy Building Profile</span>
+${d.streetEasy.url ? `<a href="${d.streetEasy.url}" target="_blank" style="margin-left:auto;font-size:10px;color:#A89035;text-decoration:underline">View on StreetEasy →</a>` : ''}
+</div>
+${d.streetEasy.description ? `<p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:12px">${d.streetEasy.description.length > 500 ? d.streetEasy.description.substring(0, 500) + '…' : d.streetEasy.description}</p>` : ''}
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+${d.streetEasy.amenities.length > 0 ? d.streetEasy.amenities.map(a => `<span style="background:#3A4B5B;color:#fff;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:500">${a}</span>`).join('') : ''}
+${d.streetEasy.features.length > 0 ? d.streetEasy.features.map(f => `<span style="background:#A89035;color:#fff;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:500">${f}</span>`).join('') : ''}
+</div>
+${d.streetEasy.petsAllowed !== null ? `<div style="font-size:11px;color:#666"><strong>Pets:</strong> ${d.streetEasy.petPolicy || (d.streetEasy.petsAllowed ? 'Allowed' : 'Not allowed')}</div>` : ''}
+${d.streetEasy.views.length > 0 ? `<div style="font-size:11px;color:#666;margin-top:4px"><strong>Views:</strong> ${d.streetEasy.views.join(', ')}</div>` : ''}
+${d.streetEasy.activeListings.length > 0 ? `<div style="font-size:11px;color:#666;margin-top:8px"><strong>Active Listings:</strong> ${d.streetEasy.activeListings.map(l => `${l.beds}BR/${l.baths}BA${l.sqft ? ' · ' + l.sqft.toLocaleString() + ' ft²' : ''}${l.broker ? ' (' + l.broker + ')' : ''}`).join(' &nbsp;|&nbsp; ')}</div>` : ''}
+</div>
+` : ''}
+
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:20px;margin-top:12px">
 <p style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;color:#555;line-height:1.8;text-align:center">${hookLine}</p>
 </div>
