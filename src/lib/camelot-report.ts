@@ -3477,7 +3477,8 @@ function generateProposal() {
   if (w) {
     w.document.write(html);
     w.document.close();
-    setTimeout(function() { w.print(); }, 800);
+    // Preview only — user clicks Print button when ready
+    // setTimeout(function() { w.print(); }, 800);
   }
 }
 </script>

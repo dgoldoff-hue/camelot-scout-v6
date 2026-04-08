@@ -400,7 +400,25 @@ export async function fetchACRISRecords(borough: string, block: string, lot: str
     const legalsUrl = `${ENDPOINTS.acrisLegals}?$limit=500&$where=${encodeURIComponent(legalsWhere)}`;
     const legalsRes = await fetch(legalsUrl);
     if (!legalsRes.ok) throw new Error(`ACRIS Legals API error: ${legalsRes.status}`);
-    const legals: any[] = await legalsRes.json();
+    let legals: any[] = await legalsRes.json();
+
+    // For condos: parent lot (e.g., 7501) often has no ACRIS records.
+    // Sales/mortgages are on individual unit lots (1001, 1002, etc.).
+    // Try the first few unit lots as fallback.
+    if (legals.length === 0 && parseInt(lot) > 7000) {
+      const unitLots = ['1001', '1002', '1003'];
+      for (const uLot of unitLots) {
+        const fallbackWhere = `borough='${borough}' AND block='${block}' AND lot='${uLot}'`;
+        const fbRes = await fetch(`${ENDPOINTS.acrisLegals}?$limit=100&$where=${encodeURIComponent(fallbackWhere)}`);
+        if (fbRes.ok) {
+          const fbLegals: any[] = await fbRes.json();
+          if (fbLegals.length > 0) {
+            legals = fbLegals;
+            break;
+          }
+        }
+      }
+    }
 
     if (legals.length === 0) {
       return { records: [], deeds: [], mortgages: [], acrisUrl, borough, block, lot };

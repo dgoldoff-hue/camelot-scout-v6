@@ -195,14 +195,13 @@ export default function InstantProposal() {
     if (doc) {
       doc.write(`<!DOCTYPE html><html><head><title>Print Proposal</title></head><body>${content}</body></html>`);
       doc.close();
-      // Wait for content to render, then trigger native print
-      setTimeout(() => {
-        iframe.contentWindow?.print();
-        // Clean up after print dialog closes
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-        }, 1000);
-      }, 500);
+      // Preview only — open in new tab for review before printing
+      const previewWin = window.open('', '_blank');
+      if (previewWin) {
+        previewWin.document.write(`<!DOCTYPE html><html><head><title>Camelot Proposal Preview</title></head><body>${content}</body></html>`);
+        previewWin.document.close();
+      }
+      document.body.removeChild(iframe);
     }
     toast.success('Print dialog opening...');
   };
