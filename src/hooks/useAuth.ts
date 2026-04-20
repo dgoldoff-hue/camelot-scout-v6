@@ -1,124 +1,209 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { useTeamStore } from '@/lib/store';
-import type { TeamMember } from '@/types';
 
-// Default team for demo mode
-const DEFAULT_USER: TeamMember = {
-  id: '1',
-  name: 'David Goldoff',
-  email: 'dgoldoff@camelot.nyc',
-  role: 'owner',
-  initials: 'DG',
-  is_active: true,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-};
+export interface TeamMember {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    initials: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
 
-const DEFAULT_TEAM: TeamMember[] = [
-  DEFAULT_USER,
-  { id: '2', name: 'Sam Lodge', email: 'sam@camelot.nyc', role: 'tech_lead', initials: 'SL', is_active: true, created_at: '', updated_at: '' },
-  { id: '3', name: 'Carl', email: 'carl@camelot.nyc', role: 'cold_caller', initials: 'CA', is_active: true, created_at: '', updated_at: '' },
-  { id: '4', name: 'Luigi', email: 'luigi@camelot.nyc', role: 'operations', initials: 'LU', is_active: true, created_at: '', updated_at: '' },
-  { id: '5', name: 'Jake', email: 'jake@camelot.nyc', role: 'team', initials: 'JK', is_active: true, created_at: '', updated_at: '' },
-  { id: '6', name: 'Valerie', email: 'valerie@camelot.nyc', role: 'team', initials: 'VA', is_active: true, created_at: '', updated_at: '' },
-  { id: '7', name: 'Spencer', email: 'spencer@camelot.nyc', role: 'team', initials: 'SP', is_active: true, created_at: '', updated_at: '' },
-  { id: '8', name: 'Danielle', email: 'danielle@camelot.nyc', role: 'team', initials: 'DA', is_active: true, created_at: '', updated_at: '' },
-  { id: '9', name: 'Merlin', email: 'merlin@camelot.nyc', role: 'tech_lead', initials: 'ME', is_active: true, created_at: '', updated_at: '' },
-];
+export interface CurrentUser {
+    id: string;
+    email: string;
+    user_metadata?: {
+      name?: string;
+    };
+}
 
 export function useAuth() {
-  const { currentUser, setCurrentUser, members, setMembers } = useTeamStore();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+    const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+    const [members, setMembers] = useState<TeamMember[]>([]);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
+  // Initialize auth state
   useEffect(() => {
-    const init = async () => {
-      if (!isSupabaseConfigured()) {
-        // Demo mode
-        setCurrentUser(DEFAULT_USER);
-        setMembers(DEFAULT_TEAM);
-        setIsAuthenticated(true);
-        setIsLoading(false);
-        return;
-      }
+        const init = async () => {
+                try {
+                          if (isSupabaseConfigured()) {
+                                      // Check for existing session
+                            const { data: { session } } = await supabase.auth.getSession();
+                                      if (session) {
+                                                    setCurrentUser({
+                                                                    id: session.user.id,
+                                                                    email: session.user.email || '',
+                                                                    user_metadata: session.user.user_metadata
+                                                    });
+                                                    setIsAuthenticated(true);
+                                      }
+                          }
+                } catch (err) {
+                          console.error('Auth init error:', err);
+                } finally {
+                          setIsLoading(false);
+                }
+        };
 
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          setIsAuthenticated(true);
-          // Load team members
-          const { data: team } = await supabase
-            .from('scout_team')
-            .select('*')
-            .eq('is_active', true);
-          if (team && team.length > 0) {
-            setMembers(team);
-            const user = team.find((m) => m.user_id === session.user.id) || team[0];
-            setCurrentUser(user);
-          } else {
-            // Supabase connected but team table empty — use defaults
-            setCurrentUser(DEFAULT_USER);
-            setMembers(DEFAULT_TEAM);
+                init();
+
+                // Listen for auth changes
+                if (isSupabaseConfigured()) {
+                        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+                                  if (session) {
+                                              setCurrentUser({
+                                                            id: session.user.id,
+                                                            email: session.user.email || '',
+                                                            user_metadata: session.user.user_metadata
+                                              });
+                                              setIsAuthenticated(true);
+                                  } else {
+                                              setCurrentUser(null);
+                                              setIsAuthenticated(false);
+                                  }
+                        });
+
+          return () => subscription?.unsubscribe();
+                }
+  }, []);
+
+  // Register new user
+  const register = useCallback(async (email: string, password: string, name?: string) => {
+        setError(null);
+        try {
+                if (!isSupabaseConfigured()) {
+                          throw new Error('Authentication not configured');
+                }
+
+          const { data, error: signUpError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                                data: {
+                                              name: name || email.split('@')[0]
+                                }
+                    }
+          });
+
+          if (signUpError) throw signUpError;
+
+          return { user: data.user, error: null };
+        } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Registration failed';
+                setError(errorMessage);
+                return { user: null, error: errorMessage };
+        }
+  }, []);
+
+  // Sign in with email and password
+  const signin = useCallback(async (email: string, password: string) => {
+        setError(null);
+        try {
+                if (!isSupabaseConfigured()) {
+                          throw new Error('Authentication not configured');
+                }
+
+          const { data, error: signInError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+          });
+
+          if (signInError) throw signInError;
+
+          if (data.session) {
+                    setCurrentUser({
+                                id: data.user.id,
+                                email: data.user.email || '',
+                                user_metadata: data.user.user_metadata
+                    });
+                    setIsAuthenticated(true);
           }
-        } else {
-          // No session — use demo mode
-          setCurrentUser(DEFAULT_USER);
-          setMembers(DEFAULT_TEAM);
-          setIsAuthenticated(true);
+
+          return { user: data.user, error: null };
+        } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Sign in failed';
+                setError(errorMessage);
+                return { user: null, error: errorMessage };
         }
-      } catch (err) {
-        console.error('Auth init error:', err);
-        // Fallback to demo mode
-        setCurrentUser(DEFAULT_USER);
-        setMembers(DEFAULT_TEAM);
-        setIsAuthenticated(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    init();
-
-    if (isSupabaseConfigured()) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        setIsAuthenticated(!!session);
-      });
-      return () => subscription.unsubscribe();
-    }
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    if (!isSupabaseConfigured()) {
-      setCurrentUser(DEFAULT_USER);
-      setIsAuthenticated(true);
-      return;
-    }
+  // Request password reset
+  const requestPasswordReset = useCallback(async (email: string) => {
+        setError(null);
+        try {
+                if (!isSupabaseConfigured()) {
+                          throw new Error('Authentication not configured');
+                }
 
-        // For demo: bypass password for dgoldoff@camelot.nyc
-        if (email === 'dgoldoff@camelot.nyc') {
-                setCurrentUser(DEFAULT_USER);
-                setIsAuthenticated(true);
-                return;
+          const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/#/reset-password`
+          });
+
+          if (resetError) throw resetError;
+
+          return { success: true, error: null };
+        } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Password reset request failed';
+                setError(errorMessage);
+                return { success: false, error: errorMessage };
         }
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
   }, []);
 
-  const signOut = useCallback(async () => {
-    if (isSupabaseConfigured()) {
-      await supabase.auth.signOut();
-    }
-    setIsAuthenticated(false);
-    setCurrentUser(null);
+  // Reset password with token
+  const resetPassword = useCallback(async (newPassword: string) => {
+        setError(null);
+        try {
+                if (!isSupabaseConfigured()) {
+                          throw new Error('Authentication not configured');
+                }
+
+          const { error: updateError } = await supabase.auth.updateUser({
+                    password: newPassword
+          });
+
+          if (updateError) throw updateError;
+
+          return { success: true, error: null };
+        } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Password reset failed';
+                setError(errorMessage);
+                return { success: false, error: errorMessage };
+        }
+  }, []);
+
+  // Sign out
+  const signout = useCallback(async () => {
+        setError(null);
+        try {
+                const { error: signOutError } = await supabase.auth.signOut();
+                if (signOutError) throw signOutError;
+
+          setCurrentUser(null);
+                setIsAuthenticated(false);
+                return { error: null };
+        } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Sign out failed';
+                setError(errorMessage);
+                return { error: errorMessage };
+        }
   }, []);
 
   return {
-    currentUser,
-    members,
-    isAuthenticated,
-    isLoading,
-    signIn,
-    signOut,
+        currentUser,
+        members,
+        isAuthenticated,
+        isLoading,
+        error,
+        register,
+        signin,
+        requestPasswordReset,
+        resetPassword,
+        signout,
+        setError
   };
 }
