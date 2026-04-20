@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import { Crown, Loader2, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -12,6 +13,7 @@ const TEAM_MEMBERS = [
 
 export default function Login() {
   const { signIn } = useAuth();
+    const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -29,6 +31,7 @@ export default function Login() {
     try {
       await signIn(loginEmail, password);
       toast.success('Welcome back!');
+          navigate('/dashboard');
     } catch (err: any) {
       toast.error(err.message || 'Login failed — check your credentials');
     } finally {
