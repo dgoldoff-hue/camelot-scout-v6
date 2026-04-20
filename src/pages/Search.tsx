@@ -38,6 +38,8 @@ export default function Search() {
   const [ownerResults, setOwnerResults] = useState<any[]>([]);
   const [dosResults, setDosResults] = useState<NYDOSCorporation[]>([]);
   const [isOwnerSearching, setIsOwnerSearching] = useState(false);
+  const [ownerSearchedName, setOwnerSearchedName] = useState('');
+  const [ownerSearchDone, setOwnerSearchDone] = useState(false);
 
   // Unit search state
   const [unitAddress, setUnitAddress] = useState('');
@@ -96,16 +98,20 @@ export default function Search() {
     setIsOwnerSearching(true);
     setOwnerResults([]);
     setDosResults([]);
+    setOwnerSearchDone(false);
     setReportData(null);
     setUnitData(null);
+    const searchedName = ownerName.trim();
+    setOwnerSearchedName(searchedName);
     try {
       // Run HPD owner search and NY DOS search in parallel
       const [results, dosData] = await Promise.all([
-        searchByOwnerName(ownerName.trim()),
-        searchNYDOSCorporation(ownerName.trim()),
+        searchByOwnerName(searchedName),
+        searchNYDOSCorporation(searchedName),
       ]);
       setOwnerResults(results);
       setDosResults(dosData);
+      setOwnerSearchDone(true);
       const totalFound = results.length + dosData.length;
       if (totalFound === 0) {
         toast('No buildings or corporate filings found', { icon: '🔍' });
@@ -117,6 +123,7 @@ export default function Search() {
       }
     } catch (err) {
       toast.error('Owner search failed');
+      setOwnerSearchDone(true);
       console.error(err);
     } finally {
       setIsOwnerSearching(false);
@@ -462,9 +469,11 @@ export default function Search() {
     setOwnerResults([]);
     setDosResults([]);
     setUnitData(null);
+    setOwnerSearchDone(false);
+    setOwnerSearchedName('');
   };
 
-  const hasResults = reportData || ownerResults.length > 0 || dosResults.length > 0 || unitData;
+  const hasResults = reportData || ownerResults.length > 0 || dosResults.length > 0 || unitData || ownerSearchDone;
 
   return (
     <div className="min-h-screen">
@@ -526,7 +535,13 @@ export default function Search() {
             ]).map(({ key, icon: Icon, label }) => (
               <button
                 key={key}
-                onClick={() => { setActiveTab(key); clearResults(); }}
+                onClick={() => {
+                  setActiveTab(key);
+                  clearResults();
+                  if (key === 'address') { setOwnerName(''); setOwnerResults([]); setDosResults([]); }
+                  if (key === 'owner') { setQuickAddress(''); setReportData(null); }
+                  if (key === 'unit') { setQuickAddress(''); setReportData(null); setOwnerName(''); setOwnerResults([]); setDosResults([]); }
+                }}
                 className={cn(
                   'flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200',
                   activeTab === key
@@ -550,9 +565,19 @@ export default function Search() {
                   value={quickAddress}
                   onChange={(e) => setQuickAddress(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleQuickReport()}
+                  onFocus={(e) => e.target.select()}
                   placeholder="Enter any NYC address (e.g., 301 East 79th Street)"
-                  className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-camelot-gold/60 focus:border-camelot-gold transition-all"
+                  className="w-full pl-12 pr-10 py-4 bg-white/10 border border-white/20 rounded-2xl text-white text-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-camelot-gold/60 focus:border-camelot-gold transition-all"
                 />
+                {quickAddress && (
+                  <button
+                    onClick={() => { setQuickAddress(''); setReportData(null); }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                    title="Clear search"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
               </div>
               <button
                 onClick={handleQuickReport}
@@ -895,6 +920,54 @@ export default function Search() {
                   </a>
                 </div>
               )}
+
+              {/* Generate Proposal CTA */}
+              <div className="mt-6 pt-5 border-t border-white/10">
+                <button
+                  onClick={() => navigate('/instant-proposal', { state: { address: quickAddress } })}
+                  className="w-full bg-camelot-gold text-white font-bold py-3 px-6 rounded-xl hover:bg-camelot-gold/90 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-camelot-gold/20"
+                >
+                  <FileText size={18} />
+                  Generate Proposal for This Building
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* New Search button — visible when report is loaded */}
+          {reportData && (
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={() => {
+                  setQuickAddress('');
+                  setReportData(null);
+                  setOwnerResults([]);
+                  setDosResults([]);
+                  setUnitData(null);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="px-6 py-2.5 bg-white/10 border border-white/20 text-white rounded-xl text-sm font-medium hover:bg-white/20 transition-colors flex items-center gap-2"
+              >
+                <SearchIcon size={15} />
+                New Search
+              </button>
+            </div>
+          )}
+
+          {/* Owner Search — empty state */}
+          {ownerSearchDone && ownerResults.length === 0 && dosResults.length === 0 && (
+            <div className="mt-6 bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-8 animate-slide-in text-center">
+              <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <SearchIcon size={22} className="text-gray-400" />
+              </div>
+              <p className="text-white font-semibold mb-1">No results found for "{ownerSearchedName}"</p>
+              <p className="text-sm text-gray-400">Try a partial name or company name (e.g., "Silverstein" instead of "Silverstein Properties LLC").</p>
+              <button
+                onClick={clearResults}
+                className="mt-4 px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                Clear
+              </button>
             </div>
           )}
 
@@ -1196,7 +1269,7 @@ export default function Search() {
                     {isExpanded && (
                       <div className="px-4 pb-3 border-t border-gray-100">
                         <button
-                          onClick={() => toggleAllInGroup(group)}
+                          onClick={(e) => { e.stopPropagation(); toggleAllInGroup(group); }}
                           className="text-xs text-camelot-gold hover:underline my-2"
                         >
                           {allSelected ? 'Deselect all' : 'Select all'}
@@ -1211,11 +1284,13 @@ export default function Search() {
                                   ? 'bg-camelot-gold/10 text-camelot-gold'
                                   : 'hover:bg-gray-50'
                               )}
+                              onClick={(e) => e.stopPropagation()}
                             >
                               <input
                                 type="checkbox"
                                 checked={selectedRegions.includes(area)}
                                 onChange={() => toggleRegion(area)}
+                                onClick={(e) => e.stopPropagation()}
                                 className="rounded border-gray-300 text-camelot-gold focus:ring-camelot-gold"
                               />
                               {area}
@@ -1232,9 +1307,24 @@ export default function Search() {
 
           {/* Advanced Filters */}
           <div>
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Filter size={20} className="text-camelot-gold" /> Filters
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <Filter size={20} className="text-camelot-gold" /> Filters
+              </h2>
+              <button
+                onClick={() => {
+                  setBuildingTypes([]);
+                  setMinUnits('');
+                  setMaxUnits('');
+                  setYearBuiltMin('');
+                  setYearBuiltMax('');
+                  setViolationThreshold('');
+                }}
+                className="text-xs text-gray-400 hover:text-camelot-gold transition-colors underline"
+              >
+                Reset
+              </button>
+            </div>
 
             {/* Building Type */}
             <div className="mb-4">

@@ -1,13 +1,13 @@
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Search, LayoutGrid, Bookmark, Upload, GitBranch, Mail, MessageSquare,
   Archive, Download, Bot, Settings, ChevronLeft, ChevronRight,
   BookOpen, HelpCircle, ShieldCheck, Bell, FileText, Swords, Sword, Crown, Eye, Zap, AlertTriangle,
-  Menu, X, Home,
+  Menu, X, Home, UserCircle, ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useUIStore } from '@/lib/store';
+import { useUIStore, useTeamStore } from '@/lib/store';
 import { useAuth } from '@/hooks/useAuth';
 
 interface NavItem {
@@ -81,7 +81,10 @@ export default function Layout({ children, onStartTour }: LayoutProps) {
   const location = useLocation();
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { currentUser } = useAuth();
+  const { members, setCurrentUser } = useTeamStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const switcherRef = useRef<HTMLDivElement>(null);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -98,6 +101,19 @@ export default function Layout({ children, onStartTour }: LayoutProps) {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Close switcher dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (switcherRef.current && !switcherRef.current.contains(e.target as Node)) {
+        setSwitcherOpen(false);
+      }
+    };
+    if (switcherOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [switcherOpen]);
 
   const sidebarContent = (
     <>
@@ -194,21 +210,64 @@ export default function Layout({ children, onStartTour }: LayoutProps) {
         {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
       </button>
 
-      {/* User profile */}
+      {/* User profile + switcher */}
       {currentUser && (
-        <div className={cn('p-4 border-t border-white/10 flex-shrink-0', sidebarCollapsed && !mobileMenuOpen && 'px-2')}>
+        <div className={cn('p-4 border-t border-white/10 flex-shrink-0 relative', sidebarCollapsed && !mobileMenuOpen && 'px-2')} ref={switcherRef}>
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0 w-9 h-9 bg-camelot-gold rounded-full flex items-center justify-center text-camelot-navy font-bold text-xs font-body">
               {currentUser.initials}
             </div>
             {(!sidebarCollapsed || mobileMenuOpen) && (
-              <div className="min-w-0">
-                <p className="text-sm font-medium truncate font-body">{currentUser.name}</p>
-                <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
-                <p className="text-[10px] text-camelot-gold capitalize font-body">{currentUser.role.replace('_', ' ')}</p>
-              </div>
+              <>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate font-body">{currentUser.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
+                  <p className="text-[10px] text-camelot-gold capitalize font-body">{currentUser.role.replace(/_/g, ' ')}</p>
+                </div>
+                {members.length > 1 && (
+                  <button
+                    onClick={() => setSwitcherOpen((v) => !v)}
+                    className="w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors flex-shrink-0"
+                    title="Switch user"
+                  >
+                    <UserCircle size={15} className="text-gray-400" />
+                  </button>
+                )}
+              </>
             )}
           </div>
+
+          {/* User switcher dropdown */}
+          {switcherOpen && members.length > 1 && (
+            <div className="absolute bottom-full left-2 right-2 mb-2 bg-camelot-navy border border-white/20 rounded-xl shadow-2xl overflow-hidden z-50">
+              <div className="px-3 py-2 border-b border-white/10">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Switch User</p>
+              </div>
+              <div className="py-1 max-h-60 overflow-y-auto">
+                {members.filter((m) => m.is_active).map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => { setCurrentUser(m); setSwitcherOpen(false); }}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-white/10',
+                      currentUser.id === m.id && 'bg-camelot-gold/20'
+                    )}
+                  >
+                    <div className="w-7 h-7 bg-camelot-gold rounded-full flex items-center justify-center text-camelot-navy font-bold text-[10px] flex-shrink-0">
+                      {m.initials}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-white truncate">{m.name}</p>
+                      <p className="text-[10px] text-gray-500 capitalize">{m.role.replace(/_/g, ' ')}</p>
+                    </div>
+                    {currentUser.id === m.id && (
+                      <span className="ml-auto text-[10px] text-camelot-gold">Active</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>

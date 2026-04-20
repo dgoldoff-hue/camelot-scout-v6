@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import Layout from '@/components/Layout';
@@ -25,7 +25,9 @@ import ReportCenter from '@/pages/ReportCenter';
 import Agreements from '@/pages/Agreements';
 import Sentinel from '@/pages/Sentinel';
 import Violations from '@/pages/Violations';
+import Login from '@/pages/Login';
 import { useAuth } from '@/hooks/useAuth';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { useBuildings } from '@/hooks/useBuildings';
 
 export default function App() {
@@ -44,10 +46,29 @@ export default function App() {
       <div className="h-screen w-screen flex items-center justify-center bg-camelot-navy">
         <div className="text-center">
           <div className="text-4xl mb-4">🏰</div>
-          <h1 className="text-2xl font-bold text-white mb-2">Camelot OS</h1>
-          <p className="text-gray-400">Property Management System</p>
+          <h1 className="text-2xl font-bold text-white mb-2">Camelot Scout</h1>
+          <p className="text-gray-400">Loading...</p>
         </div>
       </div>
+    );
+  }
+
+  // If Supabase is configured but user is not authenticated, show Login
+  if (isSupabaseConfigured() && !isAuthenticated) {
+    return (
+      <>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: '#1a1f36',
+              color: '#fff',
+              border: '1px solid rgba(197, 165, 90, 0.3)',
+            },
+          }}
+        />
+        <Login />
+      </>
     );
   }
 
@@ -66,6 +87,7 @@ export default function App() {
       <GuidedTour isOpen={isTourOpen} onClose={closeTour} />
       <Layout onStartTour={startTour}>
         <Routes>
+          <Route path="/login" element={<Login />} />
           <Route path="/" element={<Search />} />
           <Route path="/results" element={<Results />} />
           <Route path="/saved" element={<Saved />} />

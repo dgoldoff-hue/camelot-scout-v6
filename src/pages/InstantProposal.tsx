@@ -1,4 +1,5 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Search, CheckCircle, FileText, Edit3, Download, Printer, Mail, Loader2, ChevronRight, ArrowLeft, Zap, X, ExternalLink, Copy } from 'lucide-react';
 import { buildMasterReport, generateBrochureHTML, type MasterReportData } from '@/lib/camelot-report';
 import { generatePitchReport } from '@/lib/pitch-report';
@@ -42,9 +43,14 @@ function ReportModal({ html, title, onClose }: { html: string; title: string; on
   );
 }
 
+// Demo property constants
+const DEMO_ADDRESS = '301 East 79th Street';
+const DEMO_BOROUGH = 'Manhattan';
+
 export default function InstantProposal() {
+  const location = useLocation();
   const [step, setStep] = useState<Step>('search');
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState((location.state as { address?: string } | null)?.address || '');
   const [borough, setBorough] = useState('');
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState<MasterReportData | null>(null);
@@ -68,8 +74,34 @@ export default function InstantProposal() {
       setReportData(data);
       setStep('verify');
       toast.success('Property data loaded');
-    } catch (e: any) {
-      toast.error('Failed to load property: ' + (e.message || 'Unknown error'));
+    } catch (e: unknown) {
+      const err = e as { message?: string; name?: string };
+      const msg = err?.message || '';
+      if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('cors') || msg.toLowerCase().includes('failed to fetch')) {
+        toast.error('Could not reach NYC data APIs. Try a different address format.');
+      } else if (msg.toLowerCase().includes('not found') || msg.toLowerCase().includes('no data') || msg.toLowerCase().includes('no results')) {
+        toast.error("No NYC records found for this address. Try including the borough (e.g., 'Manhattan').");
+      } else {
+        toast.error('Failed to load property: ' + (msg || 'Unknown error'));
+      }
+      // Keep address so user can edit and retry
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Try Demo: load sample property
+  const handleTryDemo = async () => {
+    setAddress(DEMO_ADDRESS);
+    setBorough(DEMO_BOROUGH);
+    setLoading(true);
+    try {
+      const data = await buildMasterReport(DEMO_ADDRESS, DEMO_BOROUGH);
+      setReportData(data);
+      setStep('verify');
+      toast.success('Demo property loaded: 301 East 79th Street');
+    } catch (e: unknown) {
+      toast.error('Demo load failed — NYC APIs may be unavailable. Try again shortly.');
     } finally {
       setLoading(false);
     }
@@ -302,7 +334,15 @@ export default function InstantProposal() {
 
       {/* Step 1: Search */}
       {step === 'search' && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center">
+        <div className="relative bg-white rounded-2xl border border-gray-200 p-8 text-center overflow-hidden">
+          {/* Loading overlay */}
+          {loading && (
+            <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-2xl">
+              <Loader2 size={36} className="animate-spin text-camelot-gold mb-3" />
+              <p className="text-camelot-navy font-semibold">Fetching NYC property data...</p>
+              <p className="text-sm text-gray-500 mt-1">Querying HPD, DOF, DOB, ACRIS &amp; more</p>
+            </div>
+          )}
           <h2 className="text-lg font-bold text-camelot-navy mb-2">Enter Property Address</h2>
           <p className="text-sm text-gray-500 mb-6">We'll pull all available data from NYC open data sources</p>
           <div className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
@@ -319,7 +359,7 @@ export default function InstantProposal() {
               onChange={e => setBorough(e.target.value)}
               className="px-3 py-3 border border-gray-300 rounded-xl text-sm bg-white"
             >
-              <option value="">Auto-detect</option>
+              <option value="">Auto-detect borough</option>
               <option value="Manhattan">Manhattan</option>
               <option value="Brooklyn">Brooklyn</option>
               <option value="Bronx">Bronx</option>
@@ -327,13 +367,23 @@ export default function InstantProposal() {
               <option value="Staten Island">Staten Island</option>
             </select>
           </div>
-          <button
-            onClick={handleSearch}
-            disabled={loading}
-            className="mt-4 px-8 py-3 bg-camelot-gold text-white rounded-xl font-semibold text-sm hover:bg-camelot-gold/90 transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto"
-          >
-            {loading ? <><Loader2 size={16} className="animate-spin" /> Searching...</> : <><Search size={16} /> Search Property</>}
-          </button>
+          <div className="flex items-center justify-center gap-3 mt-4">
+            <button
+              onClick={handleSearch}
+              disabled={loading}
+              className="px-8 py-3 bg-camelot-gold text-white rounded-xl font-semibold text-sm hover:bg-camelot-gold/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {loading ? <><Loader2 size={16} className="animate-spin" /> Searching...</> : <><Search size={16} /> Search Property</>}
+            </button>
+            <button
+              onClick={handleTryDemo}
+              disabled={loading}
+              className="px-5 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-200 transition-colors disabled:opacity-50"
+            >
+              Try Demo
+            </button>
+          </div>
+          <p className="text-xs text-gray-400 mt-3">Demo loads 301 East 79th Street, Manhattan</p>
         </div>
       )}
 
