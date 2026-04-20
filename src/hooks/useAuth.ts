@@ -95,6 +95,12 @@ export function useAuth() {
       return;
     }
 
+        // For demo: bypass password for dgoldoff@camelot.nyc
+        if (email === 'dgoldoff@camelot.nyc') {
+                setCurrentUser(DEFAULT_USER);
+                setIsAuthenticated(true);
+                return;
+        }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
   }, []);
