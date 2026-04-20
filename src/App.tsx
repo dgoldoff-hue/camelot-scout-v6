@@ -28,53 +28,53 @@ import Violations from '@/pages/Violations';
 import { useBuildings } from '@/hooks/useBuildings';
 
 export default function App() {
-    const { loadBuildings } = useBuildings();
-    const { isOpen: isTourOpen, startTour, closeTour } = useTour();
+  const { loadBuildings } = useBuildings();
+  const { isOpen: isTourOpen, startTour, closeTour } = useTour();
 
   useEffect(() => {
-        loadBuildings();
+    loadBuildings();
   }, []);
 
   return (
-        <>
-              <Toaster
-                        position="top-right"
-                        toastOptions={{
-                                    style: {
-                                                  background: '#1a1f36',
-                                                  color: '#fff',
-                                                  border: '1px solid rgba(197, 165, 90, 0.3)',
-                                    },
-                        }}
-                      />
-              <GuidedTour isOpen={isTourOpen} onClose={closeTour} />
-              <Layout onStartTour={startTour}>
-                      <Routes>
-                                <Route path="/" element={<Search />} />
-                                <Route path="/results" element={<Results />} />
-                                <Route path="/saved" element={<Saved />} />
-                                <Route path="/import" element={<Import />} />
-                                <Route path="/pipeline" element={<Pipeline />} />
-                                <Route path="/outreach" element={<Outreach />} />
-                                <Route path="/chat" element={<Chat />} />
-                                <Route path="/archive" element={<Archive />} />
-                                <Route path="/export" element={<Export />} />
-                                <Route path="/bots" element={<Bots />} />
-                                <Route path="/settings" element={<Settings />} />
-                                <Route path="/tutorials" element={<Tutorials />} />
-                                <Route path="/compliance" element={<Compliance />} />
-                                <Route path="/alerts" element={<Alerts />} />
-                                <Route path="/instant-proposal" element={<InstantProposal />} />
-                                <Route path="/proposals" element={<Proposals />} />
-                                <Route path="/intelligence" element={<Intelligence />} />
-                                <Route path="/reports" element={<Reports />} />
-                                <Route path="/report-center" element={<ReportCenter />} />
-                                <Route path="/agreements" element={<Agreements />} />
-                                <Route path="/sentinel" element={<Sentinel />} />
-                                <Route path="/violations" element={<Violations />} />
-                                <Route path="*" element={<Navigate to="/" replace />} />
-                      </Routes>Routes>
-              </Layout>Layout>
-        </>>
-      );
-}</>
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#1a1f36',
+            color: '#fff',
+            border: '1px solid rgba(197, 165, 90, 0.3)',
+          },
+        }}
+      />
+      <GuidedTour isOpen={isTourOpen} onClose={closeTour} />
+      <Layout onStartTour={startTour}>
+        <Routes>
+          <Route path="/" element={<Search />} />
+          <Route path="/results" element={<Results />} />
+          <Route path="/saved" element={<Saved />} />
+          <Route path="/import" element={<Import />} />
+          <Route path="/pipeline" element={<Pipeline />} />
+          <Route path="/outreach" element={<Outreach />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/archive" element={<Archive />} />
+          <Route path="/export" element={<Export />} />
+          <Route path="/bots" element={<Bots />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/tutorials" element={<Tutorials />} />
+          <Route path="/compliance" element={<Compliance />} />
+          <Route path="/alerts" element={<Alerts />} />
+          <Route path="/instant-proposal" element={<InstantProposal />} />
+          <Route path="/proposals" element={<Proposals />} />
+          <Route path="/intelligence" element={<Intelligence />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/report-center" element={<ReportCenter />} />
+          <Route path="/agreements" element={<Agreements />} />
+          <Route path="/sentinel" element={<Sentinel />} />
+          <Route path="/violations" element={<Violations />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Layout>
+    </>
+  );
+}
