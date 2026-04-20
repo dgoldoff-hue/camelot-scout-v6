@@ -103,8 +103,8 @@ export async function searchNYDOSCorporation(name: string): Promise<NYDOSCorpora
  */
 export async function fetchECBViolations(boro: string, block: string, lot: string): Promise<ECBViolation[]> {
   try {
-    const where = `boro='${boro}' AND block='${block.padStart(5, '0')}' AND lot='${lot.padStart(4, '0')}'`;
-    const url = `${NYC_ECB_ENDPOINT}?$limit=200&$order=violation_date DESC&$where=${encodeURIComponent(where)}`;
+    const where = `boro='${boro}' AND block='${block}' AND lot='${lot}'`;
+    const url = `${NYC_ECB_ENDPOINT}?$limit=200&$order=violation_date DESC&$where=${where}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`ECB API error: ${res.status}`);
     return await res.json();
@@ -149,7 +149,7 @@ export async function fetchRentStabilization(boro: string, block: string, lot: s
     const boroStr = boro.toString();
     // The rent stabilization dataset uses borough, block, lot
     const where = `borough='${boroStr}' AND block='${block}' AND lot='${lot}'`;
-    const url = `${NYC_RENT_STAB_ENDPOINT}?$limit=10&$where=${encodeURIComponent(where)}`;
+    const url = `${NYC_RENT_STAB_ENDPOINT}?$limit=100&$where=${where}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Rent Stabilization API error: ${res.status}`);
     return await res.json();
