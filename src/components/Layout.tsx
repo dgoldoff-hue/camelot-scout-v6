@@ -4,7 +4,7 @@ import {
   Search, LayoutGrid, Bookmark, Upload, GitBranch, Mail, MessageSquare,
   Archive, Download, Bot, Settings, ChevronLeft, ChevronRight,
   BookOpen, HelpCircle, ShieldCheck, Bell, FileText, Swords, Sword, Crown, Eye, Zap, AlertTriangle,
-  Menu, X, Home, UserCircle, ChevronDown,
+  Menu, X, Home, UserCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore, useTeamStore } from '@/lib/store';
