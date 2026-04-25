@@ -103,7 +103,114 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+// ============================================================
+// Scout Intelligence Engine — property scan/report
+// ============================================================
+app.post('/api/scout/scan', async (req, res) => {
+  try {
+    const { address, propertyType, borough, units } = req.body || {};
 
+    if (!address) {
+      return res.status(400).json({ error: 'Address is required' });
+    }
+
+    const result = {
+      address,
+      propertyType: propertyType || 'unknown',
+      borough: borough || 'unknown',
+      units: units || null,
+      building_score: 68,
+      risk_level: 'moderate',
+      opportunity_level: 'high',
+      flags: [
+        'Potential compliance exposure',
+        'Possible revenue leakage',
+        'Management takeover opportunity'
+      ],
+      recommended_action: 'Generate Camelot Property Intelligence & Opportunity Report'
+    };
+
+    res.json(result);
+  } catch (err) {
+    console.error('Scout scan error:', err);
+    res.status(500).json({ error: err.message || 'Scout scan failed' });
+  }
+});
+
+app.post('/api/scout/report', async (req, res) => {
+  try {
+    const { address, ownerName, propertyType, units } = req.body || {};
+
+    if (!address) {
+      return res.status(400).json({ error: 'Address is required' });
+    }
+
+    const report = {
+      title: 'Camelot Property Intelligence & Opportunity Report',
+      address,
+      ownerName: ownerName || 'Ownership not provided',
+      executive_summary:
+        'Camelot identified potential opportunities to reduce compliance exposure, improve lease administration, increase revenue, and modernize building operations through Camelot OS.',
+      property_snapshot: {
+        propertyType: propertyType || 'unknown',
+        units: units || null
+      },
+      findings: [
+        'Lease renewal and rider compliance should be audited',
+        'HPD/DOB/DOF compliance status should be reviewed',
+        'Rent roll should be benchmarked against market',
+        'Vendor and operating expense structure should be reviewed'
+      ],
+      camelot_advantage: [
+        'Guardian lease and compliance enforcement',
+        'Scout property intelligence and opportunity scoring',
+        'Camelot Core routing and workflow automation',
+        'HubSpot deal creation and business development follow-up'
+      ],
+      next_steps: [
+        'Complete operating audit',
+        'Review rent roll and lease files',
+        'Review violations and agency filings',
+        'Prepare management transition plan'
+      ]
+    };
+
+    res.json(report);
+  } catch (err) {
+    console.error('Scout report error:', err);
+    res.status(500).json({ error: err.message || 'Scout report failed' });
+  }
+});
+
+// ============================================================
+// Camelot Core — master router
+// ============================================================
+app.post('/api/core/route', async (req, res) => {
+  try {
+    const { source, message, address, intent } = req.body || {};
+
+    let routed_to = 'core';
+
+    if (intent?.includes('lease') || message?.toLowerCase().includes('lease')) {
+      routed_to = 'guardian';
+    } else if (intent?.includes('property') || address) {
+      routed_to = 'scout';
+    } else if (intent?.includes('marketing') || message?.toLowerCase().includes('post')) {
+      routed_to = 'guinevere';
+    }
+
+    res.json({
+      status: 'routed',
+      source: source || 'unknown',
+      routed_to,
+      message_received: message || null,
+      address: address || null
+    });
+  } catch (err) {
+    console.error('Core route error:', err);
+    res.status(500).json({ error: err.message || 'Core routing failed' });
+  }
+});
 // Serve static files
 app.use(express.static(path.join(__dirname, 'dist'), { fallthrough: true }));
 
