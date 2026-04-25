@@ -211,6 +211,10 @@ app.post('/api/core/route', async (req, res) => {
     res.status(500).json({ error: err.message || 'Core routing failed' });
   }
 });
+/api/scout/scan
+/api/scout/report
+/api/core/route
+Add Scout and Camelot Core API routes
 // Serve static files
 app.use(express.static(path.join(__dirname, 'dist'), { fallthrough: true }));
 
