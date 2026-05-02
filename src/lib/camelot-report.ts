@@ -1253,6 +1253,14 @@ export function generateBrochureHTML(d: MasterReportData): string {
   const brochureActualMgmt = d.managementCompany && !['Unknown','To be confirmed upon engagement'].includes(d.managementCompany) ? d.managementCompany : brochureAgent ? brochureAgent.name : null;
   const isSelfManaged = !brochureActualMgmt;
   const fmtMoney = (n: number) => n >= 1e6 ? `$${(n/1e6).toFixed(1)}M` : `$${n.toLocaleString()}`;
+  const isManhattan = (d.borough || '').toLowerCase().includes('manhattan') || /fifth|madison|park|broadway|avenue|street/i.test(d.address);
+  const accessBorough = d.borough || 'New York';
+  const accessTransit = isManhattan
+    ? 'Subway and bus access supports routine senior-management visits from 477 Madison Avenue, with Midtown connections and crosstown options.'
+    : `Regional transit and road access support scheduled inspections and manager coverage across ${accessBorough}.`;
+  const accessHighway = isManhattan
+    ? 'FDR Drive, Harlem River Drive, and major crosstown corridors give Camelot multiple routes for inspections, vendor coordination, and emergency response.'
+    : 'Major arterial access and vendor routing are reviewed during onboarding so emergency dispatch and inspections have clear coverage plans.';
 
   const hookLine = isSelfManaged
     ? `Every day, the ${d.units || ''} families at ${d.buildingName} depend on the quality of their building\u2019s management. The right partner brings proactive care, financial clarity, and modern technology \u2014 elevating not just the building, but the lives of everyone who calls it home.`
@@ -1266,22 +1274,22 @@ export function generateBrochureHTML(d: MasterReportData): string {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jackie Property Intelligence Report \u2014 ${d.buildingName} | Camelot Realty Group</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Abel&family=Cardo:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
-body{font-family:'DM Sans',-apple-system,sans-serif;background:#F5F0E5;color:#2C3240;font-size:13px;line-height:1.6}
-.no-print{display:block}@media print{.no-print{display:none!important}@page{margin:0.15in}*{-webkit-print-color-adjust:exact!important}}
+body{font-family:'DM Sans',-apple-system,sans-serif;background:#F5F0E5;color:#2C3240;font-size:12.5px;line-height:1.5}
+.no-print{display:block}@media print{.no-print{display:none!important}@page{margin:0.18in}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
 .page{max-width:900px;margin:0 auto;counter-reset:page-num}
-.section,.cover,.elevator,.back-cover{counter-increment:page-num;position:relative;border:1px solid #D5D0C6;margin-bottom:8px}
-.section::after{content:'Confidential \u00A9 ${new Date().getFullYear()} Camelot Realty Group \u00B7 Proprietary \u0026 Trade Secret \u00B7 Do Not Distribute Without Written Consent';display:block;text-align:center;font-size:8px;color:#999;letter-spacing:0.5px;margin-top:24px;padding-top:12px;border-top:1px solid #E5E3DE}
+.section,.cover,.elevator,.back-cover{counter-increment:page-num;position:relative;border:1px solid #D5D0C6;margin-bottom:6px}
+.section::after{content:'Confidential \u00A9 ${new Date().getFullYear()} Camelot Realty Group \u00B7 Proprietary \u0026 Trade Secret \u00B7 Do Not Distribute Without Written Consent';display:block;text-align:center;font-size:7.5px;color:#999;letter-spacing:0.4px;margin-top:14px;padding-top:8px;border-top:1px solid #E5E3DE}
 .section::before{counter-increment:page-num 0;content:counter(page-num);position:absolute;bottom:12px;right:20px;font-size:10px;color:#bbb;font-family:'DM Sans',sans-serif;font-weight:500}
 .cover::before,.back-cover::before,.elevator::before{content:counter(page-num);position:absolute;bottom:16px;right:24px;font-size:10px;color:rgba(255,255,255,0.3);font-family:'DM Sans',sans-serif;font-weight:500}
-a{color:#A89035;text-decoration:none}
-.gold{color:#A89035}.navy{color:#3A4B5B}
+a{color:#B8973A;text-decoration:none}
+.gold{color:#B8973A}.navy{color:#343434}
 
 /* Cover */
-.cover{background:#3A4B5B;color:#fff;padding:60px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:600px;page-break-after:always;position:relative;border-color:rgba(168,144,53,0.3)}
+.cover{background:#343434;color:#fff;padding:54px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:600px;page-break-after:always;position:relative;border-color:rgba(219,186,46,0.42)}
 .cover .badge{position:absolute;top:28px;right:28px;background:#A89035;color:#fff;padding:12px 18px;font-size:9px;letter-spacing:3px;text-transform:uppercase;font-weight:700;line-height:1.4;text-align:center}
 .cover .wordmark{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;letter-spacing:12px;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:6px}
 .cover .pm-sub{font-size:12px;color:#A89035;letter-spacing:2px;margin-bottom:48px}
@@ -1297,10 +1305,10 @@ a{color:#A89035;text-decoration:none}
 .elevator p{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;color:#555;line-height:1.9;max-width:600px}
 
 /* Sections */
-.section{padding:36px 50px;page-break-after:always}
+.section{padding:28px 38px;page-break-after:auto;break-inside:auto}
 .section-cream{background:#F5F0E5}.section-white{background:#FDFAF3}
-.section-title{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:26px;color:#A89035;margin-bottom:6px;padding-left:16px;border-left:4px solid #A89035;font-weight:700}
-.section-sub{font-size:12px;color:#888;margin-bottom:28px;padding-left:16px}
+.section-title{font-family:'Cardo',Georgia,serif;font-size:26px;color:#B8973A;margin-bottom:6px;padding-left:14px;border-left:3px solid #B8973A;font-weight:700}
+.section-sub{font-size:11.5px;color:#777;margin-bottom:18px;padding-left:14px}
 
 /* Stats */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:24px 0}
@@ -1394,12 +1402,21 @@ a{color:#A89035;text-decoration:none}
 .tech-col ul li::before{content:"\u2714";position:absolute;left:0;color:#A89035;font-size:14px;font-weight:700}
 
 .mission-stmt{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-style:italic;color:#A89035;font-size:15px;text-align:center;margin-bottom:20px;line-height:1.6;font-weight:600;max-width:700px;margin-left:auto;margin-right:auto}
+.access-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.access-card{background:#FDFAF3;border:1px solid #D5D0C6;border-top:2px solid #B8973A;padding:14px 16px;min-height:118px}
+.access-card .k{font-family:'Cardo',Georgia,serif;font-size:21px;color:#B8973A;line-height:1;margin-bottom:6px}
+.access-card h4{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#343434;margin-bottom:6px}
+.access-card p{font-size:10.5px;color:#555;line-height:1.45}
 
 @media print{
-body{background:#fff}
-.cover,.back-cover{background:#3A4B5B!important}
-.section,.elevator{page-break-after:always}
-.section{break-inside:avoid}
+body{background:#fff;font-size:11.4px;line-height:1.38}
+body::before{content:'';position:fixed;top:0.08in;right:0.08in;bottom:0.08in;left:0.08in;border:0.5pt solid #D5D0C6;pointer-events:none;z-index:99999}
+.page{max-width:none;margin:0}
+.cover,.back-cover{background:#343434!important;page-break-after:always}
+.elevator{page-break-after:auto;min-height:auto}
+.section{page-break-after:auto;break-inside:auto;margin:0;border:0;padding:20px 26px}
+.section::after{margin-top:10px;padding-top:6px}
+.stats-row,.about-stats,.compliance-row,.transition-grid,.tech-cols,.va-grid,.testimonial-grid,.access-grid{break-inside:avoid}
 }
 </style>
 </head>
@@ -1494,6 +1511,27 @@ ${d.latitude && d.longitude ? `
 <iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=driving" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
 <div style="text-align:center;font-size:9px;color:#999;padding:4px">\uD83D\uDE97 From Camelot HQ \u2014 477 Madison Ave</div>
 </div>
+</div>
+
+<div class="access-grid">
+<div class="access-card">
+<div class="k">S</div>
+<h4>Subway &amp; Transit</h4>
+<p>${accessTransit}</p>
+</div>
+<div class="access-card">
+<div class="k">B</div>
+<h4>Bus &amp; Local Coverage</h4>
+<p>Fifth Avenue, Madison Avenue, crosstown, and neighborhood routes are reviewed for routine site coverage, resident support, and manager access.</p>
+</div>
+<div class="access-card">
+<div class="k">H</div>
+<h4>Road &amp; Emergency Access</h4>
+<p>${accessHighway}</p>
+</div>
+</div>
+<div style="background:#F5F0E5;border:1px solid #D5D0C6;border-left:3px solid #B8973A;padding:12px 16px;margin-bottom:14px;color:#343434">
+<strong>Camelot HQ: 477 Madison Avenue.</strong> Senior managers conduct regular on-site inspections; route planning and response coverage are part of the transition plan for ${d.buildingName}.
 </div>
 
 <!-- StreetEasy + Research Sources Panel -->
