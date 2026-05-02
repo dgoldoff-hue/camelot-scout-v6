@@ -103,6 +103,121 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// ============================================================
+// Jackie Building Branding / Website Research
+// Searches for an official building website, then scrapes visible text,
+// images, amenities, and commercial-use signals server-side to avoid CORS.
+// ============================================================
+const BLOCKED_BRAND_DOMAINS = [
+  'streeteasy.com', 'zillow.com', 'trulia.com', 'realtor.com', 'redfin.com',
+  'propertyshark.com', 'apartments.com', 'renthop.com', 'compass.com',
+  'elliman.com', 'corcoran.com', 'brownharrisstevens.com', 'cityrealty.com',
+  'google.com', 'bing.com', 'duckduckgo.com', 'facebook.com', 'instagram.com',
+  'linkedin.com', 'wikipedia.org', 'nyc.gov',
+];
+
+function cleanText(value) {
+  return String(value || '').replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"').replace(/\s+/g, ' ').trim();
+}
+
+function absoluteUrl(src, base) {
+  try { return new URL(src, base).href; } catch { return null; }
+}
+
+function scoreOfficialCandidate(url, address, name) {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, '').toLowerCase();
+    if (BLOCKED_BRAND_DOMAINS.some(d => host.includes(d))) return -100;
+    const hay = `${host} ${u.pathname}`.toLowerCase();
+    const addrNum = (address || '').match(/\d+/)?.[0] || '';
+    let score = 0;
+    if (addrNum && hay.includes(addrNum)) score += 30;
+    for (const token of String(address || '').toLowerCase().split(/\s+/).filter(t => t.length > 3).slice(0, 5)) {
+      if (hay.includes(token.replace(/[^a-z0-9]/g, ''))) score += 8;
+    }
+    for (const token of String(name || '').toLowerCase().split(/\s+/).filter(t => t.length > 3).slice(0, 6)) {
+      if (hay.includes(token.replace(/[^a-z0-9]/g, ''))) score += 8;
+    }
+    if (/\b(condo|coop|co-op|residence|residences|building|tower|property|amenities)\b/.test(hay)) score += 10;
+    return score;
+  } catch {
+    return -100;
+  }
+}
+
+app.get('/api/building/brand', async (req, res) => {
+  try {
+    const address = String(req.query.address || '').trim();
+    const name = String(req.query.name || '').trim();
+    if (!address && !name) return res.status(400).json({ error: 'address or name is required' });
+
+    const rawQuery = `"${name || address}" "${address}" official building amenities`;
+    const searchUrl = `https://duckduckgo.com/html/?q=${encodeURIComponent(rawQuery)}`;
+    const searchResp = await fetch(searchUrl, { headers: { 'User-Agent': 'Mozilla/5.0 CamelotJackie/1.0' } });
+    const searchHtml = await searchResp.text();
+    const links = [...searchHtml.matchAll(/class="result__a"[^>]+href="([^"]+)"/g)]
+      .map(m => m[1].replace(/&amp;/g, '&'))
+      .map(href => {
+        try {
+          const u = new URL(href, 'https://duckduckgo.com');
+          const uddg = u.searchParams.get('uddg');
+          return uddg ? decodeURIComponent(uddg) : href;
+        } catch {
+          return href;
+        }
+      })
+      .filter(Boolean);
+
+    const candidates = [...new Set(links)]
+      .map(url => ({ url, score: scoreOfficialCandidate(url, address, name) }))
+      .filter(c => c.score >= 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+
+    let official = null;
+    for (const c of candidates) {
+      try {
+        const pageResp = await fetch(c.url, { headers: { 'User-Agent': 'Mozilla/5.0 CamelotJackie/1.0' }, signal: AbortSignal.timeout(9000) });
+        if (!pageResp.ok) continue;
+        const html = await pageResp.text();
+        const text = cleanText(html);
+        const title = cleanText((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || '');
+        const meta = cleanText((html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)/i) || [])[1] || '');
+        const imageMatches = [...html.matchAll(/<img[^>]+src=["']([^"']+)["'][^>]*>/gi)]
+          .map(m => absoluteUrl(m[1], c.url))
+          .filter(Boolean)
+          .filter(src => !/logo|icon|sprite|tracking|pixel/i.test(src))
+          .slice(0, 8);
+        const amenityKeywords = ['storage', 'storage cage', 'parking', 'garage', 'bike room', 'library', 'pool', 'gym', 'fitness', 'lounge', 'roof deck', 'terrace', 'garden', 'courtyard', 'playroom', 'concierge', 'doorman', 'package room', 'valet', 'spa', 'sauna'];
+        const commercialKeywords = ['retail', 'office', 'doctor', 'medical', 'restaurant', 'storefront', 'commercial', 'billboard', 'signage', 'garage', 'parking'];
+        official = {
+          url: c.url,
+          title,
+          description: meta || text.slice(0, 260),
+          images: imageMatches,
+          amenities: amenityKeywords.filter(k => new RegExp(`\\b${k.replace(/\s+/g, '\\s+')}\\b`, 'i').test(text)),
+          commercialSignals: commercialKeywords.filter(k => new RegExp(`\\b${k.replace(/\s+/g, '\\s+')}\\b`, 'i').test(text)),
+          textSample: text.slice(0, 1200),
+          searchedAt: new Date().toISOString(),
+        };
+        break;
+      } catch (err) {
+        console.warn('Brand candidate scrape failed:', c.url, err.message);
+      }
+    }
+
+    res.json({ official, candidates, query: rawQuery, searchedAt: new Date().toISOString() });
+  } catch (err) {
+    console.error('Building branding research error:', err);
+    res.status(500).json({ error: err.message || 'Building branding research failed' });
+  }
+});
 // ============================================================
 // Scout Intelligence Engine — property scan/report
 // ============================================================
@@ -211,10 +326,6 @@ app.post('/api/core/route', async (req, res) => {
     res.status(500).json({ error: err.message || 'Core routing failed' });
   }
 });
-/api/scout/scan
-/api/scout/report
-/api/core/route
-Add Scout and Camelot Core API routes
 // Serve static files
 app.use(express.static(path.join(__dirname, 'dist'), { fallthrough: true }));
 

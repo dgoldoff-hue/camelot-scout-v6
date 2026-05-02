@@ -120,10 +120,25 @@ export interface MasterReportData {
   feeComparison: MarketFeeComparison | null;
   // StreetEasy data
   streetEasy: StreetEasyBuilding | null;
+  // Commercial / amenity / branding research
+  commercialIntel: CommercialAmenityIntel;
   // Raw data for advanced usage
   buildingPhotos: { exterior: string[]; streetView: string; satellite: string; source: string } | null;
   neighborhoodIntel: { crimeScore: number; qualityScore: number; transitScore: number; crimeTotal: number; complaints311Total: number; crimeBreakdown: Array<{type: string; count: number}>; topComplaints: Array<{type: string; count: number}>; landmarks: Array<{name: string; type: string; date: string}>; crimePrecinct: string; scoreExplanation: string } | null;
   raw: any;
+}
+
+export interface CommercialAmenityIntel {
+  commercialSignals: string[];
+  likelyCommercialUses: string[];
+  amenities: string[];
+  revenueOpportunities: string[];
+  officialWebsite: string | null;
+  brandingTitle: string | null;
+  brandingDescription: string | null;
+  brandingImages: string[];
+  researchSources: string[];
+  researchStatus: 'verified' | 'needs_review';
 }
 
 // ============================================================
@@ -631,6 +646,117 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
   } catch { return null; }
 }
 
+async function fetchOfficialBuildingBranding(address: string, buildingName: string): Promise<any | null> {
+  try {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams({ address, name: buildingName || address });
+    const res = await fetch(`/api/building/brand?${params.toString()}`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+function inferCommercialAmenityIntel(input: {
+  address: string;
+  buildingName: string;
+  buildingClass: string;
+  taxClass: string;
+  propertyType: string;
+  occupancy: string | null;
+  streetEasy: StreetEasyBuilding | null;
+  branding: any | null;
+  raw: any;
+}): CommercialAmenityIntel {
+  const hay = [
+    input.address,
+    input.buildingName,
+    input.buildingClass,
+    input.taxClass,
+    input.propertyType,
+    input.occupancy || '',
+    input.streetEasy?.description || '',
+    ...(input.streetEasy?.amenities || []),
+    ...(input.streetEasy?.features || []),
+    input.branding?.official?.title || '',
+    input.branding?.official?.description || '',
+    input.branding?.official?.textSample || '',
+  ].join(' ').toLowerCase();
+
+  const commercialPatterns: Array<[string, RegExp]> = [
+    ['Retail / storefront', /\b(retail|storefront|shop|restaurant|cafe|market|salon)\b/i],
+    ['Office', /\b(office|professional suite|commercial suite)\b/i],
+    ['Medical / doctor office', /\b(doctor|medical|clinic|physician|dental|healthcare)\b/i],
+    ['Billboard / signage', /\b(billboard|signage|advertising sign|wallscape)\b/i],
+    ['Parking / garage', /\b(parking|garage|valet)\b/i],
+    ['Storage cages / lockers', /\b(storage cage|storage locker|private storage|storage space|storage)\b/i],
+  ];
+  const amenityPatterns: Array<[string, RegExp]> = [
+    ['Storage cages', /\b(storage cage|storage locker|private storage|storage space|storage)\b/i],
+    ['Parking / garage', /\b(parking|garage|valet)\b/i],
+    ['Library', /\blibrary\b/i],
+    ['Pool', /\bpool\b/i],
+    ['Fitness center / gym', /\b(gym|fitness|exercise room|yoga)\b/i],
+    ['Roof deck / terrace', /\b(roof deck|terrace|rooftop)\b/i],
+    ['Lounge', /\blounge\b/i],
+    ['Garden / courtyard', /\b(garden|courtyard)\b/i],
+    ['Bike room', /\bbike room\b/i],
+    ['Package room', /\bpackage room\b/i],
+    ['Doorman / concierge', /\b(doorman|concierge|attended lobby)\b/i],
+    ['Playroom', /\b(playroom|children'?s playroom)\b/i],
+  ];
+
+  const likelyCommercialUses = commercialPatterns.filter(([, re]) => re.test(hay)).map(([label]) => label);
+  const amenities = [
+    ...amenityPatterns.filter(([, re]) => re.test(hay)).map(([label]) => label),
+    ...(input.streetEasy?.amenities || []),
+    ...(input.branding?.official?.amenities || []),
+  ].filter(Boolean);
+  const commercialSignals = [
+    ...likelyCommercialUses,
+    ...(input.branding?.official?.commercialSignals || []),
+  ].filter(Boolean);
+
+  if (/^(K|O|L|R5|R7)/i.test(input.buildingClass)) {
+    commercialSignals.push(`DOF class ${input.buildingClass}: possible commercial or mixed-use component`);
+  }
+  if (/4|commercial/i.test(input.taxClass)) {
+    commercialSignals.push(`Tax class ${input.taxClass}: commercial review required`);
+  }
+
+  const uniqueAmenities = [...new Set(amenities.map(a => String(a).trim()).filter(Boolean))];
+  const uniqueCommercial = [...new Set(commercialSignals.map(s => String(s).trim()).filter(Boolean))];
+  const revenueOpportunities = [
+    uniqueCommercial.some(s => /retail|office|medical|commercial/i.test(s)) ? 'Commercial lease abstract and rent escalation audit' : null,
+    uniqueCommercial.some(s => /parking|garage/i.test(s)) || uniqueAmenities.some(a => /parking|garage/i.test(a)) ? 'Parking license, garage revenue, and insurance review' : null,
+    uniqueCommercial.some(s => /billboard|signage/i.test(s)) ? 'Billboard/signage licensing and revenue review' : null,
+    uniqueAmenities.some(a => /storage/i.test(a)) ? 'Storage cage inventory, license terms, and waitlist revenue review' : null,
+    uniqueAmenities.length > 0 ? 'Amenity access, booking, waiver, and resident communication review' : null,
+  ].filter(Boolean) as string[];
+
+  const official = input.branding?.official || null;
+  const researchSources = [
+    'DOF building class / tax class',
+    input.streetEasy ? 'StreetEasy amenities and features' : null,
+    official?.url ? `Official website: ${official.url}` : 'Official building website search attempted',
+    'Jackie keyword scan: retail, office, medical, signage, storage, parking, amenities',
+  ].filter(Boolean) as string[];
+
+  return {
+    commercialSignals: uniqueCommercial,
+    likelyCommercialUses,
+    amenities: uniqueAmenities,
+    revenueOpportunities: [...new Set(revenueOpportunities)],
+    officialWebsite: official?.url || null,
+    brandingTitle: official?.title || null,
+    brandingDescription: official?.description || null,
+    brandingImages: official?.images || [],
+    researchSources,
+    researchStatus: official?.url || uniqueCommercial.length > 0 || uniqueAmenities.length > 0 ? 'verified' : 'needs_review',
+  };
+}
+
 export async function buildMasterReport(address: string, borough?: string): Promise<MasterReportData> {
   const [raw, geo, buildingPhotos, streetEasy] = await Promise.all([
     fetchFullBuildingReport(address, borough),
@@ -789,10 +915,25 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     return energyName;
   }
 
+  const buildingName = deriveBuildingName(address, raw);
+  const propertyType = streetEasy?.buildingType || classifyBuildingType(dof?.buildingClass || '');
+  const brandingResearch = await fetchOfficialBuildingBranding(address, buildingName).catch(() => null);
+  const commercialIntel = inferCommercialAmenityIntel({
+    address,
+    buildingName,
+    buildingClass: dof?.buildingClass || '',
+    taxClass: dof?.taxClass || '',
+    propertyType,
+    occupancy: raw.energy?.occupancy ?? null,
+    streetEasy,
+    branding: brandingResearch,
+    raw,
+  });
+
   return {
     address,
     borough: borough || '',
-    buildingName: deriveBuildingName(address, raw),
+    buildingName,
     date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     units,
     stories,
@@ -847,7 +988,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     complaint311Count: 0,
     latitude: geo?.lat ?? null,
     longitude: geo?.lng ?? null,
-    propertyType: streetEasy?.buildingType || classifyBuildingType(dof?.buildingClass || ''),
+    propertyType,
     neighborhoodName: streetEasy?.neighborhood || detectNeighborhood(address, borough || ''),
     neighborhoodMarketData: lookupNeighborhoodData(detectNeighborhood(address, borough || '')),
     registrationDate: raw.registration?.registrationId ? null : null,
@@ -935,6 +1076,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       pricePerUnit,
     }),
     streetEasy,
+    commercialIntel,
     buildingPhotos,
     neighborhoodIntel,
     raw,
@@ -1006,6 +1148,7 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
   const requiredSlides = [
     'Elevating',
     'The Property',
+    'Commercial &amp; Amenity Intelligence',
     'Location &amp; Neighborhood',
     'Experience Meets Innovation',
     'Core Services',
@@ -1047,6 +1190,13 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     name: 'Camelot Logo',
     status: html.includes('./images/camelot-logo.png') || html.includes('./images/camelot-logo-white.png') ? 'pass' : 'fail',
     detail: 'Brand logo reference verified',
+  });
+  checks.push({
+    name: 'Commercial / Amenity Research',
+    status: d.commercialIntel?.researchStatus === 'verified' ? 'pass' : 'warn',
+    detail: d.commercialIntel?.researchStatus === 'verified'
+      ? `Signals: ${[...d.commercialIntel.commercialSignals, ...d.commercialIntel.amenities].slice(0, 5).join(', ') || 'Verified research completed'}`
+      : 'No confirmed commercial/amenity/official website signals yet; verify with site visit, offering plan, or board materials',
   });
   const warnings = checks.filter(c => c.status === 'warn').length;
   const failures = checks.filter(c => c.status === 'fail').length;
@@ -1366,6 +1516,21 @@ export function generateBrochureHTML(d: MasterReportData): string {
     ['AI Board Meeting Minutes', 'Included: every meeting, AI-enhanced and distributed'],
     ['In-House Attorney & Engineer', 'Free advisory: legal and engineering consultation'],
   ];
+  const commercialIntel = d.commercialIntel || {
+    commercialSignals: [],
+    likelyCommercialUses: [],
+    amenities: [],
+    revenueOpportunities: [],
+    officialWebsite: null,
+    brandingTitle: null,
+    brandingDescription: null,
+    brandingImages: [],
+    researchSources: [],
+    researchStatus: 'needs_review' as const,
+  };
+  const commercialSignals = commercialIntel.commercialSignals.length > 0 ? commercialIntel.commercialSignals : ['No confirmed commercial tenant signal yet: verify on site and through offering plan / building records.'];
+  const amenityList = commercialIntel.amenities.length > 0 ? commercialIntel.amenities : ['Amenity inventory to verify: storage cages, parking, bike room, library, pool, gym, roof deck, lounge, package room, and service spaces.'];
+  const revenueOpportunities = commercialIntel.revenueOpportunities.length > 0 ? commercialIntel.revenueOpportunities : ['Review amenity rules, commercial licenses, parking/storage inventory, and any non-maintenance revenue opportunities during scope review.'];
 
   const hookLine = isSelfManaged
     ? `Every day, the ${d.units || ''} families at ${d.buildingName} depend on the quality of their building\u2019s management. The right partner brings proactive care, financial clarity, and modern technology \u2014 elevating not just the building, but the lives of everyone who calls it home.`
@@ -1805,6 +1970,41 @@ ${d.streetEasy.activeListings.length > 0 ? `<div style="font-size:11px;color:#66
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:20px;margin-top:12px">
 <p style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;color:#555;line-height:1.8;text-align:center">${hookLine}</p>
 </div>
+</div>
+
+<div class="deck-slide">
+<div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
+<h2 class="deck-title">Commercial &amp; Amenity Intelligence</h2>
+<p class="deck-kicker" style="margin:-8px 0 28px 24px">Jackie checks the subject property for commercial occupants, owner/renter uses, revenue-producing spaces, official building branding, and resident amenities.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:22px">
+<div class="deck-card" style="min-height:220px">
+<h4>Commercial Owners &amp; Renters</h4>
+<ul>
+${commercialSignals.map(s => `<li>${safe(s)}</li>`).join('')}
+</ul>
+</div>
+<div class="deck-card" style="min-height:220px">
+<h4>Amenities &amp; Resident Spaces</h4>
+<ul>
+${amenityList.map(a => `<li>${safe(a)}</li>`).join('')}
+</ul>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:22px;margin-top:22px">
+<div class="deck-card">
+<h4>Operating / Revenue Review</h4>
+<ul>
+${revenueOpportunities.map(o => `<li>${safe(o)}</li>`).join('')}
+</ul>
+</div>
+<div class="deck-card">
+<h4>Official Building Branding</h4>
+${commercialIntel.officialWebsite ? `<p><strong>Website:</strong> <a href="${commercialIntel.officialWebsite}" target="_blank">${safe(commercialIntel.brandingTitle || commercialIntel.officialWebsite)}</a></p>` : '<p>Official building website not confirmed yet. Jackie attempted a website search; board-facing release should verify branding and images manually if no site is found.</p>'}
+${commercialIntel.brandingDescription ? `<p style="margin-top:10px">${safe(commercialIntel.brandingDescription)}</p>` : ''}
+<p style="margin-top:12px;font-size:11px;color:#777"><strong>Status:</strong> ${commercialIntel.researchStatus === 'verified' ? 'Verified signals found' : 'Needs review'}<br><strong>Sources:</strong> ${commercialIntel.researchSources.map(safe).join(' · ')}</p>
+</div>
+</div>
+${commercialIntel.brandingImages.length > 0 ? `<div style="display:grid;grid-template-columns:repeat(${Math.min(commercialIntel.brandingImages.length, 4)},1fr);gap:10px;margin-top:18px">${commercialIntel.brandingImages.slice(0, 4).map(src => `<div style="height:100px;border:1px solid #D5D0C6;background:#fff;overflow:hidden"><img src="${src}" alt="${safe(d.buildingName)} branding image" style="width:100%;height:100%;object-fit:cover"></div>`).join('')}</div>` : ''}
 </div>
 
 <!-- PAGE 2B: NEIGHBORHOOD INTELLIGENCE -->
