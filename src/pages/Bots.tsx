@@ -69,6 +69,10 @@ const DEMO_BOTS: DashboardBot[] = [
     last_run_at: new Date(Date.now() - 1000 * 60 * 21).toISOString(),
     outputs: ['Property Intelligence PDF', '90-Day Transition Plan', 'Management Agreement PDF', 'Gmail draft'],
     quality_gates: [
+      'Pre-publish lock blocks GitHub, Render, email, PDF, and dashboard release until verified',
+      'Subject property address verified against source property record',
+      'Address matches across report, proposal, agreement, email draft, filenames, and dashboard labels',
+      'Fixes, errors, script runs, builds, and smoke tests rechecked clean after final edit',
       '42 properties and Founded 2006 facts locked',
       'BankUnited callout included',
       'Active Now vs Deploying 2026 tech table',
@@ -100,7 +104,13 @@ const DEMO_BOTS: DashboardBot[] = [
     tasks_queued: 8,
     last_run_at: new Date(Date.now() - 1000 * 60 * 9).toISOString(),
     outputs: ['Lead scores', 'Violation signals', 'Owner intel', 'Pipeline tasks'],
-    quality_gates: ['HPD/DOF/DOB sources checked', 'Grade A/B/C score generated', 'Pipeline stage updated'],
+    quality_gates: [
+      'Source address verified before content is exported or published',
+      'HPD/DOF/DOB sources checked',
+      'Grade A/B/C score generated',
+      'Pipeline stage updated',
+      'Fixes and API errors resolved before handoff',
+    ],
     sources: [
       { name: 'src/lib/scoring.ts', kind: 'Repo', status: 'synced' },
       { name: 'src/lib/nyc-api.ts', kind: 'Repo', status: 'synced' },
@@ -124,7 +134,13 @@ const DEMO_BOTS: DashboardBot[] = [
     tasks_queued: 2,
     last_run_at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
     outputs: ['Market report', 'Competitive summary', 'Pricing context'],
-    quality_gates: ['Report template present', 'Reference parser present', 'Manual review before sending'],
+    quality_gates: [
+      'Subject property address checked against selected market source',
+      'Report template present',
+      'Reference parser present',
+      'Manual review before sending',
+      'No broken links or missing sections before publish',
+    ],
     sources: [
       { name: 'reference/sentinel_generate_report.py', kind: 'Repo', status: 'synced' },
       { name: 'reference/sentinel_parse_realtymx.py', kind: 'Repo', status: 'synced' },
@@ -146,7 +162,13 @@ const DEMO_BOTS: DashboardBot[] = [
     tasks_queued: 5,
     last_run_at: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString(),
     outputs: ['Follow-up prompts', 'Email drafts', 'Pipeline nudges'],
-    quality_gates: ['Draft only, never auto-send', 'Building context included', 'Owner review required'],
+    quality_gates: [
+      'Property address verified before any draft is handed off',
+      'Draft only, never auto-send',
+      'Building context included',
+      'Owner review required',
+      'Corrections rechecked clean before release',
+    ],
     sources: [
       { name: 'src/lib/email-templates.ts', kind: 'Repo', status: 'synced' },
       { name: 'src/pages/Outreach.tsx', kind: 'Repo', status: 'synced' },

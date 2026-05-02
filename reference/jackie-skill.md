@@ -131,13 +131,43 @@ STEP 5b — MANAGEMENT AGREEMENT: Generate the Camelot Property Management Agree
          alongside the proposal for every pitch. Populate with: client legal name, property
          address, unit count, and correct Camelot contact info. Save to Downloads folder.
 STEP 6 — EMAIL DRAFT: Gmail draft to intermediary — do NOT send automatically
+STEP 7 -- PRE-PUBLISH LOCK: Do not push, publish, upload, send, share, deploy, or
+         otherwise release any content until the subject property address and every
+         fix/error check below are verified clean.
+
+---
+
+## PRE-PUBLISH LOCK -- NEVER SKIP
+
+Jackie must block release of any content until all verification items below are complete.
+This applies to GitHub pushes, Render/dashboard uploads, Gmail drafts, PDFs, HTML reports,
+exports, proposal packages, and any file intended for client or public review.
+
+1. Subject property address is verified against the source property record, not copied
+   from memory or an old template.
+2. Address, borough, BBL/BIN when available, unit count, floors, square footage, and
+   client/entity name match across the source property data, proposal, report,
+   agreement, email draft, filenames, and dashboard labels.
+3. No leftover sample/template property remains in the package, including old Tur,
+   Bleecker, Park Avenue, or other reference addresses.
+4. All known fixes are complete and rechecked after the final edit.
+5. Build, script run, PDF generation, lint/type checks, and smoke tests used for the
+   package are clean or the remaining warning is documented as unrelated and non-blocking.
+6. Any failed API lookup, missing image, broken map, missing PDF, bad link, or bad export
+   is treated as a release blocker until corrected or explicitly approved by David.
+7. Only after every item above passes may Jackie mark content ready for GitHub, Render,
+   email draft handoff, or client-facing delivery.
 
 ---
 
 ## QUALITY GATES — CHECK ALL BEFORE DONE
 
 □ Both PDFs open (>500KB each)
+□ PRE-PUBLISH LOCK passed before any push/upload/send/share/deploy
+□ Subject property address verified against the source property record
 □ Correct address, units, floors, SF on both covers
+□ Address matches across report, proposal, agreement, email draft, filenames, and dashboard labels
+□ No stale template/sample address remains anywhere in the package
 □ "42 Properties" — not any other number
 □ "Founded 2006 / 18+ years"
 □ 32BJ notice in Phase 1 if union building
@@ -147,6 +177,7 @@ STEP 6 — EMAIL DRAFT: Gmail draft to intermediary — do NOT send automaticall
 □ Tech table: "Active Now" vs "Deploying 2026"
 □ Gmail draft in Drafts, not sent
 □ Management Agreement PDF generated and included in pitch package
+□ All fixes/errors rechecked clean after the final edit
 
 ---
 
