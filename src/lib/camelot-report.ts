@@ -1000,6 +1000,59 @@ export function runReportQA(d: MasterReportData): QACheckResult {
   return { passed: failures === 0, checks, warnings, failures };
 }
 
+export function validateJackieReport(d: MasterReportData, html: string): QACheckResult {
+  const base = runReportQA(d);
+  const checks: QACheckResult['checks'] = [...base.checks];
+  const requiredSlides = [
+    'Elevating',
+    'The Property',
+    'Location &amp; Neighborhood',
+    'Experience Meets Innovation',
+    'Core Services',
+    'Value-Added Services',
+    'Compliance &amp; Local Law 97',
+    'Technology Platform Partners',
+    'The 90-Day Transition',
+    'Your Investment',
+    'The Proposed Investment',
+    'Next Steps',
+    'Thank You',
+  ];
+  for (const slide of requiredSlides) {
+    checks.push({
+      name: `Slide: ${slide.replace('&amp;', '&')}`,
+      status: html.includes(slide) ? 'pass' : 'fail',
+      detail: html.includes(slide) ? 'Present' : 'Missing from generated report',
+    });
+  }
+  const forbidden = ['undefined', 'NaN', '[object Object]'];
+  for (const token of forbidden) {
+    checks.push({
+      name: `Render Token: ${token}`,
+      status: html.includes(token) ? 'fail' : 'pass',
+      detail: html.includes(token) ? `Generated HTML contains ${token}` : 'Clean',
+    });
+  }
+  checks.push({
+    name: 'Subject Address Match',
+    status: html.includes(d.address) ? 'pass' : 'fail',
+    detail: html.includes(d.address) ? d.address : 'Subject address missing from report',
+  });
+  checks.push({
+    name: 'Subject Building Photo',
+    status: d.buildingPhotos?.exterior?.length ? 'pass' : 'warn',
+    detail: d.buildingPhotos?.exterior?.length ? `${d.buildingPhotos.exterior.length} preferred image(s) available` : 'No uploaded/preferred subject photo; map/street-view fallback will be used',
+  });
+  checks.push({
+    name: 'Camelot Logo',
+    status: html.includes('./images/camelot-logo.png') || html.includes('./images/camelot-logo-white.png') ? 'pass' : 'fail',
+    detail: 'Brand logo reference verified',
+  });
+  const warnings = checks.filter(c => c.status === 'warn').length;
+  const failures = checks.filter(c => c.status === 'fail').length;
+  return { passed: failures === 0, checks, warnings, failures };
+}
+
 // ============================================================
 // Cold Caller Sheet
 // ============================================================
@@ -1261,6 +1314,58 @@ export function generateBrochureHTML(d: MasterReportData): string {
   const accessHighway = isManhattan
     ? 'FDR Drive, Harlem River Drive, and major crosstown corridors give Camelot multiple routes for inspections, vendor coordination, and emergency response.'
     : 'Major arterial access and vendor routing are reviewed during onboarding so emergency dispatch and inspections have clear coverage plans.';
+  const safe = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+  const is1280Fifth = /1280\s+(fifth|5th)/i.test(`${d.address} ${d.buildingName}`);
+  const subjectPhoto = d.buildingPhotos?.exterior?.[0] || '';
+  const prettyNeighborhood = d.neighborhoodName
+    ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    : d.borough || 'New York City';
+  const propertyPedigree = is1280Fifth ? {
+    title: 'A Robert A.M. Stern Masterpiece',
+    narrative: `At ${d.units || 116} units, ${d.buildingName} represents the ideal scale for Camelot's high-touch management: large enough to deserve institutional systems, personal enough to benefit from senior attention, financial clarity, and an owner's perspective.`,
+    facts: ['Built 2012 | Luxury Condominium', '116 Units | 19 Floors', 'Architect: Robert A.M. Stern / SLCE', 'Interiors: Andre Kikoski', 'Built atop the Museum for African Art', 'NE corner of Central Park at Duke Ellington Circle'],
+    foot: 'AKA One Museum Mile: caps the famous Museum Mile on Fifth Avenue',
+    locationTitle: 'Crown of Museum Mile',
+    locationCopy: 'Northeast corner of Central Park at Duke Ellington Circle. The only Robert A.M. Stern building to cap Museum Mile: location fundamentals that protect shareholder investment through any market cycle.',
+    lifestyleTitle: 'Lifestyle & Liquidity',
+    lifestyleCopy: "Steps from Central Park, Harlem Meer, and the Conservatory Garden. Immediate access to 2/3, 4/5/6 trains. The building's Fifth Avenue address and cultural pedigree ensure lasting desirability.",
+    landmarks: ['Museum of African Art: in building', 'El Museo del Barrio: 1 block', 'Central Park / Harlem Meer: across street', 'Mount Sinai Medical Center: nearby', 'Guggenheim Museum: Museum Mile', 'Conservatory Garden: steps away'],
+  } : {
+    title: `${d.buildingName} at a Glance`,
+    narrative: `${d.buildingName} is a ${d.propertyType.toLowerCase()} with ${d.units || 'multiple'} units${d.stories ? ` across ${d.stories} floors` : ''}. Jackie combines city records, market intelligence, and Camelot's management experience to translate the building's facts into an actionable board narrative.`,
+    facts: [
+      d.yearBuilt ? `Built ${d.yearBuilt} | ${d.propertyType}` : d.propertyType,
+      `${d.units || 'N/A'} Units${d.stories ? ` | ${d.stories} Floors` : ''}`,
+      d.buildingArea ? `${d.buildingArea.toLocaleString()} SF` : 'Building area to be verified',
+      d.borough ? `${d.borough} location` : 'NYC location',
+      d.neighborhoodName ? `${prettyNeighborhood} neighborhood` : 'Neighborhood profile generated by Jackie',
+    ],
+    foot: 'Property-specific history is verified during Camelot scope review and onboarding.',
+    locationTitle: `${prettyNeighborhood} Positioning`,
+    locationCopy: `${d.buildingName} sits within ${prettyNeighborhood}, where access, operations, and neighborhood fundamentals shape resident experience and long-term value.`,
+    lifestyleTitle: 'Access, Service & Liquidity',
+    lifestyleCopy: 'Camelot reviews transportation, vendor routing, nearby anchors, and resident lifestyle drivers so the board sees both operational needs and market value in one narrative.',
+    landmarks: d.neighborhoodIntel?.landmarks?.slice(0, 6).map(l => `${l.name}: ${l.type}`) || ['Transit access: verified during onboarding', 'Neighborhood anchors: reviewed by Jackie', 'Camelot HQ: 477 Madison Avenue', 'Vendor routing: planned during transition'],
+  };
+  const complianceDates = [
+    { month: 'January', title: 'Tax Appeals', desc: d.assessedValue > 0 ? `Review ${fmtMoney(d.assessedValue)} assessed value and appeal strategy.` : 'Strategic filing to reduce assessments.' },
+    { month: 'June', title: 'RPIE Filings', desc: d.propertyType.toLowerCase().includes('condo') || d.propertyType.toLowerCase().includes('coop') ? 'Income/expense status reviewed; exemptions verified where applicable.' : 'Income and expense reporting deadline management.' },
+    { month: 'September', title: 'HPD Registration', desc: d.units >= 3 ? 'Multi-family registration, ownership, and emergency contact verification.' : 'Registration applicability verified by property profile.' },
+    { month: 'December', title: 'Budgeting', desc: 'Operating budget, reserve planning, capital calls, and board calendar.' },
+  ];
+  const ll97Context = d.ll97
+    ? `${d.buildingName} (${d.propertyType} | ${d.ll97.complianceStatus} | ${fmtMoney(d.ll97.period1Penalty)}/yr Period 1 exposure)`
+    : `${d.buildingName} (${d.propertyType} | LL97 applicability to be verified)`;
+  const proposedRows = [
+    ['Annual Management Fee', d.monthlyFee > 0 ? `${fmtMoney(d.monthlyFee)}/mo (${fmtMoney(d.annualFee)}/yr) based on Jackie preliminary pricing` : '$TBD: custom flat rate after building scope review'],
+    ['Online Common Charge Payments', 'ZERO bank fees for residents and owners'],
+    ['Technology Platform', 'Included: Camelot Central + ConciergePlus + Merlin AI'],
+    ['Initial Building Inspection', 'FREE ($2,500 value)'],
+    ['In-House CPA / Accounting', 'Included: no outsourcing, full transparency'],
+    ['LL97 Liability Report', d.ll97 ? `Included: carbon cap modeling + ${fmtMoney(d.ll97.totalExposure11yr)} 11-year exposure roadmap` : 'Included when applicable: carbon cap modeling + compliance roadmap'],
+    ['AI Board Meeting Minutes', 'Included: every meeting, AI-enhanced and distributed'],
+    ['In-House Attorney & Engineer', 'Free advisory: legal and engineering consultation'],
+  ];
 
   const hookLine = isSelfManaged
     ? `Every day, the ${d.units || ''} families at ${d.buildingName} depend on the quality of their building\u2019s management. The right partner brings proactive care, financial clarity, and modern technology \u2014 elevating not just the building, but the lives of everyone who calls it home.`
@@ -1407,6 +1512,34 @@ a{color:#B8973A;text-decoration:none}
 .access-card .k{font-family:'Cardo',Georgia,serif;font-size:21px;color:#B8973A;line-height:1;margin-bottom:6px}
 .access-card h4{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#343434;margin-bottom:6px}
 .access-card p{font-size:10.5px;color:#555;line-height:1.45}
+.brand-logo{position:absolute;top:0;right:0;width:156px;height:72px;background:#D0A92D;display:flex;align-items:center;justify-content:center;padding:16px}
+.brand-logo img{max-width:132px;max-height:46px;object-fit:contain}
+.deck-slide{position:relative;min-height:520px;padding:58px 52px 42px;background:#F7F5F1;border:1px solid #D5D0C6;page-break-after:always}
+.deck-slide.dark{background:#343E43;color:#fff;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.deck-title{font-family:'Cardo',Georgia,serif;font-size:42px;line-height:1.06;color:#B8973A;font-weight:400;margin-bottom:26px;padding-left:18px;border-left:5px solid #B8973A}
+.deck-title.center{border-left:0;padding-left:0;text-align:center}
+.deck-kicker{font-size:17px;color:#38557D;line-height:1.5;max-width:760px}
+.deck-grid-2{display:grid;grid-template-columns:1.25fr 0.9fr;gap:38px;align-items:center}
+.deck-copy h3{font-family:'Cardo',Georgia,serif;font-size:28px;color:#0D2E63;margin:18px 0 10px}
+.deck-copy p,.deck-copy li{font-size:15px;color:#38557D;line-height:1.55}
+.deck-facts{list-style:none;margin:22px 0}
+.deck-facts li{margin-bottom:11px}
+.deck-photo{border:12px solid #E8E2D6;box-shadow:0 3px 10px rgba(0,0,0,0.12);height:330px;overflow:hidden;background:#EDE9DF}
+.deck-photo img{width:100%;height:100%;object-fit:cover}
+.deck-note{font-family:'Cardo',Georgia,serif;font-size:15px;color:#B8973A;font-style:italic;margin-top:18px}
+.deck-card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.deck-card{background:#fff;border:1px solid #D5D0C6;border-top:5px solid #B8973A;box-shadow:0 2px 7px rgba(0,0,0,0.08);padding:20px 22px;min-height:128px}
+.deck-card h4{font-family:'Cardo',Georgia,serif;font-size:20px;color:#0D2E63;margin-bottom:14px}
+.deck-card p,.deck-card li{font-size:13px;color:#38557D;line-height:1.45}
+.deck-card ul{padding-left:18px}
+.deck-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:13px;color:#38557D}
+.deck-table th{background:#213F73;color:#fff;text-align:left;padding:10px 12px}
+.deck-table td{border:1px solid #D5C8A5;padding:9px 12px}
+.deck-table tr:nth-child(even) td{background:#EEEAE3}
+.partner-cloud{position:relative;height:360px;margin-top:26px}
+.partner-logo{position:absolute;font-size:30px;font-weight:700;color:#1F2937;background:#fff;padding:10px 18px;min-width:120px;text-align:center}
+.partner-logo.small{font-size:22px}.partner-logo.blue{color:#168BD1}.partner-logo.orange{color:#F2674A}
+.thank-wordmark{font-family:'Abel','Plus Jakarta Sans',sans-serif;font-size:46px;letter-spacing:18px;color:#fff;margin-bottom:4px}
 
 @media print{
 body{background:#fff;font-size:11.4px;line-height:1.38}
@@ -1415,8 +1548,11 @@ body::before{content:'';position:fixed;top:0.08in;right:0.08in;bottom:0.08in;lef
 .cover,.back-cover{background:#343434!important;page-break-after:always}
 .elevator{page-break-after:auto;min-height:auto}
 .section{page-break-after:auto;break-inside:auto;margin:0;border:0;padding:20px 26px}
+.deck-slide{min-height:7.2in;margin:0;border:0;padding:34px 38px 28px}
+.deck-title{font-size:34px;margin-bottom:18px}
+.brand-logo{width:126px;height:58px}
 .section::after{margin-top:10px;padding-top:6px}
-.stats-row,.about-stats,.compliance-row,.transition-grid,.tech-cols,.va-grid,.testimonial-grid,.access-grid{break-inside:avoid}
+.stats-row,.about-stats,.compliance-row,.transition-grid,.tech-cols,.va-grid,.testimonial-grid,.access-grid,.deck-card-grid,.deck-grid-2{break-inside:avoid}
 }
 </style>
 </head>
@@ -1444,6 +1580,53 @@ body::before{content:'';position:fixed;top:0.08in;right:0.08in;bottom:0.08in;lef
 <div class="prepared">Prepared exclusively for the Board of Directors &mdash; ${d.date}</div>
 <div style="position:absolute;bottom:60px;left:0;right:0;text-align:center">
 <div style="background:rgba(0,0,0,0.3);display:inline-block;padding:8px 24px;border-radius:4px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#A89035;font-weight:700">RED Awards 2025: Property Management Co. of the Year &nbsp;\u00B7&nbsp; REBNY 2025: David Goldoff Leadership Award</div>
+</div>
+</div>
+
+<div class="deck-slide">
+<div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
+<div style="display:flex;align-items:center;justify-content:center;min-height:420px;text-align:center;flex-direction:column">
+<h2 class="deck-title center" style="font-size:48px">Elevating ${safe(d.buildingName)}</h2>
+<div style="width:150px;height:4px;background:#B8973A;margin:-8px auto 42px"></div>
+<p class="deck-kicker">Your building deserves management that matches its stature: financial clarity, responsiveness, proactive stewardship, and a property-specific operating plan built around ${safe(d.address)}.</p>
+</div>
+</div>
+
+<div class="deck-slide">
+<div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
+<h2 class="deck-title">The Property</h2>
+<div class="deck-grid-2">
+<div class="deck-copy">
+<h3>${safe(propertyPedigree.title)}</h3>
+<p>${safe(propertyPedigree.narrative)}</p>
+<ul class="deck-facts">
+${propertyPedigree.facts.map(f => `<li>${safe(f)}</li>`).join('')}
+</ul>
+<div class="deck-note">${safe(propertyPedigree.foot)}</div>
+</div>
+<div class="deck-photo">
+${subjectPhoto ? `<img src="${subjectPhoto}" alt="${safe(d.buildingName)}">` : `<iframe src="https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${d.latitude || '40.7831'},${d.longitude || '-73.9712'}&heading=0&pitch=5&fov=80" width="100%" height="330" style="border:0" allowfullscreen loading="lazy"></iframe>`}
+</div>
+</div>
+</div>
+
+<div class="deck-slide">
+<div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
+<h2 class="deck-title">Location &amp; Neighborhood</h2>
+<div class="deck-grid-2" style="grid-template-columns:1.15fr 0.85fr">
+<div class="deck-copy">
+<h3>${safe(propertyPedigree.locationTitle)}</h3>
+<p>${safe(propertyPedigree.locationCopy)}</p>
+<h3>${safe(propertyPedigree.lifestyleTitle)}</h3>
+<p>${safe(propertyPedigree.lifestyleCopy)}</p>
+</div>
+<div class="deck-card" style="min-height:330px">
+<h4>Nearby Landmarks</h4>
+<div style="width:110px;height:4px;background:#B8973A;margin:0 0 28px"></div>
+<ul style="list-style:none;padding-left:0">
+${propertyPedigree.landmarks.map(l => `<li style="margin-bottom:16px">${safe(l)}</li>`).join('')}
+</ul>
+</div>
 </div>
 </div>
 
@@ -2142,11 +2325,23 @@ ${isSelfManaged ? `
 <div style="font-size:10px;color:#999;text-align:center;margin-top:8px">Member: REBNY | SPONY | NYARM | IREM | BOMA | NARPM | NY Apartment Association</div>
 </div>
 
+<div class="deck-slide">
+<div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
+<h2 class="deck-title" style="color:#0D2E63">Experience Meets Innovation</h2>
+<p style="font-size:16px;color:#777;margin:-18px 0 48px 25px">Decades of hands-on management knowledge, powered by modern technology</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:30px">
+<div class="deck-card" style="border-top:0;min-height:300px"><h4>The Grey Hair</h4><p>Since 2006, Camelot has managed 130+ properties across New York. Our seasoned property managers and in-house CPAs bring real-world knowledge: board politics, insurance claims, vendor negotiations, compliance pressure, and building emergencies. We are independently owned, and David Goldoff personally oversees every property in our portfolio. When you call, you get a decision-maker, not a call center.</p></div>
+<div class="deck-card" style="border-top:0;min-height:300px"><h4>The Technology</h4><p>We harness AI, automation, and data to deliver faster, smarter service. Merlin AI handles meeting minutes, maintenance triage, and compliance alerts. ConciergePlus gives residents a white-labeled portal and mobile app for payments, work orders, amenity bookings, and support. Camelot Central gives boards real-time dashboards, utility tracking, compliance status, and financial transparency.</p></div>
+</div>
+</div>
+
 <!-- PAGE 10: CORE SERVICES (with icons + rich styling) -->
 <div class="section section-white">
 <div class="section-title">Core Services</div>
 <div class="section-sub">Comprehensive management tailored to ${d.buildingName}</div>
 
+<div style="display:grid;grid-template-columns:${subjectPhoto ? '1.6fr 0.8fr' : '1fr'};gap:28px;align-items:center">
+<div>
 ${[
   { icon: '\uD83C\uDFE2', title: 'Property & Asset Management', desc: 'Weekly site visits by senior management. Vendor coordination, proactive inspections, and cost reduction. 24/7 emergency response with direct access to decision-makers. Buildings treated like owner-managed assets.', color: '#3A4B5B' },
   { icon: '\uD83D\uDCB0', title: 'In-House CPA & Financials', desc: 'Dedicated CPAs \u2014 never outsourced. Monthly board-ready financial reports, 5-year capital planning, real-time arrears tracking, vendor benchmarking, and zero-fee payment processing.', color: '#A89035' },
@@ -2155,6 +2350,9 @@ ${[
 <div style="font-size:32px;flex-shrink:0;width:48px;height:48px;background:${s.color}10;border-radius:10px;display:flex;align-items:center;justify-content:center">${s.icon}</div>
 <div><h4 style="font-size:15px;font-weight:700;color:#2C3240;margin-bottom:6px">${s.title}</h4><p style="font-size:12px;color:#555;line-height:1.7">${s.desc}</p></div>
 </div>`).join('\n')}
+</div>
+${subjectPhoto ? `<div class="deck-photo" style="height:360px"><img src="${subjectPhoto}" alt="${safe(d.buildingName)}"></div>` : ''}
+</div>
 </div>
 
 <!-- PAGE 11: VALUE-ADDED (with icons) -->
@@ -2176,17 +2374,22 @@ ${[
 <div><h5 style="font-size:13px;font-weight:700;color:#2C3240;margin-bottom:4px">${s.title}</h5><p style="font-size:11px;color:#888;line-height:1.5">${s.desc}</p></div>
 </div>`).join('\n')}
 </div>
+<div class="deck-note" style="text-align:center;margin-top:18px">Everything a luxury condominium board needs: under one roof, with in-house licensed professionals.</div>
 </div>
 
 <!-- PAGE 12: COMPLIANCE CALENDAR -->
 <div class="section section-white">
 <div class="section-title">Compliance &amp; Local Law 97</div>
-<div class="section-sub">Proactive compliance calendar \u2014 we never let a deadline slip</div>
+<div class="section-sub">Proactive compliance calendar for ${d.buildingName} \u2014 Jackie checks the property profile before release</div>
 <div class="compliance-row">
-<div class="compliance-card"><div class="month">January</div><h5>Tax Appeals</h5><p>Strategic filing to reduce assessments</p></div>
-<div class="compliance-card"><div class="month">June</div><h5>RPIE Filings</h5><p>Income and expense data for NYC Finance</p></div>
-<div class="compliance-card"><div class="month">September</div><h5>HPD Registration</h5><p>Multi-family registration compliance</p></div>
-<div class="compliance-card"><div class="month">December</div><h5>Budgeting</h5><p>Capital calls, operating budgets, reserves</p></div>
+${complianceDates.map(c => `<div class="compliance-card"><div class="month">${c.month}</div><h5>${c.title}</h5><p>${safe(c.desc)}</p></div>`).join('\n')}
+</div>
+<h3 style="font-family:'Cardo',Georgia,serif;font-size:22px;color:#0D2E63;margin:30px 0 16px">LOCAL LAW 97 &mdash; Critical for ${safe(ll97Context)}</h3>
+<div class="compliance-row">
+<div class="compliance-card"><h5>Annual Benchmarking</h5><p>Energy filings required. Zero fines, zero penalties.</p></div>
+<div class="compliance-card"><h5>Penalty Modeling</h5><p>${d.ll97 ? `${fmtMoney(d.ll97.period1Penalty)} current-period annual exposure modeled.` : 'Model liability before it becomes a fine.'}</p></div>
+<div class="compliance-card"><h5>Capital Upgrade Path</h5><p>HVAC, boiler, insulation, and controls that reduce emissions and cost.</p></div>
+<div class="compliance-card"><h5>Cost Recovery Plan</h5><p>Rebates, incentives, tax credits, and financing options for upgrades.</p></div>
 </div>
 </div>
 
@@ -2210,6 +2413,45 @@ ${[
 <div class="trans-card"><h4>Month 2: Stabilization</h4><div class="sub">SOPs, vendor re-bid, portal launch</div><ul><li>Written SOPs for all positions</li><li>Work order system configured</li><li>Vendor re-bidding &amp; optimization</li><li>Board portal setup &amp; training</li><li>Financial system migration</li></ul></div>
 <div class="trans-card"><h4>Month 3: Optimization</h4><div class="sub">Tech live, reporting, capital roadmap</div><ul><li>Full technology stack operational</li><li>Resident portal &amp; mobile app</li><li>Monthly reporting cadence</li><li>5-Year capital roadmap delivered</li><li>Merlin AI fully operational</li></ul></div>
 </div>
+</div>
+
+<div class="deck-slide">
+<div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
+<h2 class="deck-title" style="color:#0D2E63">Your Investment</h2>
+<p style="font-size:15px;color:#777;margin:-20px 0 28px 24px">Tailored to ${safe(d.buildingName)} after a comprehensive scope and budget review</p>
+<p style="font-size:14px;color:#0F1E33;line-height:1.55;max-width:760px;margin-bottom:24px">Every building is different. Before we discuss pricing, we take the time to understand ${safe(d.buildingName)}'s unique needs: operations, financials, staffing, vendors, compliance profile, and board goals. Our fee is shaped by that conversation, not a one-size-fits-all formula.</p>
+<div style="display:grid;grid-template-columns:0.8fr 1.2fr;gap:26px">
+<div>
+<div style="width:70px;height:4px;background:#B8973A;margin-bottom:8px"></div>
+<h3 style="font-family:'Cardo',Georgia,serif;font-size:24px;color:#0D2E63;margin-bottom:12px">Our Approach</h3>
+${[
+  ['Scope Review First', "We assess operations, staff, vendors, and compliance before proposing any fee structure."],
+  ['Flexible Frameworks', "Per-unit, flat-fee, and hybrid structures can align with the board's priorities."],
+  ['No Hidden Costs', 'What we quote is what you pay: no percentage markups on vendors, no surprise surcharges.'],
+  ['Long-Term Value', 'Technology, compliance tools, and vendor relationships create savings that offset the fee over time.'],
+].map(r => `<div style="display:flex;gap:10px;margin-bottom:12px"><span style="color:#B8973A;font-size:18px">●</span><div><strong style="color:#0D2E63">${r[0]}</strong><p style="font-size:11px;color:#38557D;line-height:1.4">${r[1]}</p></div></div>`).join('')}
+</div>
+<div>
+<h3 style="font-family:'Cardo',Georgia,serif;font-size:24px;color:#0D2E63;margin-bottom:8px">What's Always Included</h3>
+<table class="deck-table" style="font-size:11px"><thead><tr><th>Included Service</th><th>What You Get</th></tr></thead><tbody>
+${proposedRows.slice(1).map(r => `<tr><td><strong>${r[0]}</strong></td><td>${safe(r[1])}</td></tr>`).join('\n')}
+</tbody></table>
+</div>
+</div>
+<div class="deck-note" style="text-align:center">We'd like to learn about your building's needs first: then we'll propose a fee that makes sense for both of us.</div>
+</div>
+
+<div class="deck-slide">
+<div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
+<h2 class="deck-title">The Proposed Investment</h2>
+<p class="deck-kicker" style="margin:0 0 28px 32px">Flat-rate, all-inclusive: no percentage fees, no hidden surcharges, no surprises.</p>
+<table class="deck-table">
+<thead><tr><th>Management Service Component</th><th>Camelot Inclusion</th></tr></thead>
+<tbody>
+${proposedRows.map(r => `<tr><td><strong>${r[0]}</strong></td><td>${safe(r[1])}</td></tr>`).join('\n')}
+</tbody>
+</table>
+<div class="deck-note">Our efficiencies effectively pay for our management through long-term savings on vendors, compliance, and capital.</div>
 </div>
 
 <!-- PAGE 15: THREE-TIER PRICING -->
@@ -2478,7 +2720,21 @@ ${d.feeComparison.ancillaryFeesIncluded.map(svc => `<div style="font-size:11px;c
 <!-- PAGE 16E: TECHNOLOGY PLATFORM PARTNERS -->
 <div class="section section-white">
 <div class="section-title">Technology Platform Partners</div>
-<div class="section-sub">Best-in-class integrations powering Camelot\u2019s management platform</div>
+<div class="section-sub">Technology partners help Camelot build automation and seamless operating systems for buildings and residents</div>
+
+<div class="partner-cloud">
+<div class="partner-logo small" style="left:10px;top:80px">select</div>
+<div class="partner-logo" style="left:220px;top:18px">mds</div>
+<div class="partner-logo" style="right:22px;top:28px">BankUnited</div>
+<div class="partner-logo blue" style="left:380px;top:150px">appfolio</div>
+<div class="partner-logo small" style="right:70px;top:140px">Property<br>Shark</div>
+<div class="partner-logo" style="left:20px;bottom:55px">concierge plus</div>
+<div class="partner-logo orange" style="left:420px;bottom:30px">HubSpot</div>
+</div>
+
+<div style="background:#F5F0E5;border:1px solid #D5D0C6;border-left:4px solid #B8973A;padding:14px 18px;margin:0 0 16px">
+<p style="font-size:12px;color:#38557D;line-height:1.6">Camelot connects these platforms with Jackie, Merlin AI, and Camelot Central so boards get faster communication, better compliance visibility, cleaner financial workflows, and a resident experience that feels modern without losing human judgment.</p>
+</div>
 
 <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;padding:20px 0">
 ${[
@@ -3078,6 +3334,24 @@ ${buildPortfolioSection(d)}
 <div style="font-size:9px;color:rgba(255,255,255,0.2);margin-top:12px">${CAMELOT.license1} | ${CAMELOT.license2}</div>
 
 </div>
+</div>
+
+<div class="deck-slide dark">
+<div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
+<h2 class="deck-title center" style="font-size:54px;margin-bottom:34px">Next Steps</h2>
+<p style="font-size:20px;line-height:1.55;max-width:680px;margin-bottom:70px">We welcome the opportunity to meet near the building to discuss how we can serve ${safe(d.buildingName)}.</p>
+<div style="color:#B8973A;font-size:18px;margin-bottom:22px">David Goldoff, Founder &amp; President</div>
+<div style="font-size:16px;line-height:1.9">${CAMELOT.phone} ext. 701 &nbsp; | &nbsp; ${CAMELOT.mobile}<br>${CAMELOT.infoEmail} &nbsp; | &nbsp; ${CAMELOT.email}<br><span style="color:#B9C7D3">${CAMELOT.web}</span></div>
+<div style="font-size:13px;color:#9DB0BE;margin-top:22px">${CAMELOT.address}</div>
+<div style="margin-top:34px;font-size:13px;color:#D6E0E7">Available meeting formats: in-person, Zoom, Google Meet, or group call-in.</div>
+</div>
+
+<div class="deck-slide dark">
+<div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
+<div class="thank-wordmark">CAMELOT</div>
+<div style="color:#B8973A;font-size:18px;margin-bottom:76px">Property Management</div>
+<h2 class="deck-title center" style="font-size:54px;margin-bottom:26px">Thank You</h2>
+<p style="font-size:20px;line-height:1.45;max-width:560px">We look forward to serving the ${safe(d.buildingName)} community.</p>
 </div>
 
 </div>

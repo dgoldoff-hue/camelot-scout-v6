@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Search, FileText, Download, Mail, Phone, Table2, Link2, Loader2, Eye, Copy, Check, X } from 'lucide-react';
-import { buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, type MasterReportData } from '@/lib/camelot-report';
+import { buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, validateJackieReport, type MasterReportData } from '@/lib/camelot-report';
 import { generatePitchReport, generatePitchEmail } from '@/lib/pitch-report';
 import { generatePitchDeck } from '@/lib/pitch-deck-pptx';
 import { openBrochureForPrint, downloadAsHTML, triggerCSVDownload, copyToClipboard } from '@/lib/pdf-generator';
@@ -44,6 +44,7 @@ export default function ReportCenter() {
     const d = getDataWithPhotos();
     if (!d) return;
     const html = generateBrochureHTML(d);
+    if (!verifyJackieRelease(d, html)) return;
     openBrochureForPrint(html, `Jackie-Report-${d.buildingName}`);
   };
 
@@ -86,6 +87,7 @@ export default function ReportCenter() {
     const d = getDataWithPhotos();
     if (!d) return;
     const html = generateBrochureHTML(d);
+    if (!verifyJackieRelease(d, html)) return;
     downloadAsHTML(html, `Jackie-Report-${d.buildingName.replace(/[^a-zA-Z0-9]/g, '-')}.html`);
   };
 
@@ -132,6 +134,10 @@ export default function ReportCenter() {
     if (saved.length > 0) setUploadedPhotos(saved);
   }, [address]);
 
+  useEffect(() => {
+    loadSavedPhotos();
+  }, [loadSavedPhotos]);
+
   // Inject uploaded photos into report data before generating
   const getDataWithPhotos = (): MasterReportData | null => {
     if (!data) return null;
@@ -145,6 +151,21 @@ export default function ReportCenter() {
         source: 'Uploaded by Camelot team',
       },
     };
+  };
+
+  const verifyJackieRelease = (d: MasterReportData, html: string) => {
+    const qa = validateJackieReport(d, html);
+    if (qa.failures > 0) {
+      const detail = qa.checks.filter(c => c.status === 'fail').slice(0, 4).map(c => `${c.name}: ${c.detail}`).join('\n');
+      toast.error(`Jackie self-check blocked release:\n${detail}`, { duration: 8000 });
+      return false;
+    }
+    if (qa.warnings > 0) {
+      toast.success(`Jackie self-check passed with ${qa.warnings} warning(s). Review photo/data warnings if needed.`, { duration: 4500 });
+    } else {
+      toast.success('Jackie self-check passed. Report is clean for release.');
+    }
+    return true;
   };
 
   const emailDraft = data ? generateEmailDraft(data, emailType) : null;
