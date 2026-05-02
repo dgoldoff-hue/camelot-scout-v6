@@ -61,7 +61,10 @@ async function searchWikimedia(buildingName: string, address: string): Promise<s
  * Get Google Street View and satellite URLs for a building
  */
 function getGooglePhotos(address: string): { streetView: string; satellite: string } {
-  const encoded = encodeURIComponent(address + ', New York, NY');
+  const cleanAddress = /\b(new york|ny|brooklyn|queens|bronx|staten island|manhattan)\b/i.test(address)
+    ? address
+    : `${address}, New York, NY`;
+  const encoded = encodeURIComponent(cleanAddress.replace(/\s*,\s*/g, ', ').replace(/\s{2,}/g, ' ').trim());
   return {
     streetView: `https://maps.googleapis.com/maps/api/streetview?size=1200x600&location=${encoded}&key=${GOOGLE_MAPS_KEY}`,
     satellite: `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_KEY}&q=${encoded}&zoom=18&maptype=satellite`,
