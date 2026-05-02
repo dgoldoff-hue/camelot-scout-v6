@@ -151,6 +151,84 @@ function scoreOfficialCandidate(url, address, name) {
   }
 }
 
+function classifyCommercialSource(url) {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '').toLowerCase();
+    if (host.includes('loopnet.com')) return 'LoopNet';
+    if (host.includes('costar.com')) return 'CoStar';
+    if (host.includes('propertyshark.com')) return 'PropertyShark';
+    if (host.includes('nyc.gov') || host.includes('opendata.cityofnewyork.us') || host.includes('data.cityofnewyork.us')) return 'NYC records';
+    if (/iconparking|ipark|lazparking|spplus|parking\.com|edisonparkfast|quikpark|propark|championparking|cityparking|manhattanparking|littlemanparking/i.test(host)) return 'NYC parking operator';
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function classifyCommercialSignal(text, source) {
+  const hay = `${source || ''} ${text || ''}`.toLowerCase();
+  const signals = [];
+  if (/\b(retail|storefront|restaurant|cafe|market|salon|commercial condo|commercial unit)\b/i.test(hay)) signals.push('Retail / storefront signal from commercial source');
+  if (/\b(office|professional suite|coworking|commercial office)\b/i.test(hay)) signals.push('Office signal from commercial source');
+  if (/\b(doctor|medical|clinic|physician|dental|healthcare)\b/i.test(hay)) signals.push('Medical / doctor-office signal from commercial source');
+  if (/\b(storage cage|storage locker|private storage|storage unit|storage available)\b/i.test(hay)) signals.push('Storage cage / storage-unit signal from commercial source');
+  if (/\b(parking garage|garage|monthly parking|indoor parking|parking operator|valet|parking available)\b/i.test(hay)) signals.push('Parking garage / operator signal from commercial source');
+  if (/\b(billboard|signage|advertising sign|wallscape)\b/i.test(hay)) signals.push('Billboard / signage signal from commercial source');
+  return signals;
+}
+
+async function searchCommercialSources(address, name) {
+  const base = `"${address}" "${name || ''}"`;
+  const queries = [
+    `${base} site:loopnet.com retail office medical parking storage`,
+    `${base} site:costar.com commercial tenant retail office garage`,
+    `${base} site:propertyshark.com commercial condo parking garage`,
+    `${base} "parking garage" "New York"`,
+    `${base} "Icon Parking" OR "iPark" OR "LAZ Parking" OR "SP+" OR "Edison ParkFast" OR "Quik Park"`,
+    `${base} site:nyc.gov garage parking curb cut certificate of occupancy`,
+    `${base} site:data.cityofnewyork.us parking garage`,
+  ];
+  const sourceHits = [];
+  const signals = [];
+
+  for (const query of queries) {
+    try {
+      const searchUrl = `https://duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+      const resp = await fetch(searchUrl, { headers: { 'User-Agent': 'Mozilla/5.0 CamelotJackie/1.0' }, signal: AbortSignal.timeout(9000) });
+      if (!resp.ok) continue;
+      const html = await resp.text();
+      const matches = [...html.matchAll(/class="result__a"[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)]
+        .slice(0, 5);
+      for (const m of matches) {
+        const rawHref = m[1].replace(/&amp;/g, '&');
+        let url = rawHref;
+        try {
+          const u = new URL(rawHref, 'https://duckduckgo.com');
+          const uddg = u.searchParams.get('uddg');
+          url = uddg ? decodeURIComponent(uddg) : rawHref;
+        } catch {}
+        const source = classifyCommercialSource(url);
+        if (!source) continue;
+        const title = cleanText(m[2]);
+        const after = html.slice(m.index || 0, (m.index || 0) + 1200);
+        const snippet = cleanText((after.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/[^>]+>/i) || [])[1] || '');
+        if (sourceHits.some(h => h.url === url)) continue;
+        sourceHits.push({ source, url, title, snippet });
+        signals.push(...classifyCommercialSignal(`${title} ${snippet}`, source));
+      }
+    } catch (err) {
+      console.warn('Commercial source search failed:', query, err.message);
+    }
+  }
+
+  return {
+    sourceHits: sourceHits.slice(0, 12),
+    signals: [...new Set(signals)],
+    searchedSources: ['LoopNet', 'CoStar', 'PropertyShark', 'NYC records', 'NYC parking operators'],
+    searchedAt: new Date().toISOString(),
+  };
+}
+
 app.get('/api/building/brand', async (req, res) => {
   try {
     const address = String(req.query.address || '').trim();
@@ -212,7 +290,15 @@ app.get('/api/building/brand', async (req, res) => {
       }
     }
 
-    res.json({ official, candidates, query: rawQuery, searchedAt: new Date().toISOString() });
+    const commercialResearch = await searchCommercialSources(address, name).catch(err => ({
+      sourceHits: [],
+      signals: [],
+      searchedSources: ['LoopNet', 'CoStar', 'PropertyShark', 'NYC records', 'NYC parking operators'],
+      error: err.message,
+      searchedAt: new Date().toISOString(),
+    }));
+
+    res.json({ official, candidates, commercialResearch, query: rawQuery, searchedAt: new Date().toISOString() });
   } catch (err) {
     console.error('Building branding research error:', err);
     res.status(500).json({ error: err.message || 'Building branding research failed' });

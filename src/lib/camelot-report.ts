@@ -692,6 +692,11 @@ function inferCommercialAmenityIntel(input: {
   branding: any | null;
   raw: any;
 }): CommercialAmenityIntel {
+  const sourceSignals = [
+    ...(input.branding?.commercialResearch?.signals || []),
+    ...(input.branding?.commercialResearch?.sourceHits || []).map((hit: any) => `${hit.source}: ${hit.title || hit.url}`),
+    ...(input.branding?.parkingResearch?.signals || []),
+  ];
   const hay = [
     input.address,
     input.buildingName,
@@ -705,6 +710,7 @@ function inferCommercialAmenityIntel(input: {
     input.branding?.official?.title || '',
     input.branding?.official?.description || '',
     input.branding?.official?.textSample || '',
+    ...sourceSignals,
   ].join(' ').toLowerCase();
 
   const commercialPatterns: Array<[string, RegExp]> = [
@@ -712,12 +718,12 @@ function inferCommercialAmenityIntel(input: {
     ['Office', /\b(office|professional suite|commercial suite)\b/i],
     ['Medical / doctor office', /\b(doctor|medical|clinic|physician|dental|healthcare)\b/i],
     ['Billboard / signage', /\b(billboard|signage|advertising sign|wallscape)\b/i],
-    ['Parking / garage', /\b(parking|garage|valet)\b/i],
+    ['Parking / garage', /\b(parking|garage|valet|parking operator|indoor parking|self park|monthly parking)\b/i],
     ['Storage cages / lockers', /\b(storage cage|storage locker|private storage|storage space|storage)\b/i],
   ];
   const amenityPatterns: Array<[string, RegExp]> = [
     ['Storage cages', /\b(storage cage|storage locker|private storage|storage space|storage)\b/i],
-    ['Parking / garage', /\b(parking|garage|valet)\b/i],
+    ['Parking / garage', /\b(parking|garage|valet|indoor parking|monthly parking)\b/i],
     ['Library', /\blibrary\b/i],
     ['Pool', /\bpool\b/i],
     ['Fitness center / gym', /\b(gym|fitness|exercise room|yoga)\b/i],
@@ -731,6 +737,20 @@ function inferCommercialAmenityIntel(input: {
   ];
 
   const likelyCommercialUses = commercialPatterns.filter(([, re]) => re.test(hay)).map(([label]) => label);
+  const parkingOperatorPatterns: Array<[string, RegExp]> = [
+    ['Icon Parking signal', /\bicon\s+parking\b/i],
+    ['iPark parking signal', /\bipark\b/i],
+    ['LAZ Parking signal', /\blaz\s+parking\b/i],
+    ['SP+ parking signal', /\bsp\+|standard\s+parking\b/i],
+    ['Edison ParkFast signal', /\bedison\s+parkfast\b/i],
+    ['Quik Park signal', /\bquik\s+park\b/i],
+    ['Propark signal', /\bpropark\b/i],
+    ['Champion Parking signal', /\bchampion\s+parking\b/i],
+    ['City Parking signal', /\bcity\s+parking\b/i],
+    ['Manhattan Parking Group signal', /\bmanhattan\s+parking\s+group\b/i],
+    ['Little Man Parking signal', /\blittle\s+man\s+parking\b/i],
+  ];
+  const parkingOperatorSignals = parkingOperatorPatterns.filter(([, re]) => re.test(hay)).map(([label]) => label);
   const amenities = [
     ...amenityPatterns.filter(([, re]) => re.test(hay)).map(([label]) => label),
     ...(input.streetEasy?.amenities || []),
@@ -738,6 +758,8 @@ function inferCommercialAmenityIntel(input: {
   ].filter(Boolean);
   const commercialSignals = [
     ...likelyCommercialUses,
+    ...parkingOperatorSignals,
+    ...sourceSignals,
     ...(input.branding?.official?.commercialSignals || []),
   ].filter(Boolean);
 
@@ -752,7 +774,7 @@ function inferCommercialAmenityIntel(input: {
   const uniqueCommercial = [...new Set(commercialSignals.map(s => String(s).trim()).filter(Boolean))];
   const revenueOpportunities = [
     uniqueCommercial.some(s => /retail|office|medical|commercial/i.test(s)) ? 'Commercial lease abstract and rent escalation audit' : null,
-    uniqueCommercial.some(s => /parking|garage/i.test(s)) || uniqueAmenities.some(a => /parking|garage/i.test(a)) ? 'Parking license, garage revenue, and insurance review' : null,
+    uniqueCommercial.some(s => /parking|garage|operator|ipark|icon|laz|sp\+|edison|quik|propark/i.test(s)) || uniqueAmenities.some(a => /parking|garage/i.test(a)) ? 'Parking operator, DOT/DOB garage, license, revenue, and insurance review' : null,
     uniqueCommercial.some(s => /billboard|signage/i.test(s)) ? 'Billboard/signage licensing and revenue review' : null,
     uniqueAmenities.some(a => /storage/i.test(a)) ? 'Storage cage inventory, license terms, and waitlist revenue review' : null,
     uniqueAmenities.length > 0 ? 'Amenity access, booking, waiver, and resident communication review' : null,
@@ -761,9 +783,16 @@ function inferCommercialAmenityIntel(input: {
   const official = input.branding?.official || null;
   const researchSources = [
     'DOF building class / tax class',
+    'HPD MDR owner / managing-agent records',
     input.streetEasy ? 'StreetEasy amenities and features' : null,
     official?.url ? `Official website: ${official.url}` : 'Official building website search attempted',
+    'PropertyShark-style owner / tax / commercial-use review',
+    'LoopNet public listing search attempted',
+    'CoStar public listing search attempted',
+    'NYC DOT/DOB parking garage and curb-cut signal review',
+    'NYC parking operator scan: Icon, iPark, LAZ, SP+, Edison ParkFast, Quik Park, Propark, Champion, City Parking',
     'Jackie keyword scan: retail, office, medical, signage, storage, parking, amenities',
+    ...(input.branding?.commercialResearch?.sourceHits || []).map((hit: any) => `${hit.source}: ${hit.url}`),
   ].filter(Boolean) as string[];
 
   return {
@@ -831,6 +860,7 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
         'Bicycle storage, cold storage, and storage cage inventory / waitlist review.',
         'Amenity booking rules, waivers, deposit schedules, and damage-charge controls.',
         'Move-in / move-out, pet, package, and private-event fee policy review.',
+        'Confirm any LoopNet, CoStar, PropertyShark, DOT/DOB garage, or parking-operator signal before publishing commercial tenant claims.',
       ],
       landmarks: [
         'Museum of African Art: in building',
@@ -849,6 +879,7 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
       researchSources: [
         'Camelot owner-supplied One Museum Mile reference materials',
         'StreetEasy building page: https://streeteasy.com/building/one-museum-mile',
+        'LoopNet / CoStar / PropertyShark / NYC parking-source review required before publishing any commercial tenant name',
         'Verified One Museum Mile asset library',
       ],
     };
