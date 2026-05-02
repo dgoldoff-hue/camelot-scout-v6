@@ -141,6 +141,29 @@ export interface CommercialAmenityIntel {
   researchStatus: 'verified' | 'needs_review';
 }
 
+interface KnownPropertyFacts {
+  buildingName?: string;
+  units?: number;
+  stories?: number;
+  yearBuilt?: number;
+  propertyType?: string;
+  neighborhoodName?: string;
+  streetEasyUrl?: string;
+  description?: string;
+  amenities?: string[];
+  commercialSignals?: string[];
+  revenueOpportunities?: string[];
+  imageUrls?: string[];
+  landmarks?: string[];
+  locationTitle?: string;
+  locationCopy?: string;
+  lifestyleTitle?: string;
+  lifestyleCopy?: string;
+  brandingTitle?: string;
+  brandingDescription?: string;
+  researchSources?: string[];
+}
+
 // ============================================================
 // Neighborhood Market Data (Q1 2026 — from Camelot Market Report)
 // ============================================================
@@ -757,13 +780,7 @@ function inferCommercialAmenityIntel(input: {
   };
 }
 
-function getKnownPropertyFacts(address: string, candidateName = ''): {
-  buildingName?: string;
-  units?: number;
-  stories?: number;
-  yearBuilt?: number;
-  propertyType?: string;
-} | null {
+function getKnownPropertyFacts(address: string, candidateName = ''): KnownPropertyFacts | null {
   const key = `${address} ${candidateName}`.toLowerCase();
   if (/1280\s+(fifth|5th)/i.test(key) || /one\s+museum\s+mile/i.test(key)) {
     return {
@@ -772,6 +789,68 @@ function getKnownPropertyFacts(address: string, candidateName = ''): {
       stories: 19,
       yearBuilt: 2012,
       propertyType: 'Luxury Condominium',
+      neighborhoodName: 'Museum Mile / Upper Fifth Avenue',
+      streetEasyUrl: 'https://streeteasy.com/building/one-museum-mile',
+      description: 'One Museum Mile is a Fifth Avenue condominium along Central Park, designed by Robert A.M. Stern with interiors by Andre Kikoski and a full lifestyle amenity program.',
+      imageUrls: [
+        './images/one-museum-mile/building-picture.webp',
+        './images/one-museum-mile/lobby-entrance.webp',
+        './images/one-museum-mile/lobby.webp',
+        './images/one-museum-mile/rooftop-pool.webp',
+        './images/one-museum-mile/rooftop-pool-2.webp',
+        './images/one-museum-mile/roof-deck-central-park.webp',
+        './images/one-museum-mile/roof-deck-skyline.webp',
+        './images/one-museum-mile/gym.webp',
+      ],
+      amenities: [
+        'Landscaped roof deck with outdoor heated pool',
+        'Rooftop lounge facing Central Park',
+        'Residents’ lounge with fireplace',
+        'Fitness center with terrace',
+        'Children’s playroom with window wall to fitness center',
+        'Game room',
+        'Formal dining room facing Central Park with fully equipped catering kitchen',
+        'Media lounge',
+        'Card room',
+        'Bicycle storage',
+        'Cold storage',
+        'Full-time concierge',
+        'Peak-time door person coverage',
+        'On-site resident manager',
+        'On-site garage parking available for purchase',
+        'Pet-friendly building',
+        '44-foot alabaster-inspired art glass lobby wall by Andre Kikoski and Weil Studio',
+      ],
+      commercialSignals: [
+        'On-site garage / parking component: confirm ownership, license structure, insurance, and revenue treatment.',
+        'Museum for African Art base / cultural component: confirm operating agreements, access boundaries, and owner responsibilities.',
+        'No retail or office tenant should be published until confirmed through offering plan, signage walk-through, and building records.',
+      ],
+      revenueOpportunities: [
+        'Parking garage license, purchase inventory, and insurance review.',
+        'Bicycle storage, cold storage, and storage cage inventory / waitlist review.',
+        'Amenity booking rules, waivers, deposit schedules, and damage-charge controls.',
+        'Move-in / move-out, pet, package, and private-event fee policy review.',
+      ],
+      landmarks: [
+        'Museum of African Art: in building',
+        'El Museo del Barrio: 1 block',
+        'Central Park / Harlem Meer: across street',
+        'Mount Sinai Medical Center: nearby',
+        'Guggenheim Museum: Museum Mile',
+        'Conservatory Garden: steps away',
+      ],
+      locationTitle: 'Crown of Museum Mile',
+      locationCopy: 'Northeast corner of Central Park at Duke Ellington Circle. One Museum Mile combines Fifth Avenue visibility, Central Park adjacency, and cultural-neighborhood fundamentals that support long-term owner value.',
+      lifestyleTitle: 'Lifestyle & Liquidity',
+      lifestyleCopy: 'Steps from Central Park, Harlem Meer, the Conservatory Garden, El Museo del Barrio, and Upper Fifth Avenue cultural anchors. The building’s amenity package and park-facing roof experience are core parts of its resident value story.',
+      brandingTitle: 'One Museum Mile on StreetEasy',
+      brandingDescription: 'StreetEasy confirms the One Museum Mile building profile, architect/interior design pedigree, East Harlem location, 19 stories, 2012 completion, and amenity-rich condominium positioning. Camelot owner-supplied materials remain the authority for the 116-unit count.',
+      researchSources: [
+        'Camelot owner-supplied One Museum Mile reference materials',
+        'StreetEasy building page: https://streeteasy.com/building/one-museum-mile',
+        'Verified One Museum Mile asset library',
+      ],
     };
   }
   return null;
@@ -941,7 +1020,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   const buildingName = knownFacts?.buildingName || deriveBuildingName(address, raw);
   const propertyType = knownFacts?.propertyType || streetEasy?.buildingType || classifyBuildingType(dof?.buildingClass || '');
   const brandingResearch = await fetchOfficialBuildingBranding(address, buildingName).catch(() => null);
-  const commercialIntel = inferCommercialAmenityIntel({
+  let commercialIntel = inferCommercialAmenityIntel({
     address,
     buildingName,
     buildingClass: dof?.buildingClass || '',
@@ -952,6 +1031,31 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     branding: brandingResearch,
     raw,
   });
+  if (knownFacts?.amenities?.length || knownFacts?.commercialSignals?.length || knownFacts?.streetEasyUrl) {
+    const unique = (items: Array<string | null | undefined>) => [...new Set(items.map(i => String(i || '').trim()).filter(Boolean))];
+    commercialIntel = {
+      ...commercialIntel,
+      commercialSignals: unique([...(knownFacts.commercialSignals || []), ...commercialIntel.commercialSignals]),
+      amenities: unique([...(knownFacts.amenities || []), ...commercialIntel.amenities]),
+      revenueOpportunities: unique([...(knownFacts.revenueOpportunities || []), ...commercialIntel.revenueOpportunities]),
+      officialWebsite: knownFacts.streetEasyUrl || commercialIntel.officialWebsite,
+      brandingTitle: knownFacts.brandingTitle || commercialIntel.brandingTitle,
+      brandingDescription: knownFacts.brandingDescription || commercialIntel.brandingDescription,
+      brandingImages: knownFacts.imageUrls?.length ? knownFacts.imageUrls : commercialIntel.brandingImages,
+      researchSources: unique([...(knownFacts.researchSources || []), ...commercialIntel.researchSources]),
+      researchStatus: 'verified',
+    };
+  }
+
+  const effectiveBuildingPhotos = knownFacts?.imageUrls?.length
+    ? {
+        exterior: knownFacts.imageUrls,
+        streetView: buildingPhotos?.streetView || '',
+        satellite: buildingPhotos?.satellite || '',
+        source: 'Verified One Museum Mile asset library',
+      }
+    : buildingPhotos;
+  const effectiveNeighborhoodName = knownFacts?.neighborhoodName || streetEasy?.neighborhood || detectNeighborhood(address, borough || '');
 
   return {
     address,
@@ -1012,8 +1116,8 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     latitude: geo?.lat ?? null,
     longitude: geo?.lng ?? null,
     propertyType,
-    neighborhoodName: streetEasy?.neighborhood || detectNeighborhood(address, borough || ''),
-    neighborhoodMarketData: lookupNeighborhoodData(detectNeighborhood(address, borough || '')),
+    neighborhoodName: effectiveNeighborhoodName,
+    neighborhoodMarketData: lookupNeighborhoodData(effectiveNeighborhoodName || detectNeighborhood(address, borough || '')),
     registrationDate: raw.registration?.registrationId ? null : null,
     managementDuration: null,
     managementGrade: gradeManagement({
@@ -1100,7 +1204,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     }),
     streetEasy,
     commercialIntel,
-    buildingPhotos,
+    buildingPhotos: effectiveBuildingPhotos,
     neighborhoodIntel,
     raw,
   };
@@ -1227,6 +1331,14 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     status: badImages.length === 0 ? 'pass' : 'fail',
     detail: badImages.length === 0 ? `${imageSources.length} image link(s) checked` : `Broken/dirty image src: ${badImages.slice(0, 2).join(', ')}`,
   });
+  if (/one\s+museum\s+mile|1280\s+(fifth|5th)/i.test(`${d.buildingName} ${d.address}`)) {
+    const oneMuseumAssets = imageSources.filter(src => src.includes('./images/one-museum-mile/'));
+    checks.push({
+      name: 'One Museum Mile Asset Library',
+      status: oneMuseumAssets.length >= 4 ? 'pass' : 'fail',
+      detail: oneMuseumAssets.length >= 4 ? `${oneMuseumAssets.length} verified local image reference(s)` : 'Missing verified One Museum Mile local image references',
+    });
+  }
   const unitMentions = [...html.matchAll(/\b(\d{1,4})\s+Units?\b/g)].map(m => Number(m[1]));
   const conflictingUnitMentions = [...new Set(unitMentions.filter(n => n !== d.units))];
   checks.push({
