@@ -1550,8 +1550,8 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
   });
   checks.push({
     name: 'Partner Logo / Website Links',
-    status: html.includes('/images/partners/bankunited.svg') && html.includes('/images/partners/select.svg') && html.includes('/images/partners/hubspot.svg') && html.includes('https://www.bankunited.com') && html.includes('https://www.meetselect.com') ? 'pass' : 'fail',
-    detail: 'Partner slide must use bundled logo assets and official website links',
+    status: html.includes('commons.wikimedia.org/wiki/Special:Redirect/file/BankUnited_logo.svg') && html.includes('d2e1363xcu3t9u.cloudfront.net/2019/resized/Black_card_without_chip.png') && html.includes('/images/partners/hubspot.svg') && html.includes('https://www.bankunited.com') && html.includes('https://www.meetselect.com') ? 'pass' : 'fail',
+    detail: 'Partner slide must use live web image URLs for BankUnited and Select plus official website links',
   });
   checks.push({
     name: 'Camelot Case Studies',
@@ -3448,15 +3448,17 @@ ${[
 
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0 20px">
 ${[
-  { name: 'Select', logo: '/images/partners/select.svg', url: 'https://www.meetselect.com', desc: 'Resident lifestyle benefits' },
-  { name: 'MDS', logo: '/images/partners/mds.svg', url: 'https://multidataservices.com', desc: 'Property management software' },
-  { name: 'BankUnited', logo: '/images/partners/bankunited.svg', url: 'https://www.bankunited.com', desc: 'Banking and treasury partner' },
-  { name: 'AppFolio', logo: '/images/partners/appfolio.svg', url: 'https://www.appfolio.com', desc: 'Property operations platform' },
-  { name: 'PropertyShark', logo: '/images/partners/propertyshark.svg', url: 'https://www.propertyshark.com', desc: 'Market and ownership intelligence' },
-  { name: 'ConciergePlus', logo: '/images/partners/conciergeplus.svg', url: 'https://www.conciergeplus.com', desc: 'Resident portal and service workflow' },
-  { name: 'HubSpot', logo: '/images/partners/hubspot.svg', url: 'https://www.hubspot.com', desc: 'CRM and client communications' },
-].map(p => `<a href="${p.url}" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D5D0C6;text-decoration:none;min-height:126px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;box-shadow:0 6px 14px rgba(44,50,64,0.06)">
-<img src="${p.logo}" alt="${p.name} logo" style="width:100%;max-width:190px;height:52px;object-fit:contain">
+  { name: 'Select', logo: 'https://d2e1363xcu3t9u.cloudfront.net/2019/resized/Black_card_without_chip.png', url: 'https://www.meetselect.com', desc: 'Resident lifestyle benefits', max: '215px', h: '56px', bg: '#0B0B0B', pad: '8px 12px' },
+  { name: 'MDS', logo: '/images/partners/mds.svg', url: 'https://multidataservices.com', desc: 'Property management software', max: '190px', h: '52px', bg: '#fff', pad: '4px 8px' },
+  { name: 'BankUnited', logo: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/BankUnited_logo.svg', url: 'https://www.bankunited.com', desc: 'Banking and treasury partner', max: '220px', h: '46px', bg: '#fff', pad: '6px 8px' },
+  { name: 'AppFolio', logo: '/images/partners/appfolio.svg', url: 'https://www.appfolio.com', desc: 'Property operations platform', max: '190px', h: '52px', bg: '#fff', pad: '4px 8px' },
+  { name: 'PropertyShark', logo: '/images/partners/propertyshark.svg', url: 'https://www.propertyshark.com', desc: 'Market and ownership intelligence', max: '190px', h: '52px', bg: '#fff', pad: '4px 8px' },
+  { name: 'ConciergePlus', logo: '/images/partners/conciergeplus.svg', url: 'https://www.conciergeplus.com', desc: 'Resident portal and service workflow', max: '200px', h: '52px', bg: '#fff', pad: '4px 8px' },
+  { name: 'HubSpot', logo: '/images/partners/hubspot.svg', url: 'https://www.hubspot.com', desc: 'CRM and client communications', max: '175px', h: '52px', bg: '#fff', pad: '4px 8px' },
+].map(p => `<a href="${p.url}" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D5D0C6;text-decoration:none;min-height:136px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;box-shadow:0 6px 14px rgba(44,50,64,0.06)">
+<div style="height:64px;width:100%;display:flex;align-items:center;justify-content:center;background:${p.bg};padding:${p.pad};border-radius:4px;overflow:hidden">
+<img src="${p.logo}" alt="${p.name} logo" style="width:100%;max-width:${p.max};height:${p.h};object-fit:contain;display:block">
+</div>
 <div style="font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.8px;text-align:center">${p.desc}</div>
 </a>`).join('')}
 </div>
@@ -3895,9 +3897,8 @@ ${buildPortfolioSection(d)}
 
 <div style="background:#fff;border:2px solid #A89035;border-radius:8px;padding:22px;margin:16px 0">
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-<div style="width:170px;height:48px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative">
-<img src="https://logo.clearbit.com/bankunited.com" alt="BankUnited" style="width:170px;height:48px;object-fit:contain;position:absolute;top:0;left:0;background:#fff" onerror="this.style.display='none'">
-<div style="width:170px;height:48px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center"><span style="color:#003366;font-weight:800;font-size:18px">BankUnited</span></div>
+<div style="width:190px;height:56px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#fff;padding:6px 8px;border:1px solid #E5E3DE">
+<img src="https://commons.wikimedia.org/wiki/Special:Redirect/file/BankUnited_logo.svg" alt="BankUnited" style="width:100%;height:44px;object-fit:contain;display:block">
 </div>
 <div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;color:#3A4B5B;font-weight:700">BankUnited Partnership</div>
 </div>
@@ -3908,9 +3909,8 @@ ${buildPortfolioSection(d)}
 <!-- Select Partnership -->
 <div style="background:#1a1a2e;border:2px solid #A89035;border-radius:10px;padding:24px;margin:20px 0;color:#fff">
 <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
-<div style="width:120px;height:48px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px">
-<img src="https://logo.clearbit.com/meetselect.com" alt="Select" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-<span style="display:none;color:#1a1a2e;font-weight:900;font-size:18px;font-family:'Plus Jakarta Sans',sans-serif">select</span>
+<div style="width:156px;height:64px;background:#0B0B0B;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px 10px;border:1px solid rgba(255,255,255,0.16);overflow:hidden">
+<img src="https://d2e1363xcu3t9u.cloudfront.net/2019/resized/Black_card_without_chip.png" alt="Select membership card" style="width:100%;height:100%;object-fit:contain;display:block">
 </div>
 <div>
 <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#A89035">Select — Exclusive Resident Benefits</div>
