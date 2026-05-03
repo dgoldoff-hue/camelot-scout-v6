@@ -45,6 +45,8 @@ const requiredTokens = [
   ['AKAM acquisition source context', 'Audax Private Equity acquired AKAM'],
   ['ConciergePlus partner logo', '/images/partners/conciergeplus.svg'],
   ['Select real web asset', 'https://d2e1363xcu3t9u.cloudfront.net/2024/images/share.png'],
+  ['Domecile real logo asset', 'https://www.domecile.com/assets/default/domecile_logo_evolve-f47345567bc24e05b97fd7c7f893ef2e897c9679312a2b55776c7d7d5f2d1b7d.svg'],
+  ['BuildingLink real logo asset', 'https://www.buildinglink.io/hs-fs/hubfs/Blue-Gold%20Logo%20-%20Transparent%20No%20Tagline.png'],
   ['Camelot final logo', 'https://www.camelot.nyc/wp-content/uploads/2015/03/Camelot-logo-footer-white.png'],
   ['Portfolio image fallback', 'Google Street View reference'],
   ['Portfolio image QA gate', 'Portfolio Building Images'],

@@ -2205,8 +2205,8 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
   });
   checks.push({
     name: 'Partner Logo / Website Links',
-    status: html.includes('commons.wikimedia.org/wiki/Special:Redirect/file/BankUnited_logo.svg') && html.includes('d2e1363xcu3t9u.cloudfront.net/2024/images/share.png') && html.includes('/images/partners/hubspot.svg') && html.includes('https://www.bankunited.com') && html.includes('https://www.meetselect.com') ? 'pass' : 'fail',
-    detail: 'Partner slide must use live web image URLs for BankUnited and Select plus official website links',
+    status: html.includes('commons.wikimedia.org/wiki/Special:Redirect/file/BankUnited_logo.svg') && html.includes('d2e1363xcu3t9u.cloudfront.net/2024/images/share.png') && html.includes('/images/partners/hubspot.svg') && html.includes('domecile_logo_evolve-f47345567bc24e05b97fd7c7f893ef2e897c9679312a2b55776c7d7d5f2d1b7d.svg') && html.includes('Blue-Gold%20Logo%20-%20Transparent%20No%20Tagline.png') && html.includes('https://www.bankunited.com') && html.includes('https://www.meetselect.com') && html.includes('https://www.domecile.com') && html.includes('https://www.buildinglink.io') ? 'pass' : 'fail',
+    detail: 'Partner slide must use real logo/web image URLs for BankUnited, Select, Domecile, and BuildingLink plus official website links',
   });
   checks.push({
     name: 'Camelot Case Studies',
@@ -4255,6 +4255,8 @@ ${[
   { name: 'PropertyShark', logo: '/images/partners/propertyshark.svg', url: 'https://www.propertyshark.com', desc: 'Market and ownership intelligence', max: '190px', h: '52px', bg: '#fff', pad: '4px 8px' },
   { name: 'ConciergePlus', logo: '/images/partners/conciergeplus.svg', url: 'https://www.conciergeplus.com', desc: 'Resident portal and service workflow', max: '200px', h: '52px', bg: '#fff', pad: '4px 8px' },
   { name: 'HubSpot', logo: '/images/partners/hubspot.svg', url: 'https://www.hubspot.com', desc: 'CRM and client communications', max: '175px', h: '52px', bg: '#fff', pad: '4px 8px' },
+  { name: 'Domecile', logo: 'https://www.domecile.com/assets/default/domecile_logo_evolve-f47345567bc24e05b97fd7c7f893ef2e897c9679312a2b55776c7d7d5f2d1b7d.svg', url: 'https://www.domecile.com', desc: 'Digital closing and building document workflow', max: '200px', h: '52px', bg: '#fff', pad: '4px 8px' },
+  { name: 'BuildingLink', logo: 'https://www.buildinglink.io/hs-fs/hubfs/Blue-Gold%20Logo%20-%20Transparent%20No%20Tagline.png?width=625&height=124&name=Blue-Gold%20Logo%20-%20Transparent%20No%20Tagline.png', url: 'https://www.buildinglink.io', desc: 'Resident operations and building communications', max: '220px', h: '52px', bg: '#fff', pad: '4px 8px' },
 ].map(p => `<a href="${p.url}" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D5D0C6;text-decoration:none;min-height:136px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;box-shadow:0 6px 14px rgba(44,50,64,0.06)">
 <div style="height:64px;width:100%;display:flex;align-items:center;justify-content:center;background:${p.bg};padding:${p.pad};border-radius:4px;overflow:hidden">
 <img src="${p.logo}" alt="${p.name} logo" style="width:100%;max-width:${p.max};height:${p.h};object-fit:contain;display:block">
