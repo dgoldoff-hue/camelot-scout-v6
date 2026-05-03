@@ -1734,6 +1734,7 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
   const base = runReportQA(d);
   const checks: QACheckResult['checks'] = [...base.checks];
   const isKnownStaffedProperty = /one\s+museum\s+mile|1280\s+(fifth|5th)/i.test(`${d.buildingName} ${d.address}`);
+  const is201East79 = /201\s+e(ast)?\s+79/i.test(`${d.buildingName} ${d.address}`);
   const requiredSlides = [
     'Elevating',
     'The Property',
@@ -1807,6 +1808,23 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     name: 'Unit Count Consistency',
     status: conflictingUnitMentions.length === 0 ? 'pass' : 'fail',
     detail: conflictingUnitMentions.length === 0 ? `${d.units} units used consistently` : `Report also contains: ${conflictingUnitMentions.join(', ')} units`,
+  });
+  if (is201East79) {
+    const bad201Tokens = ['3062630070', 'Two-Family Dwelling', 'B1', '377 Units', '2 Floors', 'OLIVIA MA AS TRUSTEE'];
+    const foundBad201Tokens = bad201Tokens.filter(token => html.includes(token));
+    checks.push({
+      name: 'Known Property Guard: 201 East 79th',
+      status: d.bbl === '1015250001' && d.units >= 100 && d.stories >= 15 && foundBad201Tokens.length === 0 ? 'pass' : 'fail',
+      detail: foundBad201Tokens.length
+        ? `Rejected Brooklyn/two-family mismatch token(s): ${foundBad201Tokens.join(', ')}`
+        : `Using verified Manhattan co-op profile: ${d.units} units, ${d.stories} floors, BBL ${d.bbl}`,
+    });
+  }
+  const sourceConflictWarning = /must not publish a board-facing report when BBL, borough, building class, unit count, or floor count conflicts/i.test(html);
+  checks.push({
+    name: 'Source Conflict Release Gate',
+    status: sourceConflictWarning ? 'pass' : 'fail',
+    detail: 'Report must include the hard release gate for BBL/borough/building-class/unit/floor conflicts',
   });
   checks.push({
     name: 'Commercial / Amenity Research',

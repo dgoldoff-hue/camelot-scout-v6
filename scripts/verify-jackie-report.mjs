@@ -1,0 +1,49 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
+const reportFile = resolve(root, 'src/lib/camelot-report.ts');
+const source = readFileSync(reportFile, 'utf8');
+
+const requiredTokens = [
+  ['201 East 79 known profile', "canonicalAddress: '201 East 79th Street, New York, NY 10075'"],
+  ['201 East 79 BBL', "bbl: '1015250001'"],
+  ['201 East 79 unit count', 'units: 167'],
+  ['201 East 79 mismatch rejection', '3062630070'],
+  ['Known property guard check', 'Known Property Guard: 201 East 79th'],
+  ['Source conflict release gate', 'Source Conflict Release Gate'],
+  ['NYC property-record stack', 'NYC DOB Find Building Data'],
+  ['DOF / PROS source', 'NYC DOF / PROS'],
+  ['PropertyShark source', 'PropertyShark'],
+  ['Commercial source stack', 'NYC vacant storefront data'],
+  ['Commercial broker source stack', 'CoStar/LoopNet-style commercial listings'],
+  ['Neighborhood source stack', 'Neighborhood scoring source stack'],
+  ['Miller Samuel market reports', 'Miller Samuel New York City Market Reports'],
+  ['ConciergePlus partner logo', '/images/partners/conciergeplus.svg'],
+  ['Select real web asset', 'https://d2e1363xcu3t9u.cloudfront.net/2024/images/share.png'],
+  ['Camelot final logo', 'https://www.camelot.nyc/wp-content/uploads/2015/03/Camelot-logo-footer-white.png'],
+  ['Legal terms URL check', 'LEGAL_TERMS_URL'],
+  ['No self-managed without explicit source', 'Self-managed language requires an explicit source'],
+];
+
+const failures = requiredTokens
+  .filter(([, token]) => !source.includes(token))
+  .map(([label, token]) => `${label}: missing "${token}"`);
+
+const forbiddenTokens = [
+  ['old Select card image', 'https://d2e1363xcu3t9u.cloudfront.net/2019/resized/Black_card_without_chip.png'],
+  ['old Jacqueline background', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/JKOnassis.jpg/440px-JKOnassis.jpg'],
+];
+
+for (const [label, token] of forbiddenTokens) {
+  if (source.includes(token)) failures.push(`${label}: forbidden token still present`);
+}
+
+if (failures.length) {
+  console.error('Jackie verification failed:');
+  for (const failure of failures) console.error(`- ${failure}`);
+  process.exit(1);
+}
+
+console.log(`Jackie verification passed (${requiredTokens.length} required rules checked).`);
