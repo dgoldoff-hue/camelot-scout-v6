@@ -1,12 +1,106 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { Search, FileText, Download, Mail, Phone, Table2, Link2, Loader2, Eye, Copy, Check, X } from 'lucide-react';
-import { buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, validateJackieReport, type MasterReportData } from '@/lib/camelot-report';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { Search, FileText, Download, Mail, Phone, Table2, Link2, Loader2, Eye, Copy, Check, X, ShieldCheck, ShieldX, AlertTriangle, Lock } from 'lucide-react';
+import { buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, validateJackieReport, type MasterReportData, type QACheckResult } from '@/lib/camelot-report';
 import { generatePitchReport, generatePitchEmail } from '@/lib/pitch-report';
 import { generatePitchDeck } from '@/lib/pitch-deck-pptx';
 import { openBrochureForPrint, downloadAsHTML, triggerCSVDownload, copyToClipboard } from '@/lib/pdf-generator';
 import toast from 'react-hot-toast';
 
 type EmailType = 'intro' | 'followup' | 'proposal' | 'compliance' | 'loyalty';
+
+function ReleaseWorkflowPanel({
+  qa,
+  onPreview,
+}: {
+  qa: QACheckResult;
+  onPreview: () => void;
+}) {
+  const failures = qa.checks.filter(c => c.status === 'fail');
+  const warnings = qa.checks.filter(c => c.status === 'warn');
+  const passed = qa.checks.filter(c => c.status === 'pass').length;
+  const groups = [
+    {
+      title: 'Identity',
+      desc: 'Address, BBL, unit count, floors, building type, and known-property guardrails.',
+      checks: qa.checks.filter(c => /Address|Building Name|Unit Count|Borough|Property Type|Known Property|Source Conflict/i.test(c.name)),
+    },
+    {
+      title: 'Sources',
+      desc: 'DOF, DOB, HPD, ACRIS, PropertyShark, commercial, amenities, contacts, market sources.',
+      checks: qa.checks.filter(c => /Source|Commercial|Stakeholder|DOF|Market|Case Studies|Value Creation|Tax|Management Context/i.test(c.name)),
+    },
+    {
+      title: 'Render',
+      desc: 'Slides, logos, images, legal link, duplicate pages, and bad tokens.',
+      checks: qa.checks.filter(c => /Slide|Render Token|Picture|Logo|Legal|Duplicate|Photo|Partner/i.test(c.name)),
+    },
+  ];
+
+  return (
+    <div className={`rounded-xl border p-5 shadow-sm ${qa.failures ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'}`}>
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+        <div className="flex gap-3">
+          <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${qa.failures ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+            {qa.failures ? <ShieldX size={24} /> : <ShieldCheck size={24} />}
+          </div>
+          <div>
+            <h2 className={`text-lg font-bold ${qa.failures ? 'text-red-950' : 'text-emerald-950'}`}>Jackie Verified Release</h2>
+            <p className={`text-sm mt-1 ${qa.failures ? 'text-red-800' : 'text-emerald-800'}`}>
+              {qa.failures
+                ? 'Release locked. Jackie can draft, but cannot publish while source conflicts or render errors remain.'
+                : 'Release unlocked. Jackie verified the factual guardrails and render checks for board-facing output.'}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <div className="px-3 py-2 rounded-lg bg-white border text-xs font-semibold text-gray-700">{passed} passed</div>
+          <div className="px-3 py-2 rounded-lg bg-white border text-xs font-semibold text-amber-700">{qa.warnings} warnings</div>
+          <div className="px-3 py-2 rounded-lg bg-white border text-xs font-semibold text-red-700">{qa.failures} blockers</div>
+          <button onClick={onPreview} className="px-3 py-2 rounded-lg bg-[#3A4B5B] text-white text-xs font-semibold flex items-center gap-2 hover:bg-[#2d3d4d]">
+            {qa.failures ? <Lock size={14} /> : <Eye size={14} />} Verify & Preview
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+        {groups.map(group => {
+          const fail = group.checks.filter(c => c.status === 'fail').length;
+          const warn = group.checks.filter(c => c.status === 'warn').length;
+          const ok = fail === 0;
+          return (
+            <div key={group.title} className="bg-white border rounded-lg p-4">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-bold text-gray-900">{group.title}</h3>
+                <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${ok ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                  {ok ? 'CLEAR' : 'BLOCKED'}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-2 leading-relaxed">{group.desc}</p>
+              <p className="text-xs mt-3 text-gray-600">{group.checks.length} checks · {warn} warning(s) · {fail} blocker(s)</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {(failures.length > 0 || warnings.length > 0) && (
+        <div className="mt-4 bg-white border rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle size={16} className={failures.length ? 'text-red-600' : 'text-amber-600'} />
+            <h3 className="text-sm font-bold text-gray-900">{failures.length ? 'Release Blockers' : 'Warnings To Review'}</h3>
+          </div>
+          <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+            {(failures.length ? failures : warnings).slice(0, 8).map((check, idx) => (
+              <div key={`${check.name}-${idx}`} className="text-xs leading-relaxed">
+                <span className={`font-bold ${check.status === 'fail' ? 'text-red-700' : 'text-amber-700'}`}>{check.name}:</span>{' '}
+                <span className="text-gray-600">{check.detail}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ReportCenter() {
   const [address, setAddress] = useState('');
@@ -52,6 +146,8 @@ export default function ReportCenter() {
   const handlePreviewPitch = () => {
     const d = getDataWithPhotos();
     if (!d) return;
+    const releaseHtml = generateBrochureHTML(d);
+    if (!verifyJackieRelease(d, releaseHtml)) return;
     const html = generatePitchReport(d);
     openBrochureForPrint(html, `Camelot-Pitch-${d.buildingName}`);
   };
@@ -59,6 +155,8 @@ export default function ReportCenter() {
   const handleDownloadPitchHTML = () => {
     const d = getDataWithPhotos();
     if (!d) return;
+    const releaseHtml = generateBrochureHTML(d);
+    if (!verifyJackieRelease(d, releaseHtml)) return;
     const html = generatePitchReport(d);
     downloadAsHTML(html, `Camelot-Pitch-${(d.buildingName || d.address).replace(/[^a-zA-Z0-9]/g, '-')}.html`);
   };
@@ -74,6 +172,8 @@ export default function ReportCenter() {
   const handlePitchDeckPPTX = async () => {
     const d = getDataWithPhotos();
     if (!d) return;
+    const releaseHtml = generateBrochureHTML(d);
+    if (!verifyJackieRelease(d, releaseHtml)) return;
     toast.loading('Generating PowerPoint deck...', { id: 'pptx' });
     try {
       await generatePitchDeck(d);
@@ -210,6 +310,11 @@ export default function ReportCenter() {
   const emailDraft = data ? generateEmailDraft(data, emailType) : null;
   const callerSheet = data ? generateColdCallerSheet(data) : '';
   const fmtMoney = (n: number) => n >= 1e6 ? `$${(n/1e6).toFixed(1)}M` : `$${n.toLocaleString()}`;
+  const releaseData = getDataWithPhotos();
+  const releaseQA = useMemo(() => {
+    if (!releaseData) return null;
+    return validateJackieReport(releaseData, generateBrochureHTML(releaseData));
+  }, [releaseData]);
 
   return (
     <div className="p-6 space-y-6">
@@ -257,6 +362,10 @@ export default function ReportCenter() {
       {/* Results */}
       {data && !loading && (
         <>
+          {releaseQA && (
+            <ReleaseWorkflowPanel qa={releaseQA} onPreview={handlePreviewBrochure} />
+          )}
+
           {/* Summary Cards */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="bg-white rounded-xl border p-4 shadow-sm text-center">

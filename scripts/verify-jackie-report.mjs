@@ -4,7 +4,9 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const reportFile = resolve(root, 'src/lib/camelot-report.ts');
+const reportCenterFile = resolve(root, 'src/pages/ReportCenter.tsx');
 const source = readFileSync(reportFile, 'utf8');
+const reportCenter = readFileSync(reportCenterFile, 'utf8');
 
 const requiredTokens = [
   ['201 East 79 known profile', "canonicalAddress: '201 East 79th Street, New York, NY 10075'"],
@@ -46,4 +48,22 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Jackie verification passed (${requiredTokens.length} required rules checked).`);
+const workflowTokens = [
+  ['visible release panel', 'Jackie Verified Release'],
+  ['locked release language', 'Release locked. Jackie can draft, but cannot publish'],
+  ['unlocked release language', 'Release unlocked. Jackie verified'],
+  ['pitch preview gated', 'const releaseHtml = generateBrochureHTML(d);'],
+  ['release QA computed', 'const releaseQA = useMemo'],
+];
+
+const workflowFailures = workflowTokens
+  .filter(([, token]) => !reportCenter.includes(token))
+  .map(([label, token]) => `${label}: missing "${token}"`);
+
+if (workflowFailures.length) {
+  console.error('Jackie verified-release workflow check failed:');
+  for (const failure of workflowFailures) console.error(`- ${failure}`);
+  process.exit(1);
+}
+
+console.log(`Jackie verification passed (${requiredTokens.length} source rules + ${workflowTokens.length} workflow rules checked).`);
