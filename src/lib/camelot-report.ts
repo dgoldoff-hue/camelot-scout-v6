@@ -1777,6 +1777,15 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     status: html.includes('camelot.nyc/case-studies') && html.includes('301 East 50th Street') && html.includes('./images/case-studies/301-east-50th.png') && html.includes('./images/case-studies/949-park.jpg') ? 'pass' : 'fail',
     detail: 'Case studies must be sourced from camelot.nyc/case-studies with image-backed cards',
   });
+  const valueCreationSources = ['U.S. Census / ACS', 'NYC Open Data', 'Con Edison', 'REBNY', 'CHIP Data', 'SPONY Data', 'IREM', 'Habitat Magazine', 'The Cooperator'];
+  const missingValueCreationSources = valueCreationSources.filter(source => !html.includes(source));
+  checks.push({
+    name: 'Value Creation Source Stack',
+    status: missingValueCreationSources.length === 0 ? 'pass' : 'fail',
+    detail: missingValueCreationSources.length === 0
+      ? 'Value Creation page cites Census/ACS, NYC Open Data, Con Edison, REBNY, CHIP, SPONY, IREM, Habitat Magazine, and The Cooperator'
+      : `Missing value-creation source(s): ${missingValueCreationSources.join(', ')}`,
+  });
   checks.push({
     name: 'DOF Tax Search Link',
     status: html.includes('a836-pts-access.nyc.gov/care/search/commonsearch.aspx?mode=address') ? 'pass' : 'fail',
@@ -2172,6 +2181,18 @@ export function generateBrochureHTML(d: MasterReportData): string {
     feeEscalation: 0.04,
     valueGrowth: 0.04,
   };
+  const valueCreationDataSources = [
+    { name: 'U.S. Census / ACS', use: 'resident, household, income, tenure, and neighborhood demand context' },
+    { name: 'NYC Open Data', use: 'DOB, HPD, ECB/OATH, 311, PLUTO, LL84/LL97, tax, lien, and compliance signals' },
+    { name: 'Con Edison / Utility Benchmarking', use: 'energy-cost, usage, demand, and conservation opportunity modeling' },
+    { name: 'REBNY Market Reports', use: 'sales, leasing, market velocity, price-per-square-foot, and Manhattan submarket trends' },
+    { name: 'CHIP Data', use: 'NYC operating-cost, rent-regulation, tax, insurance, and multifamily policy benchmarks' },
+    { name: 'SPONY Data', use: 'owner/operator peer practices, building operations, insurance, and service-cost context' },
+    { name: 'IREM Benchmarks', use: 'professional property-management expense ratios and operating standards' },
+    { name: 'Habitat Magazine', use: 'co-op/condo board governance, vendor, compliance, and capital-project intelligence' },
+    { name: 'The Cooperator', use: 'board-facing co-op/condo management, reserves, amenities, and legal/compliance context' },
+    { name: 'Camelot Portfolio Benchmarks', use: '42-property operating history, vendor rebids, retention, compliance, and transition results' },
+  ];
   const commercialIntel = d.commercialIntel || {
     commercialSignals: [],
     likelyCommercialUses: [],
@@ -3736,7 +3757,15 @@ ${[
 <!-- PAGE 17B: CHARTS, GRAPHS & 5-YEAR PRO FORMA -->
 <div class="section section-white">
 <div class="section-title">Value Creation — Visual Analysis</div>
-<div class="section-sub">Charts and projections specific to ${d.buildingName} (${d.units} units${d.buildingArea > 0 ? ', ' + d.buildingArea.toLocaleString() + ' SF' : ''})</div>
+<div class="section-sub">Source-informed charts and projections specific to ${d.buildingName} (${d.units} units${d.buildingArea > 0 ? ', ' + d.buildingArea.toLocaleString() + ' SF' : ''})</div>
+
+<div style="background:#F8F5EC;border:1px solid #D8C894;border-radius:8px;padding:12px 14px;margin:12px 0 22px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:1.6px;color:#A89035;font-weight:700;margin-bottom:8px">Value-Creation Source Stack</div>
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px 12px">
+${valueCreationDataSources.map(src => `<div style="font-size:9.5px;line-height:1.45;color:#3A4B5B"><strong style="color:#14356A">${src.name}</strong><br><span style="color:#666">${src.use}</span></div>`).join('\n')}
+</div>
+<div style="font-size:9px;color:#777;line-height:1.5;margin-top:10px;border-top:1px solid #E2D7B2;padding-top:8px">Jackie must cite this source stack when modeling operating expense, utility, market-value, resale/leasing, compliance, governance, insurance, vendor, amenity, and resident-retention opportunity. Building-specific figures remain preliminary until matched against source records and board materials.</div>
+</div>
 
 <!-- Savings Breakdown — Horizontal Bar Chart -->
 <div style="margin-bottom:28px">
@@ -4723,3 +4752,4 @@ function generateProposal() {
     .replace(/\b-?Infinity\b/g, 'N/A')
     .replace(/\bNaN\b/g, 'N/A');
 }
+
