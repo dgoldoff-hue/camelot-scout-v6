@@ -766,7 +766,26 @@ function lookupNeighborhoodData(neighborhood: string): NeighborhoodMarketData | 
   return NEIGHBORHOOD_MARKET_DATA[key] || null;
 }
 
-function gradeManagement(d: { violationsOpen: number; ecbPenaltyBalance: number; hasActiveLitigation: boolean; permitsCount: number; violationsTotal: number; publicRecordsLoaded?: boolean }): { grade: string; scorecard: { violations: number; compliance: number; financial: number; overall: number } } {
+function gradeManagement(d: {
+  violationsOpen: number;
+  violationsTotal: number;
+  dobViolationOpen: number;
+  ecbCount: number;
+  ecbPenaltyBalance: number;
+  hasActiveLitigation: boolean;
+  litigationCount: number;
+  permitsCount: number;
+  hasRecentPermits: boolean;
+  facadeIssueCount: number;
+  facadeFilingCount: number;
+  hasTaxLien: boolean;
+  taxLienRecordCount: number;
+  acrisLienClaimCount: number;
+  complaint311Count: number;
+  ll97Penalty: number;
+  complianceReleaseStatus: MasterReportData['complianceReleaseStatus'];
+  publicRecordsLoaded?: boolean;
+}): { grade: string; scorecard: { violations: number; compliance: number; financial: number; overall: number } } {
   // Score clean public-record results as clean results; only hold the grade
   // when Jackie did not load enough anchors to know the checks ran.
   const hasAnyData = d.publicRecordsLoaded;
@@ -774,31 +793,72 @@ function gradeManagement(d: { violationsOpen: number; ecbPenaltyBalance: number;
     return { grade: '—', scorecard: { violations: 0, compliance: 0, financial: 0, overall: 0 } };
   }
 
-  // Violations score: fewer = better (out of 100)
+  const clampScore = (score: number) => Math.max(0, Math.min(100, Math.round(score)));
+  const openViolationSignals = d.violationsOpen + d.dobViolationOpen;
+  const publicRiskSignals = [
+    d.violationsOpen > 0,
+    d.dobViolationOpen > 0,
+    d.ecbCount > 0,
+    d.ecbPenaltyBalance > 0,
+    d.hasActiveLitigation || d.litigationCount > 0,
+    d.hasTaxLien || d.taxLienRecordCount > 0,
+    d.acrisLienClaimCount > 0,
+    d.facadeIssueCount > 0,
+    d.ll97Penalty > 0,
+    d.complianceReleaseStatus === 'blocked',
+  ].filter(Boolean).length;
+
+  // Violations score: reconcile HPD open violations, DOB open violations, and
+  // historical HPD volume. A report cannot show problems on one page and 100 here.
   let violScore = 100;
-  if (d.violationsOpen > 50) violScore = 15;
-  else if (d.violationsOpen > 20) violScore = 30;
-  else if (d.violationsOpen > 10) violScore = 50;
-  else if (d.violationsOpen > 5) violScore = 65;
-  else if (d.violationsOpen > 0) violScore = 80;
+  if (openViolationSignals > 50) violScore = 15;
+  else if (openViolationSignals > 20) violScore = 30;
+  else if (openViolationSignals > 10) violScore = 45;
+  else if (openViolationSignals > 5) violScore = 60;
+  else if (openViolationSignals > 0) violScore = 75;
+  if (d.violationsTotal > 100) violScore = Math.min(violScore, 60);
+  else if (d.violationsTotal > 50) violScore = Math.min(violScore, 70);
+  else if (d.violationsTotal > 10) violScore = Math.min(violScore, 85);
 
   // Compliance score
   let compScore = 100;
-  if (d.ecbPenaltyBalance > 50000) compScore = 20;
-  else if (d.ecbPenaltyBalance > 20000) compScore = 40;
-  else if (d.ecbPenaltyBalance > 5000) compScore = 60;
-  else if (d.ecbPenaltyBalance > 0) compScore = 80;
+  if (d.ecbPenaltyBalance > 50000) compScore -= 55;
+  else if (d.ecbPenaltyBalance > 20000) compScore -= 40;
+  else if (d.ecbPenaltyBalance > 5000) compScore -= 25;
+  else if (d.ecbPenaltyBalance > 0) compScore -= 12;
+  if (d.ecbCount > 20) compScore -= 25;
+  else if (d.ecbCount > 10) compScore -= 18;
+  else if (d.ecbCount > 0) compScore -= 8;
+  if (d.facadeIssueCount > 2) compScore -= 30;
+  else if (d.facadeIssueCount > 0) compScore -= 18;
+  if (d.ll97Penalty > 50000) compScore -= 20;
+  else if (d.ll97Penalty > 0) compScore -= 10;
+  if (d.complianceReleaseStatus === 'blocked') compScore -= 35;
+  else if (d.complianceReleaseStatus === 'needs_review') compScore -= 12;
+  compScore = clampScore(compScore);
 
   // Financial score (litigation + penalties)
   let finScore = 100;
-  if (d.hasActiveLitigation) finScore -= 30;
+  if (d.hasTaxLien || d.taxLienRecordCount > 0) finScore -= 35;
+  if (d.hasActiveLitigation) finScore -= 25;
+  else if (d.litigationCount > 0) finScore -= 15;
+  if (d.acrisLienClaimCount > 0) finScore -= 15;
   if (d.ecbPenaltyBalance > 10000) finScore -= 20;
   if (d.violationsTotal > 50) finScore -= 15;
+  if (d.complaint311Count > 50) finScore -= 10;
+  finScore = clampScore(finScore);
 
-  const overall = Math.round((violScore * 0.4) + (compScore * 0.35) + (finScore * 0.25));
+  let overall = Math.round((violScore * 0.35) + (compScore * 0.4) + (finScore * 0.25));
+  if (d.complianceReleaseStatus === 'blocked') overall = Math.min(overall, 69);
+  if (d.hasTaxLien || d.taxLienRecordCount > 0) overall = Math.min(overall, 84);
+  if (d.hasActiveLitigation || d.acrisLienClaimCount > 0) overall = Math.min(overall, 86);
+  if (openViolationSignals > 0 || d.facadeIssueCount > 0) overall = Math.min(overall, 89);
+  if (d.ecbCount > 0 || d.ecbPenaltyBalance > 0) overall = Math.min(overall, 92);
+  if (publicRiskSignals >= 3) overall = Math.min(overall, 79);
+  if (publicRiskSignals >= 5) overall = Math.min(overall, 69);
   const grade = overall >= 85 ? 'A' : overall >= 70 ? 'B' : overall >= 55 ? 'C' : overall >= 40 ? 'D' : 'F';
 
-  return { grade, scorecard: { violations: violScore, compliance: compScore, financial: Math.max(0, finScore), overall } };
+  return { grade, scorecard: { violations: violScore, compliance: compScore, financial: finScore, overall } };
 }
 
 // ============================================================
@@ -1743,10 +1803,22 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   });
   const managementAssessment = gradeManagement({
     violationsOpen: raw.violations?.open || 0,
+    violationsTotal: raw.violations?.total || 0,
+    dobViolationOpen: violationSummary?.dobOpen || 0,
+    ecbCount: raw.ecb?.count || violationSummary?.ecbOpen || 0,
     ecbPenaltyBalance: raw.ecb?.totalPenaltyBalance || 0,
     hasActiveLitigation: raw.litigation?.hasActive || false,
+    litigationCount: raw.litigation?.count || 0,
     permitsCount: raw.permits?.count || 0,
-    violationsTotal: raw.violations?.total || 0,
+    hasRecentPermits: raw.permits?.hasRecent || false,
+    facadeIssueCount: raw.facade?.issueCount || 0,
+    facadeFilingCount: raw.facade?.count || 0,
+    hasTaxLien: raw.taxLiens?.hasLien || false,
+    taxLienRecordCount: raw.taxLiens?.recordCount || 0,
+    acrisLienClaimCount,
+    complaint311Count,
+    ll97Penalty: ll97Data?.period1Penalty || 0,
+    complianceReleaseStatus: complianceCoverage.status,
     publicRecordsLoaded,
   });
 
@@ -1972,6 +2044,23 @@ export interface QACheckResult {
   failures: number;
 }
 
+function getManagementPublicRiskSignals(d: MasterReportData): string[] {
+  const fmtRiskMoney = (n: number) => n >= 1e6 ? `$${(n / 1e6).toFixed(1)}M` : `$${n.toLocaleString()}`;
+  return [
+    d.violationsOpen > 0 ? `${d.violationsOpen} open HPD violation(s)` : null,
+    d.dobViolationOpen > 0 ? `${d.dobViolationOpen} open DOB violation signal(s)` : null,
+    d.ecbCount > 0 ? `${d.ecbCount} ECB/OATH record(s)` : null,
+    d.ecbPenaltyBalance > 0 ? `${fmtRiskMoney(d.ecbPenaltyBalance)} ECB penalty balance` : null,
+    d.hasActiveLitigation || d.litigationCount > 0 ? `${Math.max(d.litigationCount, 1)} litigation signal(s)` : null,
+    d.hasTaxLien || d.taxLienRecordCount > 0 ? `${Math.max(d.taxLienRecordCount, 1)} DOF tax lien notice row(s)` : null,
+    d.acrisLienClaimCount > 0 ? `${d.acrisLienClaimCount} ACRIS lien/claim document(s)` : null,
+    d.facadeIssueCount > 0 ? `${d.facadeIssueCount} FISP/facade issue signal(s)` : null,
+    d.ll97?.period1Penalty ? `${fmtRiskMoney(d.ll97.period1Penalty)} LL97 annual exposure` : null,
+    d.complianceReleaseStatus === 'blocked' ? 'compliance source coverage blocked release' : null,
+    d.complianceReleaseStatus === 'needs_review' ? 'compliance source coverage needs review' : null,
+  ].filter((signal): signal is string => Boolean(signal));
+}
+
 export function runReportQA(d: MasterReportData): QACheckResult {
   const checks: QACheckResult['checks'] = [];
   
@@ -2018,6 +2107,15 @@ export function runReportQA(d: MasterReportData): QACheckResult {
       : suspiciousAllZero
         ? 'All automated compliance/lien/litigation/311 sources returned zero for a multi-unit NYC building; manual verification required before release'
         : `${d.violationsTotal} HPD, ${d.dobViolationOpen} DOB open, ${d.ecbCount} ECB/OATH, ${d.facadeFilingCount} FISP/facade, ${d.permitsCount} DOB permit, ${d.litigationCount} litigation, ${d.taxLienRecordCount} DOF tax lien, ${d.acrisLienClaimCount} ACRIS lien/claim, ${d.complaint311Count} 311 signal(s)`,
+  });
+
+  const managementRiskSignals = getManagementPublicRiskSignals(d);
+  checks.push({
+    name: 'Current Management Score Reconciliation',
+    status: managementRiskSignals.length && d.managementScorecard.overall >= 95 ? 'fail' : 'pass',
+    detail: managementRiskSignals.length
+      ? `Score ${d.managementScorecard.overall}/100 reconciled against: ${managementRiskSignals.slice(0, 6).join(', ')}`
+      : `Score ${d.managementScorecard.overall}/100; no material public-record management risk signal loaded`,
   });
   
   // 8. Fee calculation sanity check
@@ -2241,6 +2339,14 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     name: 'Current Management Performance Fallback',
     status: !/[A-F]/.test(d.managementGrade) && !html.includes('Public-record review pending') ? 'fail' : 'pass',
     detail: /[A-F]/.test(d.managementGrade) ? `Grade ${d.managementGrade}` : 'Pending public-record review message required',
+  });
+  const managementRiskSignals = getManagementPublicRiskSignals(d);
+  checks.push({
+    name: 'Current Management Risk Narrative',
+    status: managementRiskSignals.length ? (html.includes('Management Public-Record Risk') ? 'pass' : 'fail') : 'pass',
+    detail: managementRiskSignals.length
+      ? `Narrative must display risk signals: ${managementRiskSignals.slice(0, 5).join(', ')}`
+      : 'No public-record risk narrative required',
   });
   checks.push({
     name: 'Quarterly Market Reports Language',
@@ -2599,6 +2705,23 @@ export function generateBrochureHTML(d: MasterReportData): string {
     ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
     : d.borough || 'New York City';
   const nearbyLandmarkLabels = resolveNearbyLandmarkLabels(d);
+  const managementRiskFlags = [
+    d.violationsOpen > 0 ? `${d.violationsOpen} open HPD violation(s)` : null,
+    d.dobViolationOpen > 0 ? `${d.dobViolationOpen} open DOB violation signal(s)` : null,
+    d.ecbCount > 0 ? `${d.ecbCount} ECB/OATH record(s)` : null,
+    d.ecbPenaltyBalance > 0 ? `${fmtMoney(d.ecbPenaltyBalance)} ECB balance` : null,
+    d.hasActiveLitigation || d.litigationCount > 0 ? `${Math.max(d.litigationCount, 1)} litigation signal(s)` : null,
+    d.hasTaxLien || d.taxLienRecordCount > 0 ? `${Math.max(d.taxLienRecordCount, 1)} DOF tax lien notice row(s)` : null,
+    d.acrisLienClaimCount > 0 ? `${d.acrisLienClaimCount} ACRIS lien/claim document(s)` : null,
+    d.facadeIssueCount > 0 ? `${d.facadeIssueCount} FISP/facade issue signal(s)` : null,
+    d.ll97?.period1Penalty ? `${fmtMoney(d.ll97.period1Penalty)} LL97 annual exposure` : null,
+    d.complianceReleaseStatus === 'blocked' ? 'compliance source coverage blocked release' : null,
+    d.complianceReleaseStatus === 'needs_review' ? 'compliance source coverage needs review' : null,
+  ].filter((flag): flag is string => Boolean(flag));
+  const managementRiskSummary = managementRiskFlags.length
+    ? `Management Public-Record Risk: Jackie reconciled this grade against ${managementRiskFlags.slice(0, 5).join('; ')}. The score is not allowed to show a clean 100 when violations, liens, DOB/FISP issues, litigation, ECB/OATH records, or DOF risk appear elsewhere in the report.`
+    : 'No material public-record risk signal loaded from HPD, DOB, ECB/OATH, DOF, ACRIS, court, FISP, or 311 sources. Jackie still recommends confirming staff, managing agent, and board materials before release.';
+  const managementRiskChipHTML = managementRiskFlags.map(flag => `<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 12px;border-radius:18px;font-size:10px;font-weight:600">${safe(flag)}</span>`).join('');
   const propertyPedigree = is1280Fifth ? {
     title: 'A Robert A.M. Stern Masterpiece',
     narrative: `At ${d.units || 116} units, ${d.buildingName} represents the ideal scale for Camelot's high-touch management: large enough to deserve institutional systems, personal enough to benefit from senior attention, financial clarity, and an owner's perspective.`,
@@ -3612,9 +3735,13 @@ ${!/[A-F]/.test(d.managementGrade) ? `<div style="background:#fff;border:1px sol
 </div>
 <div>
 <div style="font-size:16px;font-weight:700;color:#2C3240;margin-bottom:4px">Overall Management Grade: ${d.managementGrade === '—' ? 'Pending Review' : d.managementGrade}</div>
-<div style="font-size:12px;color:#555;line-height:1.6">${d.managementGrade === '—' ? 'Insufficient public data available to assign a management grade. A full assessment will be conducted upon engagement with the building.' : `Based on HPD violations, ECB compliance, DOB permits, litigation status, and financial indicators. ${d.managementGrade === 'A' ? 'This building is well-maintained.' : d.managementGrade === 'B' ? 'There is room for meaningful improvement.' : 'Significant management issues detected &mdash; this building would benefit from professional management.'}`}</div>
+<div style="font-size:12px;color:#555;line-height:1.6">${d.managementGrade === '—' ? 'Insufficient public data available to assign a management grade. A full assessment will be conducted upon engagement with the building.' : safe(managementRiskSummary)}</div>
 </div>
 </div>
+${managementRiskFlags.length ? `<div style="background:#fff;border:1px solid #D5D0C6;border-left:4px solid #dc2626;border-radius:0 8px 8px 0;padding:12px 14px;margin:8px 0 16px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#991b1b;font-weight:700;margin-bottom:8px">Management Public-Record Risk</div>
+<div style="display:flex;flex-wrap:wrap;gap:7px">${managementRiskChipHTML}</div>
+</div>` : ''}
 
 <div class="stats-row">
 <div class="stat-box"><div class="val" style="color:${d.managementScorecard.violations >= 70 ? '#16a34a' : d.managementScorecard.violations >= 50 ? '#ca8a04' : '#dc2626'}">${/[A-F]/.test(d.managementGrade) ? d.managementScorecard.violations : 'Review'}</div><div class="lbl">Violations Score</div></div>
@@ -3630,6 +3757,12 @@ ${d.violationsOpen > 0 ? `<span style="display:inline-block;background:rgba(220,
 ${d.ecbPenaltyBalance > 0 ? `<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">💰 $${d.ecbPenaltyBalance.toLocaleString()} ECB Penalties Outstanding</span>` : '<span style="display:inline-block;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);color:#166534;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">✅ No ECB Penalties</span>'}
 ${d.hasActiveLitigation ? '<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">⚖️ Active Litigation</span>' : '<span style="display:inline-block;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);color:#166534;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">✅ No Active Litigation</span>'}
 ${d.hasRecentPermits ? '<span style="display:inline-block;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);color:#166534;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">🔨 Recent DOB Permits Active</span>' : '<span style="display:inline-block;background:rgba(202,138,4,0.08);border:1px solid rgba(202,138,4,0.25);color:#854d0e;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">📋 No Recent Permits</span>'}
+${d.dobViolationOpen > 0 ? `<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">⚠️ ${d.dobViolationOpen} DOB Open Violation Signal(s)</span>` : ''}
+${d.ecbCount > 0 && d.ecbPenaltyBalance === 0 ? `<span style="display:inline-block;background:rgba(202,138,4,0.08);border:1px solid rgba(202,138,4,0.25);color:#854d0e;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">⚖️ ${d.ecbCount} ECB/OATH Record(s)</span>` : ''}
+${d.hasTaxLien || d.taxLienRecordCount > 0 ? `<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">🏦 ${Math.max(d.taxLienRecordCount, 1)} DOF Tax Lien Notice Row(s)</span>` : ''}
+${d.acrisLienClaimCount > 0 ? `<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">📄 ${d.acrisLienClaimCount} ACRIS Lien/Claim Document(s)</span>` : ''}
+${d.facadeIssueCount > 0 ? `<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">🏗️ ${d.facadeIssueCount} FISP/Facade Issue Signal(s)</span>` : d.facadeFilingCount > 0 ? `<span style="display:inline-block;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);color:#166534;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">🏗️ ${d.facadeFilingCount} FISP/Facade Filing(s) Loaded</span>` : ''}
+${d.complianceReleaseStatus === 'blocked' ? '<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">🚫 Compliance Coverage Blocked Release</span>' : d.complianceReleaseStatus === 'needs_review' ? '<span style="display:inline-block;background:rgba(202,138,4,0.08);border:1px solid rgba(202,138,4,0.25);color:#854d0e;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500">🔎 Compliance Coverage Needs Review</span>' : ''}
 </div>
 </div>
 </div>
