@@ -155,6 +155,9 @@ export interface CommercialAmenityIntel {
 interface KnownPropertyFacts {
   canonicalAddress?: string;
   buildingName?: string;
+  bbl?: string;
+  buildingClass?: string;
+  buildingArea?: number;
   units?: number;
   stories?: number;
   yearBuilt?: number;
@@ -587,6 +590,7 @@ interface PortfolioBuilding {
   lng: number;
   outcome: string;
   brand: 'Camelot' | 'Blue Owl' | 'Penn South Capital';
+  image?: string;
   caseStudy?: { situation: string; response: string; result: string; statLine: string };
 }
 
@@ -655,6 +659,15 @@ function buildPortfolioSection(d: MasterReportData): string {
 </tr>`;
   }).join('\n');
 
+  const portfolioImageStrip = nearby.map(b => {
+    const searchUrl = `https://streeteasy.com/search?search=${encodeURIComponent(b.address + ' New York NY')}`;
+    const image = b.image || `https://maps.googleapis.com/maps/api/streetview?size=360x220&location=${encodeURIComponent(b.address + ', ' + b.borough + ', NY')}`;
+    return `<a href="${searchUrl}" target="_blank" rel="noopener" style="text-decoration:none;background:#fff;border:1px solid #D5D0C6;box-shadow:0 5px 12px rgba(44,50,64,0.07);overflow:hidden;display:block;min-height:112px">
+<div style="height:78px;background:#EDE9DF;overflow:hidden"><img src="${image}" alt="${b.address} building reference image" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.style.background='#EDE9DF';this.style.display='none'"></div>
+<div style="padding:7px 8px;font-size:8.5px;line-height:1.3;color:#3A4B5B;font-weight:700">${b.address}<br><span style="color:#A89035;font-weight:600">StreetEasy / market image lookup</span></div>
+</a>`;
+  }).join('\n');
+
   const nearCount = nearby.filter(b => b.distance >= 0 && b.distance < 3).length;
   const proximityNote = hasNearby
     ? `<div style="background:#EDE9DF;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:10px 16px;margin-bottom:14px;font-size:11px;color:#3A4B5B">
@@ -677,6 +690,9 @@ function buildPortfolioSection(d: MasterReportData): string {
 <div class="section-title">Camelot Portfolio \u2014 Near ${d.buildingName}</div>
 <div class="section-sub">Active buildings we manage, sorted by proximity to your property</div>
 ${proximityNote}
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px">
+${portfolioImageStrip}
+</div>
 <table class="compare-table">
 <thead><tr>
 <th style="background:#3A4B5B;color:#fff">Building</th>
@@ -850,6 +866,84 @@ function inferCommercialAmenityIntel(input: {
 
 function getKnownPropertyFacts(address: string, candidateName = ''): KnownPropertyFacts | null {
   const key = `${address} ${candidateName}`.toLowerCase();
+  if (/201\s+e(ast)?\s+79/i.test(key) || /201\s+east\s+79th/i.test(key)) {
+    return {
+      canonicalAddress: '201 East 79th Street, New York, NY 10075',
+      buildingName: '201 East 79th Street',
+      bbl: '1015250001',
+      buildingClass: 'D4',
+      units: 167,
+      stories: 20,
+      yearBuilt: 1963,
+      propertyType: 'Co-operative',
+      neighborhoodName: 'Upper East Side / Yorkville',
+      streetEasyUrl: 'https://streeteasy.com/building/201-east-79-street-new_york',
+      imageUrls: ['https://www.compass.com/m3/730c7e6eb31608bd02120e3b03fe8dd00c710684.jpg'],
+      description: '201 East 79th Street is a full-service Upper East Side cooperative at Third Avenue, originally built in 1963 and publicly described as a 20-story post-war co-op with approximately 160-168 apartments.',
+      amenities: [
+        'Full-time doorman',
+        'Concierge / attended lobby',
+        'Resident manager / superintendent to verify',
+        'Elevator',
+        'Parking garage',
+        'Bike room',
+        'Laundry room',
+        'Private storage',
+        'Garden / shared outdoor space',
+      ],
+      commercialSignals: [
+        'Ground-floor retail / commercial component reported by Rogers Partners project profile; verify tenants and leases before publication.',
+        'Parking garage signal; verify operator, license, insurance, and revenue treatment.',
+      ],
+      revenueOpportunities: [
+        'Retail lease abstract and insurance review.',
+        'Parking garage operator / license / revenue review.',
+        'Storage, bike room, alteration, sublet, move-in/move-out, and amenity-fee schedule review.',
+      ],
+      landmarks: [
+        'Third Avenue retail corridor: immediate',
+        'Q train at 72nd/83rd Street corridor: nearby',
+        '6 train at 77th Street / Lexington Avenue: nearby',
+        'Central Park and Museum Mile: nearby',
+        'Upper East Side medical and school corridor: nearby',
+      ],
+      locationTitle: 'Upper East Side / Yorkville Corner Position',
+      locationCopy: 'The building sits at East 79th Street and Third Avenue, a full-block post-war co-op position with strong retail frontage, transit access, and mature Upper East Side demand fundamentals.',
+      lifestyleTitle: 'Full-Service Co-op With Capital Upgrade Story',
+      lifestyleCopy: 'Doorman service, garage, storage, bike room, laundry, garden/outdoor space, and a major facade modernization story should anchor the board-facing narrative.',
+      brandingTitle: '201 East 79th Street Building Profile',
+      brandingDescription: 'StreetEasy, Rogers Partners, building-profile sources, Compass, Corcoran, and Elegran identify 201 East 79th Street as an Upper East Side/Yorkville cooperative, not a two-family dwelling.',
+      researchSources: [
+        'Official building site: https://www.201east79th.com/',
+        'StreetEasy building page: https://streeteasy.com/building/201-east-79-street-new_york',
+        'Rogers Partners project profile: https://www.rogersarchitects.com/201-e-79th-street/',
+        'Compass building/listing imagery and listings',
+        'Corcoran / Elegran / CityRealty-style market profiles',
+        'NYC DOF, ACRIS, HPD MDR, DOB BIS/NOW, OATH/ECB, PROS, and PropertyShark must be checked before board-facing release',
+      ],
+      currentManagement: 'Managing agent to verify through HPD MDR, board materials, PropertyShark, and building records',
+      boardMembers: [
+        { name: '201 East 79th Street cooperative corporation', title: 'Co-op Board / Ownership Authority' },
+      ],
+      buildingStaff: [
+        { role: 'Full-time Doorman', name: 'Building service staff to verify' },
+        { role: 'Resident Manager / Superintendent', name: 'On-site staff to verify' },
+        { role: 'Managing Agent', name: 'To verify through HPD MDR / board records' },
+      ],
+      professionalSources: [
+        'StreetEasy / Rogers Partners / Compass / Corcoran / Elegran cross-check for units, floors, year, amenities, and capital work',
+        'NYC DOB violations and permit data: https://www.nyc.gov/site/buildings/dob/find-building-data.page',
+        'NYC DOB violations guidance: https://www.nyc.gov/site/buildings/safety/dob-violations.page',
+        'PropertyShark search: https://www.propertyshark.com/mason/ny/New-York-City/Property-Search',
+        'NYC PROS / DOF property tax and assessment portal: https://a806-pros.nyc.gov/PROS/',
+        'PublicRecordsData / NeighborWho can be used only as secondary cross-checks, not final authority',
+      ],
+      professionalNotes: [
+        'Public sources vary around 160, 167, and 168 units and 20-21 floors; Jackie uses 167 units and 20 floors unless offering-plan or board records confirm otherwise.',
+        'If NYC lookup returns Brooklyn BBL 3062630070, Jackie must reject that record as an address-resolution mismatch for the Manhattan 201 East 79th Street report.',
+      ],
+    };
+  }
   if (/chesapeake\s+house/i.test(key) || /201\s+e(ast)?\s+28/i.test(key)) {
     return {
       canonicalAddress: '201 East 28th Street, New York, NY 10016',
@@ -1312,7 +1406,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   let commercialIntel = inferCommercialAmenityIntel({
     address: reportAddress,
     buildingName,
-    buildingClass: dof?.buildingClass || '',
+    buildingClass: knownFacts?.buildingClass || dof?.buildingClass || '',
     taxClass: dof?.taxClass || '',
     propertyType,
     occupancy: raw.energy?.occupancy ?? null,
@@ -1380,13 +1474,13 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     assessedValue: dof?.assessedValue || 0,
     landValue: dof?.landValue || 0,
     lotArea: dof?.lotArea || 0,
-    buildingArea: gfa,
+    buildingArea: knownFacts?.buildingArea || gfa,
     dofOwner: dof?.owner
       || raw.dofAbatement?.ownerName
       || (raw.dobOwners?.[0]?.name)
       || (raw.acris?.lastSaleBuyer)
       || '',
-    bbl: dof?.bbl || '',
+    bbl: knownFacts?.bbl || dof?.bbl || '',
     registrationOwner: raw.registration?.owner
       || (raw.dobOwners?.[0]?.name)
       || raw.dofAbatement?.ownerName
@@ -1769,7 +1863,7 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
   });
   checks.push({
     name: 'Partner Logo / Website Links',
-    status: html.includes('commons.wikimedia.org/wiki/Special:Redirect/file/BankUnited_logo.svg') && html.includes('d2e1363xcu3t9u.cloudfront.net/2019/resized/Black_card_without_chip.png') && html.includes('/images/partners/hubspot.svg') && html.includes('https://www.bankunited.com') && html.includes('https://www.meetselect.com') ? 'pass' : 'fail',
+    status: html.includes('commons.wikimedia.org/wiki/Special:Redirect/file/BankUnited_logo.svg') && html.includes('d2e1363xcu3t9u.cloudfront.net/2024/images/share.png') && html.includes('/images/partners/hubspot.svg') && html.includes('https://www.bankunited.com') && html.includes('https://www.meetselect.com') ? 'pass' : 'fail',
     detail: 'Partner slide must use live web image URLs for BankUnited and Select plus official website links',
   });
   checks.push({
@@ -2230,8 +2324,8 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:#F5F0E5;color:#2C
 .page{max-width:900px;margin:0 auto;counter-reset:page-num}
 .section,.cover,.elevator,.back-cover{counter-increment:page-num;position:relative;border:1px solid #D5D0C6;margin-bottom:6px}
 .section::after{content:'Confidential \u00A9 ${new Date().getFullYear()} Camelot Realty Group \u00B7 Proprietary \u0026 Trade Secret \u00B7 Do Not Distribute Without Written Consent';display:block;text-align:center;font-size:7.5px;color:#999;letter-spacing:0.4px;margin-top:14px;padding-top:8px;border-top:1px solid #E5E3DE}
-.section::before{counter-increment:page-num 0;content:counter(page-num);position:absolute;bottom:12px;right:20px;font-size:10px;color:#bbb;font-family:'DM Sans',sans-serif;font-weight:500}
-.cover::before,.back-cover::before,.elevator::before{content:counter(page-num);position:absolute;bottom:16px;right:24px;font-size:10px;color:rgba(255,255,255,0.3);font-family:'DM Sans',sans-serif;font-weight:500}
+.section::before{counter-increment:page-num 0;content:counter(page-num);position:absolute;bottom:12px;right:20px;font-size:9px;color:#999;font-family:Arial,sans-serif;font-weight:400}
+.cover::before,.back-cover::before,.elevator::before{content:counter(page-num);position:absolute;bottom:16px;right:24px;font-size:9px;color:rgba(255,255,255,0.38);font-family:Arial,sans-serif;font-weight:400}
 a{color:#B8973A;text-decoration:none}
 .gold{color:#B8973A}.navy{color:#343434}
 
@@ -2412,7 +2506,7 @@ body::before{content:'';position:fixed;top:0.08in;right:0.08in;bottom:0.08in;lef
 
 <!-- PAGE 1: COVER -->
 <div class="cover">
-<img src="./images/camelot-logo-white.png" alt="Camelot Realty Group" style="width:140px;margin-bottom:32px;opacity:0.95" onerror="this.style.display='none'">
+<img src="./images/camelot-logo-white.png" alt="Camelot Realty Group" style="width:230px;margin-bottom:36px;opacity:0.98" onerror="this.style.display='none'">
 <h1>${d.buildingName}</h1>
 <div class="proposal-sub">Property Intelligence Report &amp; Management Proposal</div>
 <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-top:4px">Powered by Jackie &nbsp;\u00B7&nbsp; Camelot OS &nbsp;\u00B7&nbsp; SCOUT Market Intelligence</div>
@@ -2426,7 +2520,7 @@ body::before{content:'';position:fixed;top:0.08in;right:0.08in;bottom:0.08in;lef
 </div>
 
 <div class="deck-slide">
-<div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
+<div class="brand-logo" style="width:230px"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" style="width:100%;height:auto" onerror="this.style.display='none'"></div>
 <div style="display:flex;align-items:center;justify-content:center;min-height:420px;text-align:center;flex-direction:column">
 <h2 class="deck-title center" style="font-size:48px">Elevating ${safe(d.buildingName)}</h2>
 <div style="width:150px;height:4px;background:#B8973A;margin:-8px auto 42px"></div>
@@ -2681,6 +2775,16 @@ ${commercialIntel.brandingDescription ? `<p style="margin-top:10px">${safe(comme
 <p style="margin-top:12px;font-size:11px;color:#777"><strong>Status:</strong> ${commercialIntel.researchStatus === 'verified' ? 'Verified signals found' : 'Needs review'}<br><strong>Sources:</strong> ${commercialIntel.researchSources.map(safe).join(' · ')}</p>
 </div>
 </div>
+<div style="background:#fff;border:1px solid #D8C894;border-radius:8px;padding:10px 12px;margin-top:14px;font-size:10px;color:#555;line-height:1.55">
+<strong style="color:#A89035">Commercial / amenity source stack:</strong>
+NYC vacant storefront data · CoStar/LoopNet-style commercial listings · Walker &amp; Dunlop Suite / commercial data · Local Logic neighborhood enrichment · PropertyShark · DOT/DOB parking and garage records · public signage and official building website review. Tenant names, garage operators, storage inventory, and amenity revenue must be verified before publication.
+<div style="margin-top:5px">
+<a href="https://data.cityofnewyork.us/City-Government/Storefronts-Reported-Vacant-or-Not/92iy-9c3n/about_data" target="_blank">NYC storefront data</a> ·
+<a href="https://suite.walkerdunlop.com/" target="_blank">Walker &amp; Dunlop Suite</a> ·
+<a href="https://locallogic.co/data-enrichment/" target="_blank">Local Logic</a> ·
+<a href="https://www.propertyshark.com/mason/ny/New-York-City/Property-Search" target="_blank">PropertyShark</a>
+</div>
+</div>
 ${commercialIntel.brandingImages.length > 0 ? `<div style="display:grid;grid-template-columns:repeat(${Math.min(commercialIntel.brandingImages.length, 4)},1fr);gap:10px;margin-top:18px">${commercialIntel.brandingImages.slice(0, 4).map(src => `<div style="height:100px;border:1px solid #D5D0C6;background:#fff;overflow:hidden"><img src="${src}" alt="${safe(d.buildingName)} branding image" style="width:100%;height:100%;object-fit:cover"></div>`).join('')}</div>` : ''}
 </div>
 
@@ -2727,6 +2831,11 @@ ${d.neighborhoodMarketData ? `
 Price Momentum: <strong style="color:${d.neighborhoodMarketData.momentum === 'Very Strong' ? '#16a34a' : d.neighborhoodMarketData.momentum === 'Strong' ? '#16a34a' : '#ca8a04'}">${d.neighborhoodMarketData.momentum} ↑</strong>
 &nbsp;&nbsp;|&nbsp;&nbsp;Avg Days on Market: <strong>${d.neighborhoodMarketData.daysOnMarket} days</strong>
 &nbsp;&nbsp;|&nbsp;&nbsp;Operating Costs: <strong>${d.neighborhoodMarketData.opexRange}</strong>
+</div>
+<div style="font-size:10px;color:#777;line-height:1.55;margin-top:10px;background:#fff;border:1px solid #E5E3DE;border-radius:8px;padding:10px 12px">
+<strong style="color:#A89035">Neighborhood scoring source stack:</strong>
+Niche neighborhood livability, NeighborhoodScout crime context, NYC Open Data / 311 / NYPD signals, Zonda market snapshots, MTA subway/bus access, NYC DOT roadway/emergency access, and Camelot site-coverage modeling from 477 Madison Avenue.
+<div style="margin-top:5px"><span style="font-weight:700;color:#14356A">Ⓜ Subway &amp; Transit</span> · <span style="font-weight:700;color:#14356A">311 Bus &amp; Local Coverage</span> · <span style="font-weight:700;color:#14356A">DOT Road &amp; Emergency Access</span></div>
 </div>
 ` : ''}
 
@@ -2849,6 +2958,16 @@ ${d.distressSignals.length > 0 ? `
 </div>
 </div>
 <div style="font-size:9px;color:#888;margin-top:10px;text-align:center">Jackie recommends cross-referencing all databases before engagement. LexisNexis and SiteCompli require subscriptions. AG Offering Plans, NYSCEF, DOB BIS, and Jack Jaffa lookups are publicly accessible.</div>
+<div style="background:#F8F5EC;border:1px solid #D8C894;border-radius:8px;padding:10px 12px;margin-top:12px;font-size:10px;color:#555;line-height:1.55">
+<strong style="color:#A89035">Required property-record source stack:</strong>
+NYC DOB Find Building Data · DOB Violations · NYC HPD/HPD Online · OATH/ECB · NYC DOF / PROS · ACRIS · PropertyShark · PublicRecordsData · NeighborWho. Jackie must treat paid/marketing record sites as secondary cross-checks and must not publish a board-facing report when BBL, borough, building class, unit count, or floor count conflicts with the subject address.
+<div style="margin-top:5px">
+<a href="https://www.nyc.gov/site/buildings/dob/find-building-data.page" target="_blank">DOB building data</a> ·
+<a href="https://www.nyc.gov/site/buildings/safety/dob-violations.page" target="_blank">DOB violations</a> ·
+<a href="https://a806-pros.nyc.gov/PROS/" target="_blank">NYC DOF / PROS</a> ·
+<a href="https://www.propertyshark.com/mason/ny/New-York-City/Property-Search" target="_blank">PropertyShark</a>
+</div>
+</div>
 </div>
 </div>
 
@@ -3694,7 +3813,7 @@ ${[
 
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0 20px">
 ${[
-  { name: 'Select', logo: 'https://d2e1363xcu3t9u.cloudfront.net/2019/resized/Black_card_without_chip.png', url: 'https://www.meetselect.com', desc: 'Resident lifestyle benefits', max: '215px', h: '56px', bg: '#0B0B0B', pad: '8px 12px' },
+  { name: 'Select', logo: 'https://d2e1363xcu3t9u.cloudfront.net/2024/images/share.png', url: 'https://www.meetselect.com', desc: 'Resident lifestyle benefits', max: '215px', h: '56px', bg: '#0B0B0B', pad: '8px 12px' },
   { name: 'MDS', logo: '/images/partners/mds.svg', url: 'https://multidataservices.com', desc: 'Property management software', max: '190px', h: '52px', bg: '#fff', pad: '4px 8px' },
   { name: 'BankUnited', logo: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/BankUnited_logo.svg', url: 'https://www.bankunited.com', desc: 'Banking and treasury partner', max: '220px', h: '46px', bg: '#fff', pad: '6px 8px' },
   { name: 'AppFolio', logo: '/images/partners/appfolio.svg', url: 'https://www.appfolio.com', desc: 'Property operations platform', max: '190px', h: '52px', bg: '#fff', pad: '4px 8px' },
@@ -3962,10 +4081,12 @@ ${[
 <!-- ConciergePlus Hero — the centerpiece -->
 <div style="background:#3A4B5B;border-radius:10px;padding:22px;margin-bottom:16px;color:#fff">
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-<div style="width:40px;height:40px;background:#A89035;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="color:#fff;font-weight:800;font-size:14px">C+</span></div>
+<a href="https://conciergeplus.com/" target="_blank" rel="noopener" style="width:158px;height:48px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:6px 10px;overflow:hidden">
+<img src="/images/partners/conciergeplus.svg" alt="ConciergePlus logo" style="width:100%;height:100%;object-fit:contain;display:block">
+</a>
 <div>
 <div style="font-size:16px;font-weight:700;color:#A89035">ConciergePlus — AI-Driven Resident Portal</div>
-<div style="font-size:11px;color:rgba(255,255,255,0.6)">26 integrated modules \u00B7 Board + Resident + Staff + Vendor portals \u00B7 Mobile app</div>
+<div style="font-size:11px;color:rgba(255,255,255,0.6)">28 integrated modules \u00B7 Board + Resident + Staff + Vendor portals \u00B7 Mobile app</div>
 </div>
 </div>
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">
@@ -3981,7 +4102,7 @@ ${['Amenity Booking', 'Announcements', 'Package Delivery', 'Service Requests', '
 <div style="font-size:9px;color:rgba(255,255,255,0.6)">AI Support (Merlin)</div>
 </div>
 <div style="background:rgba(168,144,53,0.15);border:1px solid rgba(168,144,53,0.3);border-radius:6px;padding:10px;text-align:center">
-<div style="font-size:18px;font-weight:800;color:#A89035">26</div>
+<div style="font-size:18px;font-weight:800;color:#A89035">28</div>
 <div style="font-size:9px;color:rgba(255,255,255,0.6)">Integrated Modules</div>
 </div>
 </div>
@@ -3989,12 +4110,12 @@ ${['Amenity Booking', 'Announcements', 'Package Delivery', 'Service Requests', '
 
 <!-- Camelot OS Platform Cards -->
 <div class="va-grid">
-<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Merlin AI</h5><p>Camelot\u2019s AI engine powering ConciergePlus, budget forecasting, expense anomaly detection, vendor scoring, pro-forma modeling, and intelligent building operations.</p></div>
-<div class="va-card" style="border-left-color:#3A4B5B"><h5>SCOUT</h5><p>Market intelligence \u2014 monthly benchmarks, ACRIS data, rental tracking, peer building comparisons, lead generation.</p></div>
-<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Jackie</h5><p>AI-powered new business development engine \u2014 generates Property Intelligence Reports, management proposals, email drafts, and cold caller sheets.</p></div>
-<div class="va-card" style="border-left-color:#3A4B5B"><h5>Prisma</h5><p>Enhanced ACH billing, real-time collection tracking, 90% NSF reduction via Plaid-linked payments.</p></div>
-<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">Parity</h5><p>Real-time HVAC and energy monitoring. LL97 liability modeling included. 15\u201325% utility savings.</p></div>
-<div class="va-card" style="border-left-color:#3A4B5B"><h5>Camelot Central</h5><p>Unified mobile app \u2014 building files, utility tracking, compliance, smart access, all resident services in one interface.</p></div>
+<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">🧠 Merlin AI</h5><p>Camelot\u2019s AI engine powering ConciergePlus, budget forecasting, expense anomaly detection, vendor scoring, pro-forma modeling, and intelligent building operations.</p></div>
+<div class="va-card" style="border-left-color:#3A4B5B"><h5>📊 SCOUT</h5><p>Market intelligence: quarterly benchmarks, ACRIS data, rental tracking, peer building comparisons, lead generation, and market-position scoring.</p></div>
+<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">✍ Jackie</h5><p>AI-powered new business development engine: generates Property Intelligence Reports, management proposals, email drafts, and cold caller sheets.</p></div>
+<div class="va-card" style="border-left-color:#3A4B5B"><h5>💳 Prisma</h5><p>Enhanced ACH billing, real-time collection tracking, and NSF reduction through Plaid-linked payment verification.</p></div>
+<div class="va-card" style="border-left-color:#A89035"><h5 style="color:#A89035">⚡ Parity</h5><p>Real-time HVAC and energy monitoring. LL97 liability modeling included. 15\u201325% utility savings opportunity.</p></div>
+<div class="va-card" style="border-left-color:#3A4B5B"><h5>📱 Camelot Central</h5><p>Unified mobile app: building files, utility tracking, compliance, smart access, and all resident services in one interface.</p></div>
 </div>
 
 <!-- Camelot OS Backend -->
@@ -4012,7 +4133,7 @@ ${['MDS Property Codes', 'Auto-Classification', 'Make.com Automation', 'Google D
 <div class="section-title">Quarterly Market Reports</div>
 <div class="section-sub">How does your building stack up against the local market?</div>
 
-<p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:16px">Every quarter, Camelot delivers a market-aware report that helps your board understand value, resident experience, sales and leasing activity, safety, cost of living, operating costs, and dollars per square foot. The report answers the practical questions owners ask: how is the building performing, what might a unit be worth, and where should the board focus next?</p>
+<p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:16px">Every quarter, Camelot delivers a market-aware report modeled after professional Manhattan market reports, including the Miller Samuel New York City market-report structure. Jackie should benchmark median and average sale price, price per square foot, closed sales, listing inventory, days on market, negotiability, rental pulse, and submarket trendlines, then translate those figures into board-level decisions: how is the building performing, what might a unit be worth, and where should the board focus next?</p>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
@@ -4039,6 +4160,11 @@ ${['MDS Property Codes', 'Auto-Classification', 'Make.com Automation', 'Google D
 <h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">Dollars Per Square Foot</h5>
 <p style="font-size:11px;color:#555;line-height:1.5">Condo, co-op, and rental $/sf benchmarks so boards can understand value, leasing power, and owner equity.</p>
 </div>
+</div>
+
+<div style="background:#F8F5EC;border:1px solid #D8C894;border-radius:8px;padding:12px 14px;margin:8px 0 14px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:1.4px;color:#A89035;font-weight:700;margin-bottom:6px">Quarterly Market Report Source Rule</div>
+<p style="font-size:10px;color:#555;line-height:1.55">Jackie must cite and compare against Miller Samuel / Douglas Elliman-style market categories, REBNY market context, ACRIS closed sales, StreetEasy/Zillow/Compass listing signals, rental inventory, and peer-building cost-per-square-foot benchmarks. Source: <a href="https://millersamuel.com/market-reports/new-york-city/" target="_blank" rel="noopener" style="color:#14356A;font-weight:700">Miller Samuel New York City Market Reports</a>.</p>
 </div>
 
 <div style="background:#3A4B5B;border-radius:8px;padding:16px;color:#fff;text-align:center">
@@ -4164,7 +4290,7 @@ ${buildPortfolioSection(d)}
 <div style="background:#1a1a2e;border:2px solid #A89035;border-radius:10px;padding:24px;margin:20px 0;color:#fff">
 <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
 <div style="width:156px;height:64px;background:#0B0B0B;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px 10px;border:1px solid rgba(255,255,255,0.16);overflow:hidden">
-<img src="https://d2e1363xcu3t9u.cloudfront.net/2019/resized/Black_card_without_chip.png" alt="Select membership card" style="width:100%;height:100%;object-fit:contain;display:block">
+<img src="https://d2e1363xcu3t9u.cloudfront.net/2024/images/share.png" alt="Select official brand image" style="width:100%;height:100%;object-fit:contain;display:block">
 </div>
 <div>
 <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#A89035">Select — Exclusive Resident Benefits</div>
@@ -4223,9 +4349,10 @@ ${buildPortfolioSection(d)}
 
 <!-- PAGE 24: CONFIDENTIALITY (CONDENSED) -->
 <div class="section section-white" style="font-size:11px;color:#555;line-height:1.8">
-<div class="section-title" style="font-size:20px">Confidentiality &amp; Legal Notice</div>
+<div class="section-title" style="font-size:20px">⚖️ Confidentiality &amp; Legal Notice</div>
 
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:24px;margin-bottom:16px">
+<div style="display:flex;gap:10px;margin-bottom:12px;color:#A89035;font-size:22px;align-items:center"><span title="Court">🏛️</span><span title="Law">⚖️</span><span title="Legal terms">🔨</span><span title="Confidentiality">🔒</span></div>
 <p style="font-size:12px;color:#2C3240;line-height:1.8;margin-bottom:12px">\uD83D\uDD12 This Property Intelligence Report is <strong>confidential and proprietary</strong> to Camelot Realty Group. It is intended solely for the named recipient(s) and may not be reproduced, distributed, or disclosed without prior written consent.</p>
 <p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:12px">\u00A9 ${new Date().getFullYear()} Camelot Realty Group. All rights reserved. Contents are protected by U.S. copyright and trade secret law. SCOUT, Jackie, Merlin AI, ConciergePlus, Prisma, Parity, and Camelot Central are proprietary platforms. This Report is for informational purposes only and does not constitute legal, financial, or investment advice. Data is sourced from NYC Open Data, ACRIS, StreetEasy, RealtyMX, and other third-party databases and is presented &ldquo;as is&rdquo; without warranty. AI-assisted analysis has been reviewed by licensed real estate professionals. Governed by the laws of the State of New York; venue in New York County.</p>
 <div style="text-align:center;margin-top:16px">
@@ -4245,14 +4372,16 @@ ${buildPortfolioSection(d)}
 <div class="back-cover" style="background:#3A4B5B;position:relative;overflow:hidden">
 
 <!-- Jackie Kennedy background image overlay -->
-<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/JKOnassis.jpg/440px-JKOnassis.jpg') center top/cover no-repeat;opacity:0.06"></div>
+<div style="position:absolute;top:48px;left:54px;width:168px;height:224px;border:2px solid rgba(168,144,53,0.55);box-shadow:0 18px 32px rgba(0,0,0,0.22);overflow:hidden;background:#23313B;z-index:1">
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Jackie_Kennedy_Color_Portrait_%283x4_cropped%29.jpg/512px-Jackie_Kennedy_Color_Portrait_%283x4_cropped%29.jpg" alt="Jacqueline Kennedy Onassis portrait" style="width:100%;height:100%;object-fit:cover;display:block">
+</div>
 <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(58,75,91,0.4) 0%,rgba(58,75,91,0.95) 40%,rgba(58,75,91,1) 70%)"></div>
 
 <!-- Content -->
 <div style="position:relative;z-index:1">
 
 <!-- Quote — large, emphasized, center stage -->
-<div style="margin-bottom:32px;max-width:560px">
+<div style="margin-bottom:32px;max-width:560px;margin-left:210px">
 <div style="font-size:64px;font-family:'Plus Jakarta Sans',-apple-system,sans-serif;color:#A89035;line-height:0.5;margin-bottom:16px;opacity:0.6">&ldquo;</div>
 <div style="font-family:'Cardo',Georgia,serif;font-style:italic;font-size:29px;color:#fff;line-height:1.45;font-weight:400;letter-spacing:0.2px;text-shadow:0 2px 12px rgba(0,0,0,0.22)">Don\u2019t let it be forgot, that once there was a spot, for one brief shining moment, that was known as <span style="color:#D5B24A;font-weight:700">Camelot</span>.</div>
 <div style="font-size:64px;font-family:'Plus Jakarta Sans',-apple-system,sans-serif;color:#A89035;line-height:0.5;text-align:right;margin-top:12px;opacity:0.6">&rdquo;</div>
@@ -4298,7 +4427,7 @@ ${buildPortfolioSection(d)}
 </div>
 
 <div class="deck-slide dark">
-<div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
+<div class="brand-logo" style="width:230px"><img src="https://www.camelot.nyc/wp-content/uploads/2015/03/Camelot-logo-footer-white.png" alt="Camelot Realty Group" style="width:100%;height:auto" onerror="this.style.display='none'"></div>
 <div class="thank-wordmark">CAMELOT</div>
 <div style="color:#B8973A;font-size:18px;margin-bottom:76px">Property Management</div>
 <h2 class="deck-title center" style="font-size:54px;margin-bottom:26px">Thank You</h2>
