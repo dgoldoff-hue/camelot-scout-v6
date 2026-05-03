@@ -153,6 +153,7 @@ export interface CommercialAmenityIntel {
 }
 
 interface KnownPropertyFacts {
+  canonicalAddress?: string;
   buildingName?: string;
   units?: number;
   stories?: number;
@@ -837,6 +838,91 @@ function inferCommercialAmenityIntel(input: {
 
 function getKnownPropertyFacts(address: string, candidateName = ''): KnownPropertyFacts | null {
   const key = `${address} ${candidateName}`.toLowerCase();
+  if (/corinthian/i.test(key) || /330\s+e(ast)?\s+38/i.test(key) || /38th?.*(1st|first)\s+ave/i.test(key)) {
+    return {
+      canonicalAddress: '330 East 38th Street, New York, NY 10016',
+      buildingName: 'The Corinthian',
+      units: 817,
+      stories: 57,
+      yearBuilt: 1989,
+      propertyType: 'Luxury Condominium',
+      neighborhoodName: 'Murray Hill',
+      streetEasyUrl: 'https://streeteasy.com/building/the-corinthian',
+      description: 'The Corinthian is a full-block Murray Hill condominium at 330 East 38th Street, known for its rounded bay-window architecture, white-glove service, major amenity package, and large-scale residential/commercial program.',
+      amenities: [
+        '24-hour doorman and concierge service',
+        'Fitness center / gym',
+        'Indoor swimming pool',
+        'Sun deck / roof deck',
+        'Running track',
+        'Golf simulator',
+        'Billiard room / party room',
+        'Children\'s playroom',
+        'Valet service',
+        'Parking garage',
+        'Storage',
+        'Bike room',
+        'Laundry',
+        'Live-in superintendent / building staff to verify',
+      ],
+      commercialSignals: [
+        'Commercial office / retail component reported by market sources; verify tenant roster, leases, signage, and offering-plan allocations before publishing tenant names.',
+        'Parking garage component reported by market sources; verify garage operator, license, insurance, access rights, and revenue treatment.',
+        'Large amenity and service program requires review of rules, waivers, staffing, vendor contracts, and recoverable fee schedule.',
+      ],
+      revenueOpportunities: [
+        'Parking garage operator / license review.',
+        'Storage, bike room, valet, move-in/move-out, alteration, and amenity-fee schedule review.',
+        'Commercial office/retail rent, escalation, insurance, and CAM allocation review.',
+        'Amenity vendor, staffing, and resident-access policy audit.',
+      ],
+      landmarks: [
+        'East River waterfront: nearby',
+        'NYU Langone Medical Center: nearby',
+        'Grand Central / Midtown transit: nearby',
+        'Murray Hill residential core: immediate neighborhood',
+        'FDR Drive / Queens-Midtown Tunnel access: nearby',
+        'United Nations / Midtown East office district: nearby',
+      ],
+      locationTitle: 'Murray Hill East River Positioning',
+      locationCopy: 'The Corinthian occupies a full-block position near First Avenue and East 38th Street, with strong East Side access, medical/institutional anchors, and Midtown connectivity.',
+      lifestyleTitle: 'Scale, Amenities & Liquidity',
+      lifestyleCopy: 'The building’s large unit count, white-glove staffing, garage, pool, fitness, roof and entertainment amenities create a full-service residential experience that supports resale, leasing, and board expectations.',
+      brandingTitle: 'The Corinthian on StreetEasy',
+      brandingDescription: 'StreetEasy and market building profiles identify The Corinthian as a 330 East 38th Street condominium in Murray Hill with 817 units, 57 stories, 1989 construction, Rose Associates management, Bernard Spitzer development, and Michael Schimenti / Der Scutt Architects design attribution.',
+      researchSources: [
+        'StreetEasy building page: https://streeteasy.com/building/the-corinthian',
+        'NYBits building profile: https://www.nybits.com/apartments/the_corinthian.html',
+        'Corcoran building profile for The Corinthian',
+        'PropertyClub building profile for The Corinthian',
+        'Compass building profile for The Corinthian',
+        'LoopNet / CoStar / PropertyShark / NYC parking-source review required before publishing commercial tenant names',
+      ],
+      currentManagement: 'Rose Associates (reported by StreetEasy; verify against HPD MDR, board materials, and management agreement)',
+      boardMembers: [
+        { name: 'The Corinthian Condominium', title: 'Board of Managers / Ownership Authority' },
+      ],
+      buildingStaff: [
+        { role: 'Managing Agent', name: 'Rose Associates (reported by StreetEasy; verify)' },
+        { role: '24-hour Doorman / Concierge', name: 'Building service staff to verify' },
+        { role: 'Live-in Superintendent / Resident Manager', name: 'On-site staff to verify' },
+      ],
+      professionalArchitects: [
+        { name: 'Michael Schimenti / Der Scutt Architects', title: 'Architect attribution from market sources', license: 'Verify against offering plan / DOB filings' },
+      ],
+      professionalSources: [
+        'StreetEasy: management team, developer, architect, district, units/stories/year',
+        'NYBits: structure, amenities, office space, parking/storage signals',
+        'PropertyClub: commercial office/retail square footage and parking garage signal',
+        'Corcoran / Compass / Brownstoner: amenities and unit/story/year cross-check',
+        'HPD MDR, ACRIS, DOB, DOF, offering plan, and board materials must be checked before publishing private contact names',
+      ],
+      professionalNotes: [
+        'Conflicting public unit counts exist (817, 831, 840); Jackie uses StreetEasy/Compass 817 unless board or offering-plan records confirm otherwise.',
+        'Commercial office/retail and garage details should be verified before naming tenants/operators.',
+      ],
+    };
+  }
   if (/1280\s+(fifth|5th)/i.test(key) || /one\s+museum\s+mile/i.test(key)) {
     return {
       buildingName: 'One Museum Mile',
@@ -945,11 +1031,13 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
 }
 
 export async function buildMasterReport(address: string, borough?: string): Promise<MasterReportData> {
+  const preKnownFacts = getKnownPropertyFacts(address);
+  const lookupAddress = preKnownFacts?.canonicalAddress || address;
   const [raw, geo, buildingPhotos, streetEasy] = await Promise.all([
-    fetchFullBuildingReport(address, borough),
-    geocodeAddress(address + (borough ? ', ' + borough + ', New York' : ', New York, NY')),
-    findBuildingPhotos(address, address).catch(() => null),
-    fetchStreetEasyBuilding(address, borough).catch(() => null),
+    fetchFullBuildingReport(lookupAddress, borough),
+    geocodeAddress(lookupAddress + (borough ? ', ' + borough + ', New York' : ', New York, NY')),
+    findBuildingPhotos(lookupAddress, lookupAddress).catch(() => null),
+    fetchStreetEasyBuilding(lookupAddress, borough).catch(() => null),
   ]);
 
   // Fetch neighborhood intelligence (crime, 311, landmarks)
@@ -963,7 +1051,8 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   ).catch(() => null) : null;
 
   const dof = raw.dof;
-  const knownFacts = getKnownPropertyFacts(address, streetEasy?.name || raw.energy?.propertyName || '');
+  const knownFacts = getKnownPropertyFacts(lookupAddress, streetEasy?.name || raw.energy?.propertyName || '') || preKnownFacts;
+  const reportAddress = knownFacts?.canonicalAddress || lookupAddress;
 
   // Cascade unit count from multiple sources — never show 0 if ANY source has data
   // Priority: DOF/PLUTO → DOF Exemptions → DOB Permits → Energy Benchmarking → estimate from area
@@ -996,7 +1085,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   if (raw.energy && gfa > 0) {
     const bldgType = inferBuildingType(dof?.buildingClass || '');
     const ll97Input = {
-      address,
+      address: reportAddress,
       buildingType: bldgType as any,
       grossFloorArea: gfa,
       siteEUI: raw.energy.siteEUI || undefined,
@@ -1050,7 +1139,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   // Pricing
   // Price per unit — use the tiered pricing intelligence tier as the default displayed fee
   // This gets recalculated properly in calculateTieredPricing with building class, value, and address awareness
-  const tier = calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', dof?.buildingClass || '', dof?.marketValue || 0, address);
+  const tier = calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', dof?.buildingClass || '', dof?.marketValue || 0, reportAddress);
   // Use Classic tier as the default displayed fee — David's target: ~$900/unit/year ($75/unit/mo)
   let pricePerUnit = tier.classic.perUnit;
   const monthlyFee = pricePerUnit * (units || 1);
@@ -1105,11 +1194,11 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     return energyName;
   }
 
-  const buildingName = knownFacts?.buildingName || deriveBuildingName(address, raw);
+  const buildingName = knownFacts?.buildingName || deriveBuildingName(reportAddress, raw);
   const propertyType = knownFacts?.propertyType || streetEasy?.buildingType || classifyBuildingType(dof?.buildingClass || '');
-  const brandingResearch = await fetchOfficialBuildingBranding(address, buildingName).catch(() => null);
+  const brandingResearch = await fetchOfficialBuildingBranding(reportAddress, buildingName).catch(() => null);
   let commercialIntel = inferCommercialAmenityIntel({
-    address,
+    address: reportAddress,
     buildingName,
     buildingClass: dof?.buildingClass || '',
     taxClass: dof?.taxClass || '',
@@ -1140,10 +1229,10 @@ export async function buildMasterReport(address: string, borough?: string): Prom
         exterior: knownFacts.imageUrls,
         streetView: buildingPhotos?.streetView || '',
         satellite: buildingPhotos?.satellite || '',
-        source: 'Verified One Museum Mile asset library',
+        source: `Verified ${knownFacts.buildingName || 'subject property'} asset library`,
       }
     : buildingPhotos;
-  const effectiveNeighborhoodName = knownFacts?.neighborhoodName || streetEasy?.neighborhood || detectNeighborhood(address, borough || '');
+  const effectiveNeighborhoodName = knownFacts?.neighborhoodName || streetEasy?.neighborhood || detectNeighborhood(reportAddress, borough || '');
   const publicRecordsLoaded = Boolean(
     dof?.bbl
     || raw.registration?.buildingId
@@ -1164,7 +1253,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   });
 
   return {
-    address,
+    address: reportAddress,
     borough: borough || '',
     buildingName,
     date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
@@ -1223,7 +1312,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     longitude: geo?.lng ?? null,
     propertyType,
     neighborhoodName: effectiveNeighborhoodName,
-    neighborhoodMarketData: lookupNeighborhoodData(effectiveNeighborhoodName || detectNeighborhood(address, borough || '')),
+    neighborhoodMarketData: lookupNeighborhoodData(effectiveNeighborhoodName || detectNeighborhood(reportAddress, borough || '')),
     registrationDate: raw.registration?.registrationId ? null : null,
     managementDuration: null,
     managementGrade: managementAssessment.grade,
@@ -1344,7 +1433,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     pricePerUnit,
     monthlyFee,
     annualFee,
-    tieredPricing: calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', dof?.buildingClass || '', dof?.marketValue || 0, address),
+    tieredPricing: calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', dof?.buildingClass || '', dof?.marketValue || 0, reportAddress),
     feeComparison: calculateMarketFeeComparison({
       units: units || 1,
       borough: borough || '',
