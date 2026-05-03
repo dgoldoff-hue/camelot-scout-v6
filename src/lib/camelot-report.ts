@@ -1324,6 +1324,7 @@ export function runReportQA(d: MasterReportData): QACheckResult {
 export function validateJackieReport(d: MasterReportData, html: string): QACheckResult {
   const base = runReportQA(d);
   const checks: QACheckResult['checks'] = [...base.checks];
+  const isKnownStaffedProperty = /one\s+museum\s+mile|1280\s+(fifth|5th)/i.test(`${d.buildingName} ${d.address}`);
   const requiredSlides = [
     'Elevating',
     'The Property',
@@ -1404,6 +1405,63 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     detail: d.commercialIntel?.researchStatus === 'verified'
       ? `Signals: ${[...d.commercialIntel.commercialSignals, ...d.commercialIntel.amenities].slice(0, 5).join(', ') || 'Verified research completed'}`
       : 'No confirmed commercial/amenity/official website signals yet; verify with site visit, offering plan, or board materials',
+  });
+  const requiredCommercialSources = [
+    'LoopNet public listing search attempted',
+    'CoStar public listing search attempted',
+    'PropertyShark-style owner / tax / commercial-use review',
+    'NYC DOT/DOB parking garage and curb-cut signal review',
+    'NYC parking operator scan',
+  ];
+  for (const source of requiredCommercialSources) {
+    checks.push({
+      name: `Commercial Source: ${source.split(' ')[0]}`,
+      status: html.includes(source) || d.commercialIntel?.researchSources?.some(s => s.includes(source)) ? 'pass' : 'fail',
+      detail: source,
+    });
+  }
+  checks.push({
+    name: 'Management Context',
+    status: isKnownStaffedProperty && /Self-managed buildings benefit most/i.test(html) ? 'fail' : 'pass',
+    detail: isKnownStaffedProperty
+      ? 'Known staffed property must not be framed as self-managed'
+      : 'Self-managed language allowed only when management is truly unknown',
+  });
+  checks.push({
+    name: 'Building Contacts / Staff',
+    status: d.boardMembers.length > 0 && d.buildingStaff.length > 0 ? 'pass' : 'fail',
+    detail: `${d.boardMembers.length} board/owner signal(s), ${d.buildingStaff.length} staff/management signal(s)`,
+  });
+  checks.push({
+    name: 'Current Management Performance Fallback',
+    status: !/[A-F]/.test(d.managementGrade) && !html.includes('Public-record review pending') ? 'fail' : 'pass',
+    detail: /[A-F]/.test(d.managementGrade) ? `Grade ${d.managementGrade}` : 'Pending public-record review message required',
+  });
+  checks.push({
+    name: 'Quarterly Market Reports Language',
+    status: html.includes('Quarterly Market Reports') && !html.includes('Quarterly Management Reports') ? 'pass' : 'fail',
+    detail: 'Quarterly reports must describe market/value benchmarking, not generic management reports',
+  });
+  checks.push({
+    name: 'Partner Logo / Website Links',
+    status: html.includes('logo.clearbit.com/bankunited.com') && html.includes('logo.clearbit.com/meetselect.com') && html.includes('https://www.bankunited.com') && html.includes('https://www.meetselect.com') ? 'pass' : 'fail',
+    detail: 'BankUnited and Select must use real logo URLs and official websites',
+  });
+  checks.push({
+    name: 'Camelot Case Studies',
+    status: html.includes('camelot.nyc/case-studies') && html.includes('111 Mott Street') && html.includes('White Street Plaza Corp.') ? 'pass' : 'fail',
+    detail: 'Case studies must be sourced from camelot.nyc/case-studies',
+  });
+  checks.push({
+    name: 'DOF Tax Search Link',
+    status: html.includes('a836-pts-access.nyc.gov/care/search/commonsearch.aspx?mode=address') ? 'pass' : 'fail',
+    detail: 'DOF button must open address-based property tax search',
+  });
+  const nextStepsSlides = (html.match(/<h2[^>]*>\s*Next Steps\s*<\/h2>/g) || []).length;
+  checks.push({
+    name: 'Duplicate Next Steps Pages',
+    status: nextStepsSlides <= 1 ? 'pass' : 'fail',
+    detail: `${nextStepsSlides} Next Steps heading(s) found`,
   });
   const warnings = checks.filter(c => c.status === 'warn').length;
   const failures = checks.filter(c => c.status === 'fail').length;

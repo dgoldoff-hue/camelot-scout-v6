@@ -77,6 +77,9 @@ const DEMO_BOTS: DashboardBot[] = [
       'BankUnited callout included',
       'Active Now vs Deploying 2026 tech table',
       '32BJ and LL97 checks applied when relevant',
+      'Commercial and amenity sources checked: LoopNet, CoStar, PropertyShark, HPD, DOF, DOB/DOT parking, operators, StreetEasy, official site',
+      'No self-managed language unless confirmed; known staffed buildings show board/staff/management context',
+      'Gut Check, Quarterly Market Reports, DOF link, partner logos, case studies, and duplicate closing pages verified',
     ],
     sources: [
       { name: 'Jackie_SKILL_Updated.md', kind: 'Drive', status: 'synced' },
