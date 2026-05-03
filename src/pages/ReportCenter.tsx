@@ -183,7 +183,8 @@ export default function ReportCenter() {
     return {
       ...data,
       buildingPhotos: {
-        exterior: uploadedPhotos,
+        exterior: uploadedPhotos.slice(0, 1),
+        interior: uploadedPhotos.slice(1),
         streetView: data.buildingPhotos?.streetView || '',
         satellite: data.buildingPhotos?.satellite || '',
         source: 'Uploaded by Camelot team',

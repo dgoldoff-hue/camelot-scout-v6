@@ -50,7 +50,9 @@ export function generatePitchReport(d: MasterReportData): string {
   // Street view URLs
   // Use address-based Street View (no geocode dependency)
   const svUrl = `https://maps.googleapis.com/maps/api/streetview?size=800x500&location=${encodeURIComponent(d.address + ', New York, NY')}&fov=90&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`;
-  const subjectImage = d.buildingPhotos?.exterior?.[0] || d.commercialIntel?.brandingImages?.[0] || svUrl;
+  const exteriorImage = d.buildingPhotos?.exterior?.[0] || d.commercialIntel?.brandingImages?.[0] || svUrl;
+  const interiorImage = d.buildingPhotos?.interior?.[0] || d.buildingPhotos?.exterior?.[1] || d.commercialIntel?.brandingImages?.[1] || exteriorImage;
+  const subjectImage = exteriorImage;
   const factCards = [
     { label: 'Units', value: d.units ? fmtN(d.units) : 'Verify' },
     { label: 'Stories', value: d.stories ? fmtN(d.stories) : 'Verify' },
@@ -219,7 +221,10 @@ export function generatePitchReport(d: MasterReportData): string {
         ${d.isRentStabilized ? `<div class="body-italic" style="margin-top:12px">Rent stabilized — Camelot has deep DHCR & RGB expertise</div>` : ''}
       </div>
       <div style="flex:0 0 420px">
-        <div class="photo-frame"><img src="${subjectImage}" style="width:420px;height:300px;object-fit:cover;display:block" onerror="this.src='${svUrl}'" /></div>
+        <div style="display:grid;grid-template-columns:1fr;gap:12px">
+          <div class="photo-frame"><img src="${exteriorImage}" style="width:420px;height:180px;object-fit:cover;display:block" onerror="this.src='${svUrl}'" /></div>
+          <div class="photo-frame"><img src="${interiorImage}" style="width:420px;height:180px;object-fit:cover;display:block" onerror="this.src='${exteriorImage}'" /></div>
+        </div>
       </div>
     </div>
   </div>

@@ -9,6 +9,7 @@ const GOOGLE_MAPS_KEY = 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8';
 
 export interface BuildingPhotos {
   exterior: string[];  // URLs to exterior photos
+  interior: string[];  // URLs to lobby, amenity, and interior photos
   streetView: string;  // Google Street View URL
   satellite: string;   // Google Maps satellite URL
   source: string;      // where the photos came from
@@ -95,6 +96,7 @@ export async function findBuildingPhotos(buildingName: string, address: string):
 
   return {
     exterior,
+    interior: [],
     streetView: google.streetView,
     satellite: google.satellite,
     source,
@@ -106,7 +108,7 @@ export async function findBuildingPhotos(buildingName: string, address: string):
  */
 export function generatePhotoHTML(photos: BuildingPhotos, buildingName: string): string {
   const mainPhoto = photos.exterior[0];
-  const additionalPhotos = photos.exterior.slice(1, 4);
+  const additionalPhotos = [...photos.interior, ...photos.exterior.slice(1)].slice(0, 4);
 
   return `
 <!-- Building Photos — sourced from ${photos.source} -->

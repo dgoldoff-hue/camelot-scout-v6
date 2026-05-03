@@ -134,7 +134,7 @@ export interface MasterReportData {
   // Commercial / amenity / branding research
   commercialIntel: CommercialAmenityIntel;
   // Raw data for advanced usage
-  buildingPhotos: { exterior: string[]; streetView: string; satellite: string; source: string } | null;
+  buildingPhotos: { exterior: string[]; interior: string[]; streetView: string; satellite: string; source: string } | null;
   neighborhoodIntel: { crimeScore: number; qualityScore: number; transitScore: number; crimeTotal: number; complaints311Total: number; crimeBreakdown: Array<{type: string; count: number}>; topComplaints: Array<{type: string; count: number}>; landmarks: Array<{name: string; type: string; date: string}>; crimePrecinct: string; scoreExplanation: string } | null;
   raw: any;
 }
@@ -1030,6 +1030,25 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
   return null;
 }
 
+function splitPropertyImages(imageUrls: string[] = []): { exterior: string[]; interior: string[] } {
+  const interiorPattern = /\b(lobby|entrance|gym|fitness|pool|roof|deck|lounge|playroom|game|dining|media|card|amenity|interior|terrace)\b/i;
+  const exteriorPattern = /\b(building|exterior|facade|street|front|elevation)\b/i;
+  const exterior: string[] = [];
+  const interior: string[] = [];
+
+  for (const url of imageUrls) {
+    if (!url) continue;
+    const key = decodeURIComponent(url).replace(/[-_]/g, ' ');
+    if (interiorPattern.test(key) && !exteriorPattern.test(key)) interior.push(url);
+    else exterior.push(url);
+  }
+
+  return {
+    exterior: exterior.length ? exterior : imageUrls.slice(0, 1),
+    interior: interior.length ? interior : imageUrls.filter(url => !exterior.includes(url)).slice(0, 4),
+  };
+}
+
 export async function buildMasterReport(address: string, borough?: string): Promise<MasterReportData> {
   const preKnownFacts = getKnownPropertyFacts(address);
   const lookupAddress = preKnownFacts?.canonicalAddress || address;
@@ -1224,14 +1243,16 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     };
   }
 
+  const knownImageSplit = splitPropertyImages(knownFacts?.imageUrls || []);
   const effectiveBuildingPhotos = knownFacts?.imageUrls?.length
     ? {
-        exterior: knownFacts.imageUrls,
+        exterior: knownImageSplit.exterior,
+        interior: knownImageSplit.interior,
         streetView: buildingPhotos?.streetView || '',
         satellite: buildingPhotos?.satellite || '',
         source: `Verified ${knownFacts.buildingName || 'subject property'} asset library`,
       }
-    : buildingPhotos;
+    : buildingPhotos ? { ...buildingPhotos, interior: buildingPhotos.interior || [] } : buildingPhotos;
   const effectiveNeighborhoodName = knownFacts?.neighborhoodName || streetEasy?.neighborhood || detectNeighborhood(reportAddress, borough || '');
   const publicRecordsLoaded = Boolean(
     dof?.bbl
@@ -2340,9 +2361,9 @@ ${d.buildingPhotos && d.buildingPhotos.exterior.length > 0 && d.buildingPhotos.s
 <div style="font-size:8px;opacity:0.4;margin-top:2px">Photo: ${d.buildingPhotos.source}</div>
 </div>
 </div>
-${d.buildingPhotos.exterior.length > 1 ? `
-<div style="display:grid;grid-template-columns:repeat(${Math.min(d.buildingPhotos.exterior.length - 1, 3)},1fr);gap:6px;margin-bottom:12px">
-${d.buildingPhotos.exterior.slice(1, 4).map(url => `<div style="border-radius:6px;overflow:hidden;height:120px;border:1px solid #D5D0C6"><img src="${url}" alt="${d.buildingName}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'"></div>`).join('\n')}
+${[...(d.buildingPhotos.interior || []), ...d.buildingPhotos.exterior.slice(1)].length > 0 ? `
+<div style="display:grid;grid-template-columns:repeat(${Math.min([...(d.buildingPhotos.interior || []), ...d.buildingPhotos.exterior.slice(1)].length, 3)},1fr);gap:6px;margin-bottom:12px">
+${[...(d.buildingPhotos.interior || []), ...d.buildingPhotos.exterior.slice(1)].slice(0, 4).map(url => `<div style="border-radius:6px;overflow:hidden;height:120px;border:1px solid #D5D0C6"><img src="${url}" alt="${d.buildingName} interior or amenity photo" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'"></div>`).join('\n')}
 </div>` : ''}
 ` : d.latitude && d.longitude ? `
 <div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:340px;margin-bottom:16px;position:relative">
