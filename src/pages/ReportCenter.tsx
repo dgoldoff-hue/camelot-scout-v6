@@ -139,7 +139,7 @@ export default function ReportCenter() {
     const d = getDataWithPhotos();
     if (!d) return;
     const html = generateBrochureHTML(d);
-    if (!verifyJackieRelease(d, html)) return;
+    if (!verifyJackieRelease(d, html, 'internal')) return;
     openBrochureForPrint(html, `Jackie-Report-${d.buildingName}`);
   };
 
@@ -292,10 +292,14 @@ export default function ReportCenter() {
     };
   };
 
-  const verifyJackieRelease = (d: MasterReportData, html: string) => {
+  const verifyJackieRelease = (d: MasterReportData, html: string, mode: 'internal' | 'release' = 'release') => {
     const qa = validateJackieReport(d, html);
     if (qa.failures > 0) {
       const detail = qa.checks.filter(c => c.status === 'fail').slice(0, 4).map(c => `${c.name}: ${c.detail}`).join('\n');
+      if (mode === 'internal') {
+        toast.error(`Internal review opened with Jackie blockers:\n${detail}`, { duration: 7000 });
+        return true;
+      }
       toast.error(`Jackie self-check blocked release:\n${detail}`, { duration: 8000 });
       return false;
     }

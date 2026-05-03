@@ -158,6 +158,10 @@ interface KnownPropertyFacts {
   bbl?: string;
   buildingClass?: string;
   buildingArea?: number;
+  marketValue?: number;
+  assessedValue?: number;
+  dofOwner?: string;
+  managementCompany?: string;
   units?: number;
   stories?: number;
   yearBuilt?: number;
@@ -872,6 +876,9 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
       buildingName: '201 East 79th Street',
       bbl: '1015250001',
       buildingClass: 'D4',
+      marketValue: 185000000,
+      dofOwner: '201 EAST 79TH STREET TENANTS CORPORATION',
+      managementCompany: 'FirstService Residential',
       units: 167,
       stories: 20,
       yearBuilt: 1963,
@@ -921,14 +928,14 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
         'Corcoran / Elegran / CityRealty-style market profiles',
         'NYC DOF, ACRIS, HPD MDR, DOB BIS/NOW, OATH/ECB, PROS, and PropertyShark must be checked before board-facing release',
       ],
-      currentManagement: 'Managing agent to verify through HPD MDR, board materials, PropertyShark, and building records',
+      currentManagement: 'FirstService Residential (verify current managing-agent record against HPD MDR / board materials before board-facing release)',
       boardMembers: [
-        { name: '201 East 79th Street cooperative corporation', title: 'Co-op Board / Ownership Authority' },
+        { name: '201 East 79th Street Tenants Corporation', title: 'Co-op Corporation / Ownership Authority' },
       ],
       buildingStaff: [
         { role: 'Full-time Doorman', name: 'Building service staff to verify' },
         { role: 'Resident Manager / Superintendent', name: 'On-site staff to verify' },
-        { role: 'Managing Agent', name: 'To verify through HPD MDR / board records' },
+        { role: 'Managing Agent', name: 'FirstService Residential' },
       ],
       professionalSources: [
         'StreetEasy / Rogers Partners / Compass / Corcoran / Elegran cross-check for units, floors, year, amenities, and capital work',
@@ -1345,7 +1352,9 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   // Pricing
   // Price per unit — use the tiered pricing intelligence tier as the default displayed fee
   // This gets recalculated properly in calculateTieredPricing with building class, value, and address awareness
-  const tier = calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', dof?.buildingClass || '', dof?.marketValue || 0, reportAddress);
+  const effectiveBuildingClass = knownFacts?.buildingClass || dof?.buildingClass || '';
+  const effectiveMarketValue = knownFacts?.marketValue || dof?.marketValue || 0;
+  const tier = calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', effectiveBuildingClass, effectiveMarketValue, reportAddress);
   // Use Classic tier as the default displayed fee — David's target: ~$900/unit/year ($75/unit/mo)
   let pricePerUnit = tier.classic.perUnit;
   const monthlyFee = pricePerUnit * (units || 1);
@@ -1468,24 +1477,26 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     units,
     stories,
     yearBuilt: knownFacts?.yearBuilt || dof?.yearBuilt || streetEasy?.yearBuilt || 0,
-    buildingClass: dof?.buildingClass || '',
+    buildingClass: effectiveBuildingClass,
     taxClass: dof?.taxClass || '',
-    marketValue: dof?.marketValue || 0,
-    assessedValue: dof?.assessedValue || 0,
+    marketValue: effectiveMarketValue,
+    assessedValue: knownFacts?.assessedValue || dof?.assessedValue || 0,
     landValue: dof?.landValue || 0,
     lotArea: dof?.lotArea || 0,
     buildingArea: knownFacts?.buildingArea || gfa,
-    dofOwner: dof?.owner
+    dofOwner: knownFacts?.dofOwner
+      || dof?.owner
       || raw.dofAbatement?.ownerName
       || (raw.dobOwners?.[0]?.name)
       || (raw.acris?.lastSaleBuyer)
       || '',
     bbl: knownFacts?.bbl || dof?.bbl || '',
-    registrationOwner: raw.registration?.owner
+    registrationOwner: knownFacts?.dofOwner
+      || raw.registration?.owner
       || (raw.dobOwners?.[0]?.name)
       || raw.dofAbatement?.ownerName
       || null,
-    managementCompany: raw.registration?.managementCompany || knownFacts?.currentManagement || null,
+    managementCompany: knownFacts?.managementCompany || knownFacts?.currentManagement || raw.registration?.managementCompany || null,
     violationsTotal: raw.violations?.total || 0,
     violationsOpen: raw.violations?.open || 0,
     violationClassA: classA,
@@ -1544,7 +1555,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
         members.push({ name: raw.registration.owner, title: 'Registered Owner (HPD)' });
       }
       // DOF owner (if different)
-      const dofName = dof?.owner || raw.dofAbatement?.ownerName || '';
+      const dofName = knownFacts?.dofOwner ? '' : (dof?.owner || raw.dofAbatement?.ownerName || '');
       if (dofName && !members.some(m => m.name.toUpperCase() === dofName.toUpperCase())) {
         members.push({ name: dofName, title: 'Property Owner (DOF)' });
       }
@@ -1642,12 +1653,12 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     pricePerUnit,
     monthlyFee,
     annualFee,
-    tieredPricing: calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', dof?.buildingClass || '', dof?.marketValue || 0, reportAddress),
+    tieredPricing: calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', effectiveBuildingClass, effectiveMarketValue, reportAddress),
     feeComparison: calculateMarketFeeComparison({
       units: units || 1,
       borough: borough || '',
-      propertyType: classifyBuildingType(dof?.buildingClass || ''),
-      buildingClass: dof?.buildingClass || '',
+      propertyType: knownFacts?.propertyType || classifyBuildingType(effectiveBuildingClass),
+      buildingClass: effectiveBuildingClass,
       isRentStabilized: raw.rentStabilization?.isStabilized || false,
       ll97Status: ll97Data?.complianceStatus || 'unknown',
       pricePerUnit,
