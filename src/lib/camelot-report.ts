@@ -808,6 +808,7 @@ const CAMELOT = {
 };
 
 const LEGAL_TERMS_URL = 'https://camelot-scout-v6.onrender.com/#/legal-report-terms';
+const GOOGLE_MAPS_REPORT_KEY = 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8';
 
 // ============================================================
 // Portfolio Database (Camelot + Blue Owl + Penn South Capital)
@@ -828,12 +829,12 @@ interface PortfolioBuilding {
 }
 
 const CAMELOT_PORTFOLIO: PortfolioBuilding[] = [
-  { address: '949 Park Avenue', name: '949 Park Avenue Condominium', type: 'Condominium', neighborhood: 'Carnegie Hill, UES', borough: 'Manhattan', lat: 40.7772, lng: -73.9601, outcome: '$200K saved in one insurance claim', brand: 'Camelot', caseStudy: { situation: 'A 9th-floor window shattered unexpectedly, triggering FDNY emergency response and creating an immediate pedestrian safety risk on Park Avenue.', response: 'Within hours, Camelot secured the area with a sidewalk bridge, commissioned a professional engineering assessment, and coordinated directly with the insurance carrier.', result: '949 Park Avenue saved $200,000. Full replacement cost covered by insurance. Updated house rules and improved 32BJ staff accountability.', statLine: '$200,000 SAVED \u00B7 ZERO DISRUPTION TO RESIDENTS \u00B7 PARK AVENUE PORTFOLIO \u2014 CAMELOT ACTIVE' } },
+  { address: '949 Park Avenue', name: '949 Park Avenue Condominium', type: 'Condominium', neighborhood: 'Carnegie Hill, UES', borough: 'Manhattan', lat: 40.7772, lng: -73.9601, outcome: '$200K saved in one insurance claim', brand: 'Camelot', image: './images/case-studies/949-park.jpg', caseStudy: { situation: 'A 9th-floor window shattered unexpectedly, triggering FDNY emergency response and creating an immediate pedestrian safety risk on Park Avenue.', response: 'Within hours, Camelot secured the area with a sidewalk bridge, commissioned a professional engineering assessment, and coordinated directly with the insurance carrier.', result: '949 Park Avenue saved $200,000. Full replacement cost covered by insurance. Updated house rules and improved 32BJ staff accountability.', statLine: '$200,000 SAVED \u00B7 ZERO DISRUPTION TO RESIDENTS \u00B7 PARK AVENUE PORTFOLIO \u2014 CAMELOT ACTIVE' } },
   { address: '105 E 29th Street', name: '105 E 29th Street Co-op', type: 'Co-operative', neighborhood: 'NoMad / Midtown South', borough: 'Manhattan', lat: 40.7437, lng: -73.9830, outcome: 'Vendor rebid: 14% savings Yr 1', brand: 'Camelot' },
   { address: '201 E 15th Street', name: '201 E 15th Street Co-op', type: 'Co-operative', neighborhood: 'Gramercy Park', borough: 'Manhattan', lat: 40.7338, lng: -73.9851, outcome: 'Insurance restructure: 18% reduction', brand: 'Camelot' },
   { address: '165 E 7th Street', name: '165 E 7th Street Condominium', type: 'Condominium', neighborhood: 'East Village', borough: 'Manhattan', lat: 40.7260, lng: -73.9835, outcome: 'LL97 roadmap delivered in 60 days', brand: 'Camelot' },
   { address: '137 Franklin Street', name: '137 Franklin Street Apartment Corp', type: 'Co-operative', neighborhood: 'Tribeca', borough: 'Manhattan', lat: 40.7178, lng: -74.0044, outcome: '\u201CBest and most knowledgeable PMs\u201D', brand: 'Camelot' },
-  { address: '58 White Street', name: '58 White Street', type: 'Condominium', neighborhood: 'Tribeca', borough: 'Manhattan', lat: 40.7186, lng: -74.0022, outcome: '$1.2M deferred maintenance resolved', brand: 'Camelot', caseStudy: { situation: 'Building had $1.2M in deferred capital maintenance, multiple open DOB violations, and an expiring insurance policy with no carrier willing to renew.', response: 'Camelot prioritized violations, engaged new engineering and legal counsel, executed emergency capital repairs, and secured insurance through our broker network.', result: '58 White Street: All critical violations resolved within 90 days. Insurance renewed at competitive rates. Capital reserve plan funded and on track.', statLine: '$1.2M DEFERRED MAINTENANCE RESOLVED \u00B7 ALL VIOLATIONS CLEARED \u00B7 TRIBECA PORTFOLIO \u2014 CAMELOT ACTIVE' } },
+  { address: '58 White Street', name: '58 White Street', type: 'Condominium', neighborhood: 'Tribeca', borough: 'Manhattan', lat: 40.7186, lng: -74.0022, outcome: '$1.2M deferred maintenance resolved', brand: 'Camelot', image: './images/case-studies/58-white-street.jpg', caseStudy: { situation: 'Building had $1.2M in deferred capital maintenance, multiple open DOB violations, and an expiring insurance policy with no carrier willing to renew.', response: 'Camelot prioritized violations, engaged new engineering and legal counsel, executed emergency capital repairs, and secured insurance through our broker network.', result: '58 White Street: All critical violations resolved within 90 days. Insurance renewed at competitive rates. Capital reserve plan funded and on track.', statLine: '$1.2M DEFERRED MAINTENANCE RESOLVED \u00B7 ALL VIOLATIONS CLEARED \u00B7 TRIBECA PORTFOLIO \u2014 CAMELOT ACTIVE' } },
   { address: '300 E 56th Street', name: '300 E 56th Street', type: 'Co-operative', neighborhood: 'Sutton Place', borough: 'Manhattan', lat: 40.7588, lng: -73.9652, outcome: 'Full financial restructuring', brand: 'Camelot' },
   { address: '465 Park Avenue', name: '465 Park Avenue', type: 'Condominium', neighborhood: 'Midtown East', borough: 'Manhattan', lat: 40.7625, lng: -73.9710, outcome: 'Capital planning overhaul', brand: 'Camelot' },
   { address: '500 W 43rd Street', name: '500 W 43rd Street', type: 'Rental', neighborhood: "Hell's Kitchen", borough: 'Manhattan', lat: 40.7596, lng: -73.9948, outcome: 'Rent stabilized portfolio optimization', brand: 'Camelot' },
@@ -894,10 +895,11 @@ function buildPortfolioSection(d: MasterReportData): string {
 
   const portfolioImageStrip = nearby.map(b => {
     const searchUrl = `https://streeteasy.com/search?search=${encodeURIComponent(b.address + ' New York NY')}`;
-    const image = b.image || `https://maps.googleapis.com/maps/api/streetview?size=360x220&location=${encodeURIComponent(b.address + ', ' + b.borough + ', NY')}`;
+    const image = b.image || `https://maps.googleapis.com/maps/api/streetview?size=360x220&location=${encodeURIComponent(b.address + ', ' + b.borough + ', NY')}&key=${GOOGLE_MAPS_REPORT_KEY}`;
+    const fallbackImage = `https://maps.googleapis.com/maps/api/streetview?size=360x220&location=${encodeURIComponent(b.address + ', ' + b.borough + ', NY')}&key=${GOOGLE_MAPS_REPORT_KEY}`;
     return `<a href="${searchUrl}" target="_blank" rel="noopener" style="text-decoration:none;background:#fff;border:1px solid #D5D0C6;box-shadow:0 5px 12px rgba(44,50,64,0.07);overflow:hidden;display:block;min-height:112px">
-<div style="height:78px;background:#EDE9DF;overflow:hidden"><img src="${image}" alt="${b.address} building reference image" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.style.background='#EDE9DF';this.style.display='none'"></div>
-<div style="padding:7px 8px;font-size:8.5px;line-height:1.3;color:#3A4B5B;font-weight:700">${b.address}<br><span style="color:#A89035;font-weight:600">StreetEasy / market image lookup</span></div>
+<div style="height:78px;background:#EDE9DF;overflow:hidden"><img src="${image}" alt="${b.address} building reference image" style="width:100%;height:100%;object-fit:cover;display:block" onerror="if(this.src!=='${fallbackImage}'){this.src='${fallbackImage}'}else{this.parentElement.innerHTML='<div style=&quot;height:78px;display:flex;align-items:center;justify-content:center;background:#3A4B5B;color:#A89035;font-size:9px;font-weight:800;text-align:center;padding:8px&quot;>${b.address}</div>'}"></div>
+<div style="padding:7px 8px;font-size:8.5px;line-height:1.3;color:#3A4B5B;font-weight:700">${b.address}<br><span style="color:#A89035;font-weight:600">${b.image ? 'Verified Camelot image' : 'Google Street View reference'}</span></div>
 </a>`;
   }).join('\n');
 
@@ -2193,6 +2195,12 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     name: 'Camelot Case Studies',
     status: html.includes('camelot.nyc/case-studies') && html.includes('301 East 50th Street') && html.includes('./images/case-studies/301-east-50th.png') && html.includes('./images/case-studies/949-park.jpg') ? 'pass' : 'fail',
     detail: 'Case studies must be sourced from camelot.nyc/case-studies with image-backed cards',
+  });
+  const portfolioBlock = (html.match(/Camelot Portfolio[\s\S]*?Case Study:/i) || [])[0] || '';
+  checks.push({
+    name: 'Portfolio Building Images',
+    status: portfolioBlock.includes('Google Street View reference') || portfolioBlock.includes('Verified Camelot image') ? 'pass' : 'fail',
+    detail: 'Nearby portfolio cards must render verified local images or keyed Google Street View image fallbacks',
   });
   const valueCreationSources = ['U.S. Census / ACS', 'NYC Open Data', 'Con Edison', 'REBNY', 'CHIP Data', 'SPONY Data', 'IREM', 'Habitat Magazine', 'The Cooperator'];
   const missingValueCreationSources = valueCreationSources.filter(source => !html.includes(source));

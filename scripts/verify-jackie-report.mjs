@@ -46,6 +46,8 @@ const requiredTokens = [
   ['ConciergePlus partner logo', '/images/partners/conciergeplus.svg'],
   ['Select real web asset', 'https://d2e1363xcu3t9u.cloudfront.net/2024/images/share.png'],
   ['Camelot final logo', 'https://www.camelot.nyc/wp-content/uploads/2015/03/Camelot-logo-footer-white.png'],
+  ['Portfolio image fallback', 'Google Street View reference'],
+  ['Portfolio image QA gate', 'Portfolio Building Images'],
   ['Legal terms URL check', 'LEGAL_TERMS_URL'],
   ['No self-managed without explicit source', 'Self-managed language requires an explicit source'],
 ];
