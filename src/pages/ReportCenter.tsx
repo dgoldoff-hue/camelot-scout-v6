@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Search, FileText, Download, Mail, Phone, Table2, Link2, Loader2, Eye, Copy, Check, X, ShieldCheck, ShieldX, AlertTriangle, Lock } from 'lucide-react';
-import { buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, validateJackieReport, type MasterReportData, type QACheckResult } from '@/lib/camelot-report';
+import { buildJackieIntelReportFilename, buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, validateJackieReport, type MasterReportData, type QACheckResult } from '@/lib/camelot-report';
 import { generatePitchReport, generatePitchEmail } from '@/lib/pitch-report';
 import { generatePitchDeck } from '@/lib/pitch-deck-pptx';
 import { openBrochureForPrint, downloadAsHTML, triggerCSVDownload, copyToClipboard } from '@/lib/pdf-generator';
@@ -140,7 +140,7 @@ export default function ReportCenter() {
     if (!d) return;
     const html = generateBrochureHTML(d);
     if (!verifyJackieRelease(d, html, 'internal')) return;
-    openBrochureForPrint(html, `Jackie-Report-${d.buildingName}`);
+    openBrochureForPrint(html, buildJackieIntelReportFilename(d, 'pdf'));
   };
 
   const handlePreviewPitch = () => {
@@ -189,7 +189,7 @@ export default function ReportCenter() {
     if (!d) return;
     const html = generateBrochureHTML(d);
     if (!verifyJackieRelease(d, html)) return;
-    downloadAsHTML(html, `Jackie-Report-${d.buildingName.replace(/[^a-zA-Z0-9]/g, '-')}.html`);
+    downloadAsHTML(html, buildJackieIntelReportFilename(d, 'html'));
   };
 
   const handleCSV = () => {

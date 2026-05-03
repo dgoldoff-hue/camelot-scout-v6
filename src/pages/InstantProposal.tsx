@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Search, CheckCircle, FileText, Edit3, Download, Printer, Mail, Loader2, ChevronRight, ArrowLeft, Zap, X, ExternalLink, Copy } from 'lucide-react';
-import { buildMasterReport, generateBrochureHTML, validateJackieReport, type MasterReportData, type QACheckResult } from '@/lib/camelot-report';
+import { buildJackieIntelReportFilename, buildMasterReport, generateBrochureHTML, validateJackieReport, type MasterReportData, type QACheckResult } from '@/lib/camelot-report';
 import { generatePitchReport } from '@/lib/pitch-report';
 import toast from 'react-hot-toast';
 
@@ -186,7 +186,7 @@ export default function InstantProposal() {
 
   // Generate filename base
   const getFilenameBase = useCallback(() => {
-    return `Camelot_Proposal_${reportData?.buildingName?.replace(/[^a-zA-Z0-9]/g, '_') || 'draft'}`;
+    return reportData ? buildJackieIntelReportFilename(reportData) : 'Camelot-Intel-Report-For_Property';
   }, [reportData]);
 
   // Export: Download PDF directly (no popup)

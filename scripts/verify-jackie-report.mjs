@@ -43,6 +43,8 @@ const requiredTokens = [
   ['Current management risk narrative', 'Management Public-Record Risk'],
   ['Management score uses tax liens', 'taxLienRecordCount'],
   ['Management score uses FISP facade issues', 'facadeIssueCount'],
+  ['Jackie intel report filename helper', 'buildJackieIntelReportFilename'],
+  ['Jackie intel report filename prefix', 'Camelot-Intel-Report-For_'],
   ['Commercial source stack', 'NYC vacant storefront data'],
   ['Commercial broker source stack', 'CoStar/LoopNet-style commercial listings'],
   ['Neighborhood source stack', 'Neighborhood scoring source stack'],

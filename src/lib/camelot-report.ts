@@ -886,6 +886,29 @@ const JACQUELINE_PORTRAIT_URL = 'https://archive.vanityfair.com/image/spread/200
 const JACQUELINE_PORTRAIT_FALLBACK_URL = 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Jackie_Kennedy_Color_Portrait_%283x4_cropped%29.jpg';
 const VANITY_FAIR_CAMELOT_REFERENCE_URL = 'https://archive.vanityfair.com/article/share/77184080-31c6-4e95-b1cd-165ca2807775';
 
+function reportFilenameSafe(value: string): string {
+  return value
+    .trim()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-')
+    || 'Property';
+}
+
+export function buildJackieIntelReportFilename(
+  d: Pick<MasterReportData, 'address' | 'buildingName' | 'date'>,
+  extension?: 'pdf' | 'html',
+): string {
+  const sourceAddress = d.address || d.buildingName || 'Property';
+  const dateValue = d.date ? new Date(d.date) : new Date();
+  const dateStamp = Number.isNaN(dateValue.getTime())
+    ? new Date().toISOString().slice(0, 10)
+    : dateValue.toISOString().slice(0, 10);
+  const base = `Camelot-Intel-Report-For_${reportFilenameSafe(sourceAddress)}_${dateStamp}`;
+  return extension ? `${base}.${extension}` : base;
+}
+
 // ============================================================
 // Portfolio Database (Camelot + Blue Owl + Penn South Capital)
 // ============================================================
@@ -2656,6 +2679,8 @@ export function generateCSVExport(d: MasterReportData): string {
 export function generateBrochureHTML(d: MasterReportData): string {
   const addr = d.address;
   const encodedAddr = encodeURIComponent(addr);
+  const reportFilenameBase = buildJackieIntelReportFilename(d);
+  const reportHtmlFilename = buildJackieIntelReportFilename(d, 'html');
   const brochureAgent = d.buildingStaff.find(s => s.role.toLowerCase().includes('managing agent'));
   const brochureActualMgmt = d.managementCompany && !['Unknown','To be confirmed upon engagement'].includes(d.managementCompany) ? d.managementCompany : brochureAgent ? brochureAgent.name : null;
   const isSelfManaged = isExplicitSelfManaged(brochureActualMgmt);
@@ -2872,7 +2897,7 @@ export function generateBrochureHTML(d: MasterReportData): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jackie Property Intelligence Report \u2014 ${d.buildingName} | Camelot Realty Group</title>
+<title>${reportFilenameBase}</title>
 <link href="https://fonts.googleapis.com/css2?family=Abel&family=Cardo:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -3057,7 +3082,7 @@ body::before{content:'';position:fixed;top:0.08in;right:0.08in;bottom:0.08in;lef
 <div style="position:fixed;top:0;left:0;right:0;background:#3A4B5B;padding:8px 20px;display:flex;gap:8px;align-items:center;justify-content:flex-end;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.3)" class="no-print">
 <span style="color:#A89035;font-size:13px;font-weight:700;margin-right:auto">Jackie Report — ${d.buildingName}</span>
 <button onclick="window.print()" style="background:#A89035;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">🖨️ Print / Save PDF</button>
-<button onclick="var a=document.createElement('a');a.href='data:text/html,'+encodeURIComponent(document.documentElement.outerHTML);a.download='Jackie-${d.buildingName.replace(/[^a-zA-Z0-9]/g,'-')}.html';a.click()" style="background:#fff;color:#3A4B5B;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">⬇️ Download</button>
+<button onclick="var a=document.createElement('a');a.href='data:text/html,'+encodeURIComponent(document.documentElement.outerHTML);a.download='${reportHtmlFilename}';a.click()" style="background:#fff;color:#3A4B5B;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">⬇️ Download</button>
 <button onclick="window.open('mailto:?subject='+encodeURIComponent('Property Intelligence Report — ${d.buildingName}')+'&body='+encodeURIComponent('Please find the attached Property Intelligence Report for ${d.buildingName}.\\n\\nPrepared by Camelot Realty Group.'))" style="background:transparent;color:#A89035;border:2px solid #A89035;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">✉️ Email</button>
 </div>
 <div style="height:50px" class="no-print"></div>
