@@ -3697,7 +3697,38 @@ ${d.ll97 ? `
 ${isSelfManaged ? `
 <div class="core-svc"><h4>Self-Managed \u2192 Professional Management</h4><p>Many of our most successful client relationships began with self-managed buildings. Our 90-day transition process is designed specifically to make this change seamless, with zero disruption to residents or building operations. You gain: weekly inspections, 24/7 emergency response, in-house CPA, compliance expertise, and technology that elevates every aspect of building life.</p></div>
 ` : `
-<div class="core-svc"><h4>Why Boards Are Switching</h4><p>Buildings managed by large firms often experience: slow response times, junior PMs rotating through, cookie-cutter processes, outsourced accounting, and no proprietary technology. Boards that switch to Camelot consistently report better communication (73%), faster response times (48-hour guarantee vs weeks), and average annual savings of $45,000 in the first 90 days.</p></div>
+<div class="core-svc"><h4>Why Boards Are Switching</h4>
+<p>Mid-size and large condos, co-ops, and rental buildings are increasingly re-examining large-shop management models, especially when comparing firms such as Orsid/AKAM, FirstService Residential, Douglas Elliman Property Management, Maxwell-Kates, Associa, and other scaled platforms. The issue is not that every large company fails; it is that board expectations have changed. Boards now want senior attention, transparent accounting, rapid communication, stable property-manager coverage, direct control over vendors, and technology that actually improves day-to-day building life.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+<div style="background:#fff;border:1px solid #D5D0C6;border-left:3px solid #A89035;padding:11px 12px">
+<div style="font-size:11px;font-weight:800;color:#0D2E63;margin-bottom:4px">Scale Can Dilute Attention</div>
+<div style="font-size:10px;color:#555;line-height:1.45">Large portfolios can leave boards feeling like one account among hundreds. Calls move through layers, decisions wait for regional approval, and senior leadership may appear only during renewals or escalations.</div>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-left:3px solid #A89035;padding:11px 12px">
+<div style="font-size:11px;font-weight:800;color:#0D2E63;margin-bottom:4px">Manager Turnover Hurts Memory</div>
+<div style="font-size:10px;color:#555;line-height:1.45">When junior PMs rotate, the building has to keep re-teaching its history: board preferences, staff personalities, vendor issues, capital priorities, resident sensitivities, and unresolved promises.</div>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-left:3px solid #A89035;padding:11px 12px">
+<div style="font-size:11px;font-weight:800;color:#0D2E63;margin-bottom:4px">Outsourcing Reduces Control</div>
+<div style="font-size:10px;color:#555;line-height:1.45">Boards become frustrated when accounting, payment processing, compliance tracking, call centers, and vendor administration are split across outside systems with unclear accountability.</div>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-left:3px solid #A89035;padding:11px 12px">
+<div style="font-size:11px;font-weight:800;color:#0D2E63;margin-bottom:4px">PE / Acquisition Pressure</div>
+<div style="font-size:10px;color:#555;line-height:1.45">Industry consolidation can create fee pressure, bundled service relationships, contract rigidity, and a growth agenda that may not match a board's need for long-term, property-specific attention.</div>
+</div>
+</div>
+<ul style="margin:12px 0 0 18px;color:#38557D;font-size:11px;line-height:1.6">
+<li><strong>Communication:</strong> boards want one accountable senior contact, not ticket handoffs and weeks of follow-up.</li>
+<li><strong>Financial clarity:</strong> in-house CPA review, clean payables, reserve visibility, arrears tracking, and board-ready variance reporting matter more than generic monthly packages.</li>
+<li><strong>Vendor discipline:</strong> boards want open bidding and documented savings, not preferred-vendor dependency or unclear procurement incentives.</li>
+<li><strong>Staff retention:</strong> stable on-site staff and stable property-manager coverage protect institutional knowledge and resident trust.</li>
+<li><strong>Technology with judgment:</strong> portals and AI should make managers faster and more accountable; they should not replace human follow-through.</li>
+</ul>
+<p style="margin-top:10px">Boards that switch to Camelot consistently report better communication (73%), faster response times (48-hour guarantee vs. weeks), and average annual savings of $45,000 in the first 90 days.</p>
+<div style="background:#F8F5EC;border:1px solid #D8C894;padding:9px 11px;margin-top:10px;font-size:9px;color:#666;line-height:1.45">
+<strong style="color:#A89035">Source context:</strong> FirstService is publicly described as North America's largest manager of residential communities. AKAM announced in March 2026 that Audax Private Equity acquired AKAM and its subsidiaries, including Orsid, and described continued investment, acquisitions, and buy-and-build expansion. FirstService Residential's own board-facing article on private-equity acquisitions identifies common red flags including fee pressure, staff/communication disruption, reduced contract flexibility, vendor bundling, and service quality risk.
+</div>
+</div>
 `}
 </div>
 
