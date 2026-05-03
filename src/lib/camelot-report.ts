@@ -838,6 +838,76 @@ function inferCommercialAmenityIntel(input: {
 
 function getKnownPropertyFacts(address: string, candidateName = ''): KnownPropertyFacts | null {
   const key = `${address} ${candidateName}`.toLowerCase();
+  if (/chesapeake\s+house/i.test(key) || /201\s+e(ast)?\s+28/i.test(key)) {
+    return {
+      canonicalAddress: '201 East 28th Street, New York, NY 10016',
+      buildingName: 'The Chesapeake House',
+      units: 252,
+      stories: 20,
+      yearBuilt: 1964,
+      propertyType: 'Co-operative',
+      neighborhoodName: 'Kips Bay',
+      streetEasyUrl: 'https://streeteasy.com/building/the-chesapeake-house',
+      description: 'The Chesapeake House is a full-service post-war cooperative at 201 East 28th Street near Third Avenue, with doorman service, live-in superintendent, garage/parking, roof deck, laundry, and elevator service.',
+      amenities: [
+        'Full-time doorman',
+        'Live-in superintendent',
+        'Elevator',
+        'Parking garage',
+        'Roof deck',
+        'Laundry room',
+        'Bike room / bicycle room',
+        'Concierge / staff service to verify',
+        'Pet-friendly policy reported by market sources',
+      ],
+      commercialSignals: [
+        'Parking garage component reported by market sources; verify operator, license, insurance, and revenue treatment.',
+        'No commercial tenant names should be published until confirmed through offering plan, signage, management records, or board materials.',
+      ],
+      revenueOpportunities: [
+        'Garage / parking operator review.',
+        'Bike room, laundry, move-in/move-out, sublet, alteration, and roof-deck policy review.',
+        'Resident service, amenity, and recoverable-fee schedule review.',
+      ],
+      landmarks: [
+        'Third Avenue retail corridor: immediate area',
+        '6 train at 28th Street: nearby',
+        'Madison Square Park / NoMad: nearby',
+        'Kips Bay medical and residential corridor: nearby',
+        'Gramercy / Rose Hill neighborhood anchors: nearby',
+      ],
+      locationTitle: 'Kips Bay / Rose Hill Positioning',
+      locationCopy: 'The Chesapeake House sits at East 28th Street near Third Avenue, combining Midtown access, residential scale, and transit convenience.',
+      lifestyleTitle: 'Full-Service Co-op Operations',
+      lifestyleCopy: 'Doorman service, live-in superintendent coverage, roof deck, garage/parking, laundry, and elevator service create a full-service operating profile that deserves accurate board-facing management analysis.',
+      brandingTitle: 'The Chesapeake House on StreetEasy',
+      brandingDescription: 'Market sources identify The Chesapeake House as a 20-story post-war cooperative at 201 East 28th Street with approximately 252 residences and 1964/1966 construction references.',
+      researchSources: [
+        'StreetEasy building page: https://streeteasy.com/building/the-chesapeake-house',
+        'Corcoran building profile for Chesapeake House',
+        'NYBits building profile: https://www.nybits.com/apartments/201_east_28th_st.html',
+        'Yoreevo building profile for The Chesapeake House',
+        'CityRealty building profile for The Chesapeake House',
+        'DOF / ACRIS / HPD MDR / offering plan should be checked before board-facing release',
+      ],
+      currentManagement: 'Managing agent to verify through HPD MDR, board materials, and management agreement',
+      boardMembers: [
+        { name: 'The Chesapeake House', title: 'Co-op Board / Ownership Authority' },
+      ],
+      buildingStaff: [
+        { role: 'Full-time Doorman', name: 'Building service staff to verify' },
+        { role: 'Live-in Superintendent', name: 'On-site staff to verify' },
+        { role: 'Managing Agent', name: 'To verify through HPD MDR / board records' },
+      ],
+      professionalSources: [
+        'StreetEasy / Corcoran / NYBits / Yoreevo / CityRealty cross-check for units, stories, year, and amenities',
+        'HPD MDR, ACRIS, DOB, DOF, and offering plan must be checked before publishing private contact names',
+      ],
+      professionalNotes: [
+        'Public sources vary between approximately 248, 252, and 285 units; Jackie uses 252 as the conservative market-source count unless board/offering-plan records confirm a different count.',
+      ],
+    };
+  }
   if (/corinthian/i.test(key) || /330\s+e(ast)?\s+38/i.test(key) || /38th?.*(1st|first)\s+ave/i.test(key)) {
     return {
       canonicalAddress: '330 East 38th Street, New York, NY 10016',
@@ -1073,23 +1143,34 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   const knownFacts = getKnownPropertyFacts(lookupAddress, streetEasy?.name || raw.energy?.propertyName || '') || preKnownFacts;
   const reportAddress = knownFacts?.canonicalAddress || lookupAddress;
 
-  // Cascade unit count from multiple sources — never show 0 if ANY source has data
-  // Priority: DOF/PLUTO → DOF Exemptions → DOB Permits → Energy Benchmarking → estimate from area
-  let units = dof?.units || 0;
-  if (!units && raw.dofAbatement?.raw?.units) units = parseInt(raw.dofAbatement.raw.units) || 0;
-  if (!units && raw.dofAbatement?.raw?.coop_apts && parseInt(raw.dofAbatement.raw.coop_apts) > 0) units = parseInt(raw.dofAbatement.raw.coop_apts);
-  if (!units && raw.dobUnits) units = raw.dobUnits; // from DOB permit dwelling_units
-  if (!units && raw.energy?.energyStarScore != null) {
-    // Energy benchmarking data exists — building is definitely real, try number_of_units
-    units = parseInt((raw as any).energy?.number_of_units) || 0;
-  }
-  // StreetEasy fallback for units
-  if (!units && streetEasy?.units) units = streetEasy.units;
-  // Last resort: estimate from building area (~850 SF per avg unit in NYC multifamily)
-  if (!units && dof?.buildingArea && dof.buildingArea > 2000) {
+  // Reconcile unit count across sources. DOF/PLUTO can return a tax-lot or
+  // partial-building count, so a tiny DOF value must not block stronger signals.
+  const unitCandidates = [
+    { source: 'known facts', value: knownFacts?.units || 0, trusted: true },
+    { source: 'StreetEasy / market profile', value: streetEasy?.units || 0, trusted: true },
+    { source: 'DOF co-op/condo abatement units', value: Number.parseInt(String(raw.dofAbatement?.raw?.units || ''), 10) || 0, trusted: true },
+    { source: 'DOF co-op apartments', value: Number.parseInt(String(raw.dofAbatement?.raw?.coop_apts || ''), 10) || 0, trusted: true },
+    { source: 'DOB dwelling units', value: Number(raw.dobUnits) || 0, trusted: true },
+    { source: 'Energy benchmarking units', value: Number.parseInt(String((raw as any).energy?.number_of_units || ''), 10) || 0, trusted: true },
+    { source: 'DOF / PLUTO units', value: dof?.units || 0, trusted: false },
+    { source: 'building-area estimate', value: dof?.buildingArea && dof.buildingArea > 75000 ? Math.round(dof.buildingArea / 850) : 0, trusted: false },
+  ].filter(c => Number.isFinite(c.value) && c.value > 0);
+
+  const trustedUnitCandidates = unitCandidates.filter(c => c.trusted);
+  const strongestTrustedUnits = trustedUnitCandidates.reduce((max, c) => Math.max(max, c.value), 0);
+  const strongestAnyUnits = unitCandidates.reduce((max, c) => Math.max(max, c.value), 0);
+  const dofUnits = dof?.units || 0;
+  let units = dofUnits || strongestTrustedUnits || strongestAnyUnits || 0;
+  if (knownFacts?.units) {
+    units = knownFacts.units;
+  } else if (strongestTrustedUnits >= 50 && (!dofUnits || dofUnits <= 5 || strongestTrustedUnits >= dofUnits * 2)) {
+    units = strongestTrustedUnits;
+  } else if (strongestAnyUnits >= 50 && (!dofUnits || dofUnits <= 5 || strongestAnyUnits >= dofUnits * 2)) {
+    units = strongestAnyUnits;
+  } else if (!units && dof?.buildingArea && dof.buildingArea > 2000) {
     units = Math.round(dof.buildingArea / 850);
   }
-  if (knownFacts?.units) units = knownFacts.units;
+  const unitSourceSummary = unitCandidates.map(c => `${c.source}: ${c.value}`).join(' | ');
 
   // Cascade stories from DOF → DOB → StreetEasy
   let stories = dof?.stories || 0;
@@ -1429,6 +1510,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     ],
     professionalResearchSources: [
       ...(knownFacts?.professionalSources || []),
+      unitSourceSummary ? `Unit-count reconciliation: ${unitSourceSummary}; selected ${units}` : 'Unit-count reconciliation found no source candidates',
       raw.dobProfessionals?.length ? `DOB permit applicant professionals loaded (${raw.dobProfessionals.length})` : 'DOB permit applicant professionals searched',
       raw.acris?.records?.length ? `ACRIS deed/mortgage party records loaded (${raw.acris.records.length})` : 'ACRIS searched for owner/professional party signals',
       raw.ecb?.count ? `ECB/OATH compliance records loaded (${raw.ecb.count})` : 'ECB/OATH searched for compliance/professional context',
@@ -1495,6 +1577,17 @@ export function runReportQA(d: MasterReportData): QACheckResult {
   // 3. Unit count
   checks.push({ name: 'Unit Count', status: d.units > 0 ? 'pass' : 'warn', detail: d.units > 0 ? `${d.units} units` : 'N/A — estimated from building area' });
   
+  const suspiciousTinyUnitCount = d.units > 0
+    && d.units <= 5
+    && (d.stories >= 10 || d.buildingArea >= 75000 || d.marketValue >= 50000000);
+  checks.push({
+    name: 'Unit Count Plausibility',
+    status: suspiciousTinyUnitCount ? 'fail' : 'pass',
+    detail: suspiciousTinyUnitCount
+      ? `${d.units} units conflicts with high-rise / large-building signals; verify address, BBL, StreetEasy, DOB, HPD MDR, DOF, and offering plan before release`
+      : 'Unit count is plausible for available building size signals',
+  });
+
   // 4. Year Built
   checks.push({ name: 'Year Built', status: d.yearBuilt > 0 ? 'pass' : 'warn', detail: d.yearBuilt > 0 ? `${d.yearBuilt}` : 'N/A — DOF data not available' });
   
