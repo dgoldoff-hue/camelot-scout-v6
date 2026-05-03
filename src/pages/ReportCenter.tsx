@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Search, FileText, Download, Mail, Phone, Table2, Link2, Loader2, Eye, Copy, Check, X } from 'lucide-react';
 import { buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, validateJackieReport, type MasterReportData } from '@/lib/camelot-report';
 import { generatePitchReport, generatePitchEmail } from '@/lib/pitch-report';
@@ -19,6 +19,7 @@ export default function ReportCenter() {
   const [emailType, setEmailType] = useState<EmailType>('intro');
   const [copied, setCopied] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const generate = useCallback(async () => {
     if (!address.trim()) return;
@@ -103,35 +104,72 @@ export default function ReportCenter() {
   };
 
   // Photo upload handler — converts files to data URLs and stores them
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const readPhotoAsDataUrl = (file: File): Promise<string> => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`Could not read ${file.name}`));
+    reader.onload = () => {
+      const raw = String(reader.result || '');
+      const img = new Image();
+      img.onerror = () => resolve(raw);
+      img.onload = () => {
+        const maxSide = 1800;
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        if (scale >= 1 && raw.length < 1_500_000) return resolve(raw);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return resolve(raw);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.86));
+      };
+      img.src = raw;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    Array.from(files).forEach(file => {
-      if (!file.type.startsWith('image/')) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        setUploadedPhotos(prev => [...prev, dataUrl]);
-        // Also save to localStorage keyed by address
-        if (address.trim()) {
-          const key = `camelot_photos_${address.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
-          const existing = JSON.parse(localStorage.getItem(key) || '[]');
-          existing.push(dataUrl);
-          localStorage.setItem(key, JSON.stringify(existing));
+    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+    if (imageFiles.length === 0) {
+      toast.error('Choose an image file: JPG, PNG, WEBP, or HEIC converted by your browser.');
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      const dataUrls = await Promise.all(imageFiles.map(readPhotoAsDataUrl));
+      const next = [...uploadedPhotos, ...dataUrls];
+      setUploadedPhotos(next);
+      if (address.trim()) {
+        const key = `camelot_photos_${address.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+        try {
+          localStorage.setItem(key, JSON.stringify(next));
+        } catch {
+          toast.error('Photo loaded, but browser storage is full. It will stay for this session only.');
         }
-        toast.success(`Photo uploaded (${file.name})`);
-      };
-      reader.readAsDataURL(file);
-    });
-    e.target.value = ''; // reset input
+      }
+      toast.success(`${dataUrls.length} photo(s) uploaded`);
+    } catch (err) {
+      console.error('Photo upload failed:', err);
+      toast.error('Photo upload failed. Try a smaller JPG or PNG.');
+    } finally {
+      e.target.value = '';
+    }
   };
 
   // Load saved photos when address changes
   const loadSavedPhotos = useCallback(() => {
     if (!address.trim()) return;
     const key = `camelot_photos_${address.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
-    const saved = JSON.parse(localStorage.getItem(key) || '[]');
-    if (saved.length > 0) setUploadedPhotos(saved);
+    try {
+      const saved = JSON.parse(localStorage.getItem(key) || '[]');
+      if (Array.isArray(saved)) setUploadedPhotos(saved);
+    } catch {
+      localStorage.removeItem(key);
+      setUploadedPhotos([]);
+    }
   }, [address]);
 
   useEffect(() => {
@@ -322,11 +360,11 @@ export default function ReportCenter() {
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Building Photos</h2>
             <p className="text-xs text-gray-500 mb-3">Upload exterior, lobby, or interior photos to include in the report. Photos are saved per address.</p>
             <div className="flex items-center gap-3 mb-3">
-              <label className="cursor-pointer bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors flex items-center gap-2">
+              <button type="button" onClick={() => photoInputRef.current?.click()} className="cursor-pointer bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 Upload Photos
-                <input type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" />
-              </label>
+              </button>
+              <input ref={photoInputRef} type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" />
               {uploadedPhotos.length > 0 && (
                 <span className="text-xs text-gray-500">{uploadedPhotos.length} photo(s) uploaded</span>
               )}

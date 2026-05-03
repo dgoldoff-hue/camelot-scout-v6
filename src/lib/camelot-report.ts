@@ -1555,8 +1555,8 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
   });
   checks.push({
     name: 'Camelot Case Studies',
-    status: html.includes('camelot.nyc/case-studies') && html.includes('111 Mott Street') && html.includes('White Street Plaza Corp.') ? 'pass' : 'fail',
-    detail: 'Case studies must be sourced from camelot.nyc/case-studies',
+    status: html.includes('camelot.nyc/case-studies') && html.includes('301 East 50th Street') && html.includes('./images/case-studies/301-east-50th.png') && html.includes('./images/case-studies/949-park.jpg') ? 'pass' : 'fail',
+    detail: 'Case studies must be sourced from camelot.nyc/case-studies with image-backed cards',
   });
   checks.push({
     name: 'DOF Tax Search Link',
@@ -3324,8 +3324,31 @@ ${d.feeComparison.ancillaryFeesIncluded.map(svc => `<div style="font-size:11px;c
 <!-- PAGE 16: PROVEN TRACK RECORD -->
 <div class="section section-white">
 <div class="section-title">Proven Track Record</div>
-<div class="section-sub">Case studies and client testimonials</div>
+<div class="section-sub">Case studies from camelot.nyc with real project images and links</div>
 
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px">
+${[
+  { title: '301 East 50th Street', tag: 'New Construction', img: './images/case-studies/301-east-50th.png', url: 'https://www.camelot.nyc/case-studies/301-east-50th-street-new-york-ny/', copy: '56-unit white-glove condominium with resident manager, 12 staff members, gym, spa, rooftop, 24/7 staff, and retail/dining. Camelot helped the board stabilize post-construction settling, defects, staffing, house rules, 32BJ coordination, and resident feedback.', result: 'Operations stabilized - luxury condominium service model' },
+  { title: '949 Park Avenue', tag: 'Insurance Claim Response', img: './images/case-studies/949-park.jpg', url: 'https://www.camelot.nyc/case-studies/', copy: 'A 9th-floor window shattered unexpectedly, triggering emergency response and pedestrian safety risk. Camelot secured the area, coordinated engineering, and worked directly with the insurance carrier.', result: '$200,000 saved - zero resident disruption' },
+  { title: '111 Mott Street', tag: 'Facade / Compliance', img: './images/case-studies/111-mott.jpg', url: 'https://www.camelot.nyc/case-studies/111-mott-st-new-york-ny/', copy: 'Structural facade deterioration required board communication, contractor oversight, compliance follow-through, and organized capital project execution.', result: 'Facade deterioration response - Chinatown rental' },
+  { title: '250 Bowery', tag: 'Emergency Response', img: './images/case-studies/250-bowery.png', url: 'https://www.camelot.nyc/case-studies/250-bowery-new-york-ny/', copy: 'Camelot responded to a main sprinkler water-line burst during a holiday period, coordinating emergency repair, resident communication, vendors, and building protection.', result: 'Sprinkler water-line incident - urgent coordination' },
+  { title: 'White Street Plaza Corp.', tag: 'Facade Repair', img: './images/case-studies/58-white-street.jpg', url: 'https://www.camelot.nyc/case-studies/white-street-plaza-corp/', copy: '58 White Street facade repair required project management, contractor coordination, board reporting, and disciplined schedule tracking.', result: 'Capital project management - Tribeca' },
+  { title: 'Rental Portfolio Management', tag: 'Multifamily Operations', img: './images/case-studies/rental-portfolio.jpg', url: 'https://www.camelot.nyc/case-studies/rental-portfolio-management-brokerage-services/', copy: 'Camelot supports multifamily portfolios with superintendent coordination, repairs, resident service, compliance management, brokerage support, and recurring operational reporting.', result: 'Portfolio operations - brokerage services' },
+].map(c => `<a href="${c.url}" target="_blank" rel="noopener" style="display:flex;flex-direction:column;text-decoration:none;background:#FDFAF3;border:1px solid #D5D0C6;min-height:292px;overflow:hidden">
+<div style="height:96px;background:#EDE9DF;overflow:hidden"><img src="${c.img}" alt="${c.title} case study" style="width:100%;height:100%;object-fit:cover"></div>
+<div style="padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#A89035;font-weight:700">${c.tag}</div>
+<h4 style="font-size:13px;font-weight:700;color:#3A4B5B;margin:0">${c.title}</h4>
+<p style="font-size:10px;color:#555;line-height:1.55;margin:0">${c.copy}</p>
+<p style="font-size:11px;color:#A89035;font-weight:700;margin:auto 0 0">${c.result}</p>
+</div>
+</a>`).join('')}
+</div>
+
+<div style="font-size:11px;color:#A89035;font-weight:600;text-align:center;margin-bottom:16px">Source: <a href="https://www.camelot.nyc/case-studies/" target="_blank" rel="noopener" style="color:#A89035;text-decoration:underline">camelot.nyc/case-studies</a> - properties include condominiums, cooperatives, multifamily rentals, and capital project assignments<br><span style="color:#888;font-weight:400">Serving: Manhattan, Brooklyn, Queens, Bronx, Westchester, NJ, CT, and Florida</span></div>
+
+<!-- Legacy plain-text case-study cards hidden after website/image-backed case study update -->
+<div style="display:none">
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
 <div style="background:#FDFAF3;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:18px">
 <h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">111 Mott Street</h4>
@@ -3351,6 +3374,8 @@ ${d.feeComparison.ancillaryFeesIncluded.map(svc => `<div style="font-size:11px;c
 </div>
 
 <div style="font-size:11px;color:#A89035;font-weight:600;text-align:center;margin-bottom:16px">Source: camelot.nyc/case-studies · Properties include condominiums, cooperatives, multifamily rentals, and capital project assignments<br><span style="color:#888;font-weight:400">Serving: Manhattan, Brooklyn, Queens, Bronx, Westchester, NJ, CT, and Florida</span></div>
+</div>
+
 </div>
 
 <!-- PAGE 16B: TESTIMONIALS -->
