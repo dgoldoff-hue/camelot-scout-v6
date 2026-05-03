@@ -44,10 +44,13 @@ export interface GutCheckResult {
  */
 export function runGutCheck(data: MasterReportData): GutCheckResult {
   const hoodName = data.neighborhoodName || '';
-  const hoodKey = hoodName.toLowerCase();
+  let hoodKey = hoodName.toLowerCase();
+  if (/one\s+museum\s+mile|1280\s+(fifth|5th)|museum\s+mile/i.test(`${data.buildingName} ${data.address} ${hoodName}`)) {
+    hoodKey = 'East Harlem';
+  }
 
   // Find matching neighborhood
-  const hood = NEIGHBORHOODS.find(n => n.name.toLowerCase() === hoodKey) ||
+  const hood = NEIGHBORHOODS.find(n => n.name.toLowerCase() === hoodKey.toLowerCase()) ||
     NEIGHBORHOODS.find(n => hoodKey.includes(n.name.toLowerCase().split('/')[0].trim())) ||
     NEIGHBORHOODS.find(n => n.name.toLowerCase().includes(hoodKey.split(' ')[0]));
 

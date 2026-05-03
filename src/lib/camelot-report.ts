@@ -162,6 +162,10 @@ interface KnownPropertyFacts {
   brandingTitle?: string;
   brandingDescription?: string;
   researchSources?: string[];
+  currentManagement?: string;
+  boardMembers?: Array<{ name: string; title: string }>;
+  buildingStaff?: Array<{ role: string; name: string }>;
+  professionalNotes?: string[];
 }
 
 // ============================================================
@@ -176,6 +180,9 @@ export interface NeighborhoodMarketData {
 }
 
 const NEIGHBORHOOD_MARKET_DATA: Record<string, NeighborhoodMarketData> = {
+  'east harlem': { condoPSF: 980, coopPSF: 650, rentalPSFYr: 54, median1BR: 3150, median2BR: 4300, daysOnMarket: 16, investScore: 8.0, liveScore: 7.7, familyScore: 7.2, workScore: 7.8, momentum: 'Strong', opexRange: '$20-34/sqft/yr' },
+  'museum mile': { condoPSF: 1425, coopPSF: 980, rentalPSFYr: 72, median1BR: 3900, median2BR: 5900, daysOnMarket: 14, investScore: 7.4, liveScore: 8.6, familyScore: 8.8, workScore: 8.2, momentum: 'Stable', opexRange: '$28-45/sqft/yr' },
+  'museum mile / upper fifth avenue': { condoPSF: 1425, coopPSF: 980, rentalPSFYr: 72, median1BR: 3900, median2BR: 5900, daysOnMarket: 14, investScore: 7.4, liveScore: 8.6, familyScore: 8.8, workScore: 8.2, momentum: 'Stable', opexRange: '$28-45/sqft/yr' },
   'harlem': { condoPSF: 892, coopPSF: 610, rentalPSFYr: 50, median1BR: 2950, median2BR: 3800, daysOnMarket: 18, investScore: 8.2, liveScore: 7.4, familyScore: 6.8, workScore: 7.6, momentum: 'Strong', opexRange: '$19–32/sqft/yr' },
   'manhattan valley': { condoPSF: 892, coopPSF: 610, rentalPSFYr: 50, median1BR: 2950, median2BR: 3800, daysOnMarket: 18, investScore: 8.2, liveScore: 7.4, familyScore: 6.8, workScore: 7.6, momentum: 'Strong', opexRange: '$19–32/sqft/yr' },
   'murray hill': { condoPSF: 1380, coopPSF: 980, rentalPSFYr: 75, median1BR: 4200, median2BR: 6100, daysOnMarket: 12, investScore: 7.8, liveScore: 8.2, familyScore: 7.0, workScore: 9.1, momentum: 'Moderate', opexRange: '$27–42/sqft/yr' },
@@ -882,6 +889,20 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
         'LoopNet / CoStar / PropertyShark / NYC parking-source review required before publishing any commercial tenant name',
         'Verified One Museum Mile asset library',
       ],
+      currentManagement: 'Board of Managers with on-site resident management team; managing-agent record to verify',
+      boardMembers: [
+        { name: 'One Museum Mile Condominium', title: 'Board of Managers / Ownership Authority' },
+      ],
+      buildingStaff: [
+        { role: 'Live-in Resident Manager (non-union)', name: 'On-site resident manager' },
+        { role: 'Building Porter', name: 'Porter staff' },
+        { role: 'Full-time Concierge', name: 'Concierge desk' },
+        { role: 'Peak-time Doorperson Coverage', name: 'Door staff' },
+      ],
+      professionalNotes: [
+        'Board and staff structure confirmed from owner-supplied Jackie notes; individual names require board/building verification before publication.',
+        'Current managing-agent company should be confirmed through HPD MDR, PropertyShark, offering-plan records, or direct board confirmation.',
+      ],
     };
   }
   return null;
@@ -1113,7 +1134,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       || (raw.dobOwners?.[0]?.name)
       || raw.dofAbatement?.ownerName
       || null,
-    managementCompany: raw.registration?.managementCompany || null,
+    managementCompany: raw.registration?.managementCompany || knownFacts?.currentManagement || null,
     violationsTotal: raw.violations?.total || 0,
     violationsOpen: raw.violations?.open || 0,
     violationClassA: classA,
@@ -1166,7 +1187,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       violationsTotal: raw.violations?.total || 0,
     }).scorecard,
     boardMembers: (() => {
-      const members: Array<{ name: string; title: string }> = [];
+      const members: Array<{ name: string; title: string }> = [...(knownFacts?.boardMembers || [])];
       // HPD MDR Contacts — the gold standard for building contacts
       for (const c of (raw.hpdContacts || [])) {
         if (c.type === 'CorporateOwner' && c.corp) {
@@ -1199,7 +1220,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       return members;
     })(),
     buildingStaff: (() => {
-      const staff: Array<{ role: string; name: string }> = [];
+      const staff: Array<{ role: string; name: string }> = [...(knownFacts?.buildingStaff || [])];
       for (const c of (raw.hpdContacts || [])) {
         if (c.type === 'SiteManager' && c.name) staff.push({ role: 'Site Manager / Superintendent', name: c.name });
         if (c.type === 'Agent' && c.name) staff.push({ role: 'Managing Agent', name: `${c.name}${c.corp ? ' — ' + c.corp : ''}` });
@@ -2107,7 +2128,7 @@ ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borou
 <span style="font-size:20px">🔍</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">NYSCEF (Court E-Filing)</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Court filings, lawsuits, HP actions</div></div>
 </a>
-<a href="https://a836-pts-access.nyc.gov/care/search/commonsearch.aspx?mode=persprop" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<a href="https://a836-pts-access.nyc.gov/care/search/commonsearch.aspx?mode=address" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
 <span style="font-size:20px">🏦</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">DOF Property Tax</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Abatements, tax liens, exemptions, assessments</div></div>
 </a>
@@ -2351,10 +2372,10 @@ ${(() => {
 <div class="section-title">Ownership &amp; Financial History</div>
 <div class="section-sub">ACRIS deed and mortgage records</div>
 <div class="info-grid">
-<div><div class="label">Last Sale Date</div><div class="value">${d.lastSaleDate ? new Date(d.lastSaleDate).toLocaleDateString() : 'N/A'}</div></div>
-<div><div class="label">Last Sale Price</div><div class="value" style="font-weight:700;color:#A89035">${d.lastSalePrice ? fmtMoney(d.lastSalePrice) : 'N/A'}</div></div>
-<div><div class="label">Buyer</div><div class="value">${d.lastSaleBuyer || 'N/A'}</div></div>
-<div><div class="label">Seller</div><div class="value">${d.lastSaleSeller || 'N/A'}</div></div>
+<div><div class="label">Last Sale Date</div><div class="value">${d.lastSaleDate ? new Date(d.lastSaleDate).toLocaleDateString() : (d.propertyType.toLowerCase().includes('condo') ? 'Unit-level sales; whole-building sale not applicable' : 'Not found in ACRIS scan')}</div></div>
+<div><div class="label">Last Sale Price</div><div class="value" style="font-weight:700;color:#A89035">${d.lastSalePrice ? fmtMoney(d.lastSalePrice) : (d.propertyType.toLowerCase().includes('condo') ? 'Review recent unit comps' : 'Not found')}</div></div>
+<div><div class="label">Buyer</div><div class="value">${d.lastSaleBuyer || (d.propertyType.toLowerCase().includes('condo') ? 'Individual condominium owners' : 'Not found')}</div></div>
+<div><div class="label">Seller</div><div class="value">${d.lastSaleSeller || (d.propertyType.toLowerCase().includes('condo') ? 'Unit-level ACRIS records' : 'Not found')}</div></div>
 <div><div class="label">Deeds on Record</div><div class="value">${d.deedCount}</div></div>
 <div><div class="label">Mortgages on Record</div><div class="value">${d.mortgageCount}</div></div>
 </div>
@@ -2461,7 +2482,7 @@ ${d.hasTaxLien ? `<div style="font-size:11px;color:#dc2626;font-weight:600;margi
 </div>
 <div style="background:#EDE9DF;border-radius:6px;padding:14px;text-align:center">
 <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px">DOF Search</div>
-<div style="font-size:11px;color:#555;line-height:1.5;margin-top:6px"><a href="https://a836-pts-access.nyc.gov/care/search/commonsearch.aspx?mode=persprop" target="_blank" style="color:#A89035;text-decoration:underline;font-weight:600">Search DOF Property Tax →</a></div>
+<div style="font-size:11px;color:#555;line-height:1.5;margin-top:6px"><a href="https://a836-pts-access.nyc.gov/care/search/commonsearch.aspx?mode=address" target="_blank" rel="noopener" style="color:#A89035;text-decoration:underline;font-weight:600">Open DOF Property Tax Search</a></div>
 </div>
 </div>
 ${d.hasTaxLien ? `
@@ -2477,6 +2498,9 @@ ${d.taxLienDetails.map(l => `<div style="font-size:11px;color:#555;padding:2px 0
 <div class="section section-cream">
 <div class="section-title">Current Management Performance</div>
 <div class="section-sub">${d.managementCompany ? `Analysis of ${d.managementCompany}` : 'Building management assessment'} ${d.managementDuration ? `&mdash; Managing for ~${d.managementDuration}` : ''}</div>
+${!/[A-F]/.test(d.managementGrade) ? `<div style="background:#fff;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:14px 18px;margin:12px 0 16px">
+<p style="font-size:12px;color:#555;line-height:1.7"><strong style="color:#A89035">Public-record review pending:</strong> Jackie did not find enough violations, ECB, litigation, or permit data to score current management from public records alone. This does not mean the building is self-managed. For ${safe(d.buildingName)}, Jackie should verify the board, managing agent, live-in resident manager, porter, concierge, door coverage, and staff structure before releasing a final board-facing assessment.</p>
+</div>` : ''}
 
 <div style="display:flex;align-items:center;gap:24px;margin:20px 0">
 <div style="width:100px;height:100px;border-radius:50%;background:${d.managementGrade === 'A' ? '#16a34a' : d.managementGrade === 'B' ? '#ca8a04' : d.managementGrade === 'C' ? '#ea580c' : '#dc2626'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -2489,10 +2513,10 @@ ${d.taxLienDetails.map(l => `<div style="font-size:11px;color:#555;padding:2px 0
 </div>
 
 <div class="stats-row">
-<div class="stat-box"><div class="val" style="color:${d.managementScorecard.violations >= 70 ? '#16a34a' : d.managementScorecard.violations >= 50 ? '#ca8a04' : '#dc2626'}">${d.managementScorecard.violations}</div><div class="lbl">Violations Score</div></div>
-<div class="stat-box"><div class="val" style="color:${d.managementScorecard.compliance >= 70 ? '#16a34a' : d.managementScorecard.compliance >= 50 ? '#ca8a04' : '#dc2626'}">${d.managementScorecard.compliance}</div><div class="lbl">Compliance Score</div></div>
-<div class="stat-box"><div class="val" style="color:${d.managementScorecard.financial >= 70 ? '#16a34a' : d.managementScorecard.financial >= 50 ? '#ca8a04' : '#dc2626'}">${d.managementScorecard.financial}</div><div class="lbl">Financial Score</div></div>
-<div class="stat-box"><div class="val" style="color:${d.managementScorecard.overall >= 70 ? '#16a34a' : d.managementScorecard.overall >= 50 ? '#ca8a04' : '#dc2626'}">${d.managementScorecard.overall}</div><div class="lbl">Overall Score</div></div>
+<div class="stat-box"><div class="val" style="color:${d.managementScorecard.violations >= 70 ? '#16a34a' : d.managementScorecard.violations >= 50 ? '#ca8a04' : '#dc2626'}">${/[A-F]/.test(d.managementGrade) ? d.managementScorecard.violations : 'Review'}</div><div class="lbl">Violations Score</div></div>
+<div class="stat-box"><div class="val" style="color:${d.managementScorecard.compliance >= 70 ? '#16a34a' : d.managementScorecard.compliance >= 50 ? '#ca8a04' : '#dc2626'}">${/[A-F]/.test(d.managementGrade) ? d.managementScorecard.compliance : 'Review'}</div><div class="lbl">Compliance Score</div></div>
+<div class="stat-box"><div class="val" style="color:${d.managementScorecard.financial >= 70 ? '#16a34a' : d.managementScorecard.financial >= 50 ? '#ca8a04' : '#dc2626'}">${/[A-F]/.test(d.managementGrade) ? d.managementScorecard.financial : 'Review'}</div><div class="lbl">Financial Score</div></div>
+<div class="stat-box"><div class="val" style="color:${d.managementScorecard.overall >= 70 ? '#16a34a' : d.managementScorecard.overall >= 50 ? '#ca8a04' : '#dc2626'}">${/[A-F]/.test(d.managementGrade) ? d.managementScorecard.overall : 'Pending'}</div><div class="lbl">Overall Score</div></div>
 </div>
 
 <div style="margin-top:16px">
@@ -3015,29 +3039,29 @@ ${d.feeComparison.ancillaryFeesIncluded.map(svc => `<div style="font-size:11px;c
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
 <div style="background:#FDFAF3;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:18px">
-<h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">949 Park Avenue Condominium</h4>
-<p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:8px">Emergency response: Mobilized within hours when a 9th-floor window shattered in April 2023. Secured the sidewalk, commissioned engineering, coordinated full insurance coverage from start to finish.</p>
-<p style="font-size:13px;color:#A89035;font-weight:700">$200,000 saved in insurance outcome</p>
+<h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">111 Mott Street</h4>
+<p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:8px">Camelot case-study source: structural facade deterioration requiring coordinated project management, board communication, vendor oversight, and compliance follow-through.</p>
+<p style="font-size:13px;color:#A89035;font-weight:700">Facade deterioration response · Chinatown rental</p>
 </div>
 <div style="background:#FDFAF3;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:18px">
-<h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">58 White Street</h4>
-<p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:8px">$1.2M deferred maintenance, no reserve fund. Within 18 months: deficit eliminated, $400K reserve funded, LL97 benchmarking filed ahead of deadline.</p>
-<p style="font-size:13px;color:#A89035;font-weight:700">$1.2M turnaround \u00B7 $400K reserve funded</p>
+<h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">250 Bowery</h4>
+<p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:8px">Camelot case-study source: emergency water-line event during a holiday period, requiring immediate coordination and resident-facing response.</p>
+<p style="font-size:13px;color:#A89035;font-weight:700">Emergency response · Sprinkler water-line incident</p>
 </div>
 </div>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
 <div style="background:#FDFAF3;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:18px">
-<h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">105 East 29th Street</h4>
-<p style="font-size:11px;color:#555;line-height:1.7">Vendor contract rebidding yielded <strong>14% savings in Year 1</strong> across elevator, cleaning, and extermination contracts.</p>
+<h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">301 East 50th Street</h4>
+<p style="font-size:11px;color:#555;line-height:1.7">Camelot case-study source: 56-unit white-glove condominium operations, resident service, staff coordination, and luxury-building board expectations.</p>
 </div>
 <div style="background:#FDFAF3;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:18px">
-<h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">201 East 15th Street</h4>
-<p style="font-size:11px;color:#555;line-height:1.7">Insurance portfolio restructure achieved <strong>18% premium reduction</strong> with improved coverage terms.</p>
+<h4 style="font-size:14px;font-weight:700;color:#3A4B5B;margin-bottom:8px">White Street Plaza Corp.</h4>
+<p style="font-size:11px;color:#555;line-height:1.7">Camelot case-study source: 58 White Street facade repair project management, contractor coordination, schedule tracking, and board reporting.</p>
 </div>
 </div>
 
-<div style="font-size:11px;color:#A89035;font-weight:600;text-align:center;margin-bottom:16px">Properties: Condominiums &nbsp;|&nbsp; Cooperatives &nbsp;|&nbsp; Multifamily &amp; Rentals<br><span style="color:#888;font-weight:400">Serving: Manhattan, Brooklyn, Queens, Bronx, Westchester, NJ, CT, Florida</span></div>
+<div style="font-size:11px;color:#A89035;font-weight:600;text-align:center;margin-bottom:16px">Source: camelot.nyc/case-studies · Properties include condominiums, cooperatives, multifamily rentals, and capital project assignments<br><span style="color:#888;font-weight:400">Serving: Manhattan, Brooklyn, Queens, Bronx, Westchester, NJ, CT, and Florida</span></div>
 </div>
 
 <!-- PAGE 16B: TESTIMONIALS -->
@@ -3108,14 +3132,20 @@ ${d.feeComparison.ancillaryFeesIncluded.map(svc => `<div style="font-size:11px;c
 <div class="section-title">Technology Platform Partners</div>
 <div class="section-sub">Technology partners help Camelot build automation and seamless operating systems for buildings and residents</div>
 
-<div class="partner-cloud">
-<div class="partner-logo small" style="left:10px;top:80px">select</div>
-<div class="partner-logo" style="left:220px;top:18px">mds</div>
-<div class="partner-logo" style="right:22px;top:28px">BankUnited</div>
-<div class="partner-logo blue" style="left:380px;top:150px">appfolio</div>
-<div class="partner-logo small" style="right:70px;top:140px">Property<br>Shark</div>
-<div class="partner-logo" style="left:20px;bottom:55px">concierge plus</div>
-<div class="partner-logo orange" style="left:420px;bottom:30px">HubSpot</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0 20px">
+${[
+  { name: 'Select', domain: 'meetselect.com', url: 'https://www.meetselect.com', desc: 'Resident lifestyle benefits' },
+  { name: 'MDS', domain: 'aboramds.com', url: 'https://www.aboramds.com', desc: 'Property management software' },
+  { name: 'BankUnited', domain: 'bankunited.com', url: 'https://www.bankunited.com', desc: 'Banking and treasury partner' },
+  { name: 'AppFolio', domain: 'appfolio.com', url: 'https://www.appfolio.com', desc: 'Property operations platform' },
+  { name: 'PropertyShark', domain: 'propertyshark.com', url: 'https://www.propertyshark.com', desc: 'Market and ownership intelligence' },
+  { name: 'ConciergePlus', domain: 'conciergeplus.com', url: 'https://www.conciergeplus.com', desc: 'Resident portal and service workflow' },
+  { name: 'HubSpot', domain: 'hubspot.com', url: 'https://www.hubspot.com', desc: 'CRM and client communications' },
+].map(p => `<a href="${p.url}" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D5D0C6;text-decoration:none;min-height:116px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px">
+<img src="https://logo.clearbit.com/${p.domain}" alt="${p.name} logo" style="max-width:170px;max-height:42px;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+<div style="display:none;font-size:20px;font-weight:800;color:#1F2937">${p.name}</div>
+<div style="font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.8px;text-align:center">${p.desc}</div>
+</a>`).join('')}
 </div>
 
 <div style="background:#F5F0E5;border:1px solid #D5D0C6;border-left:4px solid #B8973A;padding:14px 18px;margin:0 0 16px">
@@ -3130,13 +3160,13 @@ ${[
   { name: 'HubSpot', domain: 'hubspot.com', color: '#ff7a59', initial: 'HS', desc: 'CRM' },
   { name: 'Google', domain: 'google.com', color: '#4285f4', initial: 'G', desc: 'Workspace' },
   { name: 'BuildingLink', domain: 'buildinglink.com', color: '#0073b7', initial: 'BL', desc: 'Resident Portal' },
-  { name: 'Select', domain: 'selectleasing.com', color: '#2d6a4f', initial: 'S', desc: 'Leasing' },
+  { name: 'Select', domain: 'meetselect.com', color: '#2d6a4f', initial: 'S', desc: 'Resident Benefits' },
   { name: 'ConciergePlus', domain: 'conciergeplus.com', color: '#A89035', initial: 'C+', desc: 'AI Portal' },
   { name: 'PropertyShark', domain: 'propertyshark.com', color: '#e63946', initial: 'PS', desc: 'Market Intel' },
   { name: 'Parity', domain: 'parity.com', color: '#16a34a', initial: 'P', desc: 'Energy/HVAC' },
 ].map(p => `<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:90px">
 <div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden">
-<img src="https://www.google.com/s2/favicons?domain=${p.domain}&sz=128" alt="${p.name}" style="width:44px;height:44px;object-fit:contain;border-radius:10px;position:absolute;top:0;left:0" onerror="this.style.display='none'">
+<img src="https://logo.clearbit.com/${p.domain}" alt="${p.name}" style="width:44px;height:44px;object-fit:contain;border-radius:10px;position:absolute;top:0;left:0;background:#fff" onerror="this.style.display='none'">
 <div style="width:44px;height:44px;background:${p.color};border-radius:10px;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-weight:800;font-size:${p.initial.length > 1 ? '14' : '18'}px;letter-spacing:-0.5px">${p.initial}</span></div>
 </div>
 <div style="font-size:11px;font-weight:700;color:#2C3240;line-height:1.2">${p.name}</div>
@@ -3432,37 +3462,37 @@ ${['MDS Property Codes', 'Auto-Classification', 'Make.com Automation', 'Google D
 </div>
 </div>
 
-<!-- PAGE 19B: QUARTERLY MANAGEMENT REPORTS -->
+<!-- PAGE 19B: QUARTERLY MARKET REPORTS -->
 <div class="section section-white">
-<div class="section-title">Quarterly Management Reports</div>
-<div class="section-sub">Data-driven gut checks on your building\u2019s performance, costs, and market position</div>
+<div class="section-title">Quarterly Market Reports</div>
+<div class="section-sub">How does your building stack up against the local market?</div>
 
-<p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:16px">Every quarter, Camelot delivers a comprehensive management report to your board \u2014 not just financials, but a full market-aware assessment of how your building is performing relative to comparable properties. These reports use <strong>SCOUT market intelligence</strong> and <strong>Camelot OS data</strong> to give you the kind of analysis that institutional investors expect.</p>
+<p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:16px">Every quarter, Camelot delivers a market-aware report that helps your board understand value, resident experience, sales and leasing activity, safety, cost of living, operating costs, and dollars per square foot. The report answers the practical questions owners ask: how is the building performing, what might a unit be worth, and where should the board focus next?</p>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
-<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">\uD83D\uDCCA Cost of Living Analysis</h5>
-<p style="font-size:11px;color:#555;line-height:1.5">How your operating costs track against CPI, neighborhood benchmarks, and peer buildings. Are maintenance fees keeping pace or falling behind?</p>
+<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">Cost of Living &amp; Carrying Cost</h5>
+<p style="font-size:11px;color:#555;line-height:1.5">Maintenance, common charges, utilities, insurance, and operating costs compared with local peer buildings.</p>
 </div>
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
-<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">\uD83C\uDFE0 Unit Value Assessment</h5>
-<p style="font-size:11px;color:#555;line-height:1.5">How your home stacks up against comparable sales and rentals in the neighborhood. $/sqft trends, median prices, and days on market.</p>
+<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">Unit Value Estimate</h5>
+<p style="font-size:11px;color:#555;line-height:1.5">What a unit might be worth based on sales, leasing, dollars per square foot, floor line, view, and current market momentum.</p>
 </div>
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
-<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">\uD83D\uDCC8 Neighborhood Market Pulse</h5>
-<p style="font-size:11px;color:#555;line-height:1.5">Median sale prices, rental rates, days on market, investment scores, and price momentum \u2014 sourced from ACRIS closed sales and StreetEasy leased data.</p>
+<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">Sales &amp; Leasing Pulse</h5>
+<p style="font-size:11px;color:#555;line-height:1.5">Median sale prices, rental rates, absorption, days on market, leasing demand, and price momentum.</p>
 </div>
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
-<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">\u2705 Building Performance Scorecard</h5>
-<p style="font-size:11px;color:#555;line-height:1.5">Violations cleared, vendor savings achieved, compliance status, energy improvements, and overall management grade \u2014 tracked quarter over quarter.</p>
+<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">Home Score &amp; Safety</h5>
+<p style="font-size:11px;color:#555;line-height:1.5">Building score, safety signals, open violations, service quality, amenity condition, and compliance status tracked quarter over quarter.</p>
 </div>
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
-<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">\uD83D\uDCB0 Reserve Fund Health Check</h5>
-<p style="font-size:11px;color:#555;line-height:1.5">Current reserve balance vs. 5-year capital plan needs. Are you funded for the roof, elevator, fa\u00E7ade, and boiler work ahead?</p>
+<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">Capital &amp; Reserve Health</h5>
+<p style="font-size:11px;color:#555;line-height:1.5">Reserve position, projected capital needs, LL97/LL11 exposure, insurance movement, and upcoming board decisions.</p>
 </div>
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
-<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">\uD83D\uDCC8 Rent Growth vs. Market</h5>
-<p style="font-size:11px;color:#555;line-height:1.5">Camelot\u2019s portfolio averages <strong>10.55% YoY rent growth</strong> vs. the Manhattan market average of <strong>5.20%</strong>. Your quarterly report shows exactly where your building stands.</p>
+<h5 style="font-size:12px;font-weight:700;color:#2C3240;margin-bottom:6px">Dollars Per Square Foot</h5>
+<p style="font-size:11px;color:#555;line-height:1.5">Condo, co-op, and rental $/sf benchmarks so boards can understand value, leasing power, and owner equity.</p>
 </div>
 </div>
 
@@ -3576,9 +3606,9 @@ ${buildPortfolioSection(d)}
 
 <div style="background:#fff;border:2px solid #A89035;border-radius:8px;padding:22px;margin:16px 0">
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-<div style="width:48px;height:48px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative">
-<img src="https://www.google.com/s2/favicons?domain=bankunited.com&sz=128" alt="BankUnited" style="width:48px;height:48px;object-fit:contain;border-radius:8px;position:absolute;top:0;left:0" onerror="this.style.display='none'">
-<div style="width:48px;height:48px;background:#003366;border-radius:8px;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-weight:800;font-size:14px">BU</span></div>
+<div style="width:170px;height:48px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative">
+<img src="https://logo.clearbit.com/bankunited.com" alt="BankUnited" style="width:170px;height:48px;object-fit:contain;position:absolute;top:0;left:0;background:#fff" onerror="this.style.display='none'">
+<div style="width:170px;height:48px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center"><span style="color:#003366;font-weight:800;font-size:18px">BankUnited</span></div>
 </div>
 <div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:16px;color:#3A4B5B;font-weight:700">BankUnited Partnership</div>
 </div>
@@ -3589,8 +3619,9 @@ ${buildPortfolioSection(d)}
 <!-- Select Partnership -->
 <div style="background:#1a1a2e;border:2px solid #A89035;border-radius:10px;padding:24px;margin:20px 0;color:#fff">
 <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
-<div style="width:48px;height:48px;background:linear-gradient(135deg,#A89035,#d4af37);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-<span style="color:#1a1a2e;font-weight:900;font-size:16px;font-family:'Plus Jakarta Sans',sans-serif">S</span>
+<div style="width:120px;height:48px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px">
+<img src="https://logo.clearbit.com/meetselect.com" alt="Select" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+<span style="display:none;color:#1a1a2e;font-weight:900;font-size:18px;font-family:'Plus Jakarta Sans',sans-serif">select</span>
 </div>
 <div>
 <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#A89035">Select — Exclusive Resident Benefits</div>
@@ -3655,7 +3686,8 @@ ${buildPortfolioSection(d)}
 <p style="font-size:12px;color:#2C3240;line-height:1.8;margin-bottom:12px">\uD83D\uDD12 This Property Intelligence Report is <strong>confidential and proprietary</strong> to Camelot Realty Group. It is intended solely for the named recipient(s) and may not be reproduced, distributed, or disclosed without prior written consent.</p>
 <p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:12px">\u00A9 ${new Date().getFullYear()} Camelot Realty Group. All rights reserved. Contents are protected by U.S. copyright and trade secret law. SCOUT, Jackie, Merlin AI, ConciergePlus, Prisma, Parity, and Camelot Central are proprietary platforms. This Report is for informational purposes only and does not constitute legal, financial, or investment advice. Data is sourced from NYC Open Data, ACRIS, StreetEasy, RealtyMX, and other third-party databases and is presented &ldquo;as is&rdquo; without warranty. AI-assisted analysis has been reviewed by licensed real estate professionals. Governed by the laws of the State of New York; venue in New York County.</p>
 <div style="text-align:center;margin-top:16px">
-<a href="mailto:info@camelot.nyc?subject=Legal%20Terms%20Request" style="display:inline-block;background:#A89035;color:#fff;padding:10px 28px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.5px">Request Full Legal Terms \u2192 info@camelot.nyc</a>
+<a href="mailto:info@camelot.nyc?subject=Legal%20Terms%20Request" target="_self" onclick="window.location.href='mailto:info@camelot.nyc?subject=Legal%20Terms%20Request';return false;" style="display:inline-block;background:#A89035;color:#fff;padding:10px 28px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.5px">Request Full Legal Terms</a>
+<div style="font-size:10px;color:#777;margin-top:8px">info@camelot.nyc · www.camelot.nyc</div>
 </div>
 </div>
 
@@ -3720,16 +3752,6 @@ ${buildPortfolioSection(d)}
 <div style="font-size:9px;color:rgba(255,255,255,0.2);margin-top:12px">${CAMELOT.license1} | ${CAMELOT.license2}</div>
 
 </div>
-</div>
-
-<div class="deck-slide dark">
-<div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
-<h2 class="deck-title center" style="font-size:54px;margin-bottom:34px">Next Steps</h2>
-<p style="font-size:20px;line-height:1.55;max-width:680px;margin-bottom:70px">We welcome the opportunity to meet near the building to discuss how we can serve ${safe(d.buildingName)}.</p>
-<div style="color:#B8973A;font-size:18px;margin-bottom:22px">David Goldoff, Founder &amp; President</div>
-<div style="font-size:16px;line-height:1.9">${CAMELOT.phone} ext. 701 &nbsp; | &nbsp; ${CAMELOT.mobile}<br>${CAMELOT.infoEmail} &nbsp; | &nbsp; ${CAMELOT.email}<br><span style="color:#B9C7D3">${CAMELOT.web}</span></div>
-<div style="font-size:13px;color:#9DB0BE;margin-top:22px">${CAMELOT.address}</div>
-<div style="margin-top:34px;font-size:13px;color:#D6E0E7">Available meeting formats: in-person, Zoom, Google Meet, or group call-in.</div>
 </div>
 
 <div class="deck-slide dark">
