@@ -25,6 +25,8 @@ const requiredTokens = [
   ['Commercial source stack', 'NYC vacant storefront data'],
   ['Commercial broker source stack', 'CoStar/LoopNet-style commercial listings'],
   ['Neighborhood source stack', 'Neighborhood scoring source stack'],
+  ['LPC landmark fallback rules', 'getLpcLandmarkFallbackLabels'],
+  ['Nearby Landmarks QA gate', "name: 'Nearby Landmarks'"],
   ['Miller Samuel market reports', 'Miller Samuel New York City Market Reports'],
   ['ConciergePlus partner logo', '/images/partners/conciergeplus.svg'],
   ['Select real web asset', 'https://d2e1363xcu3t9u.cloudfront.net/2024/images/share.png'],

@@ -208,6 +208,93 @@ function verifiedManagementLabel(value?: string | null): string {
 // Neighborhood Market Data (Q1 2026 — from Camelot Market Report)
 // ============================================================
 
+function dedupeText(items: Array<string | null | undefined>): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const item of items) {
+    const value = String(item || '').trim();
+    if (!value) continue;
+    const key = value.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(value);
+  }
+  return result;
+}
+
+function getLpcLandmarkFallbackLabels(address: string, neighborhoodName = '', knownFacts?: KnownPropertyFacts | null): string[] {
+  const key = `${address} ${neighborhoodName} ${knownFacts?.buildingName || ''}`.toLowerCase();
+  if (knownFacts?.landmarks?.length) return knownFacts.landmarks;
+
+  if (/1280\s+(fifth|5th)|one\s+museum\s+mile|museum\s+mile|east\s+harlem/i.test(key)) {
+    return [
+      'Central Park / Harlem Meer: scenic landmark across street',
+      'Conservatory Garden: LPC scenic landmark area nearby',
+      'El Museo del Barrio: Museum Mile cultural anchor',
+      'Museum of the City of New York: Museum Mile landmark corridor',
+      'Guggenheim Museum: LPC individual landmark on Museum Mile',
+      'Cooper Hewitt / Carnegie Mansion: LPC individual landmark nearby',
+    ];
+  }
+
+  if (/201\s+e(ast)?\s+79|upper\s+east\s+side|yorkville/i.test(key)) {
+    return [
+      'Upper East Side Historic District: LPC district context west of Third Avenue',
+      'Central Park: LPC scenic landmark nearby',
+      'Metropolitan Museum of Art: Museum Mile anchor nearby',
+      'Park Avenue Armory: LPC individual landmark nearby',
+      'Church of St. Jean Baptiste: LPC individual landmark nearby',
+      'Bohemian National Hall: LPC individual landmark / cultural anchor nearby',
+    ];
+  }
+
+  if (/corinthian|330\s+e(ast)?\s+38|murray\s+hill|midtown\s+east/i.test(key)) {
+    return [
+      'Tudor City Historic District: LPC district context nearby',
+      'Daily News Building: LPC individual landmark nearby',
+      'Ford Foundation Building: LPC individual / interior landmark nearby',
+      'Grand Central Terminal: LPC individual / interior landmark nearby',
+      'Chrysler Building: LPC individual landmark nearby',
+      'United Nations / Midtown East civic corridor: nearby anchor',
+    ];
+  }
+
+  if (/chesapeake|201\s+e(ast)?\s+28|kips\s+bay|rose\s+hill|gramercy/i.test(key)) {
+    return [
+      'Madison Square North Historic District: LPC district context nearby',
+      'Gramercy Park Historic District: LPC district context nearby',
+      'New York Life Building: LPC individual landmark nearby',
+      'Metropolitan Life Clock Tower: LPC individual landmark nearby',
+      'Appellate Division Courthouse: LPC individual landmark nearby',
+      'Lexington Avenue / 28th Street transit and retail corridor: nearby anchor',
+    ];
+  }
+
+  if (/manhattan|new york/i.test(key)) {
+    return [
+      'LPC Discover NYC Landmarks: verify nearby designated buildings and districts',
+      'NYC landmark and historic district context: reviewed during Jackie source check',
+      'Neighborhood civic, cultural, and transit anchors: verify by address before release',
+      'Camelot HQ: 477 Madison Avenue, 6th Floor',
+    ];
+  }
+
+  return [
+    'Nearby landmarks: verify through LPC Discover NYC Landmarks',
+    'Neighborhood anchors: reviewed during Camelot scope review',
+    'Transit access: verified during onboarding',
+    'Camelot HQ: 477 Madison Avenue, 6th Floor',
+  ];
+}
+
+function resolveNearbyLandmarkLabels(d: Pick<MasterReportData, 'address' | 'buildingName' | 'neighborhoodName' | 'neighborhoodIntel'>): string[] {
+  const knownFacts = getKnownPropertyFacts(d.address, d.buildingName);
+  const liveLabels = (d.neighborhoodIntel?.landmarks || [])
+    .map(l => `${l.name}: ${l.type || 'LPC landmark'}${l.date ? ` (${l.date.slice(0, 4)})` : ''}`);
+  const fallbackLabels = getLpcLandmarkFallbackLabels(d.address, d.neighborhoodName, knownFacts);
+  return dedupeText([...(knownFacts?.landmarks || []), ...liveLabels, ...fallbackLabels]).slice(0, 6);
+}
+
 export interface NeighborhoodMarketData {
   condoPSF: number; coopPSF: number; rentalPSFYr: number;
   median1BR: number; median2BR: number; daysOnMarket: number;
@@ -1787,6 +1874,16 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     status: d.buildingPhotos?.exterior?.length ? 'pass' : 'warn',
     detail: d.buildingPhotos?.exterior?.length ? `${d.buildingPhotos.exterior.length} preferred image(s) available` : 'No uploaded/preferred subject photo; map/street-view fallback will be used',
   });
+  const landmarkLabels = resolveNearbyLandmarkLabels(d);
+  const nearbyLandmarksBlock = (html.match(/<h4>Nearby Landmarks<\/h4>[\s\S]*?<\/ul>/i) || [])[0] || '';
+  const landmarkItemCount = (nearbyLandmarksBlock.match(/<li\b/gi) || []).length;
+  checks.push({
+    name: 'Nearby Landmarks',
+    status: landmarkLabels.length >= 3 && landmarkItemCount >= 3 ? 'pass' : 'fail',
+    detail: landmarkLabels.length >= 3
+      ? `${landmarkItemCount} landmark item(s) rendered from LPC / neighborhood fallback context`
+      : 'Nearby Landmarks must use LPC Discover NYC Landmarks, known-property, or neighborhood fallback data before release',
+  });
   checks.push({
     name: 'Camelot Logo',
     status: html.includes('./images/camelot-logo.png') || html.includes('./images/camelot-logo-white.png') ? 'pass' : 'fail',
@@ -2218,6 +2315,7 @@ export function generateBrochureHTML(d: MasterReportData): string {
   const prettyNeighborhood = d.neighborhoodName
     ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
     : d.borough || 'New York City';
+  const nearbyLandmarkLabels = resolveNearbyLandmarkLabels(d);
   const propertyPedigree = is1280Fifth ? {
     title: 'A Robert A.M. Stern Masterpiece',
     narrative: `At ${d.units || 116} units, ${d.buildingName} represents the ideal scale for Camelot's high-touch management: large enough to deserve institutional systems, personal enough to benefit from senior attention, financial clarity, and an owner's perspective.`,
@@ -2227,7 +2325,7 @@ export function generateBrochureHTML(d: MasterReportData): string {
     locationCopy: 'Northeast corner of Central Park at Duke Ellington Circle. The only Robert A.M. Stern building to cap Museum Mile: location fundamentals that protect shareholder investment through any market cycle.',
     lifestyleTitle: 'Lifestyle & Liquidity',
     lifestyleCopy: "Steps from Central Park, Harlem Meer, and the Conservatory Garden. Immediate access to 2/3, 4/5/6 trains. The building's Fifth Avenue address and cultural pedigree ensure lasting desirability.",
-    landmarks: ['Museum of African Art: in building', 'El Museo del Barrio: 1 block', 'Central Park / Harlem Meer: across street', 'Mount Sinai Medical Center: nearby', 'Guggenheim Museum: Museum Mile', 'Conservatory Garden: steps away'],
+    landmarks: nearbyLandmarkLabels,
   } : {
     title: `${d.buildingName} at a Glance`,
     narrative: `${d.buildingName} is a ${d.propertyType.toLowerCase()} with ${d.units || 'multiple'} units${d.stories ? ` across ${d.stories} floors` : ''}. Jackie combines city records, market intelligence, and Camelot's management experience to translate the building's facts into an actionable board narrative.`,
@@ -2243,7 +2341,7 @@ export function generateBrochureHTML(d: MasterReportData): string {
     locationCopy: `${d.buildingName} sits within ${prettyNeighborhood}, where access, operations, and neighborhood fundamentals shape resident experience and long-term value.`,
     lifestyleTitle: 'Access, Service & Liquidity',
     lifestyleCopy: 'Camelot reviews transportation, vendor routing, nearby anchors, and resident lifestyle drivers so the board sees both operational needs and market value in one narrative.',
-    landmarks: d.neighborhoodIntel?.landmarks?.slice(0, 6).map(l => `${l.name}: ${l.type}`) || ['Transit access: verified during onboarding', 'Neighborhood anchors: reviewed by Jackie', 'Camelot HQ: 477 Madison Avenue', 'Vendor routing: planned during transition'],
+    landmarks: nearbyLandmarkLabels,
   };
   const complianceDates = [
     { month: 'January', title: 'Tax Appeals', desc: d.assessedValue > 0 ? `Review ${fmtMoney(d.assessedValue)} assessed value and appeal strategy.` : 'Strategic filing to reduce assessments.' },
