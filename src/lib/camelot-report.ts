@@ -4007,7 +4007,7 @@ ${buildPortfolioSection(d)}
 <!-- Quote — large, emphasized, center stage -->
 <div style="margin-bottom:32px;max-width:560px">
 <div style="font-size:64px;font-family:'Plus Jakarta Sans',-apple-system,sans-serif;color:#A89035;line-height:0.5;margin-bottom:16px;opacity:0.6">&ldquo;</div>
-<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-style:italic;font-size:22px;color:#fff;line-height:1.6;font-weight:400;letter-spacing:0.3px">Don\u2019t let it be forgot, that once there was a spot, for one brief shining moment, that was known as Camelot.</div>
+<div style="font-family:'Cardo',Georgia,serif;font-style:italic;font-size:29px;color:#fff;line-height:1.45;font-weight:400;letter-spacing:0.2px;text-shadow:0 2px 12px rgba(0,0,0,0.22)">Don\u2019t let it be forgot, that once there was a spot, for one brief shining moment, that was known as <span style="color:#D5B24A;font-weight:700">Camelot</span>.</div>
 <div style="font-size:64px;font-family:'Plus Jakarta Sans',-apple-system,sans-serif;color:#A89035;line-height:0.5;text-align:right;margin-top:12px;opacity:0.6">&rdquo;</div>
 <div style="text-align:right;margin-top:12px">
 <div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:13px;color:#A89035;font-weight:600;font-style:italic">Jacqueline Kennedy</div>
