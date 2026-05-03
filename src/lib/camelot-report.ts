@@ -515,6 +515,10 @@ export interface MarketFeeComparison {
   ancillaryComparison: Array<{ service: string; marketRate: string; camelotRate: string }>;
 }
 
+function roundToNearestFive(value: number): number {
+  return Math.max(5, Math.round(value / 5) * 5);
+}
+
 function calculateMarketFeeComparison(
   d: { units: number; borough: string; propertyType: string; buildingClass: string; isRentStabilized: boolean; ll97Status: string; pricePerUnit: number }
 ): MarketFeeComparison {
@@ -552,8 +556,6 @@ function calculateMarketFeeComparison(
     marketHigh = 800;
   }
 
-  const camelotAnnual = d.pricePerUnit * 12;
-
   // For small buildings, large firms impose minimums — effective per-unit cost is higher
   if (d.units < 50) {
     // Large firms often charge $50K+ minimum annual — that's $1,000+/unit for a 50-unit building
@@ -562,43 +564,51 @@ function calculateMarketFeeComparison(
   }
 
   const midMarket = (marketLow + marketHigh) / 2;
+  const camelotAnnual = roundToNearestFive(midMarket * 0.85);
+  const camelotMonthly = Math.round(camelotAnnual / 12);
   const savingsPct = Math.round(((midMarket - camelotAnnual) / midMarket) * 100);
-  const savings = savingsPct > 0 ? `~${savingsPct}% below market average` : 'Competitive with market';
+  const savings = `${savingsPct}% below market average`;
 
   return {
     marketRangeLow: marketLow,
     marketRangeHigh: marketHigh,
     camelotAnnualPerUnit: camelotAnnual,
-    camelotMonthlyPerUnit: d.pricePerUnit,
+    camelotMonthlyPerUnit: camelotMonthly,
     savings,
     tier,
     tierLabel,
     ancillaryFeesIncluded: [
-      'In-house CPA & monthly accounting',
+      'In-house CPA / accounting advisory services',
       'LL97 compliance monitoring & reporting',
       'Technology platform (ConciergePlus + Merlin AI)',
-      'AI-powered board meeting minutes',
+      'Board meeting minutes provided by Camelot AI',
       'Online payment processing (ZERO bank fees)',
       'Initial building inspection ($2,500 value)',
-      'In-house attorney advisory (free consultation)',
+      'Legal advisory services',
       'Licensed engineer advisory',
       'Weekly on-site inspections',
       '24/7 emergency response line',
     ],
     ancillaryComparison: [
-      { service: 'Onboarding / Setup', marketRate: '$250–$500', camelotRate: 'Included' },
-      { service: 'Lease Renewal Processing', marketRate: '$150–$300/renewal', camelotRate: 'Included' },
-      { service: 'Building Inspection', marketRate: '$1,500–$3,500', camelotRate: 'FREE ($2,500 value)' },
-      { service: 'In-House CPA / Accounting', marketRate: '$5,000–$15,000/yr', camelotRate: 'Included' },
-      { service: 'LL97 Compliance Report', marketRate: '$3,000–$8,000', camelotRate: 'Included' },
-      { service: 'Technology Platform', marketRate: '$3–$8/unit/month', camelotRate: 'Included' },
-      { service: 'Online Payment Processing', marketRate: '2.5–3.5% per transaction', camelotRate: 'ZERO fees' },
-      { service: 'Board Meeting Minutes (AI)', marketRate: 'Not available', camelotRate: 'Included' },
-      { service: 'Project Management (small)', marketRate: '5%–15% of project cost', camelotRate: 'Included for routine' },
-      { service: 'Additional Board Meetings', marketRate: '$150–$500/meeting', camelotRate: 'Unlimited' },
-      { service: 'Sale/Transfer Processing', marketRate: '~$500 (buyer pays)', camelotRate: '~$500 (buyer pays)' },
+      { service: 'Onboarding / Setup', marketRate: '$250-$500', camelotRate: 'Included' },
+      { service: 'Lease Renewals', marketRate: '$250-$500/lease', camelotRate: '$350 per lease' },
+      { service: 'Building Inspection', marketRate: '$1,500-$3,500', camelotRate: 'FREE ($2,500 value)' },
+      { service: 'In-House CPA / Accounting Advisory Services', marketRate: '$5,000-$15,000/yr', camelotRate: 'Included' },
+      { service: 'Tax Returns for Client Entity', marketRate: 'Industry standard by property size/location', camelotRate: '20% less than industry standard' },
+      { service: 'LL97 Compliance Report', marketRate: '$3,000-$8,000', camelotRate: 'Included' },
+      { service: 'Technology Platform', marketRate: '$3-$8/unit/month', camelotRate: 'Included' },
+      { service: 'Online Payment Processing', marketRate: '2.5-3.5% per transaction', camelotRate: 'ZERO fees' },
+      { service: 'Board Meeting Minutes (Provided by Camelot AI)', marketRate: '$150-$500/meeting', camelotRate: 'Included; after 8 PM, $150 flat fee may apply' },
+      { service: 'Project Management Fee (under $25K / 30+ unit buildings)', marketRate: '5%-15% of project cost', camelotRate: 'Included' },
+      { service: 'Project Management Fee (major projects)', marketRate: '7%-10% of project cost', camelotRate: '7%-10%, flat fee, or $150/hr by separate agreement' },
+      { service: 'Annual Board Meetings, Emergency Meetings, Town Halls', marketRate: '$150-$500/meeting plus admin', camelotRate: 'Billed by rate and hours incurred for setup, notices, proxies, sign-in sheets, Zoom, and board-directed administration' },
+      { service: 'Sales Package Review', marketRate: '$300-$750', camelotRate: '$250-$500' },
+      { service: 'Closings', marketRate: '$1,500-$2,500', camelotRate: '$1,500' },
+      { service: 'Review of Alteration Agreements', marketRate: '$750-$1,500', camelotRate: '$500-$1,000' },
+      { service: 'Legal Advisory Services', marketRate: '$350-$750/hr', camelotRate: 'Included' },
+      { service: 'Sale/Transfer Processing', marketRate: '~$500 (buyer pays)', camelotRate: '$250-$500 sales package review; closing fees separate' },
       { service: 'Move-In/Move-Out Fee', marketRate: '~$500 each', camelotRate: '~$500 each' },
-      { service: 'Sublet Application', marketRate: '$100–$250', camelotRate: '$100–$250' },
+      { service: 'Sublet Application', marketRate: '$100-$250', camelotRate: '$100-$250' },
       { service: 'Late Payment Enforcement', marketRate: 'Up to $50 or 5%', camelotRate: 'Per building policy' },
     ],
   };
@@ -1697,8 +1707,17 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   const effectiveBuildingClass = knownFacts?.buildingClass || dof?.buildingClass || '';
   const effectiveMarketValue = knownFacts?.marketValue || dof?.marketValue || 0;
   const tier = calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', effectiveBuildingClass, effectiveMarketValue, reportAddress);
-  // Use Classic tier as the default displayed fee — David's target: ~$900/unit/year ($75/unit/mo)
-  let pricePerUnit = tier.classic.perUnit;
+  const feeComparison = calculateMarketFeeComparison({
+    units: units || 1,
+    borough: borough || '',
+    propertyType: knownFacts?.propertyType || classifyBuildingType(effectiveBuildingClass),
+    buildingClass: effectiveBuildingClass,
+    isRentStabilized: raw.rentStabilization?.isStabilized || false,
+    ll97Status: ll97Data?.complianceStatus || 'unknown',
+    pricePerUnit: tier.classic.perUnit,
+  });
+  // Jackie prices Camelot at 15% below the applicable market midpoint.
+  let pricePerUnit = feeComparison.camelotMonthlyPerUnit;
   const monthlyFee = pricePerUnit * (units || 1);
   const annualFee = monthlyFee * 12;
 
@@ -2039,15 +2058,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     monthlyFee,
     annualFee,
     tieredPricing: calculateTieredPricing(units || 1, borough || '', raw.rentStabilization?.isStabilized || false, ll97Data?.complianceStatus || 'unknown', effectiveBuildingClass, effectiveMarketValue, reportAddress),
-    feeComparison: calculateMarketFeeComparison({
-      units: units || 1,
-      borough: borough || '',
-      propertyType: knownFacts?.propertyType || classifyBuildingType(effectiveBuildingClass),
-      buildingClass: effectiveBuildingClass,
-      isRentStabilized: raw.rentStabilization?.isStabilized || false,
-      ll97Status: ll97Data?.complianceStatus || 'unknown',
-      pricePerUnit,
-    }),
+    feeComparison,
     streetEasy,
     commercialIntel,
     buildingPhotos: effectiveBuildingPhotos,
@@ -4254,6 +4265,9 @@ ${d.feeComparison ? `
 <div class="section section-white">
 <div class="section-title">Fee Comparison — Market Rate Analysis</div>
 <div class="section-sub">${d.feeComparison.tierLabel} — How Camelot compares to industry standard pricing</div>
+<div style="background:#EDE9DF;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:16px">
+<p style="font-size:11px;color:#3A4B5B;line-height:1.6"><strong style="color:#A89035">Pricing formula:</strong> Camelot's base management fee is modeled at <strong>15% below the applicable market midpoint</strong> for this building class and location, while keeping core advisory, accounting, technology, and compliance services included.</p>
+</div>
 
 <!-- Market vs Camelot Visual -->
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
