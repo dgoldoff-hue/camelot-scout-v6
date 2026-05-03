@@ -186,6 +186,18 @@ interface KnownPropertyFacts {
 }
 
 // ============================================================
+function isExplicitSelfManaged(value?: string | null): boolean {
+  return /\bself[-\s]?managed\b/i.test(String(value || ''));
+}
+
+function verifiedManagementLabel(value?: string | null): string {
+  const cleaned = String(value || '').trim();
+  if (!cleaned || /^unknown$/i.test(cleaned) || /to be confirmed/i.test(cleaned)) {
+    return 'Management to verify';
+  }
+  return cleaned;
+}
+
 // Neighborhood Market Data (Q1 2026 — from Camelot Market Report)
 // ============================================================
 
@@ -1725,10 +1737,10 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
   }
   checks.push({
     name: 'Management Context',
-    status: isKnownStaffedProperty && /Self-managed buildings benefit most/i.test(html) ? 'fail' : 'pass',
+    status: !isExplicitSelfManaged(d.managementCompany) && /Self-managed buildings benefit most|Self-Managed\s*(?:&rarr;|→)|Currently self-managed/i.test(html) ? 'fail' : 'pass',
     detail: isKnownStaffedProperty
       ? 'Known staffed property must not be framed as self-managed'
-      : 'Self-managed language allowed only when management is truly unknown',
+      : 'Self-managed language requires an explicit source, not a missing management lookup',
   });
   checks.push({
     name: 'Building Contacts / Staff',
@@ -1794,13 +1806,13 @@ export function generateColdCallerSheet(d: MasterReportData): string {
   // Check both managementCompany AND buildingStaff for a managing agent
   const agentFromStaff = d.buildingStaff.find(s => s.role.toLowerCase().includes('managing agent'));
   const actualManagement = d.managementCompany && d.managementCompany !== 'To be confirmed upon engagement' ? d.managementCompany : agentFromStaff ? agentFromStaff.name : null;
-  const isSelfManaged = !actualManagement;
+  const isSelfManaged = isExplicitSelfManaged(actualManagement);
   return `COLD CALL PREP — ${d.buildingName}
 ${'━'.repeat(50)}
 
 BUILDING: ${d.address}
 UNITS: ${d.units} | FLOORS: ${d.stories} | GRADE: ${d.scoutGrade} (${d.scoutScore}/100)
-MANAGEMENT: ${d.managementCompany || 'To be confirmed — research via Domecile, PropertyShark, or building website'}
+MANAGEMENT: ${verifiedManagementLabel(d.managementCompany)} — verify via HPD MDR, ACRIS, DOB, PropertyShark, board materials, or building website
 ${d.dofOwner ? `OWNER (DOF): ${d.dofOwner}` : ''}
 
 OPENING:
@@ -1825,7 +1837,7 @@ VALUE PROPS:
 • LL97 compliance tracking included at no charge
 • 24/7 emergency response with direct management access
 • Three flexible pricing tiers — no long-term contracts required
-${isSelfManaged ? '• "We understand you\'re self-managed — our 90-day onboarding makes the transition seamless"\n' : `• "We'd love to show you how we compare to ${d.managementCompany}"\n`}
+${isSelfManaged ? '• "We understand you\'re self-managed — our 90-day onboarding makes the transition seamless"\n' : '• "We would love to show you how Camelot compares after we verify the current management structure."\n'}
 OBJECTION HANDLERS:
 "Too expensive" → "Our Intelligence tier is actually 25-40% LESS than FirstService or AKAM — and includes AI technology they charge extra for."
 "Happy with current management" → "Many clients felt the same before seeing our reporting platform. Open to a brief comparison?"
@@ -2037,7 +2049,7 @@ export function generateBrochureHTML(d: MasterReportData): string {
   const encodedAddr = encodeURIComponent(addr);
   const brochureAgent = d.buildingStaff.find(s => s.role.toLowerCase().includes('managing agent'));
   const brochureActualMgmt = d.managementCompany && !['Unknown','To be confirmed upon engagement'].includes(d.managementCompany) ? d.managementCompany : brochureAgent ? brochureAgent.name : null;
-  const isSelfManaged = !brochureActualMgmt;
+  const isSelfManaged = isExplicitSelfManaged(brochureActualMgmt);
   const fmtMoney = (n: number) => n >= 1e6 ? `$${(n/1e6).toFixed(1)}M` : `$${n.toLocaleString()}`;
   const modelUnits = Math.max(d.units || 0, 1);
   const isManhattan = (d.borough || '').toLowerCase().includes('manhattan') || /fifth|madison|park|broadway|avenue|street/i.test(d.address);
@@ -2712,7 +2724,7 @@ ${d.neighborhoodIntel ? generateNeighborhoodIntelHTML(d.neighborhoodIntel, d.nei
 </div>
 <div class="info-grid">
 <div><div class="label">Address</div><div class="value">${addr}</div></div>
-<div><div class="label">Current Management</div><div class="value">${d.managementCompany || 'Self-Managed'}</div></div>
+<div><div class="label">Current Management</div><div class="value">${verifiedManagementLabel(d.managementCompany)}</div></div>
 <div><div class="label">Market Value</div><div class="value" style="color:#A89035;font-weight:700;font-size:15px">${fmtMoney(d.marketValue)}</div></div>
 <div><div class="label">Assessed Value</div><div class="value">${fmtMoney(d.assessedValue)}</div></div>
 <div><div class="label">Year Built</div><div class="value">${d.yearBuilt || 'N/A'}</div></div>
@@ -2885,9 +2897,9 @@ Staff details will be confirmed during our initial building assessment and trans
 <!-- MANAGEMENT -->
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:16px">
 <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:700;margin-bottom:10px">\uD83C\uDFE2 Current Management</div>
-<div style="font-size:14px;font-weight:700;color:#2C3240;margin-bottom:8px">${brochureActualMgmt || d.managementCompany || 'To be confirmed upon engagement'}</div>
+<div style="font-size:14px;font-weight:700;color:#2C3240;margin-bottom:8px">${verifiedManagementLabel(brochureActualMgmt || d.managementCompany)}</div>
 <div style="font-size:11px;color:#888;line-height:1.6">
-<div style="margin-bottom:4px">\u2022 Managing Agent \u2014 <em>${brochureActualMgmt || d.managementCompany || 'To be confirmed upon engagement'}</em></div>
+<div style="margin-bottom:4px">\u2022 Managing Agent \u2014 <em>${verifiedManagementLabel(brochureActualMgmt || d.managementCompany)}</em></div>
 ${d.managementDuration ? `<div style="margin-bottom:4px">\u2022 Duration \u2014 ~${d.managementDuration}</div>` : ''}
 <div style="margin-bottom:4px">\u2022 Management Grade \u2014 <strong style="color:${d.managementGrade === 'A' ? '#16a34a' : d.managementGrade === 'B' ? '#ca8a04' : '#dc2626'}">${d.managementGrade}</strong> (${d.managementScorecard.overall}/100)</div>
 </div>
@@ -3195,7 +3207,7 @@ ${d.ll97 ? `
 <!-- PAGE 7: COMPETITOR ANALYSIS -->
 <div class="section section-cream">
 <div class="section-title">Competitive Position</div>
-<div class="section-sub">${isSelfManaged ? 'Self-managed buildings benefit most from professional management' : `Analysis of current management: ${d.managementCompany}`}</div>
+<div class="section-sub">${isSelfManaged ? 'Confirmed self-managed structure — professional transition opportunity' : `Current management structure: ${verifiedManagementLabel(d.managementCompany)}`}</div>
 ${isSelfManaged ? `
 <div class="core-svc"><h4>Self-Managed \u2192 Professional Management</h4><p>Many of our most successful client relationships began with self-managed buildings. Our 90-day transition process is designed specifically to make this change seamless, with zero disruption to residents or building operations. You gain: weekly inspections, 24/7 emergency response, in-house CPA, compliance expertise, and technology that elevates every aspect of building life.</p></div>
 ` : `

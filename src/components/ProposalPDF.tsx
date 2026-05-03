@@ -422,10 +422,14 @@ function ExecutiveSummaryPage({ data }: { data: ProposalData }) {
         ? `With an Energy Star score of ${data.energyStarScore}, the building is reasonably positioned for LL97 compliance, but ongoing monitoring is essential.`
         : '';
 
+  const hasExplicitSelfManaged = /self[-\s]?managed/i.test(data.currentManagement || '');
+  const hasVerifiedManagement = !!data.currentManagement && data.currentManagement !== 'Unknown' && !hasExplicitSelfManaged;
   const mgmtMsg =
-    !data.currentManagement || data.currentManagement === 'Unknown' || data.currentManagement === 'Self-managed'
-      ? `Currently ${data.currentManagement === 'Self-managed' ? 'self-managed' : 'without established management'}, ${buildingLabel} would benefit from professional oversight that brings institutional-grade systems while preserving the personal attention boards expect.`
-      : `As the building transitions management, Camelot offers a seamless onboarding process refined over 42+ building transitions.`;
+    hasExplicitSelfManaged
+      ? `Currently self-managed, ${buildingLabel} would benefit from professional oversight that brings institutional-grade systems while preserving the personal attention boards expect.`
+      : hasVerifiedManagement
+        ? `As the building evaluates management options, Camelot offers a seamless onboarding process refined over 42+ building transitions.`
+        : `Jackie has not verified the current managing agent yet. Before any board-facing release, Camelot should confirm management through HPD MDR, ACRIS, DOB, PropertyShark, board materials, or the building website.`;
 
   return (
     <Page size="LETTER" style={s.page}>

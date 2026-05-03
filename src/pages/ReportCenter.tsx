@@ -329,7 +329,7 @@ export default function ReportCenter() {
                 <div><span className="text-gray-400 text-xs uppercase block">Units</span><span className="font-medium">{data.units || 'N/A'}</span></div>
                 <div><span className="text-gray-400 text-xs uppercase block">Year Built</span><span className="font-medium">{data.yearBuilt || 'N/A'}</span></div>
                 <div><span className="text-gray-400 text-xs uppercase block">Market Value</span><span className="font-medium text-[#A89035]">{fmtMoney(data.marketValue)}</span></div>
-                <div><span className="text-gray-400 text-xs uppercase block">Management</span><span className="font-medium">{data.managementCompany || 'Self-Managed'}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Management</span><span className="font-medium">{data.managementCompany || 'Management to verify'}</span></div>
                 <div><span className="text-gray-400 text-xs uppercase block">Management Grade</span><span className={`font-bold ${data.managementGrade === 'A' ? 'text-green-600' : data.managementGrade === 'B' ? 'text-yellow-600' : 'text-red-600'}`}>{data.managementGrade}</span></div>
                 <div><span className="text-gray-400 text-xs uppercase block">Scout Grade</span><span className="font-bold">{data.scoutGrade} ({data.scoutScore}/100)</span></div>
               </div>
@@ -475,7 +475,7 @@ export default function ReportCenter() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div><span className="text-gray-400">Address:</span> <span className="font-medium">{data.address}</span></div>
               <div><span className="text-gray-400">Borough:</span> <span className="font-medium">{data.borough}</span></div>
-              <div><span className="text-gray-400">Management:</span> <span className="font-medium">{data.managementCompany || 'Self-Managed'}</span></div>
+              <div><span className="text-gray-400">Management:</span> <span className="font-medium">{data.managementCompany || 'Management to verify'}</span></div>
               <div><span className="text-gray-400">Owner (DOF):</span> <span className="font-medium">{data.dofOwner || 'N/A'}</span></div>
               <div><span className="text-gray-400">Year Built:</span> <span className="font-medium">{data.yearBuilt || 'N/A'}</span></div>
               <div><span className="text-gray-400">ECB Penalties:</span> <span className="font-medium text-orange-600">${data.ecbPenaltyBalance.toLocaleString()}</span></div>
