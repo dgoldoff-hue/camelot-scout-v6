@@ -48,6 +48,10 @@ const requiredTokens = [
   ['Camelot final logo', 'https://www.camelot.nyc/wp-content/uploads/2015/03/Camelot-logo-footer-white.png'],
   ['Portfolio image fallback', 'Google Street View reference'],
   ['Portfolio image QA gate', 'Portfolio Building Images'],
+  ['Jacqueline Vanity Fair image', "const JACQUELINE_PORTRAIT_URL = 'https://archive.vanityfair.com/image/spread/20040501/135/0'"],
+  ['Jacqueline fallback image', 'JACQUELINE_PORTRAIT_FALLBACK_URL'],
+  ['Jacqueline Vanity Fair article', 'VANITY_FAIR_CAMELOT_REFERENCE_URL'],
+  ['Jacqueline portrait QA gate', 'Jacqueline Portrait Slide'],
   ['Legal terms URL check', 'LEGAL_TERMS_URL'],
   ['No self-managed without explicit source', 'Self-managed language requires an explicit source'],
 ];
@@ -59,6 +63,7 @@ const failures = requiredTokens
 const forbiddenTokens = [
   ['old Select card image', 'https://d2e1363xcu3t9u.cloudfront.net/2019/resized/Black_card_without_chip.png'],
   ['old Jacqueline background', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/JKOnassis.jpg/440px-JKOnassis.jpg'],
+  ['broken Jacqueline thumb URL', 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Jackie_Kennedy_Color_Portrait_%283x4_cropped%29.jpg/512px-Jackie_Kennedy_Color_Portrait_%283x4_cropped%29.jpg'],
 ];
 
 for (const [label, token] of forbiddenTokens) {

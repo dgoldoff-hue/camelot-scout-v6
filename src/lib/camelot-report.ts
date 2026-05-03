@@ -809,6 +809,9 @@ const CAMELOT = {
 
 const LEGAL_TERMS_URL = 'https://camelot-scout-v6.onrender.com/#/legal-report-terms';
 const GOOGLE_MAPS_REPORT_KEY = 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8';
+const JACQUELINE_PORTRAIT_URL = 'https://archive.vanityfair.com/image/spread/20040501/135/0';
+const JACQUELINE_PORTRAIT_FALLBACK_URL = 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Jackie_Kennedy_Color_Portrait_%283x4_cropped%29.jpg';
+const VANITY_FAIR_CAMELOT_REFERENCE_URL = 'https://archive.vanityfair.com/article/share/77184080-31c6-4e95-b1cd-165ca2807775';
 
 // ============================================================
 // Portfolio Database (Camelot + Blue Owl + Penn South Capital)
@@ -2065,6 +2068,20 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     name: 'Camelot Logo',
     status: html.includes('./images/camelot-logo.png') || html.includes('./images/camelot-logo-white.png') ? 'pass' : 'fail',
     detail: 'Brand logo reference verified',
+  });
+  const jacquelineTokens = [
+    JACQUELINE_PORTRAIT_URL,
+    JACQUELINE_PORTRAIT_FALLBACK_URL,
+    VANITY_FAIR_CAMELOT_REFERENCE_URL,
+    'Jacqueline Kennedy Onassis portrait',
+  ];
+  const missingJacquelineTokens = jacquelineTokens.filter(token => !html.includes(token));
+  checks.push({
+    name: 'Jacqueline Portrait Slide',
+    status: missingJacquelineTokens.length === 0 ? 'pass' : 'fail',
+    detail: missingJacquelineTokens.length === 0
+      ? 'Portrait slide uses the Vanity Fair image with a live fallback and article reference'
+      : `Missing Jacqueline slide token(s): ${missingJacquelineTokens.join(', ')}`,
   });
   const imageSources = [...html.matchAll(/<img[^>]+src=["']([^"']*)["']/gi)].map(m => m[1]);
   const badImages = imageSources.filter(src =>
@@ -4784,8 +4801,8 @@ ${buildPortfolioSection(d)}
 <div class="back-cover" style="background:#3A4B5B;position:relative;overflow:hidden">
 
 <!-- Jackie Kennedy background image overlay -->
-<div style="position:absolute;top:48px;left:54px;width:168px;height:224px;border:2px solid rgba(168,144,53,0.55);box-shadow:0 18px 32px rgba(0,0,0,0.22);overflow:hidden;background:#23313B;z-index:1">
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Jackie_Kennedy_Color_Portrait_%283x4_cropped%29.jpg/512px-Jackie_Kennedy_Color_Portrait_%283x4_cropped%29.jpg" alt="Jacqueline Kennedy Onassis portrait" style="width:100%;height:100%;object-fit:cover;display:block">
+<div style="position:absolute;top:44px;left:52px;width:190px;height:252px;border:2px solid rgba(168,144,53,0.7);box-shadow:0 18px 32px rgba(0,0,0,0.24);overflow:hidden;background:#23313B;z-index:1">
+<img src="${JACQUELINE_PORTRAIT_URL}" alt="Jacqueline Kennedy Onassis portrait" style="width:100%;height:100%;object-fit:cover;display:block" onerror="if(this.src!=='${JACQUELINE_PORTRAIT_FALLBACK_URL}'){this.src='${JACQUELINE_PORTRAIT_FALLBACK_URL}'}else{this.parentElement.innerHTML='<div style=&quot;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;color:#D5B24A;font-family:Georgia,serif;font-size:18px;line-height:1.35&quot;>Jacqueline<br>Kennedy<br>Onassis</div>'}">
 </div>
 <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(58,75,91,0.4) 0%,rgba(58,75,91,0.95) 40%,rgba(58,75,91,1) 70%)"></div>
 
@@ -4793,13 +4810,17 @@ ${buildPortfolioSection(d)}
 <div style="position:relative;z-index:1">
 
 <!-- Quote — large, emphasized, center stage -->
-<div style="margin-bottom:32px;max-width:560px;margin-left:210px">
+<div style="margin-bottom:26px;max-width:545px;margin-left:238px">
 <div style="font-size:64px;font-family:'Plus Jakarta Sans',-apple-system,sans-serif;color:#A89035;line-height:0.5;margin-bottom:16px;opacity:0.6">&ldquo;</div>
 <div style="font-family:'Cardo',Georgia,serif;font-style:italic;font-size:29px;color:#fff;line-height:1.45;font-weight:400;letter-spacing:0.2px;text-shadow:0 2px 12px rgba(0,0,0,0.22)">Don\u2019t let it be forgot, that once there was a spot, for one brief shining moment, that was known as <span style="color:#D5B24A;font-weight:700">Camelot</span>.</div>
 <div style="font-size:64px;font-family:'Plus Jakarta Sans',-apple-system,sans-serif;color:#A89035;line-height:0.5;text-align:right;margin-top:12px;opacity:0.6">&rdquo;</div>
 <div style="text-align:right;margin-top:12px">
 <div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:13px;color:#A89035;font-weight:600;font-style:italic">Jacqueline Kennedy</div>
 <div style="font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:1px;margin-top:2px">Life Magazine &nbsp;\u00B7&nbsp; December 6, 1963</div>
+<a href="${VANITY_FAIR_CAMELOT_REFERENCE_URL}" target="_blank" rel="noopener" style="display:inline-block;margin-top:7px;font-size:9px;color:rgba(255,255,255,0.42);letter-spacing:0.8px;text-decoration:none;text-transform:uppercase">Vanity Fair archive reference</a>
+</div>
+<div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(168,144,53,0.25);font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:11.5px;color:rgba(255,255,255,0.72);line-height:1.7;font-style:normal">
+The Camelot idea endures because it pairs grace with stewardship: preserve what makes a place special, face the future clearly, and turn issues into practical solutions before they become crises.
 </div>
 </div>
 
