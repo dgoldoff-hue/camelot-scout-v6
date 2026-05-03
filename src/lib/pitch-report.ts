@@ -50,6 +50,15 @@ export function generatePitchReport(d: MasterReportData): string {
   // Street view URLs
   // Use address-based Street View (no geocode dependency)
   const svUrl = `https://maps.googleapis.com/maps/api/streetview?size=800x500&location=${encodeURIComponent(d.address + ', New York, NY')}&fov=90&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`;
+  const subjectImage = d.buildingPhotos?.exterior?.[0] || d.commercialIntel?.brandingImages?.[0] || svUrl;
+  const factCards = [
+    { label: 'Units', value: d.units ? fmtN(d.units) : 'Verify' },
+    { label: 'Stories', value: d.stories ? fmtN(d.stories) : 'Verify' },
+    { label: 'Built', value: d.yearBuilt ? String(d.yearBuilt) : 'Verify' },
+    { label: 'Type', value: d.propertyType || 'Residential' },
+  ];
+  const amenityHighlights = (d.commercialIntel?.amenities || []).slice(0, 8);
+  const sourceLine = d.commercialIntel?.researchSources?.slice(0, 3).join(' · ') || 'NYC public records and market-source review';
 
   // Dynamic pain points for "A Fresh Set of Eyes" slide
   const hookLines: string[] = [];
@@ -76,16 +85,17 @@ export function generatePitchReport(d: MasterReportData): string {
   body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; color: #1a1f36; font-size: 16px; line-height: 1.6; background: #e0e0e0; }
   
   .slide { width: 1280px; height: 720px; margin: 20px auto; position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
-  .slide-cream { background: #FAF8F5; }
-  .slide-dark { background: #3D4F5F; color: #fff; }
+  .slide-cream { background: radial-gradient(circle at top right, rgba(184,151,58,0.10), transparent 34%), #FAF8F5; }
+  .slide-dark { background: #34444f; color: #fff; }
   
   /* Camelot logo badge — top right */
-  .logo-badge { position: absolute; top: 0; right: 0; width: 130px; height: 80px; background: #B8973A; display: flex; align-items: center; justify-content: center; }
-  .logo-badge-text { color: #fff; font-family: 'Plus Jakarta Sans'; font-size: 14px; font-weight: 700; letter-spacing: 4px; text-align: center; line-height: 1.3; }
-  .logo-badge-sub { font-size: 7px; letter-spacing: 3px; font-weight: 400; display: block; margin-top: 2px; }
+  .logo-badge { position: absolute; top: 0; right: 0; width: 156px; height: 92px; background: #B8973A; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 28px rgba(0,0,0,0.14); z-index: 4; }
+  .logo-badge img { width: 132px; max-height: 58px; object-fit: contain; }
+  .logo-badge-text { color: #111827; font-family: 'Plus Jakarta Sans'; font-size: 15px; font-weight: 700; letter-spacing: 5px; text-align: center; line-height: 1.3; }
+  .logo-badge-sub { font-size: 7px; letter-spacing: 3px; font-weight: 500; display: block; margin-top: 2px; }
   
   /* Section title with gold left bar */
-  .section-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 42px; font-weight: 400; font-style: italic; color: #B8973A; padding-left: 20px; border-left: 4px solid #B8973A; line-height: 1.2; margin-bottom: 24px; }
+  .section-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 46px; font-weight: 600; font-style: italic; color: #B8973A; padding-left: 20px; border-left: 5px solid #B8973A; line-height: 1.05; margin-bottom: 24px; }
   
   /* Navy bold subheading */
   .sub-heading { font-family: 'Plus Jakarta Sans'; font-size: 22px; font-weight: 700; color: #1a2744; margin-bottom: 12px; }
@@ -95,10 +105,10 @@ export function generatePitchReport(d: MasterReportData): string {
   .body-italic { font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; color: #B8973A; font-size: 17px; }
   
   /* Gold-bordered cards */
-  .gold-card { border: 1px solid #B8973A; border-left: 4px solid #B8973A; background: #fff; padding: 20px 24px; border-radius: 2px; margin-bottom: 12px; }
+  .gold-card { border: 1px solid rgba(184,151,58,0.45); border-left: 4px solid #B8973A; background: rgba(255,255,255,0.92); padding: 20px 24px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 14px 32px rgba(26,31,54,0.08); }
   
   /* Stat boxes */
-  .stat-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; text-align: center; }
+  .stat-box { background: rgba(255,255,255,0.94); border: 1px solid rgba(184,151,58,0.25); border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 12px 28px rgba(26,31,54,0.07); }
   .stat-val { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; font-weight: 600; color: #B8973A; }
   .stat-label { font-size: 13px; color: #6b7280; margin-top: 4px; }
   
@@ -136,16 +146,22 @@ export function generatePitchReport(d: MasterReportData): string {
   
   .pad { padding: 50px 60px; }
   .pad-top { padding-top: 50px; }
+  .eyebrow { font-size: 12px; color: #B8973A; text-transform: uppercase; letter-spacing: 2.5px; font-weight: 800; margin-bottom: 10px; }
+  .hero-title { font-family:'Cormorant Garamond',Georgia,serif; font-size: 62px; color:#F4D26A; font-style: italic; font-weight: 700; line-height: 0.98; max-width: 620px; }
+  .hero-card { background: rgba(10,18,30,0.46); border: 1px solid rgba(255,255,255,0.14); border-radius: 14px; padding: 18px 20px; }
+  .pill { display:inline-flex; align-items:center; border:1px solid rgba(184,151,58,0.45); background:rgba(184,151,58,0.10); color:#1a2744; border-radius:999px; padding:7px 11px; font-size:12px; font-weight:700; margin:0 8px 8px 0; }
+  .photo-frame { position:relative; border-radius:18px; overflow:hidden; box-shadow:0 22px 48px rgba(0,0,0,0.28); border:1px solid rgba(184,151,58,0.55); }
+  .photo-frame:after { content:''; position:absolute; inset:0; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.14); pointer-events:none; }
 </style>
 </head>
 <body>
 
 <!-- SLIDE 1: Cover (Dark with Street View background) -->
-<div class="slide slide-dark" style="background:linear-gradient(135deg, rgba(13,34,64,0.85) 0%, rgba(61,79,95,0.80) 100%), url('${svUrl}') center/cover no-repeat; background-size:cover;">
-  <div class="logo-badge"><div class="logo-badge-text">CAMELOT<span class="logo-badge-sub">REALTY GROUP</span></div></div>
+<div class="slide slide-dark" style="background:linear-gradient(110deg, rgba(20,31,43,0.96) 0%, rgba(20,31,43,0.88) 48%, rgba(20,31,43,0.54) 100%), url('${subjectImage}') center/cover no-repeat; background-size:cover;">
+  <div class="logo-badge"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none';this.parentElement.innerHTML='<div class=&quot;logo-badge-text&quot;>CAMELOT<span class=&quot;logo-badge-sub&quot;>REALTY GROUP</span></div>'"></div>
   <div style="display:flex;height:100%">
     <!-- Left side: text -->
-    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:60px 40px 60px 60px">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:68px 40px 62px 64px">
       <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:42px;letter-spacing:10px;font-weight:400;margin-bottom:4px">C A M E L O T</div>
       <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:16px;color:#B8973A;font-style:italic;margin-bottom:50px">Property Management</div>
       <div style="font-size:14px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:3px;margin-bottom:10px">Property Intelligence Report</div>
@@ -161,7 +177,7 @@ export function generatePitchReport(d: MasterReportData): string {
     </div>
     <!-- Right side: building photo -->
     <div style="flex:0 0 440px;display:flex;align-items:center;justify-content:center;padding:40px 50px 40px 0">
-      <img src="${svUrl}" style="width:400px;height:500px;object-fit:cover;border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,0.4);border:2px solid rgba(184,151,58,0.3)" onerror="this.parentElement.style.display='none'" />
+      <div class="photo-frame"><img src="${subjectImage}" style="width:400px;height:500px;object-fit:cover;display:block" onerror="this.src='${svUrl}'" /></div>
     </div>
   </div>
   <div style="position:absolute;bottom:20px;left:60px;right:60px;font-size:11px;color:rgba(255,255,255,0.35);border-top:1px solid rgba(255,255,255,0.1);padding-top:12px">
@@ -184,6 +200,9 @@ export function generatePitchReport(d: MasterReportData): string {
   <div class="logo-badge"><div class="logo-badge-text">CAMELOT<span class="logo-badge-sub">REALTY GROUP</span></div></div>
   <div class="pad">
     <div class="section-title">The Property</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
+      ${factCards.map(card => `<div class="stat-box" style="padding:14px;text-align:left"><div class="stat-label">${card.label}</div><div class="stat-val" style="font-size:30px">${card.value}</div></div>`).join('')}
+    </div>
     <div style="display:flex;gap:40px">
       <div style="flex:1">
         <div class="sub-heading">${d.buildingName || d.address}</div>
@@ -200,7 +219,7 @@ export function generatePitchReport(d: MasterReportData): string {
         ${d.isRentStabilized ? `<div class="body-italic" style="margin-top:12px">Rent stabilized — Camelot has deep DHCR & RGB expertise</div>` : ''}
       </div>
       <div style="flex:0 0 420px">
-        ${svUrl ? `<img src="${svUrl}" style="width:420px;height:280px;object-fit:cover;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.1)" onerror="this.style.display='none'" />` : '<div style="width:420px;height:280px;background:#e5e7eb;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:14px">Building Photo</div>'}
+        <div class="photo-frame"><img src="${subjectImage}" style="width:420px;height:300px;object-fit:cover;display:block" onerror="this.src='${svUrl}'" /></div>
       </div>
     </div>
   </div>
