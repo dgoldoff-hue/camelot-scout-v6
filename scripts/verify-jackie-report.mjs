@@ -8,12 +8,16 @@ const reportCenterFile = resolve(root, 'src/pages/ReportCenter.tsx');
 const instantProposalFile = resolve(root, 'src/pages/InstantProposal.tsx');
 const propertyDetailFile = resolve(root, 'src/components/PropertyDetail.tsx');
 const streetEasyFile = resolve(root, 'src/lib/streeteasy.ts');
+const nycApiFile = resolve(root, 'src/lib/nyc-api.ts');
+const nycViolationsFile = resolve(root, 'src/lib/nyc-violations.ts');
 const source = readFileSync(reportFile, 'utf8');
 const streetEasySource = readFileSync(streetEasyFile, 'utf8');
+const nycApiSource = readFileSync(nycApiFile, 'utf8');
+const nycViolationsSource = readFileSync(nycViolationsFile, 'utf8');
 const reportCenter = readFileSync(reportCenterFile, 'utf8');
 const instantProposal = readFileSync(instantProposalFile, 'utf8');
 const propertyDetail = readFileSync(propertyDetailFile, 'utf8');
-const sourceStack = `${source}\n${streetEasySource}`;
+const sourceStack = `${source}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}`;
 
 const requiredTokens = [
   ['201 East 79 known profile', "canonicalAddress: '201 East 79th Street, New York, NY 10075'"],
@@ -27,6 +31,9 @@ const requiredTokens = [
   ['PropertyShark source', 'PropertyShark'],
   ['Violation source coverage table', 'Violation Source Coverage'],
   ['DOB BIS and DOB NOW coverage', 'DOB BIS &amp; DOB NOW'],
+  ['DOB NOW FISP facade coverage', 'DOB NOW Safety / FISP facade filings'],
+  ['DOB NOW facade Open Data endpoint', 'xubg-57si'],
+  ['Violation address parser normalization', 'streetLikeClause'],
   ['DHCR rent stabilization coverage', 'DHCR / rent stabilization'],
   ['311 service request coverage', '311 Service Requests'],
   ['Court index coverage', 'NYS eCourts / WebCivil'],

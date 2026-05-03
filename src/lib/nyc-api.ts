@@ -23,6 +23,7 @@ const ENDPOINTS = {
   acrisLegals: `${NYC_BASE}/8h5j-fqxa.json`,
   acrisMaster: `${NYC_BASE}/bnx9-e6tj.json`,
   acrisParties: `${NYC_BASE}/636b-3b5g.json`,
+  facadeFilings: `${NYC_BASE}/xubg-57si.json`,
 };
 
 function socrataUrl(endpoint: string, params: Record<string, string | number>): string {
@@ -601,6 +602,42 @@ export interface DOFAbatementData {
   raw: any;
 }
 
+/**
+ * Fetch DOB NOW Safety Facade / FISP compliance filings.
+ * Source: DOB NOW: Safety - Facades Compliance Filings (NYC Open Data xubg-57si).
+ */
+export async function fetchFacadeFilings(address: string, borough?: string, bbl?: string): Promise<any[]> {
+  try {
+    const { number, street } = parseAddress(address);
+    const tokens = streetSearchTokens(street);
+    const boroughName = borough?.toUpperCase() === 'MN' || borough?.toLowerCase() === 'manhattan' ? 'MANHATTAN' : borough?.toUpperCase();
+    const clauses: string[] = [];
+    if (bbl) {
+      const parts = parseBBL(bbl);
+      if (parts) clauses.push(`(block='${String(parseInt(parts.block, 10))}' AND lot='${String(parseInt(parts.lot, 10))}')`);
+    }
+    if (number && tokens.length) {
+      const streetClause = tokens
+        .filter(token => token !== 'STREET' && token !== 'AVENUE')
+        .map(token => `upper(street_name) like '%${escapeSoql(token)}%'`)
+        .join(' AND ');
+      clauses.push(`(house_no='${escapeSoql(number)}'${streetClause ? ` AND ${streetClause}` : ''}${boroughName ? ` AND borough='${escapeSoql(boroughName)}'` : ''})`);
+    }
+    if (clauses.length === 0) return [];
+    const where = clauses.join(' OR ');
+    const res = await fetch(socrataUrl(ENDPOINTS.facadeFilings, {
+      $limit: 50,
+      $order: 'cycle DESC',
+      $where: where,
+    }));
+    if (!res.ok) throw new Error(`Facade filings API error: ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error('Facade filings fetch error:', err);
+    return [];
+  }
+}
+
 export interface TaxLienData {
   hasLien: boolean;
   sourceStatus: string;
@@ -865,6 +902,10 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
 
   // Extract key data from DOF
   const dof = dofData[0];
+  const facadeFilings = await fetchFacadeFilings(address, borough, dof?.bbl).catch((err) => {
+    console.error('Facade filings fetch in report failed:', err);
+    return [] as any[];
+  });
 
   // Address matching can miss condo parent lots when users include city/state
   // variations. If DOF found the BBL, use it as the authoritative HPD fallback.
@@ -1012,11 +1053,17 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
       count: permits.length,
       items: permits.slice(0, 20),
       hasRecent: permits.some((p) => {
-        const date = new Date(p.filing_date);
+        const date = new Date((p as any).pre__filing_date || p.filing_date || (p as any).latest_action_date || '');
         const twoYearsAgo = new Date();
         twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
         return date > twoYearsAgo;
       }),
+    },
+    facade: {
+      filings: facadeFilings,
+      count: facadeFilings.length,
+      issueCount: facadeFilings.filter((f: any) => /unsafe|swarmp|no report|late|failure/i.test(`${f.current_status || ''} ${f.filing_status || ''}`)).length,
+      latestStatus: facadeFilings[0]?.current_status || facadeFilings[0]?.filing_status || '',
     },
     energy: energy[0]
       ? {

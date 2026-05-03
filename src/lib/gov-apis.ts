@@ -125,7 +125,12 @@ export async function fetchECBViolations(boro: string, block: string, lot: strin
 export async function fetchHousingLitigation(boroid: string, housenumber: string, streetname: string): Promise<HousingLitigation[]> {
   try {
     const upperStreet = streetname.toUpperCase().replace(/'/g, "''");
-    const where = `boroid='${boroid}' AND housenumber='${housenumber}' AND upper(streetname) like '%25${encodeURIComponent(upperStreet)}%25'`;
+    const tokens = upperStreet
+      .replace(/\b(STREET|AVENUE|PLACE|ROAD|DRIVE|BOULEVARD|COURT|LANE|TERRACE)\b/g, '')
+      .split(/\s+/)
+      .filter(Boolean);
+    const streetClause = tokens.map(token => `upper(streetname) like '%${token}%'`).join(' AND ');
+    const where = `boroid='${boroid}' AND housenumber='${housenumber}'${streetClause ? ` AND ${streetClause}` : ''}`;
     const url = `${NYC_LITIGATION_ENDPOINT}?$limit=100&$order=caseopendate DESC&$where=${encodeURIComponent(where)}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Housing Litigation API error: ${res.status}`);

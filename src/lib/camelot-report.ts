@@ -81,6 +81,8 @@ export interface MasterReportData {
   // Compliance source coverage
   dobViolationCount: number;
   dobViolationOpen: number;
+  facadeFilingCount: number;
+  facadeIssueCount: number;
   dhcrRecordCount: number;
   courtIndexCount: number;
   acrisLienClaimCount: number;
@@ -339,6 +341,8 @@ function buildComplianceSourceChecks(input: {
   const hpdTotal = input.raw.violations?.total || 0;
   const dobOpen = input.violationSummary?.dobOpen || 0;
   const ecbCount = Math.max(input.raw.ecb?.count || 0, input.violationSummary?.ecbOpen || 0);
+  const facadeCount = input.raw.facade?.count || 0;
+  const facadeIssueCount = input.raw.facade?.issueCount || 0;
   const litigationCount = input.raw.litigation?.count || 0;
   const dhcrCount = input.raw.rentStabilization?.data?.length || 0;
   const taxLienCount = input.raw.taxLiens?.recordCount || 0;
@@ -355,12 +359,21 @@ function buildComplianceSourceChecks(input: {
     },
     {
       source: 'DOB BIS & DOB NOW',
-      status: dobOpen > 0 || (input.raw.permits?.count || 0) > 0 ? 'loaded' : 'searched',
-      count: dobOpen,
+      status: dobOpen > 0 || (input.raw.permits?.count || 0) > 0 || facadeCount > 0 ? 'loaded' : 'searched',
+      count: dobOpen + (input.raw.permits?.count || 0) + facadeCount,
       detail: dobOpen > 0
-        ? `${dobOpen} open DOB violation signal(s) from NYC Open Data.`
-        : `DOB violation query returned no open rows; permit scan returned ${input.raw.permits?.count || 0} filing row(s). Verify BIS Property Profile and DOB NOW manually.`,
+        ? `${dobOpen} open DOB violation signal(s), ${input.raw.permits?.count || 0} permit row(s), and ${facadeCount} DOB NOW/FISP facade filing row(s) loaded.`
+        : `DOB violation query returned no open rows; permit scan returned ${input.raw.permits?.count || 0} filing row(s); DOB NOW/FISP facade scan returned ${facadeCount} row(s). Verify BIS Property Profile and DOB NOW manually.`,
       url: 'https://www.nyc.gov/site/buildings/dob/find-building-data.page',
+    },
+    {
+      source: 'DOB NOW Safety / FISP facade filings',
+      status: facadeCount > 0 ? 'loaded' : 'searched',
+      count: facadeCount,
+      detail: facadeCount > 0
+        ? `${facadeCount} facade filing row(s) loaded; ${facadeIssueCount} potential unsafe/SWARMP/no-report/late signal(s). Latest status: ${input.raw.facade?.latestStatus || 'not shown'}.`
+        : 'No DOB NOW Safety facade rows returned by address/BBL query; verify DOB NOW Public Portal for FISP/LL11 cycle status.',
+      url: 'https://data.cityofnewyork.us/api/views/xubg-57si',
     },
     {
       source: 'ECB/OATH',
@@ -430,8 +443,8 @@ function buildComplianceSourceChecks(input: {
     },
   ];
 
-  const automatedRiskRows = hpdTotal + dobOpen + ecbCount + litigationCount + taxLienCount + acrisCount + input.complaint311Count;
-  const hasCorePublicSources = sourceChecks.slice(0, 8).every(check => check.status === 'loaded' || check.status === 'searched');
+  const automatedRiskRows = hpdTotal + dobOpen + ecbCount + litigationCount + taxLienCount + acrisCount + input.complaint311Count + facadeCount + (input.raw.permits?.count || 0);
+  const hasCorePublicSources = sourceChecks.slice(0, 9).every(check => check.status === 'loaded' || check.status === 'searched');
   const suspiciousAllZero = input.units >= 10 && automatedRiskRows === 0;
   const status = !hasCorePublicSources || suspiciousAllZero ? 'blocked' : sourceChecks.some(check => check.status === 'manual_required') ? 'needs_review' : 'verified';
   return { checks: sourceChecks, status };
@@ -1791,6 +1804,8 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     isRentStabilized: raw.rentStabilization?.isStabilized || false,
     dobViolationCount: violationSummary?.violations.filter(v => v.source === 'DOB').length || 0,
     dobViolationOpen: violationSummary?.dobOpen || 0,
+    facadeFilingCount: raw.facade?.count || 0,
+    facadeIssueCount: raw.facade?.issueCount || 0,
     dhcrRecordCount: raw.rentStabilization?.data?.length || 0,
     courtIndexCount: raw.litigation?.count || 0,
     acrisLienClaimCount,
@@ -1991,9 +2006,9 @@ export function runReportQA(d: MasterReportData): QACheckResult {
   
   // 7. Violations and compliance source coverage
   const complianceSources = d.complianceSourceChecks || [];
-  const coreComplianceSources = ['HPD Online', 'DOB BIS', 'ECB/OATH', 'DOF tax liens', 'ACRIS', 'DHCR', '311 Service Requests'];
+  const coreComplianceSources = ['HPD Online', 'DOB BIS', 'DOB NOW Safety', 'ECB/OATH', 'DOF tax liens', 'ACRIS', 'DHCR', '311 Service Requests'];
   const missingCoreComplianceSources = coreComplianceSources.filter(source => !complianceSources.some(check => check.source.includes(source)));
-  const automatedRiskRows = d.violationsTotal + d.dobViolationOpen + d.ecbCount + d.litigationCount + d.taxLienRecordCount + d.acrisLienClaimCount + d.complaint311Count;
+  const automatedRiskRows = d.violationsTotal + d.dobViolationOpen + d.ecbCount + d.litigationCount + d.taxLienRecordCount + d.acrisLienClaimCount + d.complaint311Count + d.facadeFilingCount + d.permitsCount;
   const suspiciousAllZero = d.units >= 10 && automatedRiskRows === 0;
   checks.push({
     name: 'Violation Source Coverage',
@@ -2002,7 +2017,7 @@ export function runReportQA(d: MasterReportData): QACheckResult {
       ? `Missing source check(s): ${missingCoreComplianceSources.join(', ')}`
       : suspiciousAllZero
         ? 'All automated compliance/lien/litigation/311 sources returned zero for a multi-unit NYC building; manual verification required before release'
-        : `${d.violationsTotal} HPD, ${d.dobViolationOpen} DOB open, ${d.ecbCount} ECB/OATH, ${d.litigationCount} litigation, ${d.taxLienRecordCount} DOF tax lien, ${d.acrisLienClaimCount} ACRIS lien/claim, ${d.complaint311Count} 311 signal(s)`,
+        : `${d.violationsTotal} HPD, ${d.dobViolationOpen} DOB open, ${d.ecbCount} ECB/OATH, ${d.facadeFilingCount} FISP/facade, ${d.permitsCount} DOB permit, ${d.litigationCount} litigation, ${d.taxLienRecordCount} DOF tax lien, ${d.acrisLienClaimCount} ACRIS lien/claim, ${d.complaint311Count} 311 signal(s)`,
   });
   
   // 8. Fee calculation sanity check
@@ -2160,6 +2175,7 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     'Violation Source Coverage',
     'HPD',
     'DOB BIS &amp; DOB NOW',
+    'DOB NOW Safety / FISP facade filings',
     'ECB/OATH',
     'DHCR / rent stabilization',
     'DOF tax liens',
@@ -2176,7 +2192,7 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
       ? `Missing compliance token(s): ${missingComplianceTokens.join(', ')}`
       : d.complianceReleaseStatus === 'blocked'
         ? 'Compliance coverage blocked release; every automated public-risk source returned zero or source coverage is incomplete'
-        : 'HPD, DOB, ECB/OATH, DHCR, DOF, ACRIS, 311, courts, and LexisNexis/manual enrichment are represented',
+        : 'HPD, DOB, DOB NOW/FISP, ECB/OATH, DHCR, DOF, ACRIS, 311, courts, and LexisNexis/manual enrichment are represented',
   });
   checks.push({
     name: 'Commercial / Amenity Research',

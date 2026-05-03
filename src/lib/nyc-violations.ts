@@ -11,6 +11,21 @@ const BORO_CODES: Record<string, string> = {
   'STATEN ISLAND': '5', 'SI': '5',
 };
 
+const NAMED_AVENUE_MAP: Record<string, string> = {
+  FIRST: '1',
+  SECOND: '2',
+  THIRD: '3',
+  FOURTH: '4',
+  FIFTH: '5',
+  SIXTH: '6',
+  SEVENTH: '7',
+  EIGHTH: '8',
+  NINTH: '9',
+  TENTH: '10',
+  ELEVENTH: '11',
+  TWELFTH: '12',
+};
+
 const HPD_CLASS_SEVERITY: Record<string, { level: number; label: string; cureDays: number }> = {
   'C': { level: 3, label: 'IMMEDIATELY HAZARDOUS', cureDays: 1 },
   'B': { level: 2, label: 'HAZARDOUS', cureDays: 30 },
@@ -99,17 +114,33 @@ async function fetchNYCData(url: string, params: Record<string, string>): Promis
 }
 
 function parseAddress(address: string): { houseNum: string; street: string; streetClean: string } {
-  const parts = address.trim().split(/\s+/);
-  const houseNum = parts[0] || '';
-  const street = parts.slice(1).join(' ').toUpperCase();
-  let streetClean = street;
-  for (const suffix of [' STREET', ' ST', ' AVENUE', ' AVE', ' PLACE', ' PL', ' ROAD', ' RD', ' DRIVE', ' DR', ' BOULEVARD', ' BLVD']) {
-    if (streetClean.endsWith(suffix)) {
-      streetClean = streetClean.slice(0, -suffix.length);
-      break;
-    }
+  let clean = address.toUpperCase().split(',')[0].trim();
+  clean = clean.replace(/\bAVE\b/g, 'AVENUE').replace(/\bST\b/g, 'STREET');
+  clean = clean.replace(/\bBLVD\b/g, 'BOULEVARD').replace(/\bPL\b/g, 'PLACE').replace(/\bRD\b/g, 'ROAD').replace(/\bDR\b/g, 'DRIVE');
+  for (const [word, num] of Object.entries(NAMED_AVENUE_MAP)) {
+    clean = clean.replace(new RegExp(`\\b${word}\\s+(AVENUE|AVE)\\b`, 'g'), `${num} AVENUE`);
   }
+  clean = clean.replace(/(\d+)\s*(ST|ND|RD|TH)\b/g, '$1');
+  clean = clean.replace(/\s+(NEW YORK CITY|NEW YORK|NYC|NY|MANHATTAN|BROOKLYN|QUEENS|BRONX|STATEN ISLAND)\s*$/g, '');
+  clean = clean.replace(/\s{2,}/g, ' ').trim();
+
+  const match = clean.match(/\b(\d+[-\d]*)\s+(.+)$/);
+  const houseNum = match?.[1] || '';
+  const street = (match?.[2] || clean).trim();
+  const streetClean = street
+    .replace(/\b(STREET|AVENUE|PLACE|ROAD|DRIVE|BOULEVARD|COURT|LANE|TERRACE)\b/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
   return { houseNum, street, streetClean };
+}
+
+function streetLikeClause(field: string, street: string): string {
+  const tokens = street
+    .replace(/\b(STREET|AVENUE|PLACE|ROAD|DRIVE|BOULEVARD|COURT|LANE|TERRACE)\b/g, '')
+    .split(/\s+/)
+    .map(t => t.trim())
+    .filter(Boolean);
+  return tokens.map(token => `upper(${field}) like '%${token.replace(/'/g, "''")}%'`).join(' AND ');
 }
 
 function getPlayers(desc: string, vClass: string): string[] {
@@ -137,27 +168,35 @@ function getCost(desc: string, source: string): [number, number] {
 export async function searchViolations(address: string, borough: string): Promise<ViolationSummary> {
   const boroId = BORO_CODES[borough.toUpperCase()] || borough;
   const { houseNum, street, streetClean } = parseAddress(address);
+  const hpdStreetWhere = streetLikeClause('streetname', street);
+  const dobStreetWhere = streetLikeClause('street', street);
+  const ecbStreetWhere = streetLikeClause('respondent_street', street);
 
   // Fetch HPD violations
   const hpdData = await fetchNYCData('https://data.cityofnewyork.us/resource/wvxf-dwi5.json', {
-    housenumber: houseNum,
-    boroid: boroId,
+    '$where': [
+      houseNum ? `housenumber='${houseNum.replace(/'/g, "''")}'` : '',
+      `boroid='${boroId}'`,
+      hpdStreetWhere,
+    ].filter(Boolean).join(' AND '),
   });
 
   // Fetch DOB violations
   const dobData = await fetchNYCData('https://data.cityofnewyork.us/resource/3h2n-5cm9.json', {
-    '$where': `house_number='${houseNum}' AND boro='${boroId}' AND upper(street) like '%${streetClean}%'`,
+    '$where': [
+      houseNum ? `house_number='${houseNum.replace(/'/g, "''")}'` : '',
+      `boro='${boroId}'`,
+      dobStreetWhere || (streetClean ? `upper(street) like '%${streetClean.replace(/'/g, "''")}%'` : ''),
+    ].filter(Boolean).join(' AND '),
   });
 
   // Fetch ECB violations
-  let ecbData = await fetchNYCData('https://data.cityofnewyork.us/resource/6bgk-3dad.json', {
-    respondent_house_number: houseNum,
+  const ecbData = await fetchNYCData('https://data.cityofnewyork.us/resource/6bgk-3dad.json', {
+    '$where': [
+      houseNum ? `respondent_house_number='${houseNum.replace(/'/g, "''")}'` : '',
+      ecbStreetWhere,
+    ].filter(Boolean).join(' AND '),
   });
-  if (streetClean && ecbData.length > 0) {
-    ecbData = ecbData.filter((r: any) =>
-      (r.respondent_street || '').toUpperCase().includes(streetClean)
-    );
-  }
 
   const now = new Date();
   const violations: ViolationResult[] = [];
