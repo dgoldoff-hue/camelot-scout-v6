@@ -60,6 +60,7 @@ const requiredTokens = [
   ['Jacqueline fallback image', 'JACQUELINE_PORTRAIT_FALLBACK_URL'],
   ['Jacqueline Vanity Fair article', 'VANITY_FAIR_CAMELOT_REFERENCE_URL'],
   ['Jacqueline portrait QA gate', 'Jacqueline Portrait Slide'],
+  ['Jacqueline values language', 'grace, stewardship, taste, loyalty, discretion'],
   ['Legal terms URL check', 'LEGAL_TERMS_URL'],
   ['No self-managed without explicit source', 'Self-managed language requires an explicit source'],
 ];

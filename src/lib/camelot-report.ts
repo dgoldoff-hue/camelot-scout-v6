@@ -4852,7 +4852,7 @@ ${buildPortfolioSection(d)}
 <a href="${VANITY_FAIR_CAMELOT_REFERENCE_URL}" target="_blank" rel="noopener" style="display:inline-block;margin-top:7px;font-size:9px;color:rgba(255,255,255,0.42);letter-spacing:0.8px;text-decoration:none;text-transform:uppercase">Vanity Fair archive reference</a>
 </div>
 <div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(168,144,53,0.25);font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:11.5px;color:rgba(255,255,255,0.72);line-height:1.7;font-style:normal">
-The Camelot idea endures because it pairs grace with stewardship: preserve what makes a place special, face the future clearly, and turn issues into practical solutions before they become crises.
+We use this quote because Jacqueline Kennedy&rsquo;s Camelot vision stood for grace, stewardship, taste, loyalty, discretion, and the protection of something rare. Those same values guide how Camelot treats every client relationship: preserve what makes each property special, act with dignity under pressure, solve problems before they grow, and protect the board, residents, and long-term value of the community.
 </div>
 </div>
 
