@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Search, CheckCircle, FileText, Edit3, Download, Printer, Mail, Loader2, ChevronRight, ArrowLeft, Zap, X, ExternalLink, Copy } from 'lucide-react';
-import { buildMasterReport, generateBrochureHTML, type MasterReportData } from '@/lib/camelot-report';
+import { buildMasterReport, generateBrochureHTML, validateJackieReport, type MasterReportData, type QACheckResult } from '@/lib/camelot-report';
 import { generatePitchReport } from '@/lib/pitch-report';
 import toast from 'react-hot-toast';
 
@@ -44,7 +44,7 @@ function ReportModal({ html, title, onClose }: { html: string; title: string; on
 }
 
 // Demo property constants
-const DEMO_ADDRESS = '301 East 79th Street';
+const DEMO_ADDRESS = '201 East 79th Street';
 const DEMO_BOROUGH = 'Manhattan';
 
 export default function InstantProposal() {
@@ -58,6 +58,7 @@ export default function InstantProposal() {
   const [jackieHTML, setJackieHTML] = useState('');
   const [pitchHTML, setPitchHTML] = useState('');
   const [fullJackieHTML, setFullJackieHTML] = useState('');
+  const [releaseQA, setReleaseQA] = useState<QACheckResult | null>(null);
   const [showJackieModal, setShowJackieModal] = useState(false);
   const [showProposalModal, setShowProposalModal] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -72,6 +73,7 @@ export default function InstantProposal() {
     try {
       const data = await buildMasterReport(address.trim(), borough || undefined);
       setReportData(data);
+      setReleaseQA(null);
       setStep('verify');
       toast.success('Property data loaded');
     } catch (e: unknown) {
@@ -98,8 +100,9 @@ export default function InstantProposal() {
     try {
       const data = await buildMasterReport(DEMO_ADDRESS, DEMO_BOROUGH);
       setReportData(data);
+      setReleaseQA(null);
       setStep('verify');
-      toast.success('Demo property loaded: 301 East 79th Street');
+      toast.success('Demo property loaded: 201 East 79th Street');
     } catch (e: unknown) {
       toast.error('Demo load failed — NYC APIs may be unavailable. Try again shortly.');
     } finally {
@@ -114,11 +117,17 @@ export default function InstantProposal() {
     try {
       const pitchHtml = generatePitchReport(reportData);
       const fullHtml = generateBrochureHTML(reportData);
-      setJackieHTML(pitchHtml);
+      const qa = validateJackieReport(reportData, fullHtml);
+      setReleaseQA(qa);
+      setJackieHTML(qa.failures > 0 ? fullHtml : pitchHtml);
       setPitchHTML(pitchHtml);
       setFullJackieHTML(fullHtml);
       setStep('jackie');
-      toast.success('Jackie report generated');
+      if (qa.failures > 0) {
+        toast.error(`Jackie opened for internal review with ${qa.failures} blocker(s). External proposal export is locked.`, { duration: 7000 });
+      } else {
+        toast.success(qa.warnings > 0 ? `Jackie report generated with ${qa.warnings} review warning(s)` : 'Jackie report verified for release');
+      }
     } catch (e: any) {
       toast.error('Failed: ' + (e.message || 'Unknown error'));
     } finally {
@@ -129,6 +138,10 @@ export default function InstantProposal() {
   // Step 3→4: Generate proposal draft
   const handleGenerateDraft = () => {
     if (!reportData) return;
+    if (releaseQA?.failures) {
+      toast.error('Proposal draft locked until Jackie blockers are cleared. Use Full Report (Internal) to review the issues.', { duration: 7000 });
+      return;
+    }
     // Render Jackie HTML in a hidden iframe to extract the proposal
     const iframe = document.createElement('iframe');
     iframe.style.cssText = 'position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none;';
@@ -178,6 +191,10 @@ export default function InstantProposal() {
 
   // Export: Download PDF directly (no popup)
   const handleDownloadPDF = async () => {
+    if (releaseQA?.failures) {
+      toast.error('PDF export locked until Jackie blockers are cleared.');
+      return;
+    }
     const content = getDraftContent();
     if (!content) { toast.error('No proposal content'); return; }
     setPdfLoading(true);
@@ -212,6 +229,10 @@ export default function InstantProposal() {
 
   // Export: Download HTML
   const handleDownloadHTML = () => {
+    if (releaseQA?.failures) {
+      toast.error('HTML export locked until Jackie blockers are cleared.');
+      return;
+    }
     const content = getDraftContent();
     const blob = new Blob([content], { type: 'text/html' });
     const a = document.createElement('a');
@@ -224,6 +245,10 @@ export default function InstantProposal() {
 
   // Export: Print using hidden iframe (works on mobile — triggers native print sheet)
   const handlePrint = () => {
+    if (releaseQA?.failures) {
+      toast.error('Print export locked until Jackie blockers are cleared.');
+      return;
+    }
     const content = getDraftContent();
     if (!content) return;
     const iframe = document.createElement('iframe');
@@ -246,6 +271,10 @@ export default function InstantProposal() {
 
   // Export: Email — build email body, copy to clipboard + open mailto link
   const handleEmail = async () => {
+    if (releaseQA?.failures) {
+      toast.error('Email export locked until Jackie blockers are cleared.');
+      return;
+    }
     const buildingName = reportData?.buildingName || 'Property';
     const emailBody =
       `Dear Board,\n\n` +
@@ -383,7 +412,7 @@ export default function InstantProposal() {
               Try Demo
             </button>
           </div>
-          <p className="text-xs text-gray-400 mt-3">Demo loads 301 East 79th Street, Manhattan</p>
+          <p className="text-xs text-gray-400 mt-3">Demo loads 201 East 79th Street, Manhattan</p>
         </div>
       )}
 
@@ -430,7 +459,7 @@ export default function InstantProposal() {
               <span className="text-gray-500">Year Built:</span> <strong>{d.yearBuilt}</strong>
             </div>
             <div className="border border-gray-100 rounded-lg p-3">
-              <span className="text-gray-500">Management:</span> <strong>{d.managementCompany || 'Unknown'}</strong>
+              <span className="text-gray-500">Management:</span> <strong>{d.managementCompany || 'Management to verify'}</strong>
             </div>
             <div className="border border-gray-100 rounded-lg p-3">
               <span className="text-gray-500">Owner:</span> <strong>{d.registrationOwner || d.dofOwner || 'Unknown'}</strong>
@@ -469,9 +498,42 @@ export default function InstantProposal() {
             <CheckCircle size={20} className="text-green-600" />
             <div>
               <p className="font-semibold text-green-800 text-sm">Jackie report ready — {d?.buildingName}</p>
-              <p className="text-xs text-green-600">{d?.units} units · {d?.violationsOpen} open violations · Grade {d?.scoutGrade} · {d?.propertyType} · Fee ${d?.monthlyFee.toLocaleString()}/mo · Mgmt: {d?.managementCompany || 'Self-Managed'}</p>
+              <p className="text-xs text-green-600">{d?.units} units · {d?.violationsOpen} open violations · Grade {d?.scoutGrade} · {d?.propertyType} · Fee ${d?.monthlyFee.toLocaleString()}/mo · Mgmt: {d?.managementCompany || 'Management to verify'}</p>
             </div>
           </div>
+
+          {releaseQA && (
+            <div className={`border rounded-lg p-4 mb-4 ${
+              releaseQA.failures > 0
+                ? 'bg-red-50 border-red-200'
+                : releaseQA.warnings > 0
+                  ? 'bg-amber-50 border-amber-200'
+                  : 'bg-green-50 border-green-200'
+            }`}>
+              <div className="flex items-start gap-3">
+                {releaseQA.failures > 0 ? (
+                  <X size={18} className="text-red-600 mt-0.5" />
+                ) : (
+                  <CheckCircle size={18} className="text-green-600 mt-0.5" />
+                )}
+                <div className="min-w-0">
+                  <p className={`text-sm font-semibold ${releaseQA.failures > 0 ? 'text-red-800' : 'text-green-800'}`}>
+                    Jackie Verified Release {releaseQA.failures > 0 ? 'Locked' : 'Ready'}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {releaseQA.failures > 0
+                      ? 'Internal review is available. Board-facing drafts, PDF, HTML, print, and email exports stay locked until these checks pass.'
+                      : 'External proposal actions are available. Warnings should still be reviewed before sending.'}
+                  </p>
+                  {(releaseQA.failures > 0 ? releaseQA.checks.filter(c => c.status === 'fail') : releaseQA.checks.filter(c => c.status === 'warn')).slice(0, 4).map((check) => (
+                    <p key={`${check.name}-${check.detail}`} className="text-xs text-gray-700 mt-1">
+                      <strong>{check.name}:</strong> {check.detail}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Inline Jackie report preview */}
           <div className="border border-gray-200 rounded-xl overflow-hidden mb-4" style={{ height: '50vh' }}>

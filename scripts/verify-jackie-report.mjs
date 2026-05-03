@@ -5,8 +5,12 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const reportFile = resolve(root, 'src/lib/camelot-report.ts');
 const reportCenterFile = resolve(root, 'src/pages/ReportCenter.tsx');
+const instantProposalFile = resolve(root, 'src/pages/InstantProposal.tsx');
+const propertyDetailFile = resolve(root, 'src/components/PropertyDetail.tsx');
 const source = readFileSync(reportFile, 'utf8');
 const reportCenter = readFileSync(reportCenterFile, 'utf8');
+const instantProposal = readFileSync(instantProposalFile, 'utf8');
+const propertyDetail = readFileSync(propertyDetailFile, 'utf8');
 
 const requiredTokens = [
   ['201 East 79 known profile', "canonicalAddress: '201 East 79th Street, New York, NY 10075'"],
@@ -54,11 +58,20 @@ const workflowTokens = [
   ['unlocked release language', 'Release unlocked. Jackie verified'],
   ['pitch preview gated', 'const releaseHtml = generateBrochureHTML(d);'],
   ['release QA computed', 'const releaseQA = useMemo'],
+  ['instant proposal validates Jackie', 'validateJackieReport(reportData, fullHtml)'],
+  ['instant proposal locks external draft', 'Proposal draft locked until Jackie blockers are cleared'],
+  ['property detail validates Jackie', 'validateJackieReport(data, html)'],
+  ['property detail remains internal-accessible', 'Jackie internal review opened with'],
 ];
 
+const workflowSource = [reportCenter, instantProposal, propertyDetail].join('\n');
 const workflowFailures = workflowTokens
-  .filter(([, token]) => !reportCenter.includes(token))
+  .filter(([, token]) => !workflowSource.includes(token))
   .map(([label, token]) => `${label}: missing "${token}"`);
+
+if (instantProposal.includes("Mgmt: {d?.managementCompany || 'Self-Managed'}")) {
+  workflowFailures.push('instant proposal self-managed fallback: forbidden token still present');
+}
 
 if (workflowFailures.length) {
   console.error('Jackie verified-release workflow check failed:');

@@ -4,6 +4,7 @@ import { fetchFullBuildingReport } from '@/lib/nyc-api';
 import IntelligenceReportPDF from '@/components/IntelligenceReportPDF';
 import LeadCaptureModal from '@/components/LeadCaptureModal';
 import { pdf } from '@react-pdf/renderer';
+import toast from 'react-hot-toast';
 
 interface GeneratedReport {
   id: string;
@@ -50,6 +51,7 @@ export default function Reports() {
       setHistory(prev => [report, ...prev]);
     } catch (err) {
       console.error('Report generation failed:', err);
+      toast.error('Report generation failed. Verify the address and borough, then try again.');
     } finally {
       setLoading(false);
     }
@@ -74,6 +76,7 @@ export default function Reports() {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('PDF download failed:', err);
+      toast.error('PDF download failed. Please regenerate the report and try again.');
     } finally {
       setDownloading(false);
     }
@@ -175,11 +178,11 @@ export default function Reports() {
           <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-xs text-gray-500 uppercase font-medium">Market Value</p>
-              <p className="text-xl font-bold text-gray-900">{reportData.dof ? `$${(reportData.dof.marketValue / 1e6).toFixed(1)}M` : 'N/A'}</p>
+              <p className="text-xl font-bold text-gray-900">{reportData.dof?.marketValue ? `$${(reportData.dof.marketValue / 1e6).toFixed(1)}M` : 'To verify'}</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-xs text-gray-500 uppercase font-medium">Units</p>
-              <p className="text-xl font-bold text-gray-900">{reportData.dof?.units || 'N/A'}</p>
+              <p className="text-xl font-bold text-gray-900">{reportData.dof?.units || 'To verify'}</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-xs text-gray-500 uppercase font-medium">Year Built</p>
@@ -191,17 +194,17 @@ export default function Reports() {
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-xs text-gray-500 uppercase font-medium">HPD Violations</p>
-              <p className={`text-xl font-bold ${reportData.violations.total > 10 ? 'text-red-600' : reportData.violations.total > 0 ? 'text-orange-500' : 'text-green-600'}`}>{reportData.violations.total}</p>
-              <p className="text-xs text-gray-400">{reportData.violations.open} open</p>
+              <p className={`text-xl font-bold ${(reportData.violations?.total || 0) > 10 ? 'text-red-600' : (reportData.violations?.total || 0) > 0 ? 'text-orange-500' : 'text-green-600'}`}>{reportData.violations?.total ?? 'To verify'}</p>
+              <p className="text-xs text-gray-400">{reportData.violations?.open ?? 'To verify'} open</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-xs text-gray-500 uppercase font-medium">ECB Violations</p>
-              <p className={`text-xl font-bold ${reportData.ecb.count > 0 ? 'text-orange-600' : 'text-green-600'}`}>{reportData.ecb.count}</p>
-              <p className="text-xs text-gray-400">${reportData.ecb.totalPenaltyBalance.toLocaleString()} penalties</p>
+              <p className={`text-xl font-bold ${(reportData.ecb?.count || 0) > 0 ? 'text-orange-600' : 'text-green-600'}`}>{reportData.ecb?.count ?? 'To verify'}</p>
+              <p className="text-xs text-gray-400">${(reportData.ecb?.totalPenaltyBalance || 0).toLocaleString()} penalties</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-xs text-gray-500 uppercase font-medium">DOB Permits</p>
-              <p className="text-xl font-bold text-blue-600">{reportData.permits.count}</p>
+              <p className="text-xl font-bold text-blue-600">{reportData.permits?.count ?? 'To verify'}</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-xs text-gray-500 uppercase font-medium">Energy Star</p>
@@ -238,7 +241,7 @@ export default function Reports() {
           </div>
 
           {/* Ownership */}
-          {reportData.acris && reportData.acris.deeds.length > 0 && (
+          {reportData.acris && (reportData.acris.deeds || []).length > 0 && (
             <div className="px-6 pb-4">
               <h3 className="text-sm font-semibold text-gray-700 uppercase mb-3">Ownership History</h3>
               <div className="bg-gray-50 rounded-lg p-4 space-y-2">
@@ -251,13 +254,13 @@ export default function Reports() {
                 {reportData.acris.lastSaleSeller && (
                   <p className="text-sm"><span className="font-medium">Seller:</span> {reportData.acris.lastSaleSeller}</p>
                 )}
-                <p className="text-sm text-gray-500">{reportData.acris.deeds.length} deed(s), {reportData.acris.mortgages.length} mortgage(s) on record</p>
+                <p className="text-sm text-gray-500">{(reportData.acris.deeds || []).length} deed(s), {(reportData.acris.mortgages || []).length} mortgage(s) on record</p>
               </div>
             </div>
           )}
 
           {/* Litigation */}
-          {reportData.litigation.hasActive && (
+          {reportData.litigation?.hasActive && (
             <div className="px-6 pb-4">
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-sm font-semibold text-red-700">⚖️ Active Housing Litigation — {reportData.litigation.count} case(s)</p>
@@ -266,7 +269,7 @@ export default function Reports() {
           )}
 
           {/* Rent Stabilization */}
-          {reportData.rentStabilization.isStabilized && (
+          {reportData.rentStabilization?.isStabilized && (
             <div className="px-6 pb-6">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm font-semibold text-blue-700">📋 Rent Stabilized Building</p>

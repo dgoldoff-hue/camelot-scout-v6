@@ -1,3 +1,5 @@
+import animate from 'tailwindcss-animate';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ['class'],
@@ -7,6 +9,7 @@ export default {
       fontFamily: {
         heading: ['"Cardo"', 'Georgia', 'serif'],
         body: ['"Abel"', '"Helvetica Narrow"', '"Arial Narrow"', 'Tahoma', 'Arial', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         camelot: {
@@ -60,10 +63,7 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-      },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [animate],
 };

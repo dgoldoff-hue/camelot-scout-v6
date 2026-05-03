@@ -7,6 +7,21 @@ import toast from 'react-hot-toast';
 
 type ExportFormat = 'csv' | 'pdf' | 'email';
 
+function csvCell(value: unknown): string {
+  const text = value === undefined || value === null ? '' : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function htmlEscape(value: unknown): string {
+  const text = value === undefined || value === null ? '' : String(value);
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export default function Export() {
   const { buildings, selectedBuildings, toggleSelected, selectAll, clearSelection } = useBuildings();
   const [searchText, setSearchText] = useState('');
@@ -40,25 +55,25 @@ export default function Export() {
     ];
 
     const rows = buildings.map((b) => [
-      `"${b.address}"`,
-      `"${b.name || ''}"`,
-      `"${b.borough || ''}"`,
-      `"${b.region || ''}"`,
+      csvCell(b.address),
+      csvCell(b.name || ''),
+      csvCell(b.borough || ''),
+      csvCell(b.region || ''),
       b.units || '',
       b.type,
       b.grade,
       b.score,
       b.violations_count,
       b.open_violations_count,
-      `"${b.current_management || ''}"`,
+      csvCell(b.current_management || ''),
       b.market_value || '',
       b.assessed_value || '',
       b.year_built || '',
       b.energy_star_score || '',
       b.pipeline_stage,
-      `"${(b.contacts || []).map((c) => `${c.name} (${c.role})`).join('; ')}"`,
-      `"${(b.contacts || []).map((c) => c.phone || '').filter(Boolean).join('; ')}"`,
-      `"${(b.contacts || []).map((c) => c.email || '').filter(Boolean).join('; ')}"`,
+      csvCell((b.contacts || []).map((c) => `${c.name} (${c.role})`).join('; ')),
+      csvCell((b.contacts || []).map((c) => c.phone || '').filter(Boolean).join('; ')),
+      csvCell((b.contacts || []).map((c) => c.email || '').filter(Boolean).join('; ')),
     ]);
 
     return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -91,17 +106,17 @@ export default function Export() {
 
       const buildingRows = toExport.map((b) => `
         <tr>
-          <td>${b.name || b.address}</td>
-          <td>${b.address}</td>
+          <td>${htmlEscape(b.name || b.address)}</td>
+          <td>${htmlEscape(b.address)}</td>
           <td>${b.borough || '—'}</td>
           <td>${b.units || '—'}</td>
           <td><span class="grade grade-${b.grade}">${b.grade}</span></td>
           <td><strong>${b.score}</strong>/100</td>
           <td style="color:#dc2626">${b.open_violations_count || 0}</td>
           <td>${b.violations_count || 0}</td>
-          <td>${b.current_management || 'Unknown'}</td>
+          <td>${htmlEscape(b.current_management || 'Management to verify')}</td>
           <td>${b.market_value ? '$' + (b.market_value / 1000000).toFixed(1) + 'M' : '—'}</td>
-          <td class="stage">${b.pipeline_stage}</td>
+          <td class="stage">${htmlEscape(b.pipeline_stage)}</td>
           <td>${(b.contacts || []).map((c) => c.name).join(', ') || '—'}</td>
         </tr>
       `).join('');
@@ -189,7 +204,7 @@ export default function Export() {
         bodyText += `   ${b.address}${b.borough ? ' — ' + b.borough : ''}\n`;
         bodyText += `   Grade: ${b.grade} | Score: ${b.score} | Units: ${b.units || '?'} | Stage: ${b.pipeline_stage}\n`;
         bodyText += `   Violations: ${b.open_violations_count || 0} open / ${b.violations_count || 0} total\n`;
-        bodyText += `   Management: ${b.current_management || 'Unknown'}\n`;
+        bodyText += `   Management: ${b.current_management || 'Management to verify'}\n`;
         if (b.contacts?.length) {
           bodyText += `   Contacts: ${b.contacts.map((c) => `${c.name} (${c.role})`).join(', ')}\n`;
         }

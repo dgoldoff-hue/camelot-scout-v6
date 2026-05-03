@@ -34,7 +34,7 @@ export default function App() {
 
   useEffect(() => {
     loadBuildings();
-  }, []);
+  }, [loadBuildings]);
 
   return (
     <>

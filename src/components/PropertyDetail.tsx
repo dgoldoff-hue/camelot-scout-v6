@@ -274,7 +274,7 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
   const handleReportPDF = async () => {
     setReportLoading(true);
     try {
-      const { buildMasterReport, generateBrochureHTML } = await import('@/lib/camelot-report');
+      const { buildMasterReport, generateBrochureHTML, validateJackieReport } = await import('@/lib/camelot-report');
       toast.success('Generating Jackie report...');
       const data = await buildMasterReport(building.address, building.borough || undefined);
 
@@ -304,6 +304,19 @@ export default function PropertyDetail({ building, onClose, onUpdate }: Property
       if (building.enriched_data?.dof?.owner) data.dofOwner = building.enriched_data.dof.owner;
 
       const html = generateBrochureHTML(data);
+      const qa = validateJackieReport(data, html);
+      if (qa.failures > 0) {
+        const firstBlockers = qa.checks
+          .filter((check) => check.status === 'fail')
+          .slice(0, 3)
+          .map((check) => `${check.name}: ${check.detail}`)
+          .join('; ');
+        toast.error(`Jackie internal review opened with ${qa.failures} blocker(s): ${firstBlockers}`, { duration: 9000 });
+      } else if (qa.warnings > 0) {
+        toast.success(`Jackie internal report opened with ${qa.warnings} review warning(s)`);
+      } else {
+        toast.success('Jackie report verified and opened');
+      }
       const w = window.open('', '_blank');
       if (!w) { toast.error('Pop-up blocked — allow pop-ups for this site'); return; }
       w.document.write(html);
