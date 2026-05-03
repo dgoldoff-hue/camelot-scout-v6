@@ -504,9 +504,10 @@ function lookupNeighborhoodData(neighborhood: string): NeighborhoodMarketData | 
   return NEIGHBORHOOD_MARKET_DATA[key] || null;
 }
 
-function gradeManagement(d: { violationsOpen: number; ecbPenaltyBalance: number; hasActiveLitigation: boolean; permitsCount: number; violationsTotal: number }): { grade: string; scorecard: { violations: number; compliance: number; financial: number; overall: number } } {
-  // If we have NO data at all, don't assign a grade — return "Pending Review"
-  const hasAnyData = d.violationsTotal > 0 || d.ecbPenaltyBalance > 0 || d.hasActiveLitigation || d.permitsCount > 0;
+function gradeManagement(d: { violationsOpen: number; ecbPenaltyBalance: number; hasActiveLitigation: boolean; permitsCount: number; violationsTotal: number; publicRecordsLoaded?: boolean }): { grade: string; scorecard: { violations: number; compliance: number; financial: number; overall: number } } {
+  // Score clean public-record results as clean results; only hold the grade
+  // when Jackie did not load enough anchors to know the checks ran.
+  const hasAnyData = d.publicRecordsLoaded;
   if (!hasAnyData) {
     return { grade: '—', scorecard: { violations: 0, compliance: 0, financial: 0, overall: 0 } };
   }
@@ -1141,6 +1142,24 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       }
     : buildingPhotos;
   const effectiveNeighborhoodName = knownFacts?.neighborhoodName || streetEasy?.neighborhood || detectNeighborhood(address, borough || '');
+  const publicRecordsLoaded = Boolean(
+    dof?.bbl
+    || raw.registration?.buildingId
+    || raw.registration?.registrationId
+    || raw.hpdContacts?.length
+    || raw.energy
+    || raw.acris
+    || raw.dofAbatement
+    || raw.taxLiens?.sourceStatus
+  );
+  const managementAssessment = gradeManagement({
+    violationsOpen: raw.violations?.open || 0,
+    ecbPenaltyBalance: raw.ecb?.totalPenaltyBalance || 0,
+    hasActiveLitigation: raw.litigation?.hasActive || false,
+    permitsCount: raw.permits?.count || 0,
+    violationsTotal: raw.violations?.total || 0,
+    publicRecordsLoaded,
+  });
 
   return {
     address,
@@ -1205,20 +1224,8 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     neighborhoodMarketData: lookupNeighborhoodData(effectiveNeighborhoodName || detectNeighborhood(address, borough || '')),
     registrationDate: raw.registration?.registrationId ? null : null,
     managementDuration: null,
-    managementGrade: gradeManagement({
-      violationsOpen: raw.violations?.open || 0,
-      ecbPenaltyBalance: raw.ecb?.totalPenaltyBalance || 0,
-      hasActiveLitigation: raw.litigation?.hasActive || false,
-      permitsCount: raw.permits?.count || 0,
-      violationsTotal: raw.violations?.total || 0,
-    }).grade,
-    managementScorecard: gradeManagement({
-      violationsOpen: raw.violations?.open || 0,
-      ecbPenaltyBalance: raw.ecb?.totalPenaltyBalance || 0,
-      hasActiveLitigation: raw.litigation?.hasActive || false,
-      permitsCount: raw.permits?.count || 0,
-      violationsTotal: raw.violations?.total || 0,
-    }).scorecard,
+    managementGrade: managementAssessment.grade,
+    managementScorecard: managementAssessment.scorecard,
     boardMembers: (() => {
       const members: Array<{ name: string; title: string }> = [...(knownFacts?.boardMembers || [])];
       // HPD MDR Contacts — the gold standard for building contacts
