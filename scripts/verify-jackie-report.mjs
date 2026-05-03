@@ -7,10 +7,13 @@ const reportFile = resolve(root, 'src/lib/camelot-report.ts');
 const reportCenterFile = resolve(root, 'src/pages/ReportCenter.tsx');
 const instantProposalFile = resolve(root, 'src/pages/InstantProposal.tsx');
 const propertyDetailFile = resolve(root, 'src/components/PropertyDetail.tsx');
+const streetEasyFile = resolve(root, 'src/lib/streeteasy.ts');
 const source = readFileSync(reportFile, 'utf8');
+const streetEasySource = readFileSync(streetEasyFile, 'utf8');
 const reportCenter = readFileSync(reportCenterFile, 'utf8');
 const instantProposal = readFileSync(instantProposalFile, 'utf8');
 const propertyDetail = readFileSync(propertyDetailFile, 'utf8');
+const sourceStack = `${source}\n${streetEasySource}`;
 
 const requiredTokens = [
   ['201 East 79 known profile', "canonicalAddress: '201 East 79th Street, New York, NY 10075'"],
@@ -50,6 +53,9 @@ const requiredTokens = [
   ['Camelot final logo', 'https://www.camelot.nyc/wp-content/uploads/2015/03/Camelot-logo-footer-white.png'],
   ['Portfolio image fallback', 'Google Street View reference'],
   ['Portfolio image QA gate', 'Portfolio Building Images'],
+  ['StreetEasy photo extraction', 'extractStreetEasyImageUrls'],
+  ['StreetEasy photo source rule', 'StreetEasy Photo Source Rule'],
+  ['Subject image fallback helper', 'subjectImageOnError'],
   ['Jacqueline Vanity Fair image', "const JACQUELINE_PORTRAIT_URL = 'https://archive.vanityfair.com/image/spread/20040501/135/0'"],
   ['Jacqueline fallback image', 'JACQUELINE_PORTRAIT_FALLBACK_URL'],
   ['Jacqueline Vanity Fair article', 'VANITY_FAIR_CAMELOT_REFERENCE_URL'],
@@ -59,7 +65,7 @@ const requiredTokens = [
 ];
 
 const failures = requiredTokens
-  .filter(([, token]) => !source.includes(token))
+  .filter(([, token]) => !sourceStack.includes(token))
   .map(([label, token]) => `${label}: missing "${token}"`);
 
 const forbiddenTokens = [

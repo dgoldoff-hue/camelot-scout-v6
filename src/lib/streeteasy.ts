@@ -24,6 +24,7 @@ export interface StreetEasyBuilding {
     sqft: number | null;
     broker: string | null;
   }>;
+  photos: string[];               // Public image URLs found on the StreetEasy building page
   features: string[];             // ["Central air", "Dishwasher", "Hardwood floors", etc.]
   views: string[];                // ["City", "Park", "Water", etc.]
 }
@@ -113,6 +114,7 @@ function parseStreetEasyText(text: string, url: string): StreetEasyBuilding {
     services: [],
     transit: [],
     activeListings: [],
+    photos: [],
     features: [],
     views: [],
   };
@@ -253,6 +255,37 @@ function parseStreetEasyText(text: string, url: string): StreetEasyBuilding {
   return result;
 }
 
+function extractStreetEasyImageUrls(html: string): string[] {
+  const urls = new Set<string>();
+  const add = (raw?: string | null) => {
+    if (!raw) return;
+    let url = raw
+      .replace(/\\u002F/g, '/')
+      .replace(/\\\//g, '/')
+      .replace(/&amp;/g, '&')
+      .trim();
+    if (url.startsWith('//')) url = `https:${url}`;
+    if (!/^https?:\/\//i.test(url)) return;
+    if (!/\.(jpe?g|png|webp)(\?|$)/i.test(url)) return;
+    if (/sprite|logo|icon|avatar|placeholder|map/i.test(url)) return;
+    urls.add(url);
+  };
+
+  for (const pattern of [
+    /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/gi,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/gi,
+    /<img[^>]+(?:src|data-src|data-original|data-testid-src)=["']([^"']+)["']/gi,
+    /"image"\s*:\s*"([^"]+)"/gi,
+    /"contentUrl"\s*:\s*"([^"]+)"/gi,
+    /"(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)(?:\?[^"]*)?)"/gi,
+  ]) {
+    let match;
+    while ((match = pattern.exec(html)) !== null) add(match[1]);
+  }
+
+  return [...urls].slice(0, 8);
+}
+
 /**
  * Fetch building data from StreetEasy.
  * Tries multiple URL slug patterns until one works.
@@ -292,9 +325,10 @@ export async function fetchStreetEasyBuilding(
         .trim();
       
       const data = parseStreetEasyText(textContent, url);
+      data.photos = extractStreetEasyImageUrls(html);
       
       // Validate we got meaningful data
-      if (data.units || data.stories || data.yearBuilt || data.description) {
+      if (data.units || data.stories || data.yearBuilt || data.description || data.photos.length) {
         return data;
       }
     } catch (err) {
