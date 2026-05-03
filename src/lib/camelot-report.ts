@@ -105,6 +105,7 @@ export interface MasterReportData {
   boardMembers: Array<{ name: string; title: string }>;
   buildingStaff: Array<{ role: string; name: string }>;
   professionals: { lawFirm: string | null; accountingFirm: string | null; engineer: string | null; architect: string | null };
+  contactResearchSources: string[];
   // DOB Professional contacts
   dobArchitects: Array<{ name: string; title: string; license: string }>;
   dobEngineers: Array<{ name: string; title: string; license: string }>;
@@ -1196,6 +1197,9 @@ export async function buildMasterReport(address: string, borough?: string): Prom
         if (c.type === 'HeadOfficer' && c.name) {
           members.push({ name: c.name, title: c.title || 'Head Officer / Board President (HPD MDR)' });
         }
+        if (c.type === 'Officer' && c.name) {
+          members.push({ name: c.name, title: c.title ? `${c.title} (HPD MDR)` : 'Officer / Board Member (HPD MDR)' });
+        }
       }
       // HPD Registration owner (if not already captured)
       if (raw.registration?.owner && !members.some(m => m.name.toUpperCase() === raw.registration.owner.toUpperCase())) {
@@ -1222,7 +1226,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     buildingStaff: (() => {
       const staff: Array<{ role: string; name: string }> = [...(knownFacts?.buildingStaff || [])];
       for (const c of (raw.hpdContacts || [])) {
-        if (c.type === 'SiteManager' && c.name) staff.push({ role: 'Site Manager / Superintendent', name: c.name });
+        if (c.type === 'SiteManager' && (c.name || c.corp)) staff.push({ role: 'Site Manager / Resident Manager (HPD MDR)', name: c.name || c.corp });
         if (c.type === 'Agent' && c.name) staff.push({ role: 'Managing Agent', name: `${c.name}${c.corp ? ' — ' + c.corp : ''}` });
       }
       return staff;
@@ -1237,6 +1241,14 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     dobArchitects: (raw.dobProfessionals || []).filter((p: any) => p.role === 'architect').map((p: any) => ({ name: p.name, title: p.title, license: p.license })),
     dobEngineers: (raw.dobProfessionals || []).filter((p: any) => p.role === 'engineer').map((p: any) => ({ name: p.name, title: p.title, license: p.license })),
     dobOwners: (raw.dobOwners || []).map((o: any) => ({ name: o.name, businessName: o.businessName, phone: o.phone, type: o.type })),
+    contactResearchSources: [
+      raw.hpdContacts?.length ? `HPD MDR contacts loaded (${raw.hpdContacts.length})` : 'HPD MDR contacts searched: no contact rows returned',
+      raw.acris?.records?.length ? `ACRIS party records loaded (${raw.acris.records.length})` : 'ACRIS party records searched: no recent parent-lot transfer parties returned',
+      raw.dobProfessionals?.length ? `DOB applicant professionals loaded (${raw.dobProfessionals.length})` : 'DOB permit professionals searched: no applicant professionals returned',
+      raw.dobOwners?.length ? `DOB owner contacts loaded (${raw.dobOwners.length})` : 'DOB permit owner contacts searched: no owner contacts returned',
+      'PropertyShark owner / contact verification required before publishing private contact claims',
+      'Apollo enrichment available when APOLLO_API_KEY is configured; run against managing agent, board entity, and professional firms',
+    ],
     hasAbatement: raw.dofAbatement?.hasAbatement || false,
     abatementAmount: raw.dofAbatement?.currentExemption || 0,
     hasTaxLien: raw.taxLiens?.hasLien || false,
@@ -1432,6 +1444,14 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     status: d.boardMembers.length > 0 && d.buildingStaff.length > 0 ? 'pass' : 'fail',
     detail: `${d.boardMembers.length} board/owner signal(s), ${d.buildingStaff.length} staff/management signal(s)`,
   });
+  const contactSourceText = (d.contactResearchSources || []).join(' ');
+  for (const source of ['HPD MDR', 'ACRIS', 'DOB', 'PropertyShark', 'Apollo']) {
+    checks.push({
+      name: `Stakeholder Source: ${source}`,
+      status: contactSourceText.includes(source) || html.includes(source) ? 'pass' : 'fail',
+      detail: `${source} must be part of Jackie contact/stakeholder research`,
+    });
+  }
   checks.push({
     name: 'Current Management Performance Fallback',
     status: !/[A-F]/.test(d.managementGrade) && !html.includes('Public-record review pending') ? 'fail' : 'pass',
@@ -2484,6 +2504,13 @@ ${(() => {
 <div class="section section-white">
 <div class="section-title">Building Contacts &amp; Stakeholders</div>
 <div class="section-sub">Key decision-makers, personnel, governance, and professional services for ${d.buildingName}</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:12px 14px;margin:12px 0 16px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:1.6px;color:#A89035;font-weight:800;margin-bottom:6px">Stakeholder Data Sources</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px">
+${(d.contactResearchSources || []).map(src => `<div style="font-size:10px;color:#555;line-height:1.45">• ${safe(src)}</div>`).join('')}
+</div>
+<div style="font-size:9px;color:#888;margin-top:8px">Jackie uses HPD MDR, ACRIS, DOB, and DOF records first; PropertyShark and Apollo are verification/enrichment sources where private contact data must be confirmed before publication.</div>
+</div>
 
 <!-- BOARD / OWNERSHIP — Most Important -->
 <div style="background:#3A4B5B;border-radius:8px;padding:18px;margin-bottom:16px;color:#fff">
