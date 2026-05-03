@@ -1550,8 +1550,8 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
   });
   checks.push({
     name: 'Partner Logo / Website Links',
-    status: html.includes('logo.clearbit.com/bankunited.com') && html.includes('logo.clearbit.com/meetselect.com') && html.includes('https://www.bankunited.com') && html.includes('https://www.meetselect.com') ? 'pass' : 'fail',
-    detail: 'BankUnited and Select must use real logo URLs and official websites',
+    status: html.includes('/images/partners/bankunited.svg') && html.includes('/images/partners/select.svg') && html.includes('/images/partners/hubspot.svg') && html.includes('https://www.bankunited.com') && html.includes('https://www.meetselect.com') ? 'pass' : 'fail',
+    detail: 'Partner slide must use bundled logo assets and official website links',
   });
   checks.push({
     name: 'Camelot Case Studies',
@@ -3423,44 +3423,21 @@ ${d.feeComparison.ancillaryFeesIncluded.map(svc => `<div style="font-size:11px;c
 
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0 20px">
 ${[
-  { name: 'Select', domain: 'meetselect.com', url: 'https://www.meetselect.com', desc: 'Resident lifestyle benefits' },
-  { name: 'MDS', domain: 'aboramds.com', url: 'https://www.aboramds.com', desc: 'Property management software' },
-  { name: 'BankUnited', domain: 'bankunited.com', url: 'https://www.bankunited.com', desc: 'Banking and treasury partner' },
-  { name: 'AppFolio', domain: 'appfolio.com', url: 'https://www.appfolio.com', desc: 'Property operations platform' },
-  { name: 'PropertyShark', domain: 'propertyshark.com', url: 'https://www.propertyshark.com', desc: 'Market and ownership intelligence' },
-  { name: 'ConciergePlus', domain: 'conciergeplus.com', url: 'https://www.conciergeplus.com', desc: 'Resident portal and service workflow' },
-  { name: 'HubSpot', domain: 'hubspot.com', url: 'https://www.hubspot.com', desc: 'CRM and client communications' },
-].map(p => `<a href="${p.url}" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D5D0C6;text-decoration:none;min-height:116px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px">
-<img src="https://logo.clearbit.com/${p.domain}" alt="${p.name} logo" style="max-width:170px;max-height:42px;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-<div style="display:none;font-size:20px;font-weight:800;color:#1F2937">${p.name}</div>
+  { name: 'Select', logo: '/images/partners/select.svg', url: 'https://www.meetselect.com', desc: 'Resident lifestyle benefits' },
+  { name: 'MDS', logo: '/images/partners/mds.svg', url: 'https://multidataservices.com', desc: 'Property management software' },
+  { name: 'BankUnited', logo: '/images/partners/bankunited.svg', url: 'https://www.bankunited.com', desc: 'Banking and treasury partner' },
+  { name: 'AppFolio', logo: '/images/partners/appfolio.svg', url: 'https://www.appfolio.com', desc: 'Property operations platform' },
+  { name: 'PropertyShark', logo: '/images/partners/propertyshark.svg', url: 'https://www.propertyshark.com', desc: 'Market and ownership intelligence' },
+  { name: 'ConciergePlus', logo: '/images/partners/conciergeplus.svg', url: 'https://www.conciergeplus.com', desc: 'Resident portal and service workflow' },
+  { name: 'HubSpot', logo: '/images/partners/hubspot.svg', url: 'https://www.hubspot.com', desc: 'CRM and client communications' },
+].map(p => `<a href="${p.url}" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D5D0C6;text-decoration:none;min-height:126px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;box-shadow:0 6px 14px rgba(44,50,64,0.06)">
+<img src="${p.logo}" alt="${p.name} logo" style="width:100%;max-width:190px;height:52px;object-fit:contain">
 <div style="font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.8px;text-align:center">${p.desc}</div>
 </a>`).join('')}
 </div>
 
 <div style="background:#F5F0E5;border:1px solid #D5D0C6;border-left:4px solid #B8973A;padding:14px 18px;margin:0 0 16px">
 <p style="font-size:12px;color:#38557D;line-height:1.6">Camelot connects these platforms with Jackie, Merlin AI, and Camelot Central so boards get faster communication, better compliance visibility, cleaner financial workflows, and a resident experience that feels modern without losing human judgment.</p>
-</div>
-
-<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;padding:20px 0">
-${[
-  { name: 'MDS', domain: 'aboramds.com', color: '#1a365d', initial: 'M', desc: 'Core PM Platform' },
-  { name: 'BankUnited', domain: 'bankunited.com', color: '#003366', initial: 'BU', desc: 'Banking Partner' },
-  { name: 'AppFolio', domain: 'appfolio.com', color: '#0066cc', initial: 'AF', desc: 'Property Mgmt' },
-  { name: 'HubSpot', domain: 'hubspot.com', color: '#ff7a59', initial: 'HS', desc: 'CRM' },
-  { name: 'Google', domain: 'google.com', color: '#4285f4', initial: 'G', desc: 'Workspace' },
-  { name: 'BuildingLink', domain: 'buildinglink.com', color: '#0073b7', initial: 'BL', desc: 'Resident Portal' },
-  { name: 'Select', domain: 'meetselect.com', color: '#2d6a4f', initial: 'S', desc: 'Resident Benefits' },
-  { name: 'ConciergePlus', domain: 'conciergeplus.com', color: '#A89035', initial: 'C+', desc: 'AI Portal' },
-  { name: 'PropertyShark', domain: 'propertyshark.com', color: '#e63946', initial: 'PS', desc: 'Market Intel' },
-  { name: 'Parity', domain: 'parity.com', color: '#16a34a', initial: 'P', desc: 'Energy/HVAC' },
-].map(p => `<div style="background:#fff;border:1px solid #D5D0C6;border-radius:10px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:90px">
-<div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden">
-<img src="https://logo.clearbit.com/${p.domain}" alt="${p.name}" style="width:44px;height:44px;object-fit:contain;border-radius:10px;position:absolute;top:0;left:0;background:#fff" onerror="this.style.display='none'">
-<div style="width:44px;height:44px;background:${p.color};border-radius:10px;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-weight:800;font-size:${p.initial.length > 1 ? '14' : '18'}px;letter-spacing:-0.5px">${p.initial}</span></div>
-</div>
-<div style="font-size:11px;font-weight:700;color:#2C3240;line-height:1.2">${p.name}</div>
-<div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px">${p.desc}</div>
-</div>`).join('\n')}
 </div>
 
 <div style="text-align:center;font-size:10px;color:#888;margin-top:8px">Also powered by: OpenAI NLP &nbsp;\u00B7&nbsp; AWS Cloud &nbsp;\u00B7&nbsp; RealtyMX &nbsp;\u00B7&nbsp; SiteCompli &nbsp;\u00B7&nbsp; Jack Jaffa</div>

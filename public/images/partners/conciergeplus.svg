@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 150" role="img" aria-labelledby="title">
+  <title id="title">ConciergePlus logo</title>
+  <rect width="700" height="150" fill="#ffffff"/>
+  <circle cx="82" cy="75" r="58" fill="#2f87c8"/>
+  <path d="M47 89c22-18 39-28 58-29 12 0 25 6 24 15-1 9-12 13-29 13H83" fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M52 107h68" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+  <path d="M79 44c0 7 6 13 13 13s13-6 13-13" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+  <text x="164" y="92" font-family="Arial, Helvetica, sans-serif" font-size="56" fill="#222222" font-weight="800" font-style="italic">concierge</text>
+  <text x="470" y="92" font-family="Arial, Helvetica, sans-serif" font-size="56" fill="#222222" font-weight="300" font-style="italic">plus</text>
+</svg>

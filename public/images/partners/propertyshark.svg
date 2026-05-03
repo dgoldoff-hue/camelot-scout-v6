@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 150" role="img" aria-labelledby="title">
+  <title id="title">PropertyShark logo</title>
+  <rect width="640" height="150" fill="#ffffff"/>
+  <g transform="translate(30 31)">
+    <path d="M0 55c60-30 108-29 168-4 52 22 94 24 142-4" fill="none" stroke="#244b65" stroke-width="9" stroke-linecap="round"/>
+    <path d="M16 72c47-18 88-15 133 3 50 20 99 21 148-1" fill="none" stroke="#244b65" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+    <path d="M108 16c30 13 60 34 82 63-32-8-63-6-97 4 12-20 15-42 15-67z" fill="#244b65"/>
+  </g>
+  <text x="276" y="67" font-family="Arial, Helvetica, sans-serif" font-size="42" fill="#244b65" font-weight="400">Property</text>
+  <text x="276" y="113" font-family="Arial, Helvetica, sans-serif" font-size="44" fill="#244b65" font-weight="800">Shark</text>
+</svg>
