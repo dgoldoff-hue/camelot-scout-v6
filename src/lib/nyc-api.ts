@@ -588,44 +588,117 @@ export interface DOFAbatementData {
   yearBuilt: number;
   ownerName: string;
   condoNumber: string;
+  sourceStatus: string;
+  sourceQuery: string;
+  matchedLot: string;
+  matchedParid: string;
+  matchedAddress: string;
+  taxYear: string;
+  marketValue: number;
+  assessedValue: number;
+  exemptAssessedValue: number;
+  buildingClass: string;
   raw: any;
 }
 
 export interface TaxLienData {
   hasLien: boolean;
+  sourceStatus: string;
+  sourceQuery: string;
+  recordCount: number;
+  matchedLots: string[];
   liens: Array<{
     cycle: string;
     date: string;
     waterDebtOnly: boolean;
+    lot: string;
+    houseNumber: string;
+    streetName: string;
+    zip: string;
+    taxClass: string;
+    buildingClass: string;
   }>;
+}
+
+function isCondoParentLot(lot: string): boolean {
+  const n = parseInt(lot, 10);
+  return Number.isFinite(n) && n >= 7500;
+}
+
+function rowAddress(row: any): string {
+  return [row.housenum_lo || row.house_number, row.street_name, row.zip_code || row.zip].filter(Boolean).join(' ').trim();
+}
+
+function streetWhere(field: string, street: string): string {
+  const tokens = streetSearchTokens(street);
+  if (tokens.length === 0) return '';
+  return tokens.map(token => `upper(${field}) like '%${escapeSoql(token)}%'`).join(' AND ');
+}
+
+function dofAbatementFromRow(row: any, sourceStatus: string, sourceQuery: string): DOFAbatementData {
+  const exemption = parseFloat(row.curactextot) || 0;
+  const taxFlagIndicatesAbatement = (row.curtaxflag === 'A' || row.cbntaxflag === 'A' || row.fintaxflag === 'A');
+  return {
+    hasAbatement: exemption > 0 || taxFlagIndicatesAbatement,
+    currentExemption: exemption,
+    abatementType: taxFlagIndicatesAbatement ? (row.cbntaxflag === 'A' ? 'Condo/Co-op Abatement (421-a or similar)' : 'Tax Abatement Active') : 'None indicated',
+    taxClass: row.curtaxclass || '',
+    coopApts: parseInt(row.coop_apts) || 0,
+    yearBuilt: parseInt(row.yrbuilt) || 0,
+    ownerName: row.owner || '',
+    condoNumber: row.condo_number || row.coop_num || '',
+    sourceStatus,
+    sourceQuery,
+    matchedLot: row.lot || '',
+    matchedParid: row.parid || '',
+    matchedAddress: rowAddress(row),
+    taxYear: row.year || '',
+    marketValue: parseFloat(row.curmkttot) || 0,
+    assessedValue: parseFloat(row.curacttot) || 0,
+    exemptAssessedValue: exemption,
+    buildingClass: row.bldg_class || '',
+    raw: row,
+  };
 }
 
 /**
  * Fetch DOF Property Exemptions (co-op/condo abatement data, tax class details)
  */
-export async function fetchDOFExemptions(borough: string, block: string, lot: string): Promise<DOFAbatementData | null> {
+export async function fetchDOFExemptions(borough: string, block: string, lot: string, address?: string): Promise<DOFAbatementData | null> {
   try {
-    const url = `${DOF_EXEMPTIONS_ENDPOINT}?$limit=1&$order=year DESC&$where=boro='${borough}' AND block='${block}' AND lot='${lot}'`;
+    const exactWhere = `boro='${escapeSoql(borough)}' AND block='${escapeSoql(block)}' AND lot='${escapeSoql(lot)}'`;
+    const url = socrataUrl(DOF_EXEMPTIONS_ENDPOINT, {
+      $limit: 1,
+      $order: 'year DESC',
+      $where: exactWhere,
+    });
     const res = await fetch(url);
     if (!res.ok) return null;
     const data = await res.json();
-    if (!data || data.length === 0) return null;
-    const d = data[0];
-    const exemption = parseFloat(d.curactextot) || 0;
-    // Tax flags: "A" = Abatement active, "T" = Taxable (no abatement)
-    // For condos, the abatement may show $0 on the parent lot but "A" on the flag
-    const taxFlagIndicatesAbatement = (d.curtaxflag === 'A' || d.cbntaxflag === 'A' || d.fintaxflag === 'A');
-    return {
-      hasAbatement: exemption > 0 || taxFlagIndicatesAbatement,
-      currentExemption: exemption,
-      abatementType: taxFlagIndicatesAbatement ? (d.cbntaxflag === 'A' ? 'Condo/Co-op Abatement (421-a or similar)' : 'Tax Abatement Active') : 'None',
-      taxClass: d.curtaxclass || '',
-      coopApts: parseInt(d.coop_apts) || 0,
-      yearBuilt: parseInt(d.yrbuilt) || 0,
-      ownerName: d.owner || '',
-      condoNumber: d.condo_number || '',
-      raw: d,
-    };
+    if (data?.length > 0 && !isCondoParentLot(lot)) return dofAbatementFromRow(data[0], 'DOF exemptions matched exact BBL lot', exactWhere);
+
+    const exactParentRow = data?.[0];
+    const parsed = address ? parseAddress(address) : { number: '', street: '' };
+    const streetClause = parsed.street ? streetWhere('street_name', parsed.street) : '';
+    if (parsed.number && streetClause) {
+      const addressWhere = `boro='${escapeSoql(borough)}' AND block='${escapeSoql(block)}' AND housenum_lo='${escapeSoql(parsed.number)}' AND ${streetClause}`;
+      const addressUrl = socrataUrl(DOF_EXEMPTIONS_ENDPOINT, {
+        $limit: 20,
+        $order: 'year DESC',
+        $where: addressWhere,
+      });
+      const addressRes = await fetch(addressUrl);
+      if (addressRes.ok) {
+        const addressRows = await addressRes.json();
+        if (addressRows?.length > 0) {
+          const rowWithAbatement = addressRows.find((row: any) => (parseFloat(row.curactextot) || 0) > 0 || row.curtaxflag === 'A' || row.cbntaxflag === 'A' || row.fintaxflag === 'A');
+          return dofAbatementFromRow(rowWithAbatement || addressRows[0], 'DOF exemptions matched block/address; condo unit lots checked', addressWhere);
+        }
+      }
+    }
+
+    if (exactParentRow) return dofAbatementFromRow(exactParentRow, 'DOF exemptions matched condo parent lot only; unit-lot abatement check returned no address rows', exactWhere);
+    return null;
   } catch (err) {
     console.error('DOF Exemptions fetch error:', err);
     return null;
@@ -635,23 +708,70 @@ export async function fetchDOFExemptions(borough: string, block: string, lot: st
 /**
  * Fetch DOF Tax Lien Sale data — checks if property has any outstanding tax liens
  */
-export async function fetchTaxLiens(borough: string, block: string, lot: string): Promise<TaxLienData> {
-  try {
-    const url = `${DOF_TAX_LIEN_ENDPOINT}?$limit=10&$order=month DESC&$where=borough='${borough}' AND block='${block}' AND lot='${lot}'`;
-    const res = await fetch(url);
-    if (!res.ok) return { hasLien: false, liens: [] };
-    const data = await res.json();
+export async function fetchTaxLiens(borough: string, block: string, lot: string, address?: string): Promise<TaxLienData> {
+  const empty = (sourceStatus = 'DOF tax lien endpoint searched: no rows returned', sourceQuery = ''): TaxLienData => ({
+    hasLien: false,
+    sourceStatus,
+    sourceQuery,
+    recordCount: 0,
+    matchedLots: [],
+    liens: [],
+  });
+  const fromRows = (rows: any[], sourceStatus: string, sourceQuery: string): TaxLienData => {
+    const liens = rows.map((d: any) => ({
+      cycle: d.cycle || '',
+      date: d.month || '',
+      waterDebtOnly: d.water_debt_only === 'YES',
+      lot: d.lot || '',
+      houseNumber: d.house_number || '',
+      streetName: d.street_name || '',
+      zip: d.zip_code || d.zip || '',
+      taxClass: d.tax_class_code || d.tax_class || '',
+      buildingClass: d.building_class || '',
+    }));
     return {
-      hasLien: data.length > 0,
-      liens: data.map((d: any) => ({
-        cycle: d.cycle || '',
-        date: d.month || '',
-        waterDebtOnly: d.water_debt_only === 'YES',
-      })),
+      hasLien: liens.length > 0,
+      sourceStatus,
+      sourceQuery,
+      recordCount: liens.length,
+      matchedLots: Array.from(new Set(liens.map(l => l.lot).filter(Boolean))),
+      liens,
     };
+  };
+
+  try {
+    const exactWhere = `borough='${escapeSoql(borough)}' AND block='${escapeSoql(block)}' AND lot='${escapeSoql(lot)}'`;
+    const url = socrataUrl(DOF_TAX_LIEN_ENDPOINT, {
+      $limit: 25,
+      $order: 'month DESC',
+      $where: exactWhere,
+    });
+    const res = await fetch(url);
+    if (!res.ok) return empty('DOF tax lien endpoint failed', exactWhere);
+    const data = await res.json();
+    if (data?.length > 0 && !isCondoParentLot(lot)) return fromRows(data, 'DOF tax lien matched exact BBL lot', exactWhere);
+
+    const parsed = address ? parseAddress(address) : { number: '', street: '' };
+    const streetClause = parsed.street ? streetWhere('street_name', parsed.street) : '';
+    if (parsed.number && streetClause) {
+      const addressWhere = `borough='${escapeSoql(borough)}' AND block='${escapeSoql(block)}' AND house_number='${escapeSoql(parsed.number)}' AND ${streetClause}`;
+      const addressUrl = socrataUrl(DOF_TAX_LIEN_ENDPOINT, {
+        $limit: 50,
+        $order: 'month DESC',
+        $where: addressWhere,
+      });
+      const addressRes = await fetch(addressUrl);
+      if (addressRes.ok) {
+        const addressRows = await addressRes.json();
+        if (addressRows?.length > 0) return fromRows(addressRows, 'DOF tax lien matched block/address; condo unit lots checked', addressWhere);
+      }
+    }
+
+    if (data?.length > 0) return fromRows(data, 'DOF tax lien matched condo parent lot only', exactWhere);
+    return empty('DOF tax lien endpoint searched exact lot and address fallback: no rows returned', exactWhere);
   } catch (err) {
     console.error('Tax Lien fetch error:', err);
-    return { hasLien: false, liens: [] };
+    return empty('DOF tax lien fetch error');
   }
 }
 
@@ -764,7 +884,7 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
   let housingLitigation: HousingLitigation[] = [];
   let rentStabilization: RentStabilization[] = [];
   let dofAbatement: DOFAbatementData | null = null;
-  let taxLiens: TaxLienData = { hasLien: false, liens: [] };
+  let taxLiens: TaxLienData = { hasLien: false, sourceStatus: 'Not searched', sourceQuery: '', recordCount: 0, matchedLots: [], liens: [] };
 
   if (dof?.bbl) {
     const bblParts = parseBBL(dof.bbl);
@@ -793,13 +913,13 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
           console.error('Rent stabilization fetch in report failed:', err);
           return [] as RentStabilization[];
         }),
-        fetchDOFExemptions(bblParts.borough, bblParts.block, bblParts.lot).catch((err) => {
+        fetchDOFExemptions(bblParts.borough, bblParts.block, bblParts.lot, address).catch((err) => {
           console.error('DOF Abatement fetch in report failed:', err);
           return null;
         }),
-        fetchTaxLiens(bblParts.borough, bblParts.block, bblParts.lot).catch((err) => {
+        fetchTaxLiens(bblParts.borough, bblParts.block, bblParts.lot, address).catch((err) => {
           console.error('Tax Lien fetch in report failed:', err);
-          return { hasLien: false, liens: [] } as TaxLienData;
+          return { hasLien: false, sourceStatus: 'DOF tax lien fetch failed', sourceQuery: '', recordCount: 0, matchedLots: [], liens: [] } as TaxLienData;
         }),
       ]);
 

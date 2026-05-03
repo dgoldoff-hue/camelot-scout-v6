@@ -115,7 +115,16 @@ export interface MasterReportData {
   hasAbatement: boolean;
   abatementAmount: number;
   hasTaxLien: boolean;
-  taxLienDetails: Array<{ cycle: string; date: string; waterDebtOnly: boolean }>;
+  abatementType: string;
+  abatementTaxYear: string | null;
+  abatementSourceStatus: string | null;
+  abatementMatchedLot: string | null;
+  dofTaxMarketValue: number;
+  dofTaxAssessedValue: number;
+  taxLienSourceStatus: string | null;
+  taxLienRecordCount: number;
+  taxLienMatchedLots: string[];
+  taxLienDetails: Array<{ cycle: string; date: string; waterDebtOnly: boolean; lot?: string; houseNumber?: string; streetName?: string; zip?: string; taxClass?: string; buildingClass?: string }>;
   // Tiered pricing
   tieredPricing: TieredPricing;
   // Fee comparison
@@ -1313,6 +1322,15 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     hasAbatement: raw.dofAbatement?.hasAbatement || false,
     abatementAmount: raw.dofAbatement?.currentExemption || 0,
     hasTaxLien: raw.taxLiens?.hasLien || false,
+    abatementType: raw.dofAbatement?.abatementType || 'DOF record not found',
+    abatementTaxYear: raw.dofAbatement?.taxYear || null,
+    abatementSourceStatus: raw.dofAbatement?.sourceStatus || null,
+    abatementMatchedLot: raw.dofAbatement?.matchedLot || null,
+    dofTaxMarketValue: raw.dofAbatement?.marketValue || dof?.marketValue || 0,
+    dofTaxAssessedValue: raw.dofAbatement?.assessedValue || 0,
+    taxLienSourceStatus: raw.taxLiens?.sourceStatus || null,
+    taxLienRecordCount: raw.taxLiens?.recordCount || 0,
+    taxLienMatchedLots: raw.taxLiens?.matchedLots || [],
     taxLienDetails: raw.taxLiens?.liens || [],
     pricePerUnit,
     monthlyFee,
@@ -2695,6 +2713,43 @@ ${d.dobOwners.map((o, i) => `<tr${i % 2 ? ' style="background:#fff"' : ''}><td s
 
 <!-- TAX ABATEMENT & LIEN STATUS -->
 <div style="background:#fff;border:2px solid ${d.hasTaxLien ? '#dc2626' : '#A89035'};border-radius:8px;padding:18px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:${d.hasTaxLien ? '#dc2626' : '#A89035'};font-weight:700;margin-bottom:12px">Tax Status - NYC DOF Abatement & Lien Search</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+<div style="background:#EDE9DF;border-radius:6px;padding:14px;text-align:center">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px">Co-op/Condo Abatement</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:18px;font-weight:700;color:${d.hasAbatement ? '#16a34a' : '#555'}">${d.hasAbatement ? 'Active / Indicated' : 'Not Indicated'}</div>
+<div style="font-size:11px;color:#555;font-weight:600;margin-top:4px">${safe(d.abatementType)}</div>
+${d.abatementAmount > 0 ? `<div style="font-size:11px;color:#16a34a;font-weight:600;margin-top:4px">$${d.abatementAmount.toLocaleString()} exempt assessed value</div>` : ''}
+${d.abatementTaxYear ? `<div style="font-size:10px;color:#777;margin-top:4px">Tax year: ${safe(d.abatementTaxYear)}</div>` : ''}
+</div>
+<div style="background:${d.hasTaxLien ? 'rgba(220,38,38,0.08)' : '#EDE9DF'};border-radius:6px;padding:14px;text-align:center;${d.hasTaxLien ? 'border:1px solid rgba(220,38,38,0.3)' : ''}">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px">Tax Liens</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:18px;font-weight:700;color:${d.hasTaxLien ? '#dc2626' : '#16a34a'}">${d.hasTaxLien ? 'Lien-Sale Notices Found' : 'No Rows Found'}</div>
+${d.hasTaxLien ? `<div style="font-size:11px;color:#dc2626;font-weight:600;margin-top:4px">${d.taxLienRecordCount || d.taxLienDetails.length} DOF notice row(s)</div>` : '<div style="font-size:11px;color:#16a34a;margin-top:4px">No DOF lien-sale rows returned for matched lot/address</div>'}
+${d.taxLienMatchedLots.length ? `<div style="font-size:10px;color:#777;margin-top:4px">Matched lot(s): ${d.taxLienMatchedLots.map(l => safe(l)).join(', ')}</div>` : ''}
+</div>
+<div style="background:#EDE9DF;border-radius:6px;padding:14px;text-align:center">
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px">DOF Property Record</div>
+<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:18px;font-weight:700;color:#0B2E6F">${d.abatementMatchedLot ? `Lot ${safe(d.abatementMatchedLot)}` : safe(d.bbl || 'DOF record')}</div>
+${d.dofTaxMarketValue ? `<div style="font-size:11px;color:#555;margin-top:4px">Market value: $${Math.round(d.dofTaxMarketValue).toLocaleString()}</div>` : ''}
+${d.dofTaxAssessedValue ? `<div style="font-size:11px;color:#555;margin-top:2px">Assessed value: $${Math.round(d.dofTaxAssessedValue).toLocaleString()}</div>` : ''}
+<div style="font-size:11px;color:#555;line-height:1.5;margin-top:6px"><a href="https://a836-pts-access.nyc.gov/care/search/commonsearch.aspx?mode=address" target="_blank" rel="noopener" style="color:#A89035;text-decoration:underline;font-weight:600">Open DOF Property Tax Search</a></div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+<div style="background:#F8F6F0;border:1px solid #D5D0C6;border-radius:6px;padding:10px;font-size:10px;color:#555;line-height:1.5"><strong style="color:#0B2E6F">Abatement source check:</strong> ${safe(d.abatementSourceStatus || 'DOF exemptions endpoint searched; no row returned.')}</div>
+<div style="background:#F8F6F0;border:1px solid #D5D0C6;border-radius:6px;padding:10px;font-size:10px;color:#555;line-height:1.5"><strong style="color:#0B2E6F">Lien source check:</strong> ${safe(d.taxLienSourceStatus || 'DOF tax lien endpoint searched; no row returned.')}</div>
+</div>
+${d.hasTaxLien ? `
+<div style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);border-radius:6px;padding:12px;margin-bottom:10px">
+<div style="font-size:11px;color:#991b1b;font-weight:600;margin-bottom:6px">Tax Lien Sale Notice Details</div>
+${d.taxLienDetails.map(l => `<div style="font-size:11px;color:#555;padding:2px 0">- ${safe(l.cycle)}${l.date ? ' - ' + new Date(l.date).toLocaleDateString() : ''}${l.lot ? ' - lot ' + safe(l.lot) : ''}${l.waterDebtOnly ? ' (water debt only)' : ''}</div>`).join('')}
+<div style="font-size:10px;color:#7f1d1d;margin-top:6px">Lien-sale notices require board-facing verification with NYC DOF before describing the item as an active payable lien.</div>
+</div>` : ''}
+<div style="font-size:9px;color:#888">Source: NYC Dept. of Finance - Property Exemptions (8y4t-faws), Tax Lien Sale (9rz4-mjek), and DOF property records. Jackie checks exact BBL first, then block/address for condo unit-lot records before release.</div>
+</div>
+<!-- LEGACY TAX CARD HIDDEN AFTER DOF UNIT-LOT FALLBACK UPDATE -->
+<div style="display:none;background:#fff;border:2px solid ${d.hasTaxLien ? '#dc2626' : '#A89035'};border-radius:8px;padding:18px">
 <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:${d.hasTaxLien ? '#dc2626' : '#A89035'};font-weight:700;margin-bottom:12px">🏦 Tax Status — DOF Abatement & Lien Search</div>
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
 <div style="background:#EDE9DF;border-radius:6px;padding:14px;text-align:center">
