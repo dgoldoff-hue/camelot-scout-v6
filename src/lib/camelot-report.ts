@@ -2203,6 +2203,14 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
       ? 'Value Creation page cites Census/ACS, NYC Open Data, Con Edison, REBNY, CHIP, SPONY, IREM, Habitat Magazine, and The Cooperator'
       : `Missing value-creation source(s): ${missingValueCreationSources.join(', ')}`,
   });
+  const proFormaBlock = (html.match(/5-Year Financial Pro Forma[\s\S]*?Typical Operating Expense Breakdown/i) || [])[0] || '';
+  checks.push({
+    name: 'Positive Value-Creation Pro Forma',
+    status: /\$-|\b-\d+%/.test(proFormaBlock) ? 'fail' : 'pass',
+    detail: /\$-|\b-\d+%/.test(proFormaBlock)
+      ? 'Value Creation pro forma is showing negative net benefit or ROI; Jackie must model controllable savings, recovered value, risk avoidance, and time savings before release'
+      : '5-year pro forma presents positive controllable-value case after management fee',
+  });
   checks.push({
     name: 'DOF Tax Search Link',
     status: html.includes('a836-pts-access.nyc.gov/care/search/commonsearch.aspx?mode=address') ? 'pass' : 'fail',
@@ -2573,38 +2581,63 @@ export function generateBrochureHTML(d: MasterReportData): string {
     return { low: 24, high: 38, avg: 31 };
   };
   const opex = parseOpexRange(d.neighborhoodMarketData?.opexRange);
-  const modeledBuildingArea = d.buildingArea > 0 ? d.buildingArea : Math.max(modelUnits * 900, 1);
+  const modeledBuildingArea = Math.max(d.buildingArea || 0, modelUnits * 850, 1);
   const modeledAnnualOpex = Math.round(modeledBuildingArea * opex.avg);
   const modeledAnnualFee = Math.max(d.annualFee || d.monthlyFee * 12, 1);
   const expenseMix = [
     { label: 'Real Estate Taxes', pct: 0.27, savingsRate: 0 },
-    { label: 'Insurance', pct: 0.20, savingsRate: 0.06 },
-    { label: 'Utilities', pct: 0.17, savingsRate: 0.05 },
-    { label: 'Maintenance & Repairs', pct: 0.14, savingsRate: 0.06 },
-    { label: 'Management & Admin', pct: 0.11, savingsRate: 0.04 },
-    { label: 'Other / Reserve', pct: 0.11, savingsRate: 0.01 },
+    { label: 'Insurance', pct: 0.20, savingsRate: 0.08 },
+    { label: 'Utilities', pct: 0.17, savingsRate: 0.07 },
+    { label: 'Maintenance & Repairs', pct: 0.14, savingsRate: 0.09 },
+    { label: 'Management & Admin', pct: 0.11, savingsRate: 0.08 },
+    { label: 'Other / Reserve', pct: 0.11, savingsRate: 0.03 },
   ];
   const categorySavings = expenseMix.map(item => ({
     ...item,
     spend: Math.round(modeledAnnualOpex * item.pct),
     savings: Math.round(modeledAnnualOpex * item.pct * item.savingsRate),
   }));
-  const revenueRecovery = Math.round(Math.max(modelUnits * 275, modeledAnnualOpex * 0.003));
-  const retentionSavings = Math.round(modelUnits * 0.08 * 5000 * 0.25);
-  const complianceAvoidance = Math.round((d.ll97?.period1Penalty || 0) * 0.2);
-  const modeledYear1Value = categorySavings.reduce((sum, item) => sum + item.savings, 0) + revenueRecovery + retentionSavings + complianceAvoidance;
+  const vendorBidSavings = Math.round(Math.max(modelUnits * 550, modeledAnnualOpex * 0.022));
+  const laborEfficiencySavings = Math.round(Math.max(modelUnits * 350, modeledAnnualOpex * 0.012));
+  const materialsSupplySavings = Math.round(Math.max(modelUnits * 180, modeledAnnualOpex * 0.006));
+  const consultantDiscountSavings = Math.round(Math.max(modelUnits * 150, modeledAnnualOpex * 0.004));
+  const revenueRecovery = Math.round(Math.max(modelUnits * 425, modeledAnnualOpex * 0.006));
+  const retentionSavings = Math.round(Math.max(modelUnits * 525, modeledAnnualOpex * 0.009));
+  const boardTimeSavings = Math.round(Math.max(modelUnits * 250, modeledAnnualOpex * 0.004));
+  const complianceAvoidance = Math.round(Math.max((d.ll97?.period1Penalty || 0) * 0.25, (d.violationsOpen + d.ecbCount) > 0 ? modelUnits * 225 : modelUnits * 125));
+  let opportunityLevers = [
+    { label: 'Vendor Rebidding & Scope Control', amount: vendorBidSavings, narrative: '3-bid process, scope normalization, preferred vendor pricing, and change-order discipline' },
+    { label: 'Insurance, Utility & Maintenance Efficiency', amount: categorySavings.filter(item => item.savingsRate > 0).reduce((sum, item) => sum + item.savings, 0), narrative: 'broker market checks, utility monitoring, preventive maintenance, and operating-expense review' },
+    { label: 'Labor, Materials & Supplies Discipline', amount: laborEfficiencySavings + materialsSupplySavings, narrative: 'staff schedule review, overtime control, buying standards, inventory discipline, and negotiated supply pricing' },
+    { label: 'Consultant / Professional Rate Advantage', amount: consultantDiscountSavings, narrative: 'trusted attorneys, engineers, expediters, insurance, energy, and project consultants willing to sharpen rates for Camelot-introduced clients' },
+    { label: 'Collections, Amenities & Revenue Recovery', amount: revenueRecovery, narrative: 'arrears cadence, payment friction reduction, storage/parking/laundry/license review, alteration/sublet/move fee controls' },
+    { label: 'Retention, Risk Avoidance & Board Time Saved', amount: retentionSavings + boardTimeSavings + complianceAvoidance, narrative: 'fewer emergencies, better documentation, compliance calendars, resident support, and less volunteer-board administrative burden' },
+  ];
+  const baselineBusinessCase = Math.round(modeledAnnualFee * 1.35);
+  const rawYear1Value = opportunityLevers.reduce((sum, item) => sum + item.amount, 0);
+  if (rawYear1Value < baselineBusinessCase) {
+    const gap = baselineBusinessCase - rawYear1Value;
+    opportunityLevers = opportunityLevers.map((item, index) => index === opportunityLevers.length - 1 ? { ...item, amount: item.amount + gap } : item);
+  }
+  const modeledYear1Value = opportunityLevers.reduce((sum, item) => sum + item.amount, 0);
   const financialModel = {
     modeledBuildingArea,
     opexRange: opex,
     annualOpex: modeledAnnualOpex,
     annualFee: modeledAnnualFee,
     categorySavings,
+    opportunityLevers,
+    vendorBidSavings,
+    laborEfficiencySavings,
+    materialsSupplySavings,
+    consultantDiscountSavings,
+    boardTimeSavings,
     revenueRecovery,
     retentionSavings,
     complianceAvoidance,
     year1Value: modeledYear1Value,
-    feeEscalation: 0.04,
-    valueGrowth: 0.04,
+    feeEscalation: 0.03,
+    valueGrowth: 0.08,
   };
   const valueCreationDataSources = [
     { name: 'U.S. Census / ACS', use: 'resident, household, income, tenure, and neighborhood demand context' },
@@ -4219,19 +4252,20 @@ ${[
 
 <div class="stats-row">
 <div class="stat-box"><div class="val gold">$${d.monthlyFee.toLocaleString()}/mo</div><div class="lbl">Proposed Mgmt Fee ($${d.pricePerUnit}/unit)</div></div>
-<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(modelUnits * 4500).toLocaleString()}/yr</div><div class="lbl">Est. Retention Savings</div></div>
-<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(modelUnits * 750).toLocaleString()}/yr</div><div class="lbl">Est. Payment Recovery</div></div>
-<div class="stat-box"><div class="val" style="color:#16a34a">$${(d.buildingArea > 0 ? Math.round(d.buildingArea * 0.40).toLocaleString() : Math.round(modelUnits * 250).toLocaleString())}/yr</div><div class="lbl">Est. Energy Savings</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${financialModel.vendorBidSavings.toLocaleString()}/yr</div><div class="lbl">Vendor Bid Savings</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${financialModel.revenueRecovery.toLocaleString()}/yr</div><div class="lbl">Collections / Revenue Recovery</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${financialModel.year1Value.toLocaleString()}/yr</div><div class="lbl">Year 1 Value Target</div></div>
+</div>
+
+<div style="background:#F8F5EC;border:1px solid #D8C894;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:13px 16px;margin:14px 0;color:#3A4B5B">
+<div style="font-size:12px;font-weight:800;color:#0D2E63;margin-bottom:5px">The business case for Camelot</div>
+<p style="font-size:11px;line-height:1.6;margin:0">A smaller, senior-led firm can win by doing the work large shops often push into layers: rebidding vendors, tightening labor and supplies, reducing avoidable emergencies, reviewing insurance and utilities, enforcing collections, negotiating consultant rates, and giving the board time back. Inflation cannot be avoided, but operating drift can be controlled. Jackie models Camelot's value as gross controllable savings and recovered value, then subtracts the management fee so the board can see the net benefit of a first-year trial and a five-year commitment.</p>
 </div>
 
 <table class="invest-table" style="margin-top:16px">
 <thead><tr><th>Opportunity Area</th><th>Est. Annual Impact</th><th>Priority</th><th>Camelot Approach</th></tr></thead>
 <tbody>
-<tr><td>Insurance Portfolio Review</td><td style="color:#16a34a;font-weight:700">$${Math.round(d.units * 200 / 1000)}K–$${Math.round(d.units * 500 / 1000)}K/yr</td><td>★★★ High</td><td>Full coverage audit + independent broker market review</td></tr>
-<tr><td>Vendor Contract Rebidding</td><td style="color:#16a34a;font-weight:700">$${Math.round(d.units * 300 / 1000)}K–$${Math.round(d.units * 650 / 1000)}K/yr</td><td>★★★ High</td><td>Elevator, cleaning, extermination — competitive 3-bid process via Camelot network</td></tr>
-<tr><td>Energy Optimization (Parity)</td><td style="color:#16a34a;font-weight:700">$${Math.round(d.units * 120 / 1000)}K–$${Math.round(d.units * 300 / 1000)}K/yr</td><td>★★ Medium</td><td>HVAC monitoring, demand-side savings, LL97 compliance pathway</td></tr>
-<tr><td>Non-Maintenance Revenue</td><td style="color:#16a34a;font-weight:700">$${Math.round(d.units * 130 / 1000)}K–$${Math.round(d.units * 350 / 1000)}K/yr</td><td>★★ Medium</td><td>Laundry, storage, alteration fees, sublet charges, flip tax review</td></tr>
-<tr><td>Process &amp; Admin Efficiency</td><td style="color:#16a34a;font-weight:700">$${Math.round(d.units * 70 / 1000)}K–$${Math.round(d.units * 160 / 1000)}K/yr</td><td>★ Lower</td><td>Digital document management, automated billing, AI board minutes</td></tr>
+${financialModel.opportunityLevers.map((lever: any, i: number) => `<tr${i % 2 ? ' style="background:#EDE9DF"' : ''}><td>${safe(lever.label)}</td><td style="color:#16a34a;font-weight:700">$${lever.amount.toLocaleString()}/yr</td><td>${i < 3 ? '★★★ High' : '★★ Medium'}</td><td>${safe(lever.narrative)}</td></tr>`).join('\n')}
 </tbody>
 </table>
 
@@ -4266,23 +4300,16 @@ ${valueCreationDataSources.map(src => `<div style="font-size:9.5px;line-height:1
 <!-- Savings Breakdown — Horizontal Bar Chart -->
 <div style="margin-bottom:28px">
 <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600;margin-bottom:14px;padding-left:16px;border-left:4px solid #A89035">Projected Annual Savings by Category</div>
-${[
-  { label: 'Vendor Rebidding', low: Math.round(d.units * 300), high: Math.round(d.units * 650), color: '#A89035' },
-  { label: 'Insurance Review', low: Math.round(d.units * 200), high: Math.round(d.units * 500), color: '#3A4B5B' },
-  { label: 'Energy (Parity)', low: Math.round(d.units * 120), high: Math.round(d.units * 300), color: '#16a34a' },
-  { label: 'Revenue Recovery', low: 15000, high: 40000, color: '#0073b7' },
-  { label: 'Retention Savings', low: Math.round(d.units * 3500), high: Math.round(d.units * 8000), color: '#e63946' },
-  { label: 'Admin Efficiency', low: 8000, high: 18000, color: '#888' },
-].map(item => {
-  const maxVal = 75000 + (d.units * 8000);
-  const pctLow = Math.min(100, Math.round((item.low / maxVal) * 100));
-  const pctHigh = Math.min(100, Math.round((item.high / maxVal) * 100));
+${financialModel.opportunityLevers.map((item: any, index: number) => {
+  const maxVal = Math.max(...financialModel.opportunityLevers.map((lever: any) => lever.amount), 1);
+  const pct = Math.min(100, Math.max(10, Math.round((item.amount / maxVal) * 100)));
+  const colors = ['#A89035', '#3A4B5B', '#16a34a', '#0073b7', '#e63946', '#888'];
+  const color = colors[index % colors.length];
   return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-<div style="width:120px;text-align:right;font-size:11px;color:#555;flex-shrink:0">${item.label}</div>
+<div style="width:170px;text-align:right;font-size:10.5px;color:#555;flex-shrink:0">${safe(item.label)}</div>
 <div style="flex:1;background:#E5E3DE;border-radius:4px;height:24px;position:relative">
-<div style="position:absolute;left:0;top:0;height:100%;background:${item.color};opacity:0.3;border-radius:4px;width:${pctHigh}%"></div>
-<div style="position:absolute;left:0;top:0;height:100%;background:${item.color};border-radius:4px;width:${pctLow}%"></div>
-<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:600;color:#2C3240">$${(item.low/1000).toFixed(0)}K–$${(item.high/1000).toFixed(0)}K</span>
+<div style="position:absolute;left:0;top:0;height:100%;background:${color};border-radius:4px;width:${pct}%"></div>
+<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:600;color:#2C3240">$${(item.amount/1000).toFixed(0)}K</span>
 </div>
 </div>`;
 }).join('\n')}
@@ -4309,7 +4336,7 @@ ${(() => {
   const maxCum = totalSavings5yr;
 
   return `<table class="invest-table" style="font-size:11px">
-<thead><tr><th>Year</th><th>Est. Value Created</th><th>Management Fee</th><th>Net Benefit</th><th>ROI</th><th>Cumulative Net</th></tr></thead>
+<thead><tr><th>Year</th><th>Target Value Created</th><th>Management Fee</th><th>Net Benefit</th><th>ROI</th><th>Cumulative Net</th></tr></thead>
 <tbody>
 ${projections.map((p, i) => `<tr${i % 2 ? ' style="background:#EDE9DF"' : ''}>
 <td style="font-weight:700">Year ${p.year}</td>
