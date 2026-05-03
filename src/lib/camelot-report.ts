@@ -11,6 +11,8 @@ import { runGutCheck, generateGutCheckHTML } from '@/lib/gut-check';
 import { findBuildingPhotos, generatePhotoHTML } from '@/lib/building-photos';
 import { getNeighborhoodIntel, generateNeighborhoodIntelHTML } from '@/lib/neighborhood-intel';
 import { fetchStreetEasyBuilding, type StreetEasyBuilding } from '@/lib/streeteasy';
+import { searchViolations, type ViolationSummary } from '@/lib/nyc-violations';
+import { fetch311Complaints } from '@/lib/nyc-311';
 
 // ============================================================
 // Types
@@ -76,6 +78,14 @@ export interface MasterReportData {
   hasActiveLitigation: boolean;
   // Rent Stabilization
   isRentStabilized: boolean;
+  // Compliance source coverage
+  dobViolationCount: number;
+  dobViolationOpen: number;
+  dhcrRecordCount: number;
+  courtIndexCount: number;
+  acrisLienClaimCount: number;
+  complianceSourceChecks: ComplianceSourceCheck[];
+  complianceReleaseStatus: 'verified' | 'needs_review' | 'blocked';
   // Distress
   distressScore: number;
   distressLevel: string;
@@ -137,6 +147,14 @@ export interface MasterReportData {
   buildingPhotos: { exterior: string[]; interior: string[]; streetView: string; satellite: string; source: string } | null;
   neighborhoodIntel: { crimeScore: number; qualityScore: number; transitScore: number; crimeTotal: number; complaints311Total: number; crimeBreakdown: Array<{type: string; count: number}>; topComplaints: Array<{type: string; count: number}>; landmarks: Array<{name: string; type: string; date: string}>; crimePrecinct: string; scoreExplanation: string } | null;
   raw: any;
+}
+
+export interface ComplianceSourceCheck {
+  source: string;
+  status: 'loaded' | 'searched' | 'manual_required' | 'blocked';
+  count: number;
+  detail: string;
+  url?: string;
 }
 
 export interface CommercialAmenityIntel {
@@ -293,6 +311,130 @@ function resolveNearbyLandmarkLabels(d: Pick<MasterReportData, 'address' | 'buil
     .map(l => `${l.name}: ${l.type || 'LPC landmark'}${l.date ? ` (${l.date.slice(0, 4)})` : ''}`);
   const fallbackLabels = getLpcLandmarkFallbackLabels(d.address, d.neighborhoodName, knownFacts);
   return dedupeText([...(knownFacts?.landmarks || []), ...liveLabels, ...fallbackLabels]).slice(0, 6);
+}
+
+function countAcrisLienClaimRecords(records: any[] = []): number {
+  const lienPattern = /\b(lien|claim|judg|judgment|notice|ucc|lis pendens|foreclos|mechanic|tax)\b/i;
+  return records.filter((record: any) => {
+    const values = [
+      record.document_type,
+      record.doc_type,
+      record.documenttype,
+      record.record_type,
+      record.doctype,
+      record.description,
+      record.document_description,
+    ];
+    return lienPattern.test(values.map(v => String(v || '')).join(' '));
+  }).length;
+}
+
+function buildComplianceSourceChecks(input: {
+  raw: any;
+  violationSummary: ViolationSummary | null;
+  complaint311Count: number;
+  acrisLienClaimCount: number;
+  units: number;
+}): { checks: ComplianceSourceCheck[]; status: 'verified' | 'needs_review' | 'blocked' } {
+  const hpdTotal = input.raw.violations?.total || 0;
+  const dobOpen = input.violationSummary?.dobOpen || 0;
+  const ecbCount = Math.max(input.raw.ecb?.count || 0, input.violationSummary?.ecbOpen || 0);
+  const litigationCount = input.raw.litigation?.count || 0;
+  const dhcrCount = input.raw.rentStabilization?.data?.length || 0;
+  const taxLienCount = input.raw.taxLiens?.recordCount || 0;
+  const acrisCount = input.acrisLienClaimCount;
+  const sourceChecks: ComplianceSourceCheck[] = [
+    {
+      source: 'HPD Online / NYC Open Data',
+      status: hpdTotal > 0 ? 'loaded' : 'searched',
+      count: hpdTotal,
+      detail: hpdTotal > 0
+        ? `${hpdTotal} HPD violation row(s) loaded; ${input.raw.violations?.open || 0} open.`
+        : 'No HPD rows returned by the automated address/BBL query; verify HPD Online manually before board-facing release.',
+      url: 'https://hpdonline.nyc.gov/hpdonline/',
+    },
+    {
+      source: 'DOB BIS & DOB NOW',
+      status: dobOpen > 0 || (input.raw.permits?.count || 0) > 0 ? 'loaded' : 'searched',
+      count: dobOpen,
+      detail: dobOpen > 0
+        ? `${dobOpen} open DOB violation signal(s) from NYC Open Data.`
+        : `DOB violation query returned no open rows; permit scan returned ${input.raw.permits?.count || 0} filing row(s). Verify BIS Property Profile and DOB NOW manually.`,
+      url: 'https://www.nyc.gov/site/buildings/dob/find-building-data.page',
+    },
+    {
+      source: 'ECB/OATH',
+      status: ecbCount > 0 ? 'loaded' : 'searched',
+      count: ecbCount,
+      detail: ecbCount > 0
+        ? `${ecbCount} ECB/OATH record(s); penalty balance $${(input.raw.ecb?.totalPenaltyBalance || 0).toLocaleString()}.`
+        : 'No ECB/OATH rows returned by automated query; verify OATH/ECB and DOB BIS manually.',
+      url: 'https://data.cityofnewyork.us/Housing-Development/DOB-ECB-Violations/6bgk-3dad',
+    },
+    {
+      source: 'DOF tax liens / PROS',
+      status: taxLienCount > 0 || input.raw.taxLiens?.sourceStatus ? 'loaded' : 'manual_required',
+      count: taxLienCount,
+      detail: input.raw.taxLiens?.sourceStatus || 'DOF tax lien source did not return status; run PROS/property-tax search.',
+      url: 'https://a806-pros.nyc.gov/PROS/',
+    },
+    {
+      source: 'ACRIS liens, claims, UCCs, judgments',
+      status: (input.raw.acris?.records?.length || 0) > 0 ? 'loaded' : 'searched',
+      count: acrisCount,
+      detail: acrisCount > 0
+        ? `${acrisCount} ACRIS document(s) matched lien/claim/judgment keywords.`
+        : 'ACRIS loaded/searched, but no lien/claim keyword rows were detected in the current parent-lot record set.',
+      url: 'https://a836-acris.nyc.gov/CP/',
+    },
+    {
+      source: 'HPD housing litigation',
+      status: litigationCount > 0 ? 'loaded' : 'searched',
+      count: litigationCount,
+      detail: litigationCount > 0
+        ? `${litigationCount} HPD litigation case row(s) loaded.`
+        : 'No HPD housing-litigation rows returned by automated address query; verify HPD Online litigation tab.',
+      url: 'https://hpdonline.nyc.gov/hpdonline/',
+    },
+    {
+      source: 'DHCR / rent stabilization',
+      status: dhcrCount > 0 ? 'loaded' : 'searched',
+      count: dhcrCount,
+      detail: dhcrCount > 0
+        ? `${dhcrCount} rent-stabilization row(s) loaded.`
+        : 'No DHCR/rent-stabilization proxy rows returned; verify DHCR status where applicable.',
+      url: 'https://hcr.ny.gov/records-access',
+    },
+    {
+      source: '311 Service Requests',
+      status: input.complaint311Count > 0 ? 'loaded' : 'searched',
+      count: input.complaint311Count,
+      detail: input.complaint311Count > 0
+        ? `${input.complaint311Count} 311 service request signal(s) loaded for the property/neighborhood review.`
+        : 'No address-level 311 rows returned; verify 311/service request history where building conditions are material.',
+      url: 'https://portal.311.nyc.gov/',
+    },
+    {
+      source: 'NYS eCourts / WebCivil index',
+      status: 'manual_required',
+      count: 0,
+      detail: 'Search owner entity, board/corporation name, building name, and address for lawsuits, foreclosure, premises-liability, contract, HP, and lien-related cases.',
+      url: 'https://iapps.courts.state.ny.us/webcivil/FCASMain',
+    },
+    {
+      source: 'LexisNexis legal and claims enrichment',
+      status: 'manual_required',
+      count: 0,
+      detail: 'Credentialed source for lawsuits, judgments, claims, parties, affiliated entities, and adverse media; Jackie must not imply this paid source was queried unless credentials were used.',
+      url: 'https://www.lexisnexis.com/en-us/gateway.page',
+    },
+  ];
+
+  const automatedRiskRows = hpdTotal + dobOpen + ecbCount + litigationCount + taxLienCount + acrisCount + input.complaint311Count;
+  const hasCorePublicSources = sourceChecks.slice(0, 8).every(check => check.status === 'loaded' || check.status === 'searched');
+  const suspiciousAllZero = input.units >= 10 && automatedRiskRows === 0;
+  const status = !hasCorePublicSources || suspiciousAllZero ? 'blocked' : sourceChecks.some(check => check.status === 'manual_required') ? 'needs_review' : 'verified';
+  return { checks: sourceChecks, status };
 }
 
 export interface NeighborhoodMarketData {
@@ -1547,6 +1689,19 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     || raw.dofAbatement
     || raw.taxLiens?.sourceStatus
   );
+  const [violationSummary, complaint311Rows] = await Promise.all([
+    searchViolations(reportAddress, borough || 'Manhattan').catch(() => null as ViolationSummary | null),
+    fetch311Complaints(reportAddress, borough || 'Manhattan', 365).catch(() => []),
+  ]);
+  const complaint311Count = complaint311Rows.length || neighborhoodIntel?.complaints311Total || 0;
+  const acrisLienClaimCount = countAcrisLienClaimRecords(raw.acris?.records || []);
+  const complianceCoverage = buildComplianceSourceChecks({
+    raw,
+    violationSummary,
+    complaint311Count,
+    acrisLienClaimCount,
+    units,
+  });
   const managementAssessment = gradeManagement({
     violationsOpen: raw.violations?.open || 0,
     ecbPenaltyBalance: raw.ecb?.totalPenaltyBalance || 0,
@@ -1608,12 +1763,19 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     litigationCount: raw.litigation?.count || 0,
     hasActiveLitigation: raw.litigation?.hasActive || false,
     isRentStabilized: raw.rentStabilization?.isStabilized || false,
+    dobViolationCount: violationSummary?.violations.filter(v => v.source === 'DOB').length || 0,
+    dobViolationOpen: violationSummary?.dobOpen || 0,
+    dhcrRecordCount: raw.rentStabilization?.data?.length || 0,
+    courtIndexCount: raw.litigation?.count || 0,
+    acrisLienClaimCount,
+    complianceSourceChecks: complianceCoverage.checks,
+    complianceReleaseStatus: complianceCoverage.status,
     distressScore: distressReport.score,
     distressLevel: distressReport.level,
     distressSignals: distressReport.signals.map(s => ({ type: s.type, description: s.description, severity: s.severity })),
     scoutScore: score,
     scoutGrade: grade,
-    complaint311Count: 0,
+    complaint311Count,
     latitude: geo?.lat ?? null,
     longitude: geo?.lng ?? null,
     propertyType,
@@ -1801,8 +1963,21 @@ export function runReportQA(d: MasterReportData): QACheckResult {
   // 6. Management Company
   checks.push({ name: 'Management Company', status: d.managementCompany ? 'pass' : 'warn', detail: d.managementCompany || 'Not found in HPD registration — check if address format matches' });
   
-  // 7. Violations data loaded
-  checks.push({ name: 'HPD Violations', status: 'pass', detail: `${d.violationsTotal} total, ${d.violationsOpen} open` });
+  // 7. Violations and compliance source coverage
+  const complianceSources = d.complianceSourceChecks || [];
+  const coreComplianceSources = ['HPD Online', 'DOB BIS', 'ECB/OATH', 'DOF tax liens', 'ACRIS', 'DHCR', '311 Service Requests'];
+  const missingCoreComplianceSources = coreComplianceSources.filter(source => !complianceSources.some(check => check.source.includes(source)));
+  const automatedRiskRows = d.violationsTotal + d.dobViolationOpen + d.ecbCount + d.litigationCount + d.taxLienRecordCount + d.acrisLienClaimCount + d.complaint311Count;
+  const suspiciousAllZero = d.units >= 10 && automatedRiskRows === 0;
+  checks.push({
+    name: 'Violation Source Coverage',
+    status: missingCoreComplianceSources.length || suspiciousAllZero ? 'fail' : 'pass',
+    detail: missingCoreComplianceSources.length
+      ? `Missing source check(s): ${missingCoreComplianceSources.join(', ')}`
+      : suspiciousAllZero
+        ? 'All automated compliance/lien/litigation/311 sources returned zero for a multi-unit NYC building; manual verification required before release'
+        : `${d.violationsTotal} HPD, ${d.dobViolationOpen} DOB open, ${d.ecbCount} ECB/OATH, ${d.litigationCount} litigation, ${d.taxLienRecordCount} DOF tax lien, ${d.acrisLienClaimCount} ACRIS lien/claim, ${d.complaint311Count} 311 signal(s)`,
+  });
   
   // 8. Fee calculation sanity check
   const feePerUnit = d.tieredPricing?.intelligence?.perUnit || d.pricePerUnit;
@@ -1933,6 +2108,28 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     name: 'Source Conflict Release Gate',
     status: sourceConflictWarning ? 'pass' : 'fail',
     detail: 'Report must include the hard release gate for BBL/borough/building-class/unit/floor conflicts',
+  });
+  const requiredComplianceSourceTokens = [
+    'Violation Source Coverage',
+    'HPD',
+    'DOB BIS &amp; DOB NOW',
+    'ECB/OATH',
+    'DHCR / rent stabilization',
+    'DOF tax liens',
+    'ACRIS liens',
+    '311 Service Requests',
+    'NYS eCourts / WebCivil',
+    'LexisNexis',
+  ];
+  const missingComplianceTokens = requiredComplianceSourceTokens.filter(token => !html.includes(token));
+  checks.push({
+    name: 'Compliance Source Stack',
+    status: missingComplianceTokens.length === 0 && d.complianceReleaseStatus !== 'blocked' ? 'pass' : 'fail',
+    detail: missingComplianceTokens.length
+      ? `Missing compliance token(s): ${missingComplianceTokens.join(', ')}`
+      : d.complianceReleaseStatus === 'blocked'
+        ? 'Compliance coverage blocked release; every automated public-risk source returned zero or source coverage is incomplete'
+        : 'HPD, DOB, ECB/OATH, DHCR, DOF, ACRIS, 311, courts, and LexisNexis/manual enrichment are represented',
   });
   checks.push({
     name: 'Commercial / Amenity Research',
@@ -2310,6 +2507,13 @@ export function generateBrochureHTML(d: MasterReportData): string {
 <td>${safe(String(v.novdescription || v.violationdescription || '').slice(0, 150))}${String(v.novdescription || v.violationdescription || '').length > 150 ? '...' : ''}</td>
 </tr>`).join('')
     : '';
+  const complianceSourceRows = (d.complianceSourceChecks || []).map(check => `
+<tr>
+<td style="padding:8px;border-bottom:1px solid #E5E3DE;font-weight:700;color:#2C3240">${safe(check.source)}</td>
+<td style="padding:8px;border-bottom:1px solid #E5E3DE;color:${check.status === 'loaded' ? '#16a34a' : check.status === 'blocked' ? '#dc2626' : '#A89035'};font-weight:800;text-transform:uppercase;font-size:9px">${safe(check.status.replace('_', ' '))}</td>
+<td style="padding:8px;border-bottom:1px solid #E5E3DE;text-align:center;color:#38557D;font-weight:700">${check.count}</td>
+<td style="padding:8px;border-bottom:1px solid #E5E3DE;color:#555;line-height:1.45">${safe(check.detail)}${check.url ? ` <a href="${safe(check.url)}" target="_blank" rel="noopener" style="color:#A89035;text-decoration:underline">Open source</a>` : ''}</td>
+</tr>`).join('');
   const is1280Fifth = /1280\s+(fifth|5th)/i.test(`${d.address} ${d.buildingName}`);
   const subjectPhoto = d.buildingPhotos?.exterior?.[0] || '';
   const prettyNeighborhood = d.neighborhoodName
@@ -3040,6 +3244,21 @@ ${violationHistoryRows ? `
 <tbody>${violationHistoryRows}</tbody>
 </table>` : `
 <div style="padding:14px 16px;font-size:11px;color:#555;line-height:1.6">No HPD violation rows returned by NYC Open Data for this property after address and BBL search. Jackie should verify HPD Online manually before board-facing release.</div>`}
+</div>
+<div style="margin-top:16px;border:1px solid #D5D0C6;background:#fff">
+<div style="padding:12px 16px;border-bottom:1px solid #D5D0C6;background:${d.complianceReleaseStatus === 'blocked' ? '#FEF2F2' : d.complianceReleaseStatus === 'needs_review' ? '#FFFBEB' : '#F0FDF4'}">
+<div style="font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:${d.complianceReleaseStatus === 'blocked' ? '#dc2626' : '#A89035'};font-weight:800">Violation Source Coverage</div>
+<div style="font-size:10px;color:#555;margin-top:4px">Jackie checks HPD, DOB BIS &amp; DOB NOW, ECB/OATH, DHCR / rent stabilization, DOF tax liens, ACRIS liens and claims, 311 Service Requests, HPD housing litigation, NYS eCourts / WebCivil, and LexisNexis/manual legal enrichment. A report cannot claim a clean building when every automated public-risk source returns zero without manual verification.</div>
+</div>
+<table style="width:100%;border-collapse:collapse;font-size:10px">
+<thead><tr style="background:#F8F6F0;text-align:left;color:#38557D">
+<th style="padding:8px;border-bottom:1px solid #D5D0C6">Source</th>
+<th style="padding:8px;border-bottom:1px solid #D5D0C6">Status</th>
+<th style="padding:8px;border-bottom:1px solid #D5D0C6;text-align:center">Rows</th>
+<th style="padding:8px;border-bottom:1px solid #D5D0C6">Release Note</th>
+</tr></thead>
+<tbody>${complianceSourceRows}</tbody>
+</table>
 </div>
 ${d.distressSignals.length > 0 ? `
 <div style="margin-top:16px;border-left:4px solid #dc2626;padding-left:12px;margin-bottom:8px">
