@@ -558,6 +558,8 @@ const CAMELOT = {
   license2: 'Camelot Realty Group LLC #10491200104',
 };
 
+const LEGAL_TERMS_URL = 'https://camelot-scout-v6.onrender.com/#/legal-report-terms';
+
 // ============================================================
 // Portfolio Database (Camelot + Blue Owl + Penn South Capital)
 // ============================================================
@@ -1562,6 +1564,11 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     name: 'DOF Tax Search Link',
     status: html.includes('a836-pts-access.nyc.gov/care/search/commonsearch.aspx?mode=address') ? 'pass' : 'fail',
     detail: 'DOF button must open address-based property tax search',
+  });
+  checks.push({
+    name: 'Legal Terms Link',
+    status: html.includes(LEGAL_TERMS_URL) && !html.includes('Legal%20Terms%20Request') ? 'pass' : 'fail',
+    detail: 'Confidentiality page button must open the report-specific legal terms page, not a mailto request',
   });
   const nextStepsSlides = (html.match(/<h2[^>]*>\s*Next Steps\s*<\/h2>/g) || []).length;
   checks.push({
@@ -3975,7 +3982,7 @@ ${buildPortfolioSection(d)}
 <p style="font-size:12px;color:#2C3240;line-height:1.8;margin-bottom:12px">\uD83D\uDD12 This Property Intelligence Report is <strong>confidential and proprietary</strong> to Camelot Realty Group. It is intended solely for the named recipient(s) and may not be reproduced, distributed, or disclosed without prior written consent.</p>
 <p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:12px">\u00A9 ${new Date().getFullYear()} Camelot Realty Group. All rights reserved. Contents are protected by U.S. copyright and trade secret law. SCOUT, Jackie, Merlin AI, ConciergePlus, Prisma, Parity, and Camelot Central are proprietary platforms. This Report is for informational purposes only and does not constitute legal, financial, or investment advice. Data is sourced from NYC Open Data, ACRIS, StreetEasy, RealtyMX, and other third-party databases and is presented &ldquo;as is&rdquo; without warranty. AI-assisted analysis has been reviewed by licensed real estate professionals. Governed by the laws of the State of New York; venue in New York County.</p>
 <div style="text-align:center;margin-top:16px">
-<a href="mailto:info@camelot.nyc?subject=Legal%20Terms%20Request" target="_self" onclick="window.location.href='mailto:info@camelot.nyc?subject=Legal%20Terms%20Request';return false;" style="display:inline-block;background:#A89035;color:#fff;padding:10px 28px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.5px">Request Full Legal Terms</a>
+<a href="${LEGAL_TERMS_URL}" target="_blank" rel="noopener" style="display:inline-block;background:#A89035;color:#fff;padding:10px 28px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.5px">Request Full Legal Terms</a>
 <div style="font-size:10px;color:#777;margin-top:8px">info@camelot.nyc · www.camelot.nyc</div>
 </div>
 </div>
