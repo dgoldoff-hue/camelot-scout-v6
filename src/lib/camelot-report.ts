@@ -106,6 +106,7 @@ export interface MasterReportData {
   buildingStaff: Array<{ role: string; name: string }>;
   professionals: { lawFirm: string | null; accountingFirm: string | null; engineer: string | null; architect: string | null };
   contactResearchSources: string[];
+  professionalResearchSources: string[];
   // DOB Professional contacts
   dobArchitects: Array<{ name: string; title: string; license: string }>;
   dobEngineers: Array<{ name: string; title: string; license: string }>;
@@ -166,6 +167,11 @@ interface KnownPropertyFacts {
   currentManagement?: string;
   boardMembers?: Array<{ name: string; title: string }>;
   buildingStaff?: Array<{ role: string; name: string }>;
+  professionalArchitects?: Array<{ name: string; title: string; license: string }>;
+  professionalEngineers?: Array<{ name: string; title: string; license: string }>;
+  lawFirm?: string;
+  accountingFirm?: string;
+  professionalSources?: string[];
   professionalNotes?: string[];
 }
 
@@ -900,6 +906,23 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
         { role: 'Full-time Concierge', name: 'Concierge desk' },
         { role: 'Peak-time Doorperson Coverage', name: 'Door staff' },
       ],
+      professionalArchitects: [
+        { name: 'Robert A.M. Stern Architects / SLCE', title: 'Design Architect / Architect of Record', license: 'Source: building profile / offering materials' },
+        { name: 'Andre Kikoski Architect', title: 'Interior Architect', license: 'Source: building profile / offering materials' },
+      ],
+      professionalEngineers: [
+        { name: 'Michael Gervasi', title: 'Professional Engineer (DOB fire alarm filing)', license: '082938' },
+      ],
+      professionalSources: [
+        'DOB BIS / NYC Open Data permit applicants',
+        'ACRIS condominium records and party data',
+        'NYC Department of Finance property records, condo/coop abatement records, and RPIE/assessment context',
+        'Attorney General offering plans and amendments',
+        'Bank questionnaires / lender questionnaires',
+        'Domecile building profile and fee/management data',
+        'ECB/OATH compliance records',
+        'PropertyShark ownership and professional verification',
+      ],
       professionalNotes: [
         'Board and staff structure confirmed from owner-supplied Jackie notes; individual names require board/building verification before publication.',
         'Current managing-agent company should be confirmed through HPD MDR, PropertyShark, offering-plan records, or direct board confirmation.',
@@ -1232,14 +1255,41 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       return staff;
     })(),
     professionals: {
-      lawFirm: null,
-      accountingFirm: null,
+      lawFirm: knownFacts?.lawFirm || null,
+      accountingFirm: knownFacts?.accountingFirm || null,
       engineer: (raw.dobProfessionals || []).find((p: any) => p.role === 'engineer')?.name
+        || knownFacts?.professionalEngineers?.[0]?.name
         || (raw.permits?.items?.[0]?.owner_s_first_name ? `${raw.permits.items[0].owner_s_first_name} ${raw.permits.items[0].owner_s_last_name || ''}`.trim() : null),
-      architect: (raw.dobProfessionals || []).find((p: any) => p.role === 'architect')?.name || null,
+      architect: (raw.dobProfessionals || []).find((p: any) => p.role === 'architect')?.name
+        || knownFacts?.professionalArchitects?.[0]?.name
+        || null,
     },
-    dobArchitects: (raw.dobProfessionals || []).filter((p: any) => p.role === 'architect').map((p: any) => ({ name: p.name, title: p.title, license: p.license })),
-    dobEngineers: (raw.dobProfessionals || []).filter((p: any) => p.role === 'engineer').map((p: any) => ({ name: p.name, title: p.title, license: p.license })),
+    dobArchitects: (() => {
+      const rows = [
+        ...(knownFacts?.professionalArchitects || []),
+        ...(raw.dobProfessionals || []).filter((p: any) => p.role === 'architect').map((p: any) => ({ name: p.name, title: p.title, license: p.license })),
+      ];
+      const seen = new Set<string>();
+      return rows.filter(row => {
+        const key = `${row.name}|${row.title}`.toUpperCase();
+        if (!row.name || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    })(),
+    dobEngineers: (() => {
+      const rows = [
+        ...(knownFacts?.professionalEngineers || []),
+        ...(raw.dobProfessionals || []).filter((p: any) => p.role === 'engineer').map((p: any) => ({ name: p.name, title: p.title, license: p.license })),
+      ];
+      const seen = new Set<string>();
+      return rows.filter(row => {
+        const key = `${row.name}|${row.title}`.toUpperCase();
+        if (!row.name || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    })(),
     dobOwners: (raw.dobOwners || []).map((o: any) => ({ name: o.name, businessName: o.businessName, phone: o.phone, type: o.type })),
     contactResearchSources: [
       raw.hpdContacts?.length ? `HPD MDR contacts loaded (${raw.hpdContacts.length})` : 'HPD MDR contacts searched: no contact rows returned',
@@ -1248,6 +1298,17 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       raw.dobOwners?.length ? `DOB owner contacts loaded (${raw.dobOwners.length})` : 'DOB permit owner contacts searched: no owner contacts returned',
       'PropertyShark owner / contact verification required before publishing private contact claims',
       'Apollo enrichment available when APOLLO_API_KEY is configured; run against managing agent, board entity, and professional firms',
+    ],
+    professionalResearchSources: [
+      ...(knownFacts?.professionalSources || []),
+      raw.dobProfessionals?.length ? `DOB permit applicant professionals loaded (${raw.dobProfessionals.length})` : 'DOB permit applicant professionals searched',
+      raw.acris?.records?.length ? `ACRIS deed/mortgage party records loaded (${raw.acris.records.length})` : 'ACRIS searched for owner/professional party signals',
+      raw.ecb?.count ? `ECB/OATH compliance records loaded (${raw.ecb.count})` : 'ECB/OATH searched for compliance/professional context',
+      raw.dofAbatement ? 'DOF condo/co-op abatement records loaded' : 'DOF condo/co-op abatement records searched',
+      raw.dof ? 'Department of Finance property record loaded' : 'Department of Finance property record searched',
+      'Domecile building profile should be checked for management, fees, staff, and professional references',
+      'RPIE filings / income-expense context should be reviewed where applicable',
+      'Offering plans and bank questionnaires should be reviewed before publishing law firm or accounting firm names',
     ],
     hasAbatement: raw.dofAbatement?.hasAbatement || false,
     abatementAmount: raw.dofAbatement?.currentExemption || 0,
@@ -1821,6 +1882,46 @@ export function generateBrochureHTML(d: MasterReportData): string {
     ['AI Board Meeting Minutes', 'Included: every meeting, AI-enhanced and distributed'],
     ['In-House Attorney & Engineer', 'Free advisory: legal and engineering consultation'],
   ];
+  const parseOpexRange = (range?: string) => {
+    const nums = String(range || '').match(/\d+(?:\.\d+)?/g)?.map(Number) || [];
+    if (nums.length >= 2) return { low: nums[0], high: nums[1], avg: (nums[0] + nums[1]) / 2 };
+    if (nums.length === 1) return { low: nums[0], high: nums[0], avg: nums[0] };
+    return { low: 24, high: 38, avg: 31 };
+  };
+  const opex = parseOpexRange(d.neighborhoodMarketData?.opexRange);
+  const modeledBuildingArea = d.buildingArea > 0 ? d.buildingArea : Math.max(d.units * 900, 1);
+  const modeledAnnualOpex = Math.round(modeledBuildingArea * opex.avg);
+  const modeledAnnualFee = Math.max(d.annualFee || d.monthlyFee * 12, 1);
+  const expenseMix = [
+    { label: 'Real Estate Taxes', pct: 0.27, savingsRate: 0 },
+    { label: 'Insurance', pct: 0.20, savingsRate: 0.06 },
+    { label: 'Utilities', pct: 0.17, savingsRate: 0.05 },
+    { label: 'Maintenance & Repairs', pct: 0.14, savingsRate: 0.06 },
+    { label: 'Management & Admin', pct: 0.11, savingsRate: 0.04 },
+    { label: 'Other / Reserve', pct: 0.11, savingsRate: 0.01 },
+  ];
+  const categorySavings = expenseMix.map(item => ({
+    ...item,
+    spend: Math.round(modeledAnnualOpex * item.pct),
+    savings: Math.round(modeledAnnualOpex * item.pct * item.savingsRate),
+  }));
+  const revenueRecovery = Math.round(Math.max(d.units * 275, modeledAnnualOpex * 0.003));
+  const retentionSavings = Math.round(d.units * 0.08 * 5000 * 0.25);
+  const complianceAvoidance = Math.round((d.ll97?.period1Penalty || 0) * 0.2);
+  const modeledYear1Value = categorySavings.reduce((sum, item) => sum + item.savings, 0) + revenueRecovery + retentionSavings + complianceAvoidance;
+  const financialModel = {
+    modeledBuildingArea,
+    opexRange: opex,
+    annualOpex: modeledAnnualOpex,
+    annualFee: modeledAnnualFee,
+    categorySavings,
+    revenueRecovery,
+    retentionSavings,
+    complianceAvoidance,
+    year1Value: modeledYear1Value,
+    feeEscalation: 0.04,
+    valueGrowth: 0.04,
+  };
   const commercialIntel = d.commercialIntel || {
     commercialSignals: [],
     likelyCommercialUses: [],
@@ -2571,7 +2672,7 @@ ${d.dobEngineers.length > 0 ? d.dobEngineers.map((e, i) => `<tr${(d.dobArchitect
 <tr style="background:#EDE9DF"><td style="padding:10px 12px;font-size:12px;font-weight:600;color:#2C3240">📊 Accounting Firm</td><td style="padding:10px 12px;font-size:12px;color:#2C3240" colspan="2">${d.professionals.accountingFirm || '<em style="color:#999">To be identified — check AG Offering Plan</em>'}</td></tr>
 </tbody>
 </table>
-<div style="font-size:9px;color:#888;margin-top:8px">Source: NYC Dept. of Buildings permit records. Professionals listed are those who filed DOB applications for this property.</div>
+<div style="font-size:9px;color:#888;margin-top:8px">Sources checked / required: ${(d.professionalResearchSources || []).map(src => safe(src)).join(' · ')}</div>
 </div>
 
 <!-- DOB OWNER INFORMATION -->
@@ -3375,18 +3476,16 @@ ${[
 <div style="margin-bottom:28px">
 <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#A89035;font-weight:600;margin-bottom:14px;padding-left:16px;border-left:4px solid #A89035">5-Year Financial Pro Forma</div>
 ${(() => {
-  const mgmtFee = d.monthlyFee * 12;
+  const mgmtFee = financialModel.annualFee;
   // Dynamic savings: scale with units — insurance ($200-500/unit) + vendor ($300-650/unit) + energy ($120-300/unit) + revenue ($130-350/unit) + admin ($70-160/unit)
-  const yr1Low = Math.round(d.units * 820); // conservative: $820/unit/year in total savings
-  const yr1High = Math.round(d.units * 1960); // optimistic
-  const yr1Mid = Math.round((yr1Low + yr1High) / 2);
-  const growth = 1.04; // 4% annual improvement
+  const yr1Mid = financialModel.year1Value;
+  const growth = 1 + financialModel.valueGrowth;
   const years = [1, 2, 3, 4, 5];
   const projections = years.map(y => {
     const savings = Math.round(yr1Mid * Math.pow(growth, y - 1));
-    const fee = Math.round(mgmtFee * Math.pow(1.04, y - 1)); // 4% annual escalation (3-5% per board agreement)
+    const fee = Math.round(mgmtFee * Math.pow(1 + financialModel.feeEscalation, y - 1));
     const net = savings - fee;
-    const roi = Math.round((savings / fee) * 100);
+    const roi = Math.round((net / fee) * 100);
     return { year: y, savings, fee, net, roi };
   });
   const cumSavings = projections.reduce((acc, p) => { acc.push((acc.length > 0 ? acc[acc.length - 1] : 0) + p.net); return acc; }, [] as number[]);
