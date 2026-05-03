@@ -25,6 +25,23 @@ const ENDPOINTS = {
   acrisParties: `${NYC_BASE}/636b-3b5g.json`,
 };
 
+function socrataUrl(endpoint: string, params: Record<string, string | number>): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    search.set(key, String(value));
+  }
+  return `${endpoint}?${search.toString()}`;
+}
+
+function escapeSoql(value: string): string {
+  return value.replace(/'/g, "''");
+}
+
+function isHPDViolationOpen(v: HPDViolation): boolean {
+  const status = `${v.violationstatus || ''} ${v.currentstatus || ''}`.toUpperCase();
+  return !/\bCLOSE\b|DISMISSED|COMPLIED|RESCINDED|CANCELLED/.test(status);
+}
+
 // Borough name → code mapping for NYC APIs
 const BOROUGH_CODES: Record<string, string> = {
   manhattan: '1',
@@ -90,6 +107,11 @@ function stripOrdinal(word: string): string {
 function normalizeAddress(address: string): string {
   let norm = address.toUpperCase().trim();
 
+  // Keep the street address only. User-entered addresses often arrive as
+  // "1280 Fifth Avenue, New York, NY"; if the city remains in the street
+  // token, HPD/DOB/DOF queries return empty.
+  norm = norm.split(',')[0].trim();
+
   // Expand common abbreviations
   norm = norm.replace(/\bAVE\b/g, 'AVENUE');
   norm = norm.replace(/\bST\b/g, 'STREET');
@@ -108,9 +130,11 @@ function normalizeAddress(address: string): string {
   // Strip ordinal suffixes: "79TH" → "79", "1ST" → "1" etc.
   norm = stripOrdinal(norm);
 
-  // Strip city/state/zip suffixes that users commonly append
-  norm = norm.replace(/,?\s*(NEW YORK|NYC|NY|MANHATTAN|BROOKLYN|QUEENS|BRONX|STATEN ISLAND|NEW YORK CITY)\s*$/gi, '');
-  norm = norm.replace(/,?\s*\d{5}(-\d{4})?\s*$/, ''); // ZIP code
+  // Strip city/state/zip suffixes that users commonly append without commas.
+  norm = norm.replace(/\s+\d{5}(-\d{4})?\s*$/g, '');
+  for (let i = 0; i < 3; i += 1) {
+    norm = norm.replace(/\s+(NEW YORK CITY|NEW YORK|NYC|NY|MANHATTAN|BROOKLYN|QUEENS|BRONX|STATEN ISLAND)\s*$/g, '');
+  }
 
   // Remove street type suffixes — we'll search without them for broader matching
   // Keep them in the normalized form but they'll be stripped when building search keys
@@ -165,6 +189,24 @@ function buildLikePattern(tokens: string[]): string {
   return '%' + tokens.join('%') + '%';
 }
 
+export async function fetchHPDViolationsByBBL(bbl: string): Promise<HPDViolation[]> {
+  const clean = bbl.replace(/\D/g, '').slice(0, 10);
+  if (clean.length !== 10) return [];
+  try {
+    const url = socrataUrl(ENDPOINTS.hpdViolations, {
+      $limit: 500,
+      $order: 'inspectiondate DESC',
+      $where: `bbl='${clean}'`,
+    });
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HPD BBL API error: ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error('HPD Violations by BBL fetch error:', err);
+    return [];
+  }
+}
+
 /**
  * Fetch HPD Violations for an address.
  * Uses flexible LIKE matching to handle HPD's formatting (double spaces, no ordinals).
@@ -175,24 +217,32 @@ export async function fetchHPDViolations(address: string, borough?: string): Pro
     const tokens = streetSearchTokens(street);
     const pattern = buildLikePattern(tokens);
 
-    let where = `upper(streetname) like '${encodeURIComponent(pattern)}'`;
+    let where = `upper(streetname) like '${escapeSoql(pattern)}'`;
     if (number) {
-      where += ` AND housenumber='${number}'`;
+      where += ` AND housenumber='${escapeSoql(number)}'`;
     }
     if (borough) {
       const code = BOROUGH_CODES[borough.toLowerCase()];
       if (code) where += ` AND boroid='${code}'`;
     }
 
-    let url = `${ENDPOINTS.hpdViolations}?$limit=200&$where=${where}`;
+    let url = socrataUrl(ENDPOINTS.hpdViolations, {
+      $limit: 500,
+      $order: 'inspectiondate DESC',
+      $where: where,
+    });
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HPD API error: ${res.status}`);
     const results: HPDViolation[] = await res.json();
 
     // Fallback: if no results and we have a number, try broader match with just the number
     if (results.length === 0 && number && tokens.length > 1) {
-      const fallbackWhere = `housenumber='${number}' AND upper(streetname) like '%25${encodeURIComponent(tokens[tokens.length - 1])}%25'`;
-      const fallbackUrl = `${ENDPOINTS.hpdViolations}?$limit=200&$where=${fallbackWhere}`;
+      const fallbackWhere = `housenumber='${escapeSoql(number)}' AND upper(streetname) like '%${escapeSoql(tokens[tokens.length - 1])}%'`;
+      const fallbackUrl = socrataUrl(ENDPOINTS.hpdViolations, {
+        $limit: 500,
+        $order: 'inspectiondate DESC',
+        $where: fallbackWhere,
+      });
       const fallbackRes = await fetch(fallbackUrl);
       if (fallbackRes.ok) return await fallbackRes.json();
     }
@@ -213,24 +263,24 @@ export async function fetchHPDRegistration(address: string, borough?: string): P
     const tokens = streetSearchTokens(street);
     const pattern = buildLikePattern(tokens);
 
-    let where = `upper(streetname) like '${encodeURIComponent(pattern)}'`;
+    let where = `upper(streetname) like '${escapeSoql(pattern)}'`;
     if (number) {
-      where += ` AND housenumber='${number}'`;
+      where += ` AND housenumber='${escapeSoql(number)}'`;
     }
     if (borough) {
       const code = BOROUGH_CODES[borough.toLowerCase()];
       if (code) where += ` AND boroid='${code}'`;
     }
 
-    let url = `${ENDPOINTS.hpdRegistration}?$limit=50&$where=${where}`;
+    let url = socrataUrl(ENDPOINTS.hpdRegistration, { $limit: 50, $where: where });
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HPD Registration API error: ${res.status}`);
     const results = await res.json();
 
     // Fallback with just the number + last token
     if (results.length === 0 && number && tokens.length > 1) {
-      const fallbackWhere = `housenumber='${number}' AND upper(streetname) like '%25${encodeURIComponent(tokens[tokens.length - 1])}%25'`;
-      const fallbackUrl = `${ENDPOINTS.hpdRegistration}?$limit=50&$where=${fallbackWhere}`;
+      const fallbackWhere = `housenumber='${escapeSoql(number)}' AND upper(streetname) like '%${escapeSoql(tokens[tokens.length - 1])}%'`;
+      const fallbackUrl = socrataUrl(ENDPOINTS.hpdRegistration, { $limit: 50, $where: fallbackWhere });
       const fallbackRes = await fetch(fallbackUrl);
       if (fallbackRes.ok) return await fallbackRes.json();
     }
@@ -260,14 +310,14 @@ export async function fetchDOFProperty(address: string, borough?: string): Promi
       pattern = buildLikePattern(tokens);
     }
 
-    let where = `upper(address) like '${encodeURIComponent(pattern)}'`;
+    let where = `upper(address) like '${escapeSoql(pattern)}'`;
     if (borough) {
       // PLUTO uses abbreviated borough codes: MN, BK, QN, BX, SI
       const plutoCode = PLUTO_BOROUGH_CODES[borough.toLowerCase()] || borough.toUpperCase();
       where += ` AND borough='${plutoCode}'`;
     }
 
-    let url = `${ENDPOINTS.dofProperty}?$limit=10&$where=${where}`;
+    let url = socrataUrl(ENDPOINTS.dofProperty, { $limit: 10, $where: where });
     const res = await fetch(url);
     if (!res.ok) throw new Error(`DOF API error: ${res.status}`);
     const results: DOFProperty[] = await res.json();
@@ -280,12 +330,12 @@ export async function fetchDOFProperty(address: string, borough?: string): Promi
       const numericTokens = tokens.filter((t) => /^\d+$/.test(t));
       if (numericTokens.length > 0) {
         const fallbackPattern = buildLikePattern([number, ...numericTokens]);
-        let fallbackWhere = `upper(address) like '${encodeURIComponent(fallbackPattern)}'`;
+        let fallbackWhere = `upper(address) like '${escapeSoql(fallbackPattern)}'`;
         if (borough) {
           const plutoCode = PLUTO_BOROUGH_CODES[borough.toLowerCase()] || borough.toUpperCase();
           fallbackWhere += ` AND borough='${plutoCode}'`;
         }
-        const fb = await fetch(`${ENDPOINTS.dofProperty}?$limit=10&$where=${fallbackWhere}`);
+        const fb = await fetch(socrataUrl(ENDPOINTS.dofProperty, { $limit: 10, $where: fallbackWhere }));
         if (fb.ok) {
           const fbResults: DOFProperty[] = await fb.json();
           if (fbResults.length > 0) return fbResults;
@@ -312,13 +362,13 @@ export async function fetchDOBPermits(address: string, borough?: string): Promis
 
     let where = '';
     if (number) {
-      where = `upper(house__) like '%25${encodeURIComponent(number)}%25'`;
-      where += ` AND upper(street_name) like '${encodeURIComponent(pattern)}'`;
+      where = `upper(house__) like '%${escapeSoql(number)}%'`;
+      where += ` AND upper(street_name) like '${escapeSoql(pattern)}'`;
     } else {
-      where = `upper(street_name) like '${encodeURIComponent(pattern)}'`;
+      where = `upper(street_name) like '${escapeSoql(pattern)}'`;
     }
 
-    let url = `${ENDPOINTS.dobPermits}?$limit=50&$order=pre__filing_date DESC&$where=${where}`;
+    let url = socrataUrl(ENDPOINTS.dobPermits, { $limit: 50, $order: 'pre__filing_date DESC', $where: where });
     const res = await fetch(url);
     if (!res.ok) throw new Error(`DOB API error: ${res.status}`);
     return await res.json();
@@ -343,7 +393,7 @@ export async function fetchLL97Energy(address: string): Promise<LL97Energy[]> {
       pattern = buildLikePattern(tokens);
     }
 
-    let url = `${ENDPOINTS.ll97Energy}?$limit=10&$where=upper(address_1) like '${encodeURIComponent(pattern)}'`;
+    let url = socrataUrl(ENDPOINTS.ll97Energy, { $limit: 10, $where: `upper(address_1) like '${escapeSoql(pattern)}'` });
     const res = await fetch(url);
     if (!res.ok) throw new Error(`LL97 API error: ${res.status}`);
     return await res.json();
@@ -685,7 +735,7 @@ export function extractDOBProfessionals(permits: DOBPermit[]): { professionals: 
  * Fetch ALL NYC data for a building (combined)
  */
 export async function fetchFullBuildingReport(address: string, borough?: string) {
-  const [violations, registration, dofData, permits, energy] = await Promise.all([
+  let [violations, registration, dofData, permits, energy] = await Promise.all([
     fetchHPDViolations(address, borough),
     fetchHPDRegistration(address, borough),
     fetchDOFProperty(address, borough),
@@ -696,13 +746,17 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
   // Extract key data from DOF
   const dof = dofData[0];
 
+  // Address matching can miss condo parent lots when users include city/state
+  // variations. If DOF found the BBL, use it as the authoritative HPD fallback.
+  if (violations.length === 0 && dof?.bbl) {
+    violations = await fetchHPDViolationsByBBL(dof.bbl);
+  }
+
   // Extract registration info
   const reg = registration[0];
 
   // Calculate violation stats
-  const openViolations = violations.filter(
-    (v) => v.currentstatus !== 'CLOSE' && v.violationstatus !== 'Close'
-  );
+  const openViolations = violations.filter(isHPDViolationOpen);
 
   // Fetch ACRIS + new gov APIs if we have a BBL
   let acris: ACRISData | null = null;
@@ -821,16 +875,16 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
     dof: dof
       ? {
           bbl: dof.bbl,
-          owner: dof.owner,
-          marketValue: parseFloat(dof.fullval) || 0,
-          assessedValue: parseFloat(dof.avtot) || 0,
-          landValue: parseFloat(dof.avland) || 0,
+          owner: (dof as any).owner || (dof as any).ownername || '',
+          marketValue: parseFloat((dof as any).fullval || (dof as any).fullvaltot || (dof as any).marketvalue) || 0,
+          assessedValue: parseFloat((dof as any).avtot || (dof as any).assesstot) || 0,
+          landValue: parseFloat((dof as any).avland || (dof as any).assessland) || 0,
           yearBuilt: parseInt(dof.yearbuilt) || 0,
           units: parseInt(dof.unitsres) || parseInt(dof.unitstotal) || 0,
           lotArea: parseFloat(dof.lotarea) || 0,
-          buildingArea: parseFloat(dof.bldgarea) || 0,
+          buildingArea: parseFloat((dof as any).bldgarea || (dof as any).resarea) || 0,
           stories: parseInt(dof.numfloors) || 0,
-          buildingClass: dof.bldgcl,
+          buildingClass: (dof as any).bldgcl || (dof as any).bldgclass || '',
           taxClass: dof.taxclass,
         }
       : null,

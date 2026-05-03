@@ -1730,6 +1730,26 @@ export function generateBrochureHTML(d: MasterReportData): string {
     ? 'FDR Drive, Harlem River Drive, and major crosstown corridors give Camelot multiple routes for inspections, vendor coordination, and emergency response.'
     : 'Major arterial access and vendor routing are reviewed during onboarding so emergency dispatch and inspections have clear coverage plans.';
   const safe = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+  const fmtDate = (value: unknown) => {
+    if (!value) return 'N/A';
+    const date = new Date(String(value));
+    return Number.isNaN(date.getTime()) ? String(value).slice(0, 10) : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+  const hpdViolationItems = Array.isArray(d.raw?.violations?.items) ? d.raw.violations.items : [];
+  const openHPDViolationItems = hpdViolationItems.filter((v: any) => !/\bCLOSE\b|DISMISSED|COMPLIED|RESCINDED|CANCELLED/i.test(`${v.violationstatus || ''} ${v.currentstatus || ''}`));
+  const recentHPDViolationItems = [...hpdViolationItems]
+    .sort((a: any, b: any) => new Date(b.inspectiondate || b.approveddate || 0).getTime() - new Date(a.inspectiondate || a.approveddate || 0).getTime())
+    .slice(0, 8);
+  const violationHistoryRows = recentHPDViolationItems.length
+    ? recentHPDViolationItems.map((v: any) => `
+<tr>
+<td>${fmtDate(v.inspectiondate || v.approveddate)}</td>
+<td>${safe(v.class || 'N/A')}</td>
+<td>${safe(v.currentstatus || v.violationstatus || 'N/A')}</td>
+<td>${safe(v.violationid || v.novid || 'N/A')}</td>
+<td>${safe(String(v.novdescription || v.violationdescription || '').slice(0, 150))}${String(v.novdescription || v.violationdescription || '').length > 150 ? '...' : ''}</td>
+</tr>`).join('')
+    : '';
   const is1280Fifth = /1280\s+(fifth|5th)/i.test(`${d.address} ${d.buildingName}`);
   const subjectPhoto = d.buildingPhotos?.exterior?.[0] || '';
   const prettyNeighborhood = d.neighborhoodName
@@ -2371,6 +2391,27 @@ ${d.occupancy ? `<div class="stat-box"><div class="val">${d.occupancy}%</div><di
 <div><div class="label">Rent Stabilized</div><div class="value">${d.isRentStabilized ? '\uD83D\uDCCB Yes' : 'No'}</div></div>
 <div><div class="label">DOB Permits</div><div class="value">${d.permitsCount}</div></div>
 <div><div class="label">Distress Level</div><div class="value" style="color:${d.distressLevel === 'critical' || d.distressLevel === 'distressed' ? '#dc2626' : d.distressLevel === 'stressed' ? '#ea580c' : '#2C3240'};font-weight:600">${d.distressLevel.toUpperCase()} (${d.distressScore}/100)</div></div>
+</div>
+<div style="margin-top:18px;border:1px solid #D5D0C6;background:#fff">
+<div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid #D5D0C6;background:#F8F6F0">
+<div>
+<div style="font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:#A89035;font-weight:800">HPD Violation Current Status &amp; History</div>
+<div style="font-size:11px;color:#555;margin-top:4px">Jackie searches NYC HPD violations by address, then falls back to BBL when DOF confirms the property record.</div>
+</div>
+<div style="text-align:right;font-size:11px;color:${openHPDViolationItems.length > 0 ? '#dc2626' : '#16a34a'};font-weight:800">${openHPDViolationItems.length} CURRENT OPEN</div>
+</div>
+${violationHistoryRows ? `
+<table style="width:100%;border-collapse:collapse;font-size:10px;color:#2C3240">
+<thead><tr style="background:#fff;color:#38557D;text-align:left">
+<th style="padding:8px;border-bottom:1px solid #D5D0C6">Date</th>
+<th style="padding:8px;border-bottom:1px solid #D5D0C6">Class</th>
+<th style="padding:8px;border-bottom:1px solid #D5D0C6">Status</th>
+<th style="padding:8px;border-bottom:1px solid #D5D0C6">ID</th>
+<th style="padding:8px;border-bottom:1px solid #D5D0C6">Description</th>
+</tr></thead>
+<tbody>${violationHistoryRows}</tbody>
+</table>` : `
+<div style="padding:14px 16px;font-size:11px;color:#555;line-height:1.6">No HPD violation rows returned by NYC Open Data for this property after address and BBL search. Jackie should verify HPD Online manually before board-facing release.</div>`}
 </div>
 ${d.distressSignals.length > 0 ? `
 <div style="margin-top:16px;border-left:4px solid #dc2626;padding-left:12px;margin-bottom:8px">
