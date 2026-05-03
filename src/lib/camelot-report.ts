@@ -1529,8 +1529,10 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
   });
   checks.push({
     name: 'Building Contacts / Staff',
-    status: d.boardMembers.length > 0 && d.buildingStaff.length > 0 ? 'pass' : 'fail',
-    detail: `${d.boardMembers.length} board/owner signal(s), ${d.buildingStaff.length} staff/management signal(s)`,
+    status: d.boardMembers.length > 0 && d.buildingStaff.length > 0 ? 'pass' : 'warn',
+    detail: d.boardMembers.length > 0 && d.buildingStaff.length > 0
+      ? `${d.boardMembers.length} board/owner signal(s), ${d.buildingStaff.length} staff/management signal(s)`
+      : `${d.boardMembers.length} board/owner signal(s), ${d.buildingStaff.length} staff/management signal(s) — verify HPD MDR, ACRIS, DOB, PropertyShark, board materials, or site contact before board-facing release`,
   });
   const contactSourceText = (d.contactResearchSources || []).join(' ');
   for (const source of ['HPD MDR', 'ACRIS', 'DOB', 'PropertyShark', 'Apollo']) {
@@ -1834,6 +1836,7 @@ export function generateBrochureHTML(d: MasterReportData): string {
   const brochureActualMgmt = d.managementCompany && !['Unknown','To be confirmed upon engagement'].includes(d.managementCompany) ? d.managementCompany : brochureAgent ? brochureAgent.name : null;
   const isSelfManaged = !brochureActualMgmt;
   const fmtMoney = (n: number) => n >= 1e6 ? `$${(n/1e6).toFixed(1)}M` : `$${n.toLocaleString()}`;
+  const modelUnits = Math.max(d.units || 0, 1);
   const isManhattan = (d.borough || '').toLowerCase().includes('manhattan') || /fifth|madison|park|broadway|avenue|street/i.test(d.address);
   const accessBorough = d.borough || 'New York';
   const accessTransit = isManhattan
@@ -1921,7 +1924,7 @@ export function generateBrochureHTML(d: MasterReportData): string {
     return { low: 24, high: 38, avg: 31 };
   };
   const opex = parseOpexRange(d.neighborhoodMarketData?.opexRange);
-  const modeledBuildingArea = d.buildingArea > 0 ? d.buildingArea : Math.max(d.units * 900, 1);
+  const modeledBuildingArea = d.buildingArea > 0 ? d.buildingArea : Math.max(modelUnits * 900, 1);
   const modeledAnnualOpex = Math.round(modeledBuildingArea * opex.avg);
   const modeledAnnualFee = Math.max(d.annualFee || d.monthlyFee * 12, 1);
   const expenseMix = [
@@ -1937,8 +1940,8 @@ export function generateBrochureHTML(d: MasterReportData): string {
     spend: Math.round(modeledAnnualOpex * item.pct),
     savings: Math.round(modeledAnnualOpex * item.pct * item.savingsRate),
   }));
-  const revenueRecovery = Math.round(Math.max(d.units * 275, modeledAnnualOpex * 0.003));
-  const retentionSavings = Math.round(d.units * 0.08 * 5000 * 0.25);
+  const revenueRecovery = Math.round(Math.max(modelUnits * 275, modeledAnnualOpex * 0.003));
+  const retentionSavings = Math.round(modelUnits * 0.08 * 5000 * 0.25);
   const complianceAvoidance = Math.round((d.ll97?.period1Penalty || 0) * 0.2);
   const modeledYear1Value = categorySavings.reduce((sum, item) => sum + item.savings, 0) + revenueRecovery + retentionSavings + complianceAvoidance;
   const financialModel = {
@@ -1976,7 +1979,7 @@ export function generateBrochureHTML(d: MasterReportData): string {
     ? `With ${d.violationsOpen} open violations and evolving compliance requirements, the families at ${d.buildingName} deserve a management partner with proven expertise in compliance resolution, proactive maintenance, and transparent financial stewardship.`
     : `Every day, the ${d.units || ''} families at ${d.buildingName} depend on the quality of their building\u2019s management. The right partner brings proactive care, financial clarity, and modern technology \u2014 elevating not just the building, but the lives of everyone who calls it home.`;
 
-  return `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -3284,22 +3287,22 @@ ${d.feeComparison ? `
 <div style="display:flex;align-items:center;gap:8px">
 <div style="font-size:11px;color:#888;width:110px;text-align:right">Market Low</div>
 <div style="flex:1;background:#E5E3DE;border-radius:4px;height:28px;position:relative">
-<div style="background:linear-gradient(to right,#dc2626,#f87171);height:100%;border-radius:4px;width:${Math.min(100, Math.round((d.feeComparison.marketRangeLow * d.units) / (d.feeComparison.marketRangeHigh * d.units) * 100))}%"></div>
-<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#2C3240">$${(d.feeComparison.marketRangeLow * d.units).toLocaleString()}/yr</span>
+<div style="background:linear-gradient(to right,#dc2626,#f87171);height:100%;border-radius:4px;width:${Math.min(100, Math.round((d.feeComparison.marketRangeLow * modelUnits) / Math.max(d.feeComparison.marketRangeHigh * modelUnits, 1) * 100))}%"></div>
+<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#2C3240">$${(d.feeComparison.marketRangeLow * modelUnits).toLocaleString()}/yr</span>
 </div>
 </div>
 <div style="display:flex;align-items:center;gap:8px">
 <div style="font-size:11px;color:#888;width:110px;text-align:right">Market High</div>
 <div style="flex:1;background:#E5E3DE;border-radius:4px;height:28px;position:relative">
 <div style="background:linear-gradient(to right,#dc2626,#f87171);height:100%;border-radius:4px;width:100%"></div>
-<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#fff">$${(d.feeComparison.marketRangeHigh * d.units).toLocaleString()}/yr</span>
+<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#fff">$${(d.feeComparison.marketRangeHigh * modelUnits).toLocaleString()}/yr</span>
 </div>
 </div>
 <div style="display:flex;align-items:center;gap:8px">
 <div style="font-size:11px;color:#A89035;width:110px;text-align:right;font-weight:700">★ Camelot</div>
 <div style="flex:1;background:#E5E3DE;border-radius:4px;height:28px;position:relative">
-<div style="background:linear-gradient(to right,#A89035,#C4AA6E);height:100%;border-radius:4px;width:${Math.min(100, Math.round((d.feeComparison.camelotAnnualPerUnit * d.units) / (d.feeComparison.marketRangeHigh * d.units) * 100))}%"></div>
-<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#2C3240">$${(d.feeComparison.camelotAnnualPerUnit * d.units).toLocaleString()}/yr</span>
+<div style="background:linear-gradient(to right,#A89035,#C4AA6E);height:100%;border-radius:4px;width:${Math.min(100, Math.round((d.feeComparison.camelotAnnualPerUnit * modelUnits) / Math.max(d.feeComparison.marketRangeHigh * modelUnits, 1) * 100))}%"></div>
+<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#2C3240">$${(d.feeComparison.camelotAnnualPerUnit * modelUnits).toLocaleString()}/yr</span>
 </div>
 </div>
 </div>
@@ -3484,9 +3487,9 @@ ${[
 
 <div class="stats-row">
 <div class="stat-box"><div class="val gold">$${d.monthlyFee.toLocaleString()}/mo</div><div class="lbl">Proposed Mgmt Fee ($${d.pricePerUnit}/unit)</div></div>
-<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(d.units * 4500).toLocaleString()}/yr</div><div class="lbl">Est. Retention Savings</div></div>
-<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(d.units * 750).toLocaleString()}/yr</div><div class="lbl">Est. Payment Recovery</div></div>
-<div class="stat-box"><div class="val" style="color:#16a34a">$${(d.buildingArea > 0 ? Math.round(d.buildingArea * 0.40).toLocaleString() : Math.round(d.units * 250).toLocaleString())}/yr</div><div class="lbl">Est. Energy Savings</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(modelUnits * 4500).toLocaleString()}/yr</div><div class="lbl">Est. Retention Savings</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${Math.round(modelUnits * 750).toLocaleString()}/yr</div><div class="lbl">Est. Payment Recovery</div></div>
+<div class="stat-box"><div class="val" style="color:#16a34a">$${(d.buildingArea > 0 ? Math.round(d.buildingArea * 0.40).toLocaleString() : Math.round(modelUnits * 250).toLocaleString())}/yr</div><div class="lbl">Est. Energy Savings</div></div>
 </div>
 
 <table class="invest-table" style="margin-top:16px">
@@ -4501,4 +4504,7 @@ function generateProposal() {
 </script>
 </body>
 </html>`;
+  return html
+    .replace(/\b-?Infinity\b/g, 'N/A')
+    .replace(/\bNaN\b/g, 'N/A');
 }
