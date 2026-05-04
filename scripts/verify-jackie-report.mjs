@@ -49,6 +49,8 @@ const requiredTokens = [
   ['Lease renewal ancillary fee', '$350 per lease'],
   ['Closing ancillary fee', "camelotRate: '$1,500'"],
   ['Alteration agreement ancillary fee', 'Review of Alteration Agreements'],
+  ['Corinthian official website', 'https://thecorinthiannyc.com/'],
+  ['Corinthian official image', 'The-Corinthian-building-NYC-Condos.jpg'],
   ['Commercial source stack', 'NYC vacant storefront data'],
   ['Commercial broker source stack', 'CoStar/LoopNet-style commercial listings'],
   ['Neighborhood source stack', 'Neighborhood scoring source stack'],

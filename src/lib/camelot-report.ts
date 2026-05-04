@@ -188,6 +188,7 @@ interface KnownPropertyFacts {
   propertyType?: string;
   neighborhoodName?: string;
   streetEasyUrl?: string;
+  officialWebsite?: string;
   description?: string;
   amenities?: string[];
   commercialSignals?: string[];
@@ -1370,7 +1371,11 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
       yearBuilt: 1989,
       propertyType: 'Luxury Condominium',
       neighborhoodName: 'Murray Hill',
+      officialWebsite: 'https://thecorinthiannyc.com/',
       streetEasyUrl: 'https://streeteasy.com/building/the-corinthian',
+      imageUrls: [
+        'https://thecorinthiannyc.com/img/The-Corinthian-building-NYC-Condos.jpg',
+      ],
       description: 'The Corinthian is a full-block Murray Hill condominium at 330 East 38th Street, known for its rounded bay-window architecture, white-glove service, major amenity package, and large-scale residential/commercial program.',
       amenities: [
         '24-hour doorman and concierge service',
@@ -1411,9 +1416,11 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
       locationCopy: 'The Corinthian occupies a full-block position near First Avenue and East 38th Street, with strong East Side access, medical/institutional anchors, and Midtown connectivity.',
       lifestyleTitle: 'Scale, Amenities & Liquidity',
       lifestyleCopy: 'The building’s large unit count, white-glove staffing, garage, pool, fitness, roof and entertainment amenities create a full-service residential experience that supports resale, leasing, and board expectations.',
-      brandingTitle: 'The Corinthian on StreetEasy',
-      brandingDescription: 'StreetEasy and market building profiles identify The Corinthian as a 330 East 38th Street condominium in Murray Hill with 817 units, 57 stories, 1989 construction, Rose Associates management, Bernard Spitzer development, and Michael Schimenti / Der Scutt Architects design attribution.',
+      brandingTitle: 'The Corinthian NYC',
+      brandingDescription: 'The official Corinthian website and market building profiles identify The Corinthian as a 330 East 38th Street condominium in Murray Hill with 817 units, 57 stories, 1989 construction, Rose Associates management, Bernard Spitzer development, and Michael Schimenti / Der Scutt Architects design attribution.',
       researchSources: [
+        'Official building website: https://thecorinthiannyc.com/',
+        'Official building image: https://thecorinthiannyc.com/img/The-Corinthian-building-NYC-Condos.jpg',
         'StreetEasy building page: https://streeteasy.com/building/the-corinthian',
         'NYBits building profile: https://www.nybits.com/apartments/the_corinthian.html',
         'Corcoran building profile for The Corinthian',
@@ -1791,7 +1798,7 @@ export async function buildMasterReport(address: string, borough?: string): Prom
       commercialSignals: unique([...(knownFacts.commercialSignals || []), ...commercialIntel.commercialSignals]),
       amenities: unique([...(knownFacts.amenities || []), ...commercialIntel.amenities]),
       revenueOpportunities: unique([...(knownFacts.revenueOpportunities || []), ...commercialIntel.revenueOpportunities]),
-      officialWebsite: knownFacts.streetEasyUrl || commercialIntel.officialWebsite,
+      officialWebsite: knownFacts.officialWebsite || knownFacts.streetEasyUrl || commercialIntel.officialWebsite,
       brandingTitle: knownFacts.brandingTitle || commercialIntel.brandingTitle,
       brandingDescription: knownFacts.brandingDescription || commercialIntel.brandingDescription,
       brandingImages: knownFacts.imageUrls?.length ? knownFacts.imageUrls : commercialIntel.brandingImages,
