@@ -226,6 +226,22 @@ function verifiedManagementLabel(value?: string | null): string {
   return cleaned;
 }
 
+function cleanBuildingName(value: string, address: string, managementCompany?: string | null): string {
+  let cleaned = String(value || '').trim();
+  const mgmt = String(managementCompany || '').trim();
+  if (mgmt) {
+    const escaped = mgmt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    cleaned = cleaned.replace(new RegExp(`\\b${escaped}\\b`, 'ig'), '').trim();
+  }
+  cleaned = cleaned
+    .replace(/\bAKAM\b/ig, '')
+    .replace(/\b(?:Management|Managed\s+By|Mgmt)\b\s*:?\s*$/ig, '')
+    .replace(/^[\s,:;\-–—|]+|[\s,:;\-–—|]+$/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  return cleaned || address;
+}
+
 // Neighborhood Market Data (Q1 2026 — from Camelot Market Report)
 // ============================================================
 
@@ -1453,6 +1469,22 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
       ],
     };
   }
+  if (/345\s+w(est)?\s+58/i.test(key) || /345\s+west\s+58th/i.test(key)) {
+    return {
+      canonicalAddress: '345 West 58th Street, New York, NY 10019',
+      buildingName: '345 West 58th Street',
+      managementCompany: 'AKAM',
+      neighborhoodName: 'Midtown West / Columbus Circle',
+      description: '345 West 58th Street is a Midtown West residential property near Columbus Circle. Jackie treats AKAM as current management context, not as part of the subject property name.',
+      researchSources: [
+        'Known-property display-name guard: AKAM is current management context, not building name',
+        'HPD MDR / DOF / DOB / ACRIS records should be checked for verified board, staff, and management details before board-facing release',
+      ],
+      professionalNotes: [
+        'Do not include AKAM in the report title or building name for this subject property.',
+      ],
+    };
+  }
   if (/1280\s+(fifth|5th)/i.test(key) || /one\s+museum\s+mile/i.test(key)) {
     return {
       buildingName: 'One Museum Mile',
@@ -1777,7 +1809,8 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     return energyName;
   }
 
-  const buildingName = knownFacts?.buildingName || deriveBuildingName(reportAddress, raw);
+  const derivedBuildingName = knownFacts?.buildingName || deriveBuildingName(reportAddress, raw);
+  const buildingName = cleanBuildingName(derivedBuildingName, reportAddress, knownFacts?.managementCompany || raw.registration?.managementCompany);
   const propertyType = knownFacts?.propertyType || streetEasy?.buildingType || classifyBuildingType(dof?.buildingClass || '');
   const brandingResearch = await fetchOfficialBuildingBranding(reportAddress, buildingName).catch(() => null);
   let commercialIntel = inferCommercialAmenityIntel({

@@ -51,6 +51,8 @@ const requiredTokens = [
   ['Alteration agreement ancillary fee', 'Review of Alteration Agreements'],
   ['Corinthian official website', 'https://thecorinthiannyc.com/'],
   ['Corinthian official image', 'The-Corinthian-building-NYC-Condos.jpg'],
+  ['345 West 58 display-name guard', '345 West 58th Street, New York, NY 10019'],
+  ['AKAM building-name sanitizer', 'cleanBuildingName'],
   ['Commercial source stack', 'NYC vacant storefront data'],
   ['Commercial broker source stack', 'CoStar/LoopNet-style commercial listings'],
   ['Neighborhood source stack', 'Neighborhood scoring source stack'],
