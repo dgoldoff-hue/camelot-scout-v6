@@ -10,14 +10,16 @@ const propertyDetailFile = resolve(root, 'src/components/PropertyDetail.tsx');
 const streetEasyFile = resolve(root, 'src/lib/streeteasy.ts');
 const nycApiFile = resolve(root, 'src/lib/nyc-api.ts');
 const nycViolationsFile = resolve(root, 'src/lib/nyc-violations.ts');
+const gutCheckFile = resolve(root, 'src/lib/gut-check.ts');
 const source = readFileSync(reportFile, 'utf8');
 const streetEasySource = readFileSync(streetEasyFile, 'utf8');
 const nycApiSource = readFileSync(nycApiFile, 'utf8');
 const nycViolationsSource = readFileSync(nycViolationsFile, 'utf8');
+const gutCheckSource = readFileSync(gutCheckFile, 'utf8');
 const reportCenter = readFileSync(reportCenterFile, 'utf8');
 const instantProposal = readFileSync(instantProposalFile, 'utf8');
 const propertyDetail = readFileSync(propertyDetailFile, 'utf8');
-const sourceStack = `${source}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}`;
+const sourceStack = `${source}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}\n${gutCheckSource}`;
 
 const requiredTokens = [
   ['201 East 79 known profile', "canonicalAddress: '201 East 79th Street, New York, NY 10075'"],
@@ -73,6 +75,11 @@ const requiredTokens = [
   ['Creative staffing report section', 'Creative Staffing &amp; Operating Model'],
   ['Fractional senior leadership model', 'Fractional Senior Leadership'],
   ['AI virtual assistance staffing support', 'AI &amp; Virtual Assistance'],
+  ['Front desk concierge staffing image', './images/services/front-desk-concierge.jpg'],
+  ['Front desk concierge staffing copy', 'Front Desk &amp; Concierge Staffing'],
+  ['Gut Check borough benchmark fallback', 'borough-level NYC benchmark'],
+  ['LL97 missing-data workplan rule', 'the report must flag the missing data and provide the compliance workplan'],
+  ['LL97 likely applicable fallback', 'll97LikelyApplicable'],
   ['ConciergePlus partner logo', '/images/partners/conciergeplus.svg'],
   ['Select real web asset', 'https://d2e1363xcu3t9u.cloudfront.net/2024/images/share.png'],
   ['Domecile real logo asset', 'https://www.domecile.com/assets/default/domecile_logo_evolve-f47345567bc24e05b97fd7c7f893ef2e897c9679312a2b55776c7d7d5f2d1b7d.svg'],

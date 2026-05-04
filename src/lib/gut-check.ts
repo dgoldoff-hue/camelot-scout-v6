@@ -49,10 +49,17 @@ export function runGutCheck(data: MasterReportData): GutCheckResult {
     hoodKey = 'East Harlem';
   }
 
-  // Find matching neighborhood
-  const hood = NEIGHBORHOODS.find(n => n.name.toLowerCase() === hoodKey.toLowerCase()) ||
+  // Find matching neighborhood. If the source stack cannot identify a specific
+  // neighborhood, keep the section useful with a borough-level NYC benchmark.
+  const matchedHood = NEIGHBORHOODS.find(n => n.name.toLowerCase() === hoodKey.toLowerCase()) ||
     NEIGHBORHOODS.find(n => hoodKey.includes(n.name.toLowerCase().split('/')[0].trim())) ||
     NEIGHBORHOODS.find(n => n.name.toLowerCase().includes(hoodKey.split(' ')[0]));
+  const boroughBenchmark = /brooklyn/i.test(data.borough)
+    ? NEIGHBORHOODS.find(n => n.name === 'Brooklyn Heights')
+    : /queens/i.test(data.borough)
+      ? NEIGHBORHOODS.find(n => n.name === 'Long Island City')
+      : NEIGHBORHOODS.find(n => n.name === 'Upper East Side');
+  const hood = matchedHood || boroughBenchmark || NEIGHBORHOODS[0];
 
   // Check if building is in Camelot portfolio
   const tracked = TRACKED_BUILDINGS.find(b =>
@@ -61,34 +68,32 @@ export function runGutCheck(data: MasterReportData): GutCheckResult {
 
   const buildingPSF = data.buildingArea > 0 && data.marketValue > 0
     ? Math.round(data.marketValue / data.buildingArea)
-    : hood ? (data.propertyType.toLowerCase().includes('co-op') ? hood.coopPSF : hood.condoPSF) : 0;
+    : (data.propertyType.toLowerCase().includes('co-op') ? hood.coopPSF : hood.condoPSF);
 
-  const neighborhoodPSF = hood
-    ? (data.propertyType.toLowerCase().includes('co-op') ? hood.coopPSF : hood.condoPSF)
-    : 0;
+  const neighborhoodPSF = data.propertyType.toLowerCase().includes('co-op') ? hood.coopPSF : hood.condoPSF;
 
   const valueDiff = neighborhoodPSF > 0 ? ((buildingPSF - neighborhoodPSF) / neighborhoodPSF) * 100 : 0;
 
   return {
     buildingName: data.buildingName || data.address,
     address: data.address,
-    neighborhood: hood?.name || hoodName || data.borough || 'NYC',
+    neighborhood: matchedHood?.name || hoodName || `${data.borough || 'NYC'} benchmark`,
     buildingPSF,
-    neighborhoodCondoPSF: hood?.condoPSF || 0,
-    neighborhoodCoopPSF: hood?.coopPSF || 0,
+    neighborhoodCondoPSF: hood.condoPSF,
+    neighborhoodCoopPSF: hood.coopPSF,
     valueDiffPct: Math.round(valueDiff * 10) / 10,
     valueStatus: valueDiff > 3 ? 'Above' : valueDiff < -3 ? 'Below' : 'At Market',
-    medianRent1BR: hood?.medianRent1BR || 0,
-    medianRent2BR: hood?.medianRent2BR || 0,
-    rentalPSFYear: hood ? Math.round((hood.medianRent1BR * 12) / 750) : 0, // approx
-    daysOnMarket: hood?.daysOnMarket || 0,
-    yoyChange: hood?.yoyChange || 0,
-    momentum: hood?.momentum || 'Unknown',
-    opexRange: hood?.opexRange || 'N/A',
-    investScore: hood?.investScore || 0,
-    liveScore: hood?.liveScore || 0,
-    familyScore: hood?.familyScore || 0,
-    workScore: hood?.workScore || 0,
+    medianRent1BR: hood.medianRent1BR,
+    medianRent2BR: hood.medianRent2BR,
+    rentalPSFYear: Math.round((hood.medianRent1BR * 12) / 750), // approx
+    daysOnMarket: hood.daysOnMarket,
+    yoyChange: hood.yoyChange,
+    momentum: hood.momentum,
+    opexRange: hood.opexRange,
+    investScore: hood.investScore,
+    liveScore: hood.liveScore,
+    familyScore: hood.familyScore,
+    workScore: hood.workScore,
     isInCamelotPortfolio: !!tracked,
     camelotPerformance: tracked?.performance || '',
   };

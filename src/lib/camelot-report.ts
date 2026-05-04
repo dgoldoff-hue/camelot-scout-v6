@@ -2836,6 +2836,30 @@ export function generateBrochureHTML(d: MasterReportData): string {
   const ll97Context = d.ll97
     ? `${d.buildingName} (${d.propertyType} | ${d.ll97.complianceStatus} | ${fmtMoney(d.ll97.period1Penalty)}/yr Period 1 exposure)`
     : `${d.buildingName} (${d.propertyType} | LL97 applicability to be verified)`;
+  const ll97ModeledArea = Math.max(d.buildingArea || 0, (d.units || 0) * 850);
+  const ll97LikelyApplicable = Boolean(d.ll97) || d.buildingArea > 25000 || d.units >= 30 || d.stories >= 7;
+  const ll97BuildingType = d.ll97?.buildingType || inferBuildingType(d.buildingClass) || 'multifamily';
+  const ll97Display = d.ll97 ? {
+    period1Penalty: d.ll97.period1Penalty,
+    period2Penalty: d.ll97.period2Penalty,
+    totalExposure11yr: d.ll97.totalExposure11yr,
+    complianceStatus: d.ll97.complianceStatus,
+    buildingType: d.ll97.buildingType,
+    emissionsLimit: d.ll97.emissionsLimit,
+    actualEmissions: d.ll97.actualEmissions,
+    sourceNote: 'Modeled from LL84 benchmarking / energy data loaded into Jackie.',
+  } : {
+    period1Penalty: 0,
+    period2Penalty: 0,
+    totalExposure11yr: 0,
+    complianceStatus: ll97LikelyApplicable ? 'assessment needed' : 'not applicable',
+    buildingType: ll97BuildingType,
+    emissionsLimit: ll97BuildingType === 'office' ? 8.46 : ll97BuildingType === 'retail' ? 11.81 : 6.75,
+    actualEmissions: null as number | null,
+    sourceNote: ll97LikelyApplicable
+      ? 'Building appears likely to require LL97/LL84 review, but benchmarking emissions were not returned by the automated source. Jackie must still show the LL97 workplan instead of dropping the page.'
+      : 'Building appears below the primary LL97 size threshold; confirm final applicability during scope review.',
+  };
   const proposedRows = [
     ['Annual Management Fee', d.monthlyFee > 0 ? `${fmtMoney(d.monthlyFee)}/mo (${fmtMoney(d.annualFee)}/yr) based on Jackie preliminary pricing` : '$TBD: custom flat rate after building scope review'],
     ['Online Common Charge Payments', 'ZERO bank fees for residents and owners'],
@@ -3983,25 +4007,27 @@ ${d.isRentStabilized ? '<tr><td style="font-weight:700">Rent Stabilization</td><
 </div>
 </div>
 
-<!-- LL97 DETAIL (if applicable) -->
-${d.ll97 ? `
+<!-- LL97 DETAIL -->
+${ll97LikelyApplicable ? `
 <div class="section section-white">
 <div class="section-title">LL97 Carbon Cap \u2014 Detailed Analysis</div>
 <div class="section-sub">Local Law 97 penalty exposure for ${d.buildingName}</div>
 <div class="stats-row">
-<div class="stat-box"><div class="val" style="color:#dc2626">$${d.ll97.period1Penalty.toLocaleString()}</div><div class="lbl">Annual Penalty (2024-2029)</div></div>
-<div class="stat-box"><div class="val" style="color:#dc2626">$${d.ll97.period2Penalty.toLocaleString()}</div><div class="lbl">Annual Penalty (2030-2034)</div></div>
-<div class="stat-box"><div class="val" style="color:#dc2626">$${d.ll97.totalExposure11yr.toLocaleString()}</div><div class="lbl">11-Year Total Exposure</div></div>
-<div class="stat-box"><div class="val" style="color:${d.ll97.complianceStatus === 'compliant' ? '#16a34a' : '#dc2626'}">${d.ll97.complianceStatus.toUpperCase()}</div><div class="lbl">Status</div></div>
+<div class="stat-box"><div class="val" style="color:${ll97Display.period1Penalty > 0 ? '#dc2626' : '#A89035'}">$${ll97Display.period1Penalty.toLocaleString()}</div><div class="lbl">Annual Penalty (2024-2029)</div></div>
+<div class="stat-box"><div class="val" style="color:${ll97Display.period2Penalty > 0 ? '#dc2626' : '#A89035'}">$${ll97Display.period2Penalty.toLocaleString()}</div><div class="lbl">Annual Penalty (2030-2034)</div></div>
+<div class="stat-box"><div class="val" style="color:${ll97Display.totalExposure11yr > 0 ? '#dc2626' : '#A89035'}">$${ll97Display.totalExposure11yr.toLocaleString()}</div><div class="lbl">11-Year Total Exposure</div></div>
+<div class="stat-box"><div class="val" style="color:${/compliant/i.test(ll97Display.complianceStatus) && !/non/i.test(ll97Display.complianceStatus) ? '#16a34a' : '#dc2626'}">${safe(ll97Display.complianceStatus).toUpperCase()}</div><div class="lbl">Status</div></div>
 </div>
 <div class="info-grid">
-<div><div class="label">Building Type (LL97)</div><div class="value">${d.ll97.buildingType}</div></div>
-<div><div class="label">Emissions Limit</div><div class="value">${d.ll97.emissionsLimit.toFixed(2)} kgCO\u2082e/sqft</div></div>
-<div><div class="label">Actual Emissions</div><div class="value">${d.ll97.actualEmissions.toFixed(2)} kgCO\u2082e/sqft</div></div>
-<div><div class="label">Building GFA</div><div class="value">${d.buildingArea.toLocaleString()} sqft</div></div>
+<div><div class="label">Building Type (LL97)</div><div class="value">${safe(ll97Display.buildingType)}</div></div>
+<div><div class="label">Emissions Limit</div><div class="value">${ll97Display.emissionsLimit.toFixed(2)} kgCO\u2082e/sqft</div></div>
+<div><div class="label">Actual Emissions</div><div class="value">${ll97Display.actualEmissions != null ? `${ll97Display.actualEmissions.toFixed(2)} metric tons CO\u2082e` : 'Benchmarking data needed'}</div></div>
+<div><div class="label">Building GFA</div><div class="value">${(d.buildingArea || ll97ModeledArea).toLocaleString()} sqft${!d.buildingArea && ll97ModeledArea ? ' est.' : ''}</div></div>
 </div>
 <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:16px;margin-top:16px">
 <p style="font-size:12px;color:#991b1b;font-weight:600">Camelot includes LL97 compliance services at NO additional charge: annual benchmarking, penalty modeling, capital upgrade planning, and rebate/incentive capture.</p>
+<p style="font-size:11px;color:#555;line-height:1.6;margin-top:8px">${safe(ll97Display.sourceNote)}</p>
+<p style="font-size:11px;color:#555;line-height:1.6;margin-top:8px"><strong>Jackie release rule:</strong> if LL84/LL97 data is missing for a likely covered building, the report must flag the missing data and provide the compliance workplan rather than silently removing the LL97 page.</p>
 </div>
 </div>` : ''}
 
@@ -4122,6 +4148,13 @@ ${isSelfManaged ? `
 <div class="va-card"><h5>On-Site + Floating Support</h5><p>Boards can combine on-site management office coverage with Camelot's floating senior team for resident communication, staff supervision, inspections, and urgent escalations.</p></div>
 <div class="va-card"><h5>AI &amp; Virtual Assistance</h5><p>Camelot's AI assistants support residents, boards, vendors, resident managers, and staff with faster triage, reminders, meeting minutes, work-order routing, and document retrieval.</p></div>
 <div class="va-card"><h5>Deeper Bench, Lower Burnout</h5><p>The goal is continuity: fewer single points of failure, better manager retention, clearer accountability, and more practical support for union and non-union building teams.</p></div>
+</div>
+<div style="display:grid;grid-template-columns:0.9fr 1.1fr;gap:18px;align-items:center;background:#fff;border:1px solid #D5D0C6;margin-top:18px;padding:14px">
+<div style="height:170px;overflow:hidden;background:#EDE9DF"><img src="./images/services/front-desk-concierge.jpg" alt="Camelot front desk concierge staffing support" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'"></div>
+<div>
+<h4 style="font-size:17px;color:#0D2E63;margin-bottom:8px">Front Desk &amp; Concierge Staffing</h4>
+<p style="font-size:12px;color:#555;line-height:1.7">When a board wants a higher-touch resident experience, Camelot can help structure front desk, concierge, access-control, and hospitality staffing on behalf of the client. We review coverage hours, service standards, supervision, resident communication, and budget impact so the building gets a professional welcome without overloading the property manager or resident manager.</p>
+</div>
 </div>
 <div style="background:#3A4B5B;color:#fff;padding:18px 22px;margin-top:18px;font-size:13px;line-height:1.7"><strong style="color:#D4AF37">Camelot's position:</strong> you can often get more from the same management budget, but only if the operating model is designed around the building's real workload. We want to be part of your team, not just another vendor on the expense sheet.</div>
 </div>
