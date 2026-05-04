@@ -2227,6 +2227,7 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     'Commercial &amp; Amenity Intelligence',
     'Location &amp; Neighborhood',
     'Community &amp; Industry Partnerships',
+    'Creative Staffing &amp; Operating Model',
     'Experience Meets Innovation',
     'Core Services',
     'Value-Added Services',
@@ -4100,6 +4101,29 @@ ${isSelfManaged ? `
 </div>
 </div>
 <div style="background:#EDE9DF;border-left:4px solid #A89035;padding:16px 18px;margin-top:18px;color:#3A4B5B;font-size:12px;line-height:1.7">This local partnership model helps boards access better vendor response, stronger market intelligence, smoother resident communication, and more practical solutions than a management company can deliver in isolation.</div>
+</div>
+
+<!-- PAGE 9C: CREATIVE STAFFING & OPERATING MODEL -->
+<div class="section section-cream">
+<div class="section-title">Creative Staffing &amp; Operating Model</div>
+<div class="section-sub">A smarter way to turn one management budget into a deeper support bench</div>
+<p style="font-size:13px;color:#3A4B5B;line-height:1.7;margin:0 0 18px 0;max-width:880px">Many buildings ask one property manager, general manager, or account lead to carry resident expectations, board demands, staff supervision, vendor follow-up, compliance pressure, and after-hours emergencies. That model can burn people out, create turnover, and leave boards paying for a title instead of a durable operating system. Camelot takes a more creative approach: we help boards decide where a full-time role is needed, where fractional senior leadership makes sense, and where technology and assistant-level support can stretch the same budget further.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+<div style="background:#fff;border:1px solid #D5D0C6;border-top:4px solid #A89035;padding:18px">
+<h4 style="font-size:17px;color:#0D2E63;margin-bottom:10px">Fractional Senior Leadership</h4>
+<p style="font-size:12px;color:#555;line-height:1.7">For the right building and territory, Camelot can deploy a floating general manager or senior service manager across a small cluster of nearby properties. Instead of carrying the full cost of one senior salary, the building may fund a share of that expertise while preserving senior-level site visits, staff coaching, vendor escalation, and resident-facing leadership.</p>
+</div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-top:4px solid #3A4B5B;padding:18px">
+<h4 style="font-size:17px;color:#0D2E63;margin-bottom:10px">More Coverage From the Same Dollar</h4>
+<p style="font-size:12px;color:#555;line-height:1.7">When the senior role is structured fractionally, budget can be redirected toward an assistant manager, assistant general manager, property administrator, or account support person. The board gets day-to-day coverage plus access to a senior bench, rather than relying on one overloaded person to handle every issue alone.</p>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px">
+<div class="va-card"><h5>On-Site + Floating Support</h5><p>Boards can combine on-site management office coverage with Camelot's floating senior team for resident communication, staff supervision, inspections, and urgent escalations.</p></div>
+<div class="va-card"><h5>AI &amp; Virtual Assistance</h5><p>Camelot's AI assistants support residents, boards, vendors, resident managers, and staff with faster triage, reminders, meeting minutes, work-order routing, and document retrieval.</p></div>
+<div class="va-card"><h5>Deeper Bench, Lower Burnout</h5><p>The goal is continuity: fewer single points of failure, better manager retention, clearer accountability, and more practical support for union and non-union building teams.</p></div>
+</div>
+<div style="background:#3A4B5B;color:#fff;padding:18px 22px;margin-top:18px;font-size:13px;line-height:1.7"><strong style="color:#D4AF37">Camelot's position:</strong> you can often get more from the same management budget, but only if the operating model is designed around the building's real workload. We want to be part of your team, not just another vendor on the expense sheet.</div>
 </div>
 
 <div class="deck-slide">
