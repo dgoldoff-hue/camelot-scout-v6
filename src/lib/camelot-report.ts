@@ -2226,6 +2226,7 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     'The Property',
     'Commercial &amp; Amenity Intelligence',
     'Location &amp; Neighborhood',
+    'Community &amp; Industry Partnerships',
     'Experience Meets Innovation',
     'Core Services',
     'Value-Added Services',
@@ -4077,6 +4078,28 @@ ${isSelfManaged ? `
 </div>
 <div style="font-size:11px;color:#A89035;text-align:center;margin-top:16px;font-weight:500">\u2B50 RED Awards 2025: Property Management Company of the Year</div>
 <div style="font-size:10px;color:#999;text-align:center;margin-top:8px">Member: REBNY | SPONY | NYARM | IREM | BOMA | NARPM | NY Apartment Association</div>
+</div>
+
+<!-- PAGE 9B: COMMUNITY & INDUSTRY PARTNERSHIPS -->
+<div class="section section-white">
+<div class="section-title">Community &amp; Industry Partnerships</div>
+<div class="section-sub">Local relationships, trusted professionals, and coordinated service for ${d.buildingName}</div>
+<p style="font-size:13px;color:#3A4B5B;line-height:1.7;margin:0 0 18px 0;max-width:860px">Camelot works inside the full ecosystem around each property: boards, residents, building staff, local vendors, neighborhood service providers, civic contacts, banks, attorneys, engineers, insurance brokers, technology partners, contractors, and other management or service companies when coordination benefits the building. The goal is simple: protect the property, respect the community, and bring the right people to the table before small issues become expensive problems.</p>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px">
+<div class="va-card">
+<h5>Community Presence</h5>
+<p>We build relationships with residents, neighboring properties, local vendors, community stakeholders, and city-facing contacts so issues are handled with context, speed, and respect.</p>
+</div>
+<div class="va-card">
+<h5>Professional Network</h5>
+<p>We coordinate with attorneys, engineers, accountants, insurance teams, banks, expediters, compliance consultants, and qualified contractors to solve building problems cleanly.</p>
+</div>
+<div class="va-card">
+<h5>Industry Collaboration</h5>
+<p>When a building benefits, Camelot works constructively with other management companies, brokers, technology partners, and service providers while protecting client confidentiality.</p>
+</div>
+</div>
+<div style="background:#EDE9DF;border-left:4px solid #A89035;padding:16px 18px;margin-top:18px;color:#3A4B5B;font-size:12px;line-height:1.7">This local partnership model helps boards access better vendor response, stronger market intelligence, smoother resident communication, and more practical solutions than a management company can deliver in isolation.</div>
 </div>
 
 <div class="deck-slide">
