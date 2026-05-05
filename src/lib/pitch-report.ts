@@ -90,16 +90,15 @@ function escapeHtml(value: string): string {
 
 function clientRecipientLabel(d: MasterReportData): string {
   const type = `${d.propertyType || ''} ${d.buildingClass || ''}`.toLowerCase();
-  if (/co-?op|cooperative|c6|c8/.test(type)) return 'Members of the Board of Directors';
-  if (/condo|condominium|r4/.test(type)) return 'Members of the Board of Managers';
-  if (/rental|multifamily|landlord|walk-up|walk up|d[0-9]/.test(type)) return 'Ownership Team';
+  if (/co-?op|cooperative|condo|condominium|c6|c8|r4/.test(type)) return 'Board Members';
+  if (/rental|multifamily|landlord|walk-up|walk up|d[0-9]/.test(type)) return 'Landlord';
   return 'Board and Ownership Team';
 }
 
 function coverLetterParagraphs(d: MasterReportData): string {
   const building = d.buildingName || d.address;
   const recipient = clientRecipientLabel(d);
-  return `<p class="body-text" style="margin-bottom:12px"><strong>Dear ${recipient},</strong> thank you for considering Camelot Realty Group as a management partner for ${escapeHtml(building)}. Camelot is a New York-based, hands-on property management company built for boards and owners who want senior attention, clean accounting, practical technology, responsive field support, and a team that treats the building like an asset we are trusted to protect.</p><p class="body-text">Our job is to help your team save time, reduce avoidable risk, improve resident communication, organize compliance, and create measurable value through vendor oversight, financial discipline, automation, and local New York presence. This first intro is intentionally short: it explains how we think, what we would begin reviewing, and why Camelot can become a value-add member of your team.</p>`;
+  return `<p class="body-text" style="margin-bottom:12px"><strong>Dear ${recipient},</strong> thank you for allowing Camelot the opportunity to discuss ${escapeHtml(building)} and how we may be able to support your property, residents, staff, and ownership goals. Camelot Property Management is a New York-based, hands-on management company that combines experienced property managers, in-house accounting, compliance discipline, and practical proptech to deliver clearer communication, cleaner reporting, faster response, and better day-to-day control.</p><p class="body-text" style="margin-bottom:14px">We serve our clients by becoming a value-added member of the building team: organizing operations, improving vendor oversight, supporting boards and landlords with timely financials, using automation and resident-facing tools where they make sense, and protecting the property with local knowledge and senior attention. We look forward to speaking with you soon and learning where Camelot can be most useful.</p><div style="font-size:13px;color:#1a2744;line-height:1.6"><strong>Sincerely yours,</strong><br>David A. Goldoff<br>President, Camelot Property Management</div>`;
 }
 
 function fmt$(n: number): string {
