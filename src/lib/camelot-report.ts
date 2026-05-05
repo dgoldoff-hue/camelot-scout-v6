@@ -108,6 +108,14 @@ export interface MasterReportData {
   // Property classification
   propertyType: string;
   neighborhoodName: string;
+  zipCode: string;
+  neighborhoodSearchContext: {
+    zipCode: string;
+    neighborhoodName: string;
+    borough: string;
+    query: string;
+    source: string;
+  };
   neighborhoodMarketData: NeighborhoodMarketData | null;
   // Management performance
   registrationDate: string | null;
@@ -889,6 +897,45 @@ function detectNeighborhood(address: string, borough: string): string {
   if (b.includes('queens')) return 'astoria';
   if (b.includes('bronx')) return 'bronx';
   return '';
+}
+
+function detectZipFromText(...values: Array<unknown>): string {
+  for (const value of values) {
+    const match = String(value || '').match(/\b(10[0-4]\d{2}|11[0-6]\d{2}|112\d{2}|113\d{2}|114\d{2}|103\d{2})\b/);
+    if (match) return match[1];
+  }
+  return '';
+}
+
+function buildNeighborhoodSearchContext(input: {
+  address: string;
+  borough: string;
+  neighborhoodName: string;
+  zipCode: string;
+  raw: any;
+}): MasterReportData['neighborhoodSearchContext'] {
+  const zipCode = input.zipCode || detectZipFromText(
+    input.address,
+    input.raw?.dofAbatement?.raw?.zip_code,
+    input.raw?.dofAbatement?.raw?.zip,
+    input.raw?.registration?.zip,
+    input.raw?.dof?.zip
+  );
+  const neighborhoodName = input.neighborhoodName || detectNeighborhood(input.address, input.borough || '');
+  const contextParts = [
+    neighborhoodName,
+    zipCode ? `ZIP ${zipCode}` : null,
+    input.borough || 'New York City',
+  ].filter(Boolean);
+  return {
+    zipCode,
+    neighborhoodName,
+    borough: input.borough || '',
+    query: contextParts.join(' '),
+    source: zipCode
+      ? 'ZIP-first neighborhood context from DOF/HPD/address parsing'
+      : 'Neighborhood context from address, borough, and market profile inference',
+  };
 }
 
 function lookupNeighborhoodData(neighborhood: string): NeighborhoodMarketData | null {
@@ -1738,9 +1785,17 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   ]);
 
   // Fetch neighborhood intelligence (crime, 311, landmarks)
-  // Determine precinct and ZIP from raw DOF data
+  // Determine precinct and ZIP from raw DOF/HPD/address data. ZIP is retained
+  // as a reusable context anchor when exact address-level records are weak.
   const rawDof = raw.dof ? (raw as any).raw?.dof : null;
-  const zip = (raw as any).dofAbatement?.raw?.zip_code || '';
+  const zip = detectZipFromText(
+    (raw as any).dofAbatement?.raw?.zip_code,
+    (raw as any).dofAbatement?.raw?.zip,
+    (raw as any).registration?.zip,
+    (raw as any).dof?.zip,
+    lookupAddress,
+    address
+  );
   const precinct = '';
   const neighborhoodIntel = (zip || precinct) ? await getNeighborhoodIntel(
     precinct || '0', zip || '10001',
@@ -1964,6 +2019,13 @@ export async function buildMasterReport(address: string, borough?: string): Prom
         }
     : buildingPhotos ? { ...buildingPhotos, interior: buildingPhotos.interior || [] } : buildingPhotos;
   const effectiveNeighborhoodName = knownFacts?.neighborhoodName || streetEasy?.neighborhood || detectNeighborhood(reportAddress, borough || '');
+  const neighborhoodSearchContext = buildNeighborhoodSearchContext({
+    address: reportAddress,
+    borough: borough || '',
+    neighborhoodName: effectiveNeighborhoodName,
+    zipCode: zip,
+    raw,
+  });
   const publicRecordsLoaded = Boolean(
     dof?.bbl
     || raw.registration?.buildingId
@@ -2079,6 +2141,8 @@ export async function buildMasterReport(address: string, borough?: string): Prom
     longitude: geo?.lng ?? null,
     propertyType,
     neighborhoodName: effectiveNeighborhoodName,
+    zipCode: neighborhoodSearchContext.zipCode,
+    neighborhoodSearchContext,
     neighborhoodMarketData: lookupNeighborhoodData(effectiveNeighborhoodName || detectNeighborhood(reportAddress, borough || '')),
     registrationDate: raw.registration?.registrationId ? null : null,
     managementDuration: null,
@@ -2583,6 +2647,14 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     status: nextStepsSlides <= 1 ? 'pass' : 'fail',
     detail: `${nextStepsSlides} Next Steps heading(s) found`,
   });
+  checks.push({
+    name: 'Neighborhood / ZIP Search Context',
+    status: d.neighborhoodSearchContext?.query ? 'pass' : 'warn',
+    detail: d.neighborhoodSearchContext?.query
+      ? `${d.neighborhoodSearchContext.query} — ${d.neighborhoodSearchContext.source}`
+      : 'No ZIP/neighborhood context available; dynamic search should avoid neighborhood claims until verified',
+  });
+
   const warnings = checks.filter(c => c.status === 'warn').length;
   const failures = checks.filter(c => c.status === 'fail').length;
   return { passed: failures === 0, checks, warnings, failures };
@@ -2816,6 +2888,9 @@ export function generateCSVExport(d: MasterReportData): string {
     ['Scout Grade', d.scoutGrade],
     ['Property Type', d.propertyType],
     ['Neighborhood', d.neighborhoodName],
+    ['ZIP Code', d.zipCode || 'N/A'],
+    ['Neighborhood / ZIP Search Context', d.neighborhoodSearchContext?.query || 'N/A'],
+    ['Neighborhood Context Source', d.neighborhoodSearchContext?.source || 'N/A'],
     ['Management Grade', d.managementGrade],
     ['Management Duration', d.managementDuration || 'N/A'],
     ['Neighborhood Condo $/Sqft', d.neighborhoodMarketData ? `$${d.neighborhoodMarketData.condoPSF}` : 'N/A'],
@@ -2837,6 +2912,14 @@ export function generateCSVExport(d: MasterReportData): string {
 export function generateBrochureHTML(d: MasterReportData): string {
   const addr = d.address;
   const encodedAddr = encodeURIComponent(addr);
+  const neighborhoodContext = d.neighborhoodSearchContext || buildNeighborhoodSearchContext({
+    address: d.address,
+    borough: d.borough,
+    neighborhoodName: d.neighborhoodName,
+    zipCode: d.zipCode,
+    raw: d.raw,
+  });
+  const encodedNeighborhoodContext = encodeURIComponent(neighborhoodContext.query || d.neighborhoodName || d.borough || addr);
   const reportFilenameBase = buildJackieIntelReportFilename(d);
   const reportHtmlFilename = buildJackieIntelReportFilename(d, 'html');
   const brochureAgent = d.buildingStaff.find(s => s.role.toLowerCase().includes('managing agent'));
@@ -3427,6 +3510,11 @@ ${d.latitude && d.longitude ? `
 <div style="background:#F5F0E5;border:1px solid #D5D0C6;border-left:3px solid #B8973A;padding:12px 16px;margin-bottom:14px;color:#343434">
 <strong>Camelot HQ: 477 Madison Avenue.</strong> Senior managers conduct regular on-site inspections; route planning and response coverage are part of the transition plan for ${d.buildingName}.
 </div>
+<div style="background:#fff;border:1px solid #D5D0C6;border-left:4px solid #3A4B5B;padding:12px 16px;margin-bottom:14px;color:#3A4B5B">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#A89035;font-weight:800;margin-bottom:5px">Neighborhood / ZIP Search Context</div>
+<div style="font-size:12px;line-height:1.6"><strong>${safe(neighborhoodContext.query || 'Context pending')}</strong></div>
+<div style="font-size:10px;color:#777;line-height:1.5;margin-top:4px">${safe(neighborhoodContext.source)}. Jackie uses this ZIP/neighborhood context as the basis for broader dynamic searches when exact address-level sources are incomplete or conflicting.</div>
+</div>
 
 <!-- StreetEasy + Research Sources Panel -->
 <div style="background:#3A4B5B;border-radius:10px;padding:18px 22px;margin-bottom:14px;color:#fff">
@@ -3440,18 +3528,18 @@ ${d.latitude && d.longitude ? `
 <span style="font-size:20px">🦈</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">PropertyShark</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Owner info, comparables, tax records</div></div>
 </a>
-<a href="https://www.crexi.com/search?q=${encodedAddr}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<a href="https://www.crexi.com/search?q=${encodedNeighborhoodContext}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
 <span style="font-size:20px">🏢</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">Crexi</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Commercial listings, investment data</div></div>
 </a>
 ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borough=${d.bbl.charAt(0)}&Block=${d.bbl.substring(1, 6)}&Lot=${d.bbl.substring(6)}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
 <span style="font-size:20px">🏛️</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">NYC City Register (ACRIS)</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Deeds, mortgages, liens — BBL: ${d.bbl}</div></div>
-</a>` : `<a href="https://www.google.com/maps/search/${encodedAddr}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+</a>` : `<a href="https://www.google.com/maps/search/${encodedNeighborhoodContext}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
 <span style="font-size:20px">📍</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">Google Maps</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Photos, reviews, nearby amenities</div></div>
 </a>`}
-<a href="https://www.domecile.com/search?q=${encodedAddr}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+<a href="https://www.domecile.com/search?q=${encodedNeighborhoodContext}" target="_blank" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='rgba(168,144,53,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
 <span style="font-size:20px">🔑</span>
 <div><div style="font-size:12px;font-weight:600;color:#A89035">Domecile</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Fees, current management, building info</div></div>
 </a>
