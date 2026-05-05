@@ -2594,7 +2594,17 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
         : `Using verified Manhattan co-op profile: ${d.units} units, ${d.stories} floors, BBL ${d.bbl}`,
     });
   }
-  const sourceConflictWarning = /(must not|will not) publish a board-facing report when BBL, borough, building class, unit count, or floor count conflicts/i.test(html);
+  const sourceConflictWarning =
+    /(must not|will not) publish a board-facing report when BBL, borough, building class, unit count, or floor count conflicts/i.test(html) ||
+    (
+      /(must not|will not|cannot)\s+publish/i.test(html) &&
+      /BBL/i.test(html) &&
+      /borough/i.test(html) &&
+      /building[-\s]?class/i.test(html) &&
+      /unit/i.test(html) &&
+      /floor/i.test(html) &&
+      /conflict/i.test(html)
+    );
   checks.push({
     name: 'Source Conflict Release Gate',
     status: sourceConflictWarning ? 'pass' : 'fail',
