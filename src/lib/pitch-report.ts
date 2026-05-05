@@ -30,6 +30,15 @@ const CAMELOT_EXECUTIVE_TEAM = [
 
 const CAMELOT_TEAM_SOURCE = 'https://www.camelot.nyc/company-roster/';
 const CAMELOT_OUR_TEAM_SOURCE = 'https://www.camelot.nyc/our-team/';
+const CAMELOT_CONTACT_NAME = 'David Goldoff';
+const CAMELOT_CONTACT_TITLE = 'Founder & President';
+const CAMELOT_CONTACT_EMAIL = 'dgoldoff@camelot.nyc';
+const CAMELOT_GENERAL_EMAIL = 'info@camelot.nyc';
+const CAMELOT_PHONE = '212-206-9939 ext. 701';
+const CAMELOT_MOBILE = '646-523-9068';
+const CAMELOT_WEBSITE = 'www.camelot.nyc';
+const CAMELOT_OFFICE_ADDRESS = '477 Madison Avenue, 6th Floor, New York, NY 10022';
+const CAMELOT_JACQUELINE_QUOTE = "Don't let it be forgot, that once there was a spot, for one brief shining moment, that was known as Camelot.";
 const CONCIERGE_PLUS_PRODUCT_SOURCE = 'https://conciergeplus.com/product-suite/';
 const CONCIERGE_PLUS_PLATFORM_IMAGE = 'https://pubcdn.conciergeplus.com/wp-content/uploads/2026/05/CP-Platform-Plus-Image-scaled.png';
 const CONCIERGE_PLUS_LOGO_IMAGE = 'https://pubcdn.conciergeplus.com/wp-content/uploads/2026/05/PLUS-Logo-01-1024x501.png';
@@ -297,7 +306,7 @@ export function generateFirstEmailIntroReport(d: MasterReportData): string {
 ${mdsAccountingSlide()}
 ${residentPortalSlide(d)}
 ${onboardingChecklistSlide()}
-<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Proposed Next Step</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px"><div class="gold-card"><div class="sub-heading">15-Minute Intro Call</div><p class="body-text">Confirm the board's priorities, current pain points, reporting expectations, compliance exposure, staffing model, and timeline.</p></div><div class="gold-card"><div class="sub-heading">Then A Board Deck</div><p class="body-text">If there is interest, Jackie generates the 15-page board meeting deck with the verified property intelligence appendix behind it.</p></div></div><div class="source-note">Contact: David Goldoff · dgoldoff@camelot.nyc · 212-206-9939 ext. 701</div></div></div>`;
+<div class="slide slide-dark"><div class="pad">${logoBadge()}<div style="height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center;max-width:980px;margin:0 auto"><div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:48px;font-style:italic;color:#B8973A;margin-bottom:14px">Proposed Next Step</div><p style="font-size:20px;line-height:1.55;color:rgba(255,255,255,.86);margin-bottom:24px">We would welcome the opportunity to meet with the board, ownership, or decision-makers for ${d.buildingName || d.address}.</p><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px"><div class="gold-card" style="background:rgba(255,255,255,.96);text-align:left"><div class="sub-heading" style="font-size:18px">Zoom or Google Meet</div><p class="small">Best for a quick first screen share, report review, and Q&amp;A.</p></div><div class="gold-card" style="background:rgba(255,255,255,.96);text-align:left"><div class="sub-heading" style="font-size:18px">Phone Call</div><p class="small">A focused 15-minute call to confirm priorities and timing.</p></div><div class="gold-card" style="background:rgba(255,255,255,.96);text-align:left"><div class="sub-heading" style="font-size:18px">In-Person Meeting</div><p class="small">Camelot can meet near the building or at our New York office.</p></div></div><div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:23px;line-height:1.45;color:#F4D26A;font-style:italic;margin:4px auto 22px;max-width:820px">"${CAMELOT_JACQUELINE_QUOTE}"</div><div style="font-size:15px;color:rgba(255,255,255,.82);line-height:1.9"><strong style="color:#B8973A">${CAMELOT_CONTACT_NAME}, ${CAMELOT_CONTACT_TITLE}</strong><br>${CAMELOT_PHONE} | ${CAMELOT_MOBILE}<br>${CAMELOT_CONTACT_EMAIL} | ${CAMELOT_GENERAL_EMAIL}<br>${CAMELOT_WEBSITE}<br>${CAMELOT_OFFICE_ADDRESS}</div></div></div></div>`;
   return deckShell(`Camelot First Email Intro - ${d.buildingName || d.address}`, slides);
 }
 
