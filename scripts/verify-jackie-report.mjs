@@ -98,7 +98,7 @@ const requiredTokens = [
   ['Jackie first intro signature', 'David A. Goldoff'],
   ['Jackie first intro title', 'President, Camelot Property Management'],
   ['Jackie intelligent report note', 'JACKIE_INTELLIGENT_REPORT_NOTE'],
-  ['Jackie Camelot OS generated note', 'developed through Camelot OS by Jackie'],
+  ['Camelot OS generated note', 'developed through Camelot OS'],
   ['Jackie unique intro positioning', 'standard generic introduction'],
   ['Jackie intro meeting options', 'Zoom or Google Meet'],
   ['Jackie intro phone meeting option', 'Phone Call'],
@@ -213,4 +213,5 @@ if (workflowFailures.length) {
 }
 
 console.log(`Jackie verification passed (${requiredTokens.length} source rules + ${workflowTokens.length} workflow rules checked).`);
+
 

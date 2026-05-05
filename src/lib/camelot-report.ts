@@ -1488,8 +1488,8 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
         'PublicRecordsData / NeighborWho can be used only as secondary cross-checks, not final authority',
       ],
       professionalNotes: [
-        'Public sources vary around 160, 167, and 168 units and 20-21 floors; Jackie uses 167 units and 20 floors unless offering-plan or board records confirm otherwise.',
-        'If NYC lookup returns Brooklyn BBL 3062630070, Jackie must reject that record as an address-resolution mismatch for the Manhattan 201 East 79th Street report.',
+        'Public sources vary around 160, 167, and 168 units and 20-21 floors; Camelot uses 167 units and 20 floors unless offering-plan or board records confirm otherwise.',
+        'If NYC lookup returns Brooklyn BBL 3062630070, Camelot rejects that record as an address-resolution mismatch for the Manhattan 201 East 79th Street report.',
       ],
     };
   }
@@ -1559,7 +1559,7 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
         'HPD MDR, ACRIS, DOB, DOF, and offering plan must be checked before publishing private contact names',
       ],
       professionalNotes: [
-        'Public sources vary between approximately 248, 252, and 285 units; Jackie uses 252 as the conservative market-source count unless board/offering-plan records confirm a different count.',
+        'Public sources vary between approximately 248, 252, and 285 units; Camelot uses 252 as the conservative market-source count unless board/offering-plan records confirm a different count.',
       ],
     };
   }
@@ -1649,7 +1649,7 @@ function getKnownPropertyFacts(address: string, candidateName = ''): KnownProper
         'HPD MDR, ACRIS, DOB, DOF, offering plan, and board materials must be checked before publishing private contact names',
       ],
       professionalNotes: [
-        'Conflicting public unit counts exist (817, 831, 840); Jackie uses StreetEasy/Compass 817 unless board or offering-plan records confirm otherwise.',
+        'Conflicting public unit counts exist (817, 831, 840); Camelot uses StreetEasy/Compass 817 unless board or offering-plan records confirm otherwise.',
         'Commercial office/retail and garage details should be verified before naming tenants/operators.',
       ],
     };
@@ -3598,7 +3598,7 @@ ${d.latitude && d.longitude ? `
 <div style="background:#fff;border:1px solid #D5D0C6;border-left:4px solid #3A4B5B;padding:12px 16px;margin-bottom:14px;color:#3A4B5B">
 <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#A89035;font-weight:800;margin-bottom:5px">Neighborhood / ZIP Search Context</div>
 <div style="font-size:12px;line-height:1.6"><strong>${safe(neighborhoodContext.query || 'Context pending')}</strong></div>
-<div style="font-size:10px;color:#777;line-height:1.5;margin-top:4px">${safe(neighborhoodContext.source)}. Jackie uses this ZIP/neighborhood context as the basis for broader dynamic searches when exact address-level sources are incomplete or conflicting.</div>
+<div style="font-size:10px;color:#777;line-height:1.5;margin-top:4px">${safe(neighborhoodContext.source)}. Camelot uses this ZIP/neighborhood context as the basis for broader dynamic searches when exact address-level sources are incomplete or conflicting.</div>
 </div>
 
 <!-- StreetEasy + Research Sources Panel -->
@@ -3702,7 +3702,7 @@ ${d.streetEasy.activeListings.length > 0 ? `<div style="font-size:11px;color:#66
 <div class="section-sub">${safe(primaryFocus.headline)} for ${safe(d.buildingName)}</div>
 ${inquiryMeta ? `<div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#A89035;font-weight:800;margin-bottom:12px">${safe(inquiryMeta)}</div>` : ''}
 ${reportFocus.inquiryNotes ? `<div style="background:#fff;border:1px solid #D5D0C6;border-left:4px solid #A89035;padding:12px 14px;margin-bottom:16px;color:#3A4B5B;font-size:11px;line-height:1.6"><strong>Inquiry notes:</strong> ${safe(reportFocus.inquiryNotes)}</div>` : ''}
-<p style="font-size:13px;color:#3A4B5B;line-height:1.75;margin-bottom:18px">Jackie uses this brief as a report lens. The source data, release guardrails, property identity checks, violations, ownership, LL97, DOB, HPD, DOF, ACRIS, and market records remain factual and source-driven; the selected focus only changes what Camelot emphasizes in the narrative, proposal language, and follow-up angle.</p>
+<p style="font-size:13px;color:#3A4B5B;line-height:1.75;margin-bottom:18px">Camelot uses this brief as a report lens. The source data, release guardrails, property identity checks, violations, ownership, LL97, DOB, HPD, DOF, ACRIS, and market records remain factual and source-driven; the selected focus only changes what Camelot emphasizes in the narrative, proposal language, and follow-up angle.</p>
 <div style="display:grid;grid-template-columns:repeat(${Math.min(selectedFocusThemes.length || 1, 3)},1fr);gap:14px;margin-bottom:18px">
 ${selectedFocusThemes.map(theme => `
 <div style="background:#fff;border:1px solid #D5D0C6;border-top:4px solid #A89035;padding:16px;min-height:190px">
@@ -3719,13 +3719,13 @@ ${theme.proofPoints.map(point => `<li>${safe(point)}</li>`).join('')}
 </ul>
 </div>`).join('')}
 </div>
-<div style="background:#3A4B5B;color:#fff;padding:16px 20px;font-size:12px;line-height:1.7"><strong style="color:#D4AF37">Phase 1 Jackie rule:</strong> the report may be tailored around one or more selected focus areas, but Jackie must not change facts, scoring, source status, or release blockers to fit the sales angle.</div>
+<div style="background:#3A4B5B;color:#fff;padding:16px 20px;font-size:12px;line-height:1.7"><strong style="color:#D4AF37">Camelot report rule:</strong> the report may be tailored around one or more selected focus areas, but Camelot will not change facts, scoring, source status, or release blockers to fit the sales angle.</div>
 </div>
 
 <div class="deck-slide">
 <div class="brand-logo"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none'"></div>
 <h2 class="deck-title">Commercial &amp; Amenity Intelligence</h2>
-<p class="deck-kicker" style="margin:-8px 0 28px 24px">Jackie checks the subject property for commercial occupants, owner/renter uses, revenue-producing spaces, official building branding, and resident amenities.</p>
+<p class="deck-kicker" style="margin:-8px 0 28px 24px">Camelot checks the subject property for commercial occupants, owner/renter uses, revenue-producing spaces, official building branding, and resident amenities.</p>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px">
 <div class="deck-card" style="min-height:220px">
 <h4>Commercial Owners &amp; Renters</h4>
@@ -3749,7 +3749,7 @@ ${revenueOpportunities.map(o => `<li>${safe(o)}</li>`).join('')}
 </div>
 <div class="deck-card">
 <h4>Official Building Branding</h4>
-${commercialIntel.officialWebsite ? `<p><strong>Website:</strong> <a href="${commercialIntel.officialWebsite}" target="_blank">${safe(commercialIntel.brandingTitle || commercialIntel.officialWebsite)}</a></p>` : '<p>Official building website not confirmed yet. Jackie attempted a website search; board-facing release should verify branding and images manually if no site is found.</p>'}
+${commercialIntel.officialWebsite ? `<p><strong>Website:</strong> <a href="${commercialIntel.officialWebsite}" target="_blank">${safe(commercialIntel.brandingTitle || commercialIntel.officialWebsite)}</a></p>` : '<p>Official building website not confirmed yet. Camelot attempted a website search; board-facing release should verify branding and images manually if no site is found.</p>'}
 ${commercialIntel.brandingDescription ? `<p style="margin-top:10px">${safe(commercialIntel.brandingDescription)}</p>` : ''}
 <p style="margin-top:12px;font-size:11px;color:#777"><strong>Status:</strong> ${commercialIntel.researchStatus === 'verified' ? 'Verified signals found' : 'Needs review'}<br><strong>Sources:</strong> ${commercialIntel.researchSources.map(safe).join(' · ')}</p>
 </div>
@@ -3876,7 +3876,7 @@ ${d.occupancy ? `<div class="stat-box"><div class="val">${d.occupancy}%</div><di
 <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid #D5D0C6;background:#F8F6F0">
 <div>
 <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:#A89035;font-weight:800">HPD Violation Current Status &amp; History</div>
-<div style="font-size:11px;color:#555;margin-top:4px">Jackie searches NYC HPD violations by address, then falls back to BBL when DOF confirms the property record.</div>
+<div style="font-size:11px;color:#555;margin-top:4px">Camelot searches NYC HPD violations by address, then falls back to BBL when DOF confirms the property record.</div>
 </div>
 <div style="text-align:right;font-size:11px;color:${openHPDViolationItems.length > 0 ? '#dc2626' : '#16a34a'};font-weight:800">${openHPDViolationItems.length} CURRENT OPEN</div>
 </div>
@@ -3891,12 +3891,12 @@ ${violationHistoryRows ? `
 </tr></thead>
 <tbody>${violationHistoryRows}</tbody>
 </table>` : `
-<div style="padding:14px 16px;font-size:11px;color:#555;line-height:1.6">No HPD violation rows returned by NYC Open Data for this property after address and BBL search. Jackie should verify HPD Online manually before board-facing release.</div>`}
+<div style="padding:14px 16px;font-size:11px;color:#555;line-height:1.6">No HPD violation rows returned by NYC Open Data for this property after address and BBL search. Camelot should verify HPD Online manually before board-facing release.</div>`}
 </div>
 <div style="margin-top:16px;border:1px solid #D5D0C6;background:#fff">
 <div style="padding:12px 16px;border-bottom:1px solid #D5D0C6;background:${d.complianceReleaseStatus === 'blocked' ? '#FEF2F2' : d.complianceReleaseStatus === 'needs_review' ? '#FFFBEB' : '#F0FDF4'}">
 <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:${d.complianceReleaseStatus === 'blocked' ? '#dc2626' : '#A89035'};font-weight:800">Violation Source Coverage</div>
-<div style="font-size:10px;color:#555;margin-top:4px">Jackie checks HPD, DOB BIS &amp; DOB NOW, ECB/OATH, DHCR / rent stabilization, DOF tax liens, ACRIS liens and claims, 311 Service Requests, HPD housing litigation, NYS eCourts / WebCivil, and LexisNexis/manual legal enrichment. A report cannot claim a clean building when every automated public-risk source returns zero without manual verification.</div>
+<div style="font-size:10px;color:#555;margin-top:4px">Camelot checks HPD, DOB BIS &amp; DOB NOW, ECB/OATH, DHCR / rent stabilization, DOF tax liens, ACRIS liens and claims, 311 Service Requests, HPD housing litigation, NYS eCourts / WebCivil, and LexisNexis/manual legal enrichment. A report cannot claim a clean building when every automated public-risk source returns zero without manual verification.</div>
 </div>
 <table style="width:100%;border-collapse:collapse;font-size:10px">
 <thead><tr style="background:#F8F6F0;text-align:left;color:#38557D">
@@ -3954,7 +3954,7 @@ ${d.distressSignals.length > 0 ? `
 <div style="font-size:9px;color:#888;margin-top:10px;text-align:center">Jackie recommends cross-referencing all databases before engagement. LexisNexis and SiteCompli require subscriptions. AG Offering Plans, NYSCEF, DOB BIS, and Jack Jaffa lookups are publicly accessible.</div>
 <div style="background:#F8F5EC;border:1px solid #D8C894;border-radius:8px;padding:10px 12px;margin-top:12px;font-size:10px;color:#555;line-height:1.55">
 <strong style="color:#A89035">Required property-record source stack:</strong>
-NYC DOB Find Building Data · DOB Violations · NYC HPD/HPD Online · OATH/ECB · NYC DOF / PROS · ACRIS · PropertyShark · PublicRecordsData · NeighborWho. Jackie must treat paid/marketing record sites as secondary cross-checks and must not publish a board-facing report when BBL, borough, building class, unit count, or floor count conflicts with the subject address.
+NYC DOB Find Building Data · DOB Violations · NYC HPD/HPD Online · OATH/ECB · NYC DOF / PROS · ACRIS · PropertyShark · PublicRecordsData · NeighborWho. Camelot treats paid/marketing record sites as secondary cross-checks and will not publish a board-facing report when BBL, borough, building class, unit count, or floor count conflicts with the subject address.
 <div style="margin-top:5px">
 <a href="https://www.nyc.gov/site/buildings/dob/find-building-data.page" target="_blank">DOB building data</a> ·
 <a href="https://www.nyc.gov/site/buildings/safety/dob-violations.page" target="_blank">DOB violations</a> ·
@@ -3994,7 +3994,7 @@ ${(() => {
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px">
 ${(d.contactResearchSources || []).map(src => `<div style="font-size:10px;color:#555;line-height:1.45">• ${safe(src)}</div>`).join('')}
 </div>
-<div style="font-size:9px;color:#888;margin-top:8px">Jackie uses HPD MDR, ACRIS, DOB, and DOF records first; PropertyShark and Apollo are verification/enrichment sources where private contact data must be confirmed before publication.</div>
+<div style="font-size:9px;color:#888;margin-top:8px">Camelot uses HPD MDR, ACRIS, DOB, and DOF records first; PropertyShark and Apollo are verification/enrichment sources where private contact data must be confirmed before publication.</div>
 </div>
 
 <!-- BOARD / OWNERSHIP — Most Important -->
@@ -4112,7 +4112,7 @@ ${d.hasTaxLien ? `
 ${d.taxLienDetails.map(l => `<div style="font-size:11px;color:#555;padding:2px 0">- ${safe(l.cycle)}${l.date ? ' - ' + new Date(l.date).toLocaleDateString() : ''}${l.lot ? ' - lot ' + safe(l.lot) : ''}${l.waterDebtOnly ? ' (water debt only)' : ''}</div>`).join('')}
 <div style="font-size:10px;color:#7f1d1d;margin-top:6px">Lien-sale notices require board-facing verification with NYC DOF before describing the item as an active payable lien.</div>
 </div>` : ''}
-<div style="font-size:9px;color:#888">Source: NYC Dept. of Finance - Property Exemptions (8y4t-faws), Tax Lien Sale (9rz4-mjek), and DOF property records. Jackie checks exact BBL first, then block/address for condo unit-lot records before release.</div>
+<div style="font-size:9px;color:#888">Source: NYC Dept. of Finance - Property Exemptions (8y4t-faws), Tax Lien Sale (9rz4-mjek), and DOF property records. Camelot checks exact BBL first, then block/address for condo unit-lot records before release.</div>
 </div>
 <!-- LEGACY TAX CARD HIDDEN AFTER DOF UNIT-LOT FALLBACK UPDATE -->
 <div style="display:none;background:#fff;border:2px solid ${d.hasTaxLien ? '#dc2626' : '#A89035'};border-radius:8px;padding:18px">
@@ -4147,7 +4147,7 @@ ${d.taxLienDetails.map(l => `<div style="font-size:11px;color:#555;padding:2px 0
 <div class="section-title">Current Management Performance</div>
 <div class="section-sub">${d.managementCompany ? `Analysis of ${d.managementCompany}` : 'Building management assessment'} ${d.managementDuration ? `&mdash; Managing for ~${d.managementDuration}` : ''}</div>
 ${!/[A-F]/.test(d.managementGrade) ? `<div style="background:#fff;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:14px 18px;margin:12px 0 16px">
-<p style="font-size:12px;color:#555;line-height:1.7"><strong style="color:#A89035">Public-record review pending:</strong> Jackie did not find enough violations, ECB, litigation, or permit data to score current management from public records alone. This does not mean the building is self-managed. For ${safe(d.buildingName)}, Jackie should verify the board, managing agent, live-in resident manager, porter, concierge, door coverage, and staff structure before releasing a final board-facing assessment.</p>
+<p style="font-size:12px;color:#555;line-height:1.7"><strong style="color:#A89035">Public-record review pending:</strong> Camelot did not find enough violations, ECB, litigation, or permit data to score current management from public records alone. This does not mean the building is self-managed. For ${safe(d.buildingName)}, Camelot should verify the board, managing agent, live-in resident manager, porter, concierge, door coverage, and staff structure before releasing a final board-facing assessment.</p>
 </div>` : ''}
 
 <div style="display:flex;align-items:center;gap:24px;margin:20px 0">
@@ -4533,7 +4533,7 @@ ${[
 <!-- PAGE 12: COMPLIANCE CALENDAR -->
 <div class="section section-white">
 <div class="section-title">Compliance &amp; Local Law 97</div>
-<div class="section-sub">Proactive compliance calendar for ${d.buildingName} \u2014 Jackie checks the property profile before release</div>
+<div class="section-sub">Proactive compliance calendar for ${d.buildingName} \u2014 Camelot checks the property profile before release</div>
 <div class="compliance-row">
 ${complianceDates.map(c => `<div class="compliance-card"><div class="month">${c.month}</div><h5>${c.title}</h5><p>${safe(c.desc)}</p></div>`).join('\n')}
 </div>
@@ -4978,7 +4978,7 @@ ${financialModel.opportunityLevers.map((lever: any, i: number) => `<tr${i % 2 ? 
 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px 12px">
 ${valueCreationDataSources.map(src => `<div style="font-size:9.5px;line-height:1.45;color:#3A4B5B"><strong style="color:#14356A">${src.name}</strong><br><span style="color:#666">${src.use}</span></div>`).join('\n')}
 </div>
-<div style="font-size:9px;color:#777;line-height:1.5;margin-top:10px;border-top:1px solid #E2D7B2;padding-top:8px">Jackie must cite this source stack when modeling operating expense, utility, market-value, resale/leasing, compliance, governance, insurance, vendor, amenity, and resident-retention opportunity. Building-specific figures remain preliminary until matched against source records and board materials.</div>
+<div style="font-size:9px;color:#777;line-height:1.5;margin-top:10px;border-top:1px solid #E2D7B2;padding-top:8px">Camelot cites this source stack when modeling operating expense, utility, market-value, resale/leasing, compliance, governance, insurance, vendor, amenity, and resident-retention opportunity. Building-specific figures remain preliminary until matched against source records and board materials.</div>
 </div>
 
 <!-- Savings Breakdown — Horizontal Bar Chart -->
@@ -5221,7 +5221,7 @@ ${['MDS Property Codes', 'Auto-Classification', 'Make.com Automation', 'Google D
 <div class="section-title">Quarterly Market Reports</div>
 <div class="section-sub">How does your building stack up against the local market?</div>
 
-<p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:16px">Every quarter, Camelot delivers a market-aware report modeled after professional Manhattan market reports, including the Miller Samuel New York City market-report structure. Jackie should benchmark median and average sale price, price per square foot, closed sales, listing inventory, days on market, negotiability, rental pulse, and submarket trendlines, then translate those figures into board-level decisions: how is the building performing, what might a unit be worth, and where should the board focus next?</p>
+<p style="font-size:12px;color:#555;line-height:1.7;margin-bottom:16px">Every quarter, Camelot delivers a market-aware report modeled after professional Manhattan market reports, including the Miller Samuel New York City market-report structure. Camelot benchmarks median and average sale price, price per square foot, closed sales, listing inventory, days on market, negotiability, rental pulse, and submarket trendlines, then translate those figures into board-level decisions: how is the building performing, what might a unit be worth, and where should the board focus next?</p>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px">
@@ -5252,7 +5252,7 @@ ${['MDS Property Codes', 'Auto-Classification', 'Make.com Automation', 'Google D
 
 <div style="background:#F8F5EC;border:1px solid #D8C894;border-radius:8px;padding:12px 14px;margin:8px 0 14px">
 <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.4px;color:#A89035;font-weight:700;margin-bottom:6px">Quarterly Market Report Source Rule</div>
-<p style="font-size:10px;color:#555;line-height:1.55">Jackie must cite and compare against Miller Samuel / Douglas Elliman-style market categories, REBNY market context, ACRIS closed sales, StreetEasy/Zillow/Compass listing signals, rental inventory, and peer-building cost-per-square-foot benchmarks. Source: <a href="https://millersamuel.com/market-reports/new-york-city/" target="_blank" rel="noopener" style="color:#14356A;font-weight:700">Miller Samuel New York City Market Reports</a>.</p>
+<p style="font-size:10px;color:#555;line-height:1.55">Camelot cites and compares against Miller Samuel / Douglas Elliman-style market categories, REBNY market context, ACRIS closed sales, StreetEasy/Zillow/Compass listing signals, rental inventory, and peer-building cost-per-square-foot benchmarks. Source: <a href="https://millersamuel.com/market-reports/new-york-city/" target="_blank" rel="noopener" style="color:#14356A;font-weight:700">Miller Samuel New York City Market Reports</a>.</p>
 </div>
 
 <div style="background:#3A4B5B;border-radius:8px;padding:16px;color:#fff;text-align:center">
@@ -5485,7 +5485,7 @@ Camelot combines senior attention, practical technology, in-house accounting, an
 
 <!-- Meeting CTA — Three Options -->
 <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px;flex-wrap:wrap">
-<a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+%E2%80%93+${encodeURIComponent(d.buildingName)}+Management+Discussion&details=${encodeURIComponent("Meeting with David A. Goldoff, President\nCamelot Realty Group\n\nJoin via Zoom:\nhttps://us06web.zoom.us/j/dgoldoff\n\nOr dial: +1 (646) 558-8656\n\nAgenda: Management proposal discussion for " + d.buildingName + "\n\nPrepared by Jackie | Camelot OS")}&location=${encodeURIComponent("Zoom Meeting — https://us06web.zoom.us/j/dgoldoff")}&add=${CAMELOT.email}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#2D8CFF;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
+<a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+%E2%80%93+${encodeURIComponent(d.buildingName)}+Management+Discussion&details=${encodeURIComponent("Meeting with David A. Goldoff, President\nCamelot Realty Group\n\nJoin via Zoom:\nhttps://us06web.zoom.us/j/dgoldoff\n\nOr dial: +1 (646) 558-8656\n\nAgenda: Management proposal discussion for " + d.buildingName + "\n\nPrepared by Camelot Realty Group | Camelot OS")}&location=${encodeURIComponent("Zoom Meeting — https://us06web.zoom.us/j/dgoldoff")}&add=${CAMELOT.email}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#2D8CFF;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
 <span style="font-size:15px">\uD83D\uDCC5</span> Schedule Meeting
 </a>
 <a href="https://zoom.us/start/videomeeting" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#1f6feb;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
@@ -5967,6 +5967,8 @@ function generateProposal() {
     .replace(/\b-?Infinity\b/g, 'N/A')
     .replace(/\bNaN\b/g, 'N/A');
 }
+
+
 
 
 

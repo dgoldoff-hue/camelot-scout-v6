@@ -219,7 +219,7 @@ export default function ReportCenter() {
     const subject = encodeURIComponent(`Introduction to Camelot Property Management regarding ${d.buildingName || d.address}`);
     const body = encodeURIComponent(
       `To the decision makers of ${d.buildingName || d.address},\n\n` +
-      `Thank you for taking the time to review Camelot Property Management. Attached is a brief property-specific introduction prepared by Jackie, Camelot OS, for ${d.buildingName || d.address}.\n\n` +
+      `Thank you for taking the time to review Camelot Property Management. Attached is a brief property-specific introduction prepared by Camelot OS for ${d.buildingName || d.address}.\n\n` +
       `Camelot is a New York-based property management company serving co-ops, condos, and rental buildings with senior attention, in-house accounting, legal and compliance guidance, practical technology, and hands-on local management. We would welcome the opportunity to speak with you by phone, Zoom, Google Meet, or in person to discuss where Camelot may be useful to your building.\n\n` +
       `Please attach the downloaded HTML report file: ${filename}\n\n` +
       `Sincerely,\nDavid A. Goldoff\nFounder & President\nCamelot Realty Group\n57 West 57th Street, Suite 410, New York, NY 10019\n(212) 206-9939 ext. 701\ninfo@camelot.nyc | dgoldoff@camelot.nyc`
@@ -569,7 +569,7 @@ export default function ReportCenter() {
           {/* Report Preview */}
           <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
             <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Jackie Property Intelligence Report</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Camelot Property Intelligence Report</h2>
               <div className="flex items-center gap-2 flex-wrap">
                 <button onClick={handlePreviewSelectedPackage} className="px-4 py-2 bg-emerald-700 text-white rounded-lg hover:bg-emerald-800 text-sm font-medium flex items-center gap-2">
                   <Eye className="w-4 h-4" /> Preview Selected Package
@@ -821,3 +821,4 @@ export default function ReportCenter() {
     </div>
   );
 }
+
