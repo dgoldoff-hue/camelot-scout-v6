@@ -112,11 +112,18 @@ function externalDeckCss(): string {
   .body-text { font-size:16px;color:#4a5568;line-height:1.7; }
   .small { font-size:12px;color:#6b7280;line-height:1.55; }
   .gold-card { border:1px solid rgba(184,151,58,0.38);border-left:4px solid #B8973A;background:#fff;padding:18px 20px;border-radius:8px;box-shadow:0 12px 28px rgba(26,31,54,0.07); }
+  .visual-card { border:1px solid rgba(184,151,58,0.32);background:#fff;border-radius:8px;box-shadow:0 12px 28px rgba(26,31,54,0.08);overflow:hidden; }
+  .image-frame { height:260px;background:#EDE9DF;overflow:hidden;position:relative; }
+  .image-frame img { width:100%;height:100%;object-fit:cover;display:block; }
+  .image-caption { padding:9px 12px;font-size:10px;color:#6b7280;border-top:1px solid #eee; }
   .stat-box { background:#fff;border:1px solid rgba(184,151,58,0.25);border-radius:10px;padding:18px;text-align:center;box-shadow:0 12px 28px rgba(26,31,54,0.07); }
   .stat-val { font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:700;color:#B8973A;line-height:1; }
   .stat-label { font-size:12px;color:#6b7280;margin-top:5px;text-transform:uppercase;letter-spacing:.8px; }
   .check { display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;color:#1a2744;font-size:14px;line-height:1.45; }
   .check span { width:22px;height:22px;border-radius:50%;background:#B8973A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0; }
+  .mini-bar { height:10px;border-radius:999px;background:#E5E7EB;overflow:hidden;margin-top:7px; }
+  .mini-bar span { display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#B8973A,#34444f); }
+  .icon-tile { width:42px;height:42px;border-radius:10px;background:#F4EFE2;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0; }
   .source-note { position:absolute;bottom:18px;left:64px;right:64px;border-top:1px solid rgba(184,151,58,.25);padding-top:9px;font-size:9px;color:#8a8174; }
   table { width:100%;border-collapse:collapse; }
   th { background:#1a2744;color:#B8973A;padding:10px 14px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:1px; }
@@ -141,8 +148,59 @@ function bestExteriorImage(d: MasterReportData): string {
   return d.buildingPhotos?.exterior?.[0] || d.commercialIntel?.brandingImages?.[0] || d.streetEasy?.photos?.[0] || streetViewImage(d);
 }
 
+function staticMapImage(d: MasterReportData, size = '640x360'): string {
+  const destination = d.latitude && d.longitude ? `${d.latitude},${d.longitude}` : `${d.address}, New York, NY`;
+  return `https://maps.googleapis.com/maps/api/staticmap?size=${size}&scale=2&maptype=roadmap&markers=color:gold%7Clabel:C%7C477+Madison+Avenue+New+York+NY&markers=color:red%7Clabel:P%7C${encodeURIComponent(destination)}&path=color:0x34444fff%7Cweight:4%7C477+Madison+Avenue+New+York+NY%7C${encodeURIComponent(destination)}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`;
+}
+
+function neighborhoodMapImage(d: MasterReportData, size = '640x360'): string {
+  const destination = d.latitude && d.longitude ? `${d.latitude},${d.longitude}` : `${d.address}, New York, NY`;
+  return `https://maps.googleapis.com/maps/api/staticmap?size=${size}&scale=2&maptype=roadmap&zoom=14&markers=color:red%7Clabel:P%7C${encodeURIComponent(destination)}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`;
+}
+
+function imageCard(src: string, alt: string, caption: string, height = 260): string {
+  const safeAlt = alt.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+  return `<div class="visual-card"><div class="image-frame" style="height:${height}px"><img src="${src}" alt="${safeAlt}" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=&quot;height:100%;display:flex;align-items:center;justify-content:center;background:#34444f;color:#B8973A;font-size:12px;font-weight:800;text-align:center;padding:16px&quot;>${safeAlt}</div>'"></div><div class="image-caption">${caption}</div></div>`;
+}
+
+function landmarkLabels(d: MasterReportData): string[] {
+  const live = (d.neighborhoodIntel?.landmarks || []).map(l => `${l.name}${l.type ? ` · ${l.type}` : ''}`);
+  const known = (d.raw?.knownFacts?.landmarks || d.raw?.known?.landmarks || []) as string[];
+  const fallback = [
+    `${neighborhoodName(d)} neighborhood context`,
+    'Camelot HQ · 477 Madison Avenue',
+    'NYC transit and vendor-routing access',
+    'LPC / neighborhood landmark review',
+  ];
+  return Array.from(new Set([...known, ...live, ...fallback])).slice(0, 5);
+}
+
+function intelligenceSourceCards(): string {
+  const sources = [
+    { icon: '🏛', title: 'NYC Records', copy: 'HPD, DOB, DOF, ECB/OATH, ACRIS, LL84/LL97' },
+    { icon: '🗺', title: 'Location Intelligence', copy: 'Maps, transit, route timing, landmarks, neighborhood context' },
+    { icon: '📊', title: 'Market Intelligence', copy: 'StreetEasy, PropertyShark, market comps, operating benchmarks' },
+    { icon: '🤝', title: 'Camelot Records', copy: 'Portfolio outcomes, vendor history, accounting cadence, onboarding playbooks' },
+  ];
+  return sources.map(s => `<div class="gold-card" style="display:flex;gap:12px;align-items:flex-start;min-height:104px"><div class="icon-tile">${s.icon}</div><div><div style="font-size:14px;font-weight:800;color:#1a2744">${s.title}</div><div class="small">${s.copy}</div></div></div>`).join('');
+}
+
+function compactIntelligenceSources(): string {
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">${intelligenceSourceCards().replace(/min-height:104px/g, 'min-height:74px').replace(/font-size:14px/g, 'font-size:12px')}</div>`;
+}
+
+function responseChart(d: MasterReportData): string {
+  const rows = [
+    ['Senior manager dispatch', 85, 'same day triage'],
+    ['Vendor coordination', 75, '24-48 hour scope review'],
+    ['Board reporting cadence', 92, 'monthly package by 20th-25th'],
+    ['Compliance tracking', 88, 'calendar + source checks'],
+  ];
+  return `<div class="visual-card" style="padding:18px"><div class="sub-heading" style="font-size:18px">What Boards Care About</div>${rows.map(([label, pct, note]) => `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;gap:12px;font-size:12px;color:#1a2744;font-weight:800"><span>${label}</span><span style="color:#B8973A">${note}</span></div><div class="mini-bar"><span style="width:${pct}%"></span></div></div>`).join('')}<div class="small" style="margin-top:12px">Applied to ${d.buildingName || d.address}: proximity, data quality, response process, and reporting consistency are made visible instead of assumed.</div></div>`;
+}
+
 function executiveTeamSlide(): string {
-  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Executive Team</div><p class="body-text" style="margin-bottom:18px">Camelot's board-facing team combines ownership perspective, property operations, accounting, compliance, legal, brokerage, and facility oversight.</p><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">${CAMELOT_EXECUTIVE_TEAM.map(member => `<div class="gold-card" style="min-height:118px"><div style="font-size:16px;font-weight:800;color:#1a2744">${member.name}</div><div style="font-size:11px;color:#B8973A;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin:4px 0">${member.title}</div><div class="small">${member.note}</div></div>`).join('')}</div><div class="source-note">Sources: ${CAMELOT_TEAM_SOURCE} · ${CAMELOT_OUR_TEAM_SOURCE}</div></div></div>`;
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Executive Team</div><p class="body-text" style="margin-bottom:18px">Camelot's board-facing team combines ownership perspective, property operations, accounting, compliance, legal, brokerage, and facility oversight.</p><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">${CAMELOT_EXECUTIVE_TEAM.map((member, index) => `<div class="gold-card" style="min-height:118px;display:flex;gap:12px;align-items:flex-start"><div class="icon-tile">${['🏢','📋','💼','⚖','🛡','📊','🛠','🏙','🗂'][index] || '★'}</div><div><div style="font-size:16px;font-weight:800;color:#1a2744">${member.name}</div><div style="font-size:11px;color:#B8973A;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin:4px 0">${member.title}</div><div class="small">${member.note}</div></div></div>`).join('')}</div><div class="source-note">Sources: ${CAMELOT_TEAM_SOURCE} · ${CAMELOT_OUR_TEAM_SOURCE}</div></div></div>`;
 }
 
 function residentPortalSlide(d: MasterReportData): string {
@@ -150,11 +208,11 @@ function residentPortalSlide(d: MasterReportData): string {
 }
 
 function mdsAccountingSlide(): string {
-  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Accounting &amp; Reporting Proof</div><p class="body-text" style="margin-bottom:18px">Camelot's accounting package is built around board-ready monthly reporting, MDS workflows, clean backup, and a predictable reporting cadence.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px"><div class="gold-card"><div class="sub-heading" style="font-size:20px">Monthly Package Includes</div>${MDS_REPORT_PROOF_POINTS.map(item => `<div class="check"><span>✓</span><div>${item}</div></div>`).join('')}</div><div class="gold-card"><div class="sub-heading" style="font-size:20px">Why It Matters</div><p class="body-text">Boards should not chase basic financial answers. Camelot can deliver recurring financials, cash-flow visibility, budget comparisons, arrears tracking, disbursement backup, and paid-invoice images so meetings focus on decisions instead of missing data.</p></div></div><div class="source-note">Sources: MDS sample report packages uploaded by Camelot · monthly reporting cadence supplied by Camelot.</div></div></div>`;
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Accounting &amp; Reporting Proof</div><p class="body-text" style="margin-bottom:16px">Camelot's accounting package is built around board-ready monthly reporting, MDS workflows, clean backup, and a predictable reporting cadence.</p><div style="display:grid;grid-template-columns:.95fr 1.05fr;gap:18px"><div class="gold-card"><div class="sub-heading" style="font-size:20px">Monthly Package Includes</div>${MDS_REPORT_PROOF_POINTS.map(item => `<div class="check"><span>✓</span><div>${item}</div></div>`).join('')}</div><div><div class="visual-card" style="padding:18px;margin-bottom:14px"><div class="sub-heading" style="font-size:18px">Reporting Cadence</div>${[['Close + reconciliation', 80], ['Board package QA', 88], ['Management report delivery', 96], ['Follow-up action list', 76]].map(([label, pct]) => `<div style="margin-bottom:13px"><div style="font-size:12px;font-weight:800;color:#1a2744">${label}</div><div class="mini-bar"><span style="width:${pct}%"></span></div></div>`).join('')}</div><div class="gold-card"><div class="sub-heading" style="font-size:18px">Why It Matters</div><p class="small">Boards should not chase basic financial answers. Camelot can deliver recurring financials, budget comparisons, arrears tracking, disbursement backup, and paid-invoice images so meetings focus on decisions instead of missing data.</p></div></div></div><div class="source-note">Sources: MDS sample report packages uploaded by Camelot · monthly reporting cadence supplied by Camelot.</div></div></div>`;
 }
 
 function onboardingChecklistSlide(): string {
-  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Onboarding Checklist</div><p class="body-text" style="margin-bottom:18px">The transition is treated like an operating handoff, not just a contract start date.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">${ONBOARDING_CHECKLIST.map((item, idx) => `<div class="gold-card"><div style="font-size:12px;color:#B8973A;font-weight:900;letter-spacing:1px;margin-bottom:4px">STEP ${idx + 1}</div><div style="font-size:16px;font-weight:800;color:#1a2744">${item}</div></div>`).join('')}</div><div class="source-note">Sources: Camelot transition procedures, rental portfolio transition case-study workflow, and Jackie 90-day onboarding model.</div></div></div>`;
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Onboarding Checklist</div><p class="body-text" style="margin-bottom:16px">The transition is treated like an operating handoff, not just a contract start date.</p><div style="display:grid;grid-template-columns:1fr .9fr;gap:18px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${ONBOARDING_CHECKLIST.map((item, idx) => `<div class="gold-card" style="padding:13px 14px"><div style="font-size:11px;color:#B8973A;font-weight:900;letter-spacing:1px;margin-bottom:3px">STEP ${idx + 1}</div><div style="font-size:13px;font-weight:800;color:#1a2744;line-height:1.35">${item}</div></div>`).join('')}</div><div class="visual-card" style="padding:20px"><div class="sub-heading" style="font-size:20px">90-Day Transition Rhythm</div>${[['Month 1 · Assessment', 34], ['Month 2 · Stabilization', 67], ['Month 3 · Optimization', 100]].map(([label, pct]) => `<div style="margin:20px 0"><div style="font-size:13px;font-weight:900;color:#1a2744">${label}</div><div class="mini-bar" style="height:14px"><span style="width:${pct}%"></span></div></div>`).join('')}<div class="small">Designed to show reliability quickly: files, money, staff, vendors, resident experience, and compliance all get organized into a visible plan.</div></div></div><div class="source-note">Sources: Camelot transition procedures, rental portfolio transition case-study workflow, and Jackie 90-day onboarding model.</div></div></div>`;
 }
 
 function standardAgreementSlide(): string {
@@ -165,14 +223,15 @@ export function generateFirstEmailIntroReport(d: MasterReportData): string {
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const subjectImage = bestExteriorImage(d);
   const hasRisks = d.violationsOpen > 0 || d.ecbPenaltyBalance > 0 || Boolean(d.ll97?.period1Penalty);
+  const landmarks = landmarkLabels(d);
   const slides = `
 <div class="slide slide-dark" style="background:linear-gradient(105deg,rgba(34,47,58,.96),rgba(34,47,58,.78)),url('${subjectImage}') center/cover no-repeat"><div class="pad">${logoBadge()}<div style="height:100%;display:flex;flex-direction:column;justify-content:center;max-width:760px"><div style="font-size:13px;color:#B8973A;text-transform:uppercase;letter-spacing:2.5px;font-weight:800">First Email Intro · 6-8 Page Package</div><h1 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:66px;line-height:.95;color:#F4D26A;font-style:italic;margin:12px 0">${d.buildingName || d.address}</h1><p style="font-size:20px;color:rgba(255,255,255,.82);line-height:1.55">A concise Camelot introduction built for first outreach: clear value, clean facts, no information overload.</p><p style="font-size:12px;color:rgba(255,255,255,.5);margin-top:34px">${d.address} · ${neighborhoodName(d)} · ${today}</p></div></div></div>
-<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Why We Are Reaching Out</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px"><div class="gold-card"><div class="sub-heading">Property Snapshot</div><table><tr><td>Units</td><td>${fmtN(d.units)}</td></tr><tr><td>Type</td><td>${d.propertyType || 'Residential'}</td></tr><tr><td>Year Built</td><td>${d.yearBuilt || 'Verify'}</td></tr><tr><td>Current Management</td><td>${d.managementCompany || 'To verify'}</td></tr></table></div><div class="gold-card"><div class="sub-heading">Initial Read</div><p class="body-text">${hasRisks ? `Jackie found public-record signals worth reviewing: ${d.violationsOpen} open HPD violation(s), ${fmt$(d.ecbPenaltyBalance)} ECB balance, and ${d.ll97?.period1Penalty ? fmt$(d.ll97.period1Penalty) + ' LL97 modeled exposure' : 'LL97 context to verify'}.` : `The building appears suitable for a boutique, high-attention management review focused on financial clarity, resident experience, vendor control, and board support.`}</p></div></div></div></div>
-<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Camelot In One Page</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px"><div class="stat-box"><div class="stat-val">41</div><div class="stat-label">Buildings</div></div><div class="stat-box"><div class="stat-val">$240M</div><div class="stat-label">AUM</div></div><div class="stat-box"><div class="stat-val">2006</div><div class="stat-label">Founded</div></div><div class="stat-box"><div class="stat-val">NYC</div><div class="stat-label">Local Team</div></div></div><p class="body-text">Camelot is independent, hands-on, and built for boards that want senior attention, clean reporting, faster response, and a management partner that thinks like an owner.</p><div class="source-note">Sources: ${CAMELOT_OUR_TEAM_SOURCE} · ${CAMELOT_TEAM_SOURCE}</div></div></div>
+<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Why We Are Reaching Out</div><div style="display:grid;grid-template-columns:1fr .9fr;gap:18px"><div><div class="gold-card" style="margin-bottom:14px"><div class="sub-heading">Property Snapshot</div><table><tr><td>Units</td><td>${fmtN(d.units)}</td></tr><tr><td>Type</td><td>${d.propertyType || 'Residential'}</td></tr><tr><td>Year Built</td><td>${d.yearBuilt || 'Verify'}</td></tr><tr><td>Current Management</td><td>${d.managementCompany || 'To verify'}</td></tr></table></div><div class="gold-card"><div class="sub-heading">Initial Read</div><p class="body-text">${hasRisks ? `Jackie found public-record signals worth reviewing: ${d.violationsOpen} open HPD violation(s), ${fmt$(d.ecbPenaltyBalance)} ECB balance, and ${d.ll97?.period1Penalty ? fmt$(d.ll97.period1Penalty) + ' LL97 modeled exposure' : 'LL97 context to verify'}.` : `The building appears suitable for a boutique, high-attention management review focused on financial clarity, resident experience, vendor control, and board support.`}</p></div></div>${imageCard(subjectImage, d.buildingName || d.address, `${d.buildingName || d.address} · subject-property visual reference`, 392)}</div><div class="source-note">Image sources: uploaded/verified property assets, official branding images, StreetEasy photos, or Google Street View fallback.</div></div></div>
+<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">New York Reach</div><div style="display:grid;grid-template-columns:1.05fr .95fr;gap:18px"><div>${imageCard(staticMapImage(d), 'Camelot HQ to subject property route map', `Camelot HQ at 477 Madison Avenue to ${d.buildingName || d.address}`, 250)}<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px"><div class="stat-box"><div class="stat-val">NYC</div><div class="stat-label">Local Company</div></div><div class="stat-box"><div class="stat-val">477</div><div class="stat-label">Madison HQ</div></div><div class="stat-box"><div class="stat-val">24/7</div><div class="stat-label">Emergency Line</div></div></div></div><div><div class="sub-heading">A New York Company for New York Boards</div><p class="body-text" style="margin-bottom:14px">Boards want to know how quickly help can arrive, whether the team understands the neighborhood, and whether the intelligence is specific. Jackie now makes that visible with route maps, local landmarks, source references, and neighborhood context.</p><div class="gold-card"><div class="sub-heading" style="font-size:17px">Nearby Context</div>${landmarks.map(l => `<div class="check"><span>•</span><div>${l}</div></div>`).join('')}</div></div></div><div class="source-note">Sources: Google Maps route imagery · LPC / neighborhood landmark context · Jackie property intelligence.</div></div></div>
+<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Camelot In One Page</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px"><div class="stat-box"><div class="stat-val">41</div><div class="stat-label">Buildings</div></div><div class="stat-box"><div class="stat-val">$240M</div><div class="stat-label">AUM</div></div><div class="stat-box"><div class="stat-val">2006</div><div class="stat-label">Founded</div></div><div class="stat-box"><div class="stat-val">NYC</div><div class="stat-label">Local Team</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px"><div class="gold-card"><p class="body-text">Camelot is independent, hands-on, and built for boards that want senior attention, clean reporting, faster response, and a management partner that thinks like an owner.</p>${compactIntelligenceSources()}</div>${responseChart(d)}</div><div class="source-note">Sources: ${CAMELOT_OUR_TEAM_SOURCE} · ${CAMELOT_TEAM_SOURCE} · NYC Open Data · Google Maps · StreetEasy / public listing images.</div></div></div>
 ${mdsAccountingSlide()}
 ${residentPortalSlide(d)}
 ${onboardingChecklistSlide()}
-${standardAgreementSlide()}
 <div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Proposed Next Step</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px"><div class="gold-card"><div class="sub-heading">15-Minute Intro Call</div><p class="body-text">Confirm the board's priorities, current pain points, reporting expectations, compliance exposure, staffing model, and timeline.</p></div><div class="gold-card"><div class="sub-heading">Then A Board Deck</div><p class="body-text">If there is interest, Jackie generates the 15-page board meeting deck with the verified property intelligence appendix behind it.</p></div></div><div class="source-note">Contact: David Goldoff · dgoldoff@camelot.nyc · 212-206-9939 ext. 701</div></div></div>`;
   return deckShell(`Camelot First Email Intro - ${d.buildingName || d.address}`, slides);
 }
