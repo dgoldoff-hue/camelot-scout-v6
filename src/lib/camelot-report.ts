@@ -1770,9 +1770,47 @@ function buildSubjectStreetViewUrl(d: Pick<MasterReportData, 'address' | 'latitu
   return `https://maps.googleapis.com/maps/api/streetview?size=900x650&location=${encodeURIComponent(location)}&fov=85&key=${GOOGLE_MAPS_REPORT_KEY}`;
 }
 
+function uniqueImageUrls(urls: Array<string | null | undefined>): string[] {
+  const seen = new Set<string>();
+  return urls
+    .map(url => String(url || '').trim())
+    .filter(url => {
+      if (!url || seen.has(url)) return false;
+      if (/undefined|null|\[object Object\]/i.test(url)) return false;
+      seen.add(url);
+      return true;
+    });
+}
+
 function subjectImageOnError(fallbackUrl: string, label: string): string {
+  return subjectImageOnErrorChain([fallbackUrl], label);
+}
+
+function subjectImageOnErrorChain(fallbackUrls: string[], label: string): string {
   const cleanLabel = String(label ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
-  return `if(this.src!=='${fallbackUrl}'){this.src='${fallbackUrl}'}else{this.parentElement.innerHTML='<div style=&quot;height:100%;display:flex;align-items:center;justify-content:center;background:#EDE9DF;color:#3A4B5B;text-align:center;padding:18px;font-size:12px;font-weight:700;line-height:1.45&quot;>${cleanLabel}<br><span style=&quot;color:#A89035;font-size:10px;text-transform:uppercase;letter-spacing:0.8px&quot;>Photo fallback unavailable</span></div>'}`;
+  const chain = JSON.stringify(uniqueImageUrls(fallbackUrls)).replace(/"/g, '&quot;');
+  return `const q=${chain};const i=Number(this.dataset.fallbackIndex||0);if(i<q.length){this.dataset.fallbackIndex=String(i+1);this.src=q[i]}else{this.parentElement.innerHTML='<div style=&quot;height:100%;display:flex;align-items:center;justify-content:center;background:#EDE9DF;color:#3A4B5B;text-align:center;padding:18px;font-size:12px;font-weight:700;line-height:1.45&quot;>${cleanLabel}<br><span style=&quot;color:#A89035;font-size:10px;text-transform:uppercase;letter-spacing:0.8px&quot;>Photo fallback unavailable</span></div>'}`;
+}
+
+function buildSubjectImageCandidates(d: MasterReportData): string[] {
+  return uniqueImageUrls([
+    ...(d.buildingPhotos?.exterior || []),
+    ...(d.commercialIntel?.brandingImages || []),
+    ...(d.streetEasy?.photos || []),
+    d.buildingPhotos?.streetView,
+    buildSubjectStreetViewUrl(d),
+  ]);
+}
+
+function renderSubjectImage(d: MasterReportData, options: { height?: number; alt?: string } = {}): string {
+  const candidates = buildSubjectImageCandidates(d);
+  const first = candidates[0] || buildSubjectStreetViewUrl(d);
+  const rest = candidates.slice(1);
+  const height = options.height ? ` style="height:${options.height}px"` : '';
+  const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+  const alt = escape(options.alt || d.buildingName);
+  const sourceLabel = d.buildingPhotos?.source || (d.streetEasy?.photos?.length ? 'StreetEasy public building photos' : 'Google Street View reference');
+  return `<div class="deck-photo"${height}><img src="${first}" alt="${alt}" data-fallback-index="0" data-image-source="${escape(sourceLabel)}" onerror="${subjectImageOnErrorChain(rest.length ? rest : [buildSubjectStreetViewUrl(d)], d.buildingName)}"></div>`;
 }
 
 export async function buildMasterReport(address: string, borough?: string): Promise<MasterReportData> {
@@ -2441,6 +2479,11 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     status: html.includes('StreetEasy public building photos') || html.includes('onerror="if(this.src!==') ? 'pass' : 'fail',
     detail: 'Subject property images must prefer verified/uploaded images, then StreetEasy public building photos when available, then Google Street View fallback',
   });
+  checks.push({
+    name: 'Subject Image Fallback Chain',
+    status: html.includes('data-fallback-index') && html.includes('data-image-source') ? 'pass' : 'fail',
+    detail: 'Subject image slots must try verified/uploaded assets, official branding images, StreetEasy photos, and Google Street View before showing a placeholder',
+  });
   const landmarkLabels = resolveNearbyLandmarkLabels(d);
   const nearbyLandmarksBlock = (html.match(/<h4>Nearby Landmarks<\/h4>[\s\S]*?<\/ul>/i) || [])[0] || '';
   const landmarkItemCount = (nearbyLandmarksBlock.match(/<li\b/gi) || []).length;
@@ -2975,9 +3018,8 @@ export function generateBrochureHTML(d: MasterReportData): string {
 <td style="padding:8px;border-bottom:1px solid #E5E3DE;color:#555;line-height:1.45">${safe(check.detail)}${check.url ? ` <a href="${safe(check.url)}" target="_blank" rel="noopener" style="color:#A89035;text-decoration:underline">Open source</a>` : ''}</td>
 </tr>`).join('');
   const is1280Fifth = /1280\s+(fifth|5th)/i.test(`${d.address} ${d.buildingName}`);
-  const subjectPhoto = d.buildingPhotos?.exterior?.[0] || '';
-  const subjectPhotoFallback = d.buildingPhotos?.streetView || buildSubjectStreetViewUrl(d);
-  const subjectPhotoError = subjectImageOnError(subjectPhotoFallback, d.buildingName);
+  const subjectImageCandidates = buildSubjectImageCandidates(d);
+  const subjectPhotoError = subjectImageOnErrorChain(subjectImageCandidates.slice(1), d.buildingName);
   const prettyNeighborhood = d.neighborhoodName
     ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
     : d.borough || 'New York City';
@@ -3400,7 +3442,7 @@ ${propertyPedigree.facts.map(f => `<li>${safe(f)}</li>`).join('')}
 <div class="deck-note">${safe(propertyPedigree.foot)}</div>
 </div>
 <div class="deck-photo">
-${subjectPhoto ? `<img src="${subjectPhoto}" alt="${safe(d.buildingName)}" onerror="${subjectPhotoError}">` : `<img src="${subjectPhotoFallback}" alt="${safe(d.buildingName)} street view" onerror="${subjectPhotoError}">`}
+${renderSubjectImage(d, { alt: d.buildingName }).replace(/^<div class="deck-photo"[^>]*>|<\/div>$/g, '')}
 </div>
 </div>
 </div>
@@ -3574,6 +3616,7 @@ ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borou
 </a>
 </div>
 <div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Data: HPD → DOF → StreetEasy → PropertyShark → Domecile (units) · ACRIS → DOF → HPD (ownership) · DOB/BIS → SiteCompli → Jack Jaffa (violations/permits) · DOF (abatements/liens) · LexisNexis → NYSCEF (legal) · NY AG (offering plans) · ZIP/neighborhood context → broad searches</div>
+<div style="margin-top:5px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Building image source stack: uploaded / verified Camelot assets → official building website → StreetEasy public building photos → Wikimedia Commons → Google Street View → board-facing placeholder</div>
 </div>
 
 <div class="stats-row">
@@ -4415,7 +4458,7 @@ ${[
 <div><h4 style="font-size:15px;font-weight:700;color:#2C3240;margin-bottom:6px">${s.title}</h4><p style="font-size:12px;color:#555;line-height:1.7">${s.desc}</p></div>
 </div>`).join('\n')}
 </div>
-${subjectPhoto ? `<div class="deck-photo" style="height:360px"><img src="${subjectPhoto}" alt="${safe(d.buildingName)}" onerror="${subjectPhotoError}"></div>` : `<div class="deck-photo" style="height:360px"><img src="${subjectPhotoFallback}" alt="${safe(d.buildingName)} street view" onerror="${subjectPhotoError}"></div>`}
+${renderSubjectImage(d, { height: 360, alt: `${d.buildingName} building image` })}
 </div>
 </div>
 
