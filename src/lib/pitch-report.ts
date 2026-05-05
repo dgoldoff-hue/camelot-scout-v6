@@ -97,10 +97,17 @@ function cleanFileNamePart(value: string): string {
 function externalDeckCss(): string {
   return `
   @page { size: 13.33in 7.5in; margin: 0; }
-  @media print { .slide { page-break-after: always; } .slide:last-child { page-break-after: auto; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  @media print { .deck-action-bar { display:none !important; } .slide { page-break-after: always; margin:0 auto; box-shadow:none; } .slide:last-child { page-break-after: auto; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background:#fff; } }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { counter-reset: slide; }
   body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; color: #1a1f36; font-size: 16px; line-height: 1.6; background: #e0e0e0; }
-  .slide { width: 1280px; height: 720px; margin: 20px auto; position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15); background:#FAF8F5; }
+  .deck-action-bar { position:sticky;top:0;z-index:50;background:#34444f;color:#fff;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.18); }
+  .deck-action-bar button, .deck-action-bar a { border:0;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer;margin-left:8px; }
+  .deck-action-bar .gold { background:#B8973A;color:#fff; }
+  .deck-action-bar .white { background:#fff;color:#34444f; }
+  .deck-action-bar .outline { background:transparent;color:#F4D26A;border:1px solid #B8973A; }
+  .slide { width: 1280px; height: 720px; margin: 20px auto; position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15); background:#FAF8F5; counter-increment: slide; }
+  .slide::after { content: counter(slide); position:absolute; right:24px; bottom:16px; font-family: Arial, sans-serif; font-size:10px; color:#7d8490; z-index:9; }
   .slide-dark { background: #34444f; color: #fff; }
   .pad { padding: 54px 64px; }
   .logo-badge { position: absolute; top: 0; right: 0; width: 166px; height: 96px; background: #B8973A; display: flex; align-items: center; justify-content: center; z-index: 4; }
@@ -114,7 +121,7 @@ function externalDeckCss(): string {
   .gold-card { border:1px solid rgba(184,151,58,0.38);border-left:4px solid #B8973A;background:#fff;padding:18px 20px;border-radius:8px;box-shadow:0 12px 28px rgba(26,31,54,0.07); }
   .visual-card { border:1px solid rgba(184,151,58,0.32);background:#fff;border-radius:8px;box-shadow:0 12px 28px rgba(26,31,54,0.08);overflow:hidden; }
   .image-frame { height:260px;background:#EDE9DF;overflow:hidden;position:relative; }
-  .image-frame img { width:100%;height:100%;object-fit:cover;display:block; }
+  .image-frame img, .image-frame iframe { width:100%;height:100%;object-fit:cover;display:block;border:0; }
   .image-caption { padding:9px 12px;font-size:10px;color:#6b7280;border-top:1px solid #eee; }
   .stat-box { background:#fff;border:1px solid rgba(184,151,58,0.25);border-radius:10px;padding:18px;text-align:center;box-shadow:0 12px 28px rgba(26,31,54,0.07); }
   .stat-val { font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:700;color:#B8973A;line-height:1; }
@@ -132,7 +139,10 @@ function externalDeckCss(): string {
 }
 
 function deckShell(title: string, slides: string): string {
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title}</title><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><style>${externalDeckCss()}</style></head><body>${slides}</body></html>`;
+  const safeTitle = title.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+  const encodedSubject = encodeURIComponent(title);
+  const encodedBody = encodeURIComponent(`Please find the Camelot report here. If you would like, I can also send the PDF version directly.\n\nDavid Goldoff\nCamelot Realty Group`);
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${safeTitle}</title><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><style>${externalDeckCss()}</style></head><body><div class="deck-action-bar"><div style="font-size:13px;font-weight:900;color:#F4D26A">${safeTitle}</div><div><button class="gold" onclick="window.print()">Print / Save PDF</button><button class="white" onclick="var a=document.createElement('a');a.href='data:text/html;charset=utf-8,'+encodeURIComponent(document.documentElement.outerHTML);a.download=document.title.replace(/[^a-zA-Z0-9]+/g,'-')+'.html';a.click()">Download HTML</button><a class="outline" href="mailto:?subject=${encodedSubject}&body=${encodedBody}">Email</a></div></div>${slides}</body></html>`;
 }
 
 function logoBadge(): string {
@@ -142,6 +152,20 @@ function logoBadge(): string {
 function streetViewImage(d: MasterReportData, size = '900x600'): string {
   const location = d.latitude && d.longitude ? `${d.latitude},${d.longitude}` : `${d.address}, New York, NY`;
   return `https://maps.googleapis.com/maps/api/streetview?size=${size}&location=${encodeURIComponent(location)}&fov=85&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`;
+}
+
+function streetViewEmbedUrl(d: MasterReportData): string {
+  const location = d.latitude && d.longitude ? `${d.latitude},${d.longitude}` : `${d.address}, New York, NY`;
+  return `https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${encodeURIComponent(location)}&heading=0&pitch=5&fov=80`;
+}
+
+function directionsEmbedUrl(d: MasterReportData): string {
+  return `https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodeURIComponent(d.address)}&mode=driving`;
+}
+
+function placeEmbedUrl(d: MasterReportData): string {
+  const query = d.latitude && d.longitude ? `${d.latitude},${d.longitude}` : `${d.address}, New York, NY`;
+  return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(query)}&zoom=16`;
 }
 
 function bestExteriorImage(d: MasterReportData): string {
@@ -161,6 +185,18 @@ function neighborhoodMapImage(d: MasterReportData, size = '640x360'): string {
 function imageCard(src: string, alt: string, caption: string, height = 260): string {
   const safeAlt = alt.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
   return `<div class="visual-card"><div class="image-frame" style="height:${height}px"><img src="${src}" alt="${safeAlt}" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=&quot;height:100%;display:flex;align-items:center;justify-content:center;background:#34444f;color:#B8973A;font-size:12px;font-weight:800;text-align:center;padding:16px&quot;>${safeAlt}</div>'"></div><div class="image-caption">${caption}</div></div>`;
+}
+
+function propertyImageCard(d: MasterReportData, caption: string, height = 392): string {
+  const first = bestExteriorImage(d);
+  const safeAlt = (d.buildingName || d.address).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+  const iframe = `<iframe src=&quot;${streetViewEmbedUrl(d)}&quot; title=&quot;${safeAlt} street view&quot; allowfullscreen loading=&quot;lazy&quot;></iframe>`;
+  return `<div class="visual-card"><div class="image-frame" style="height:${height}px"><img src="${first}" alt="${safeAlt}" onerror="this.style.display='none';this.parentElement.innerHTML='${iframe}'"></div><div class="image-caption">${caption}</div></div>`;
+}
+
+function iframeCard(src: string, title: string, caption: string, height = 260): string {
+  const safeTitle = title.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+  return `<div class="visual-card"><div class="image-frame" style="height:${height}px"><iframe src="${src}" title="${safeTitle}" allowfullscreen loading="lazy"></iframe></div><div class="image-caption">${caption}</div></div>`;
 }
 
 function landmarkLabels(d: MasterReportData): string[] {
@@ -225,9 +261,9 @@ export function generateFirstEmailIntroReport(d: MasterReportData): string {
   const hasRisks = d.violationsOpen > 0 || d.ecbPenaltyBalance > 0 || Boolean(d.ll97?.period1Penalty);
   const landmarks = landmarkLabels(d);
   const slides = `
-<div class="slide slide-dark" style="background:linear-gradient(105deg,rgba(34,47,58,.96),rgba(34,47,58,.78)),url('${subjectImage}') center/cover no-repeat"><div class="pad">${logoBadge()}<div style="height:100%;display:flex;flex-direction:column;justify-content:center;max-width:760px"><div style="font-size:13px;color:#B8973A;text-transform:uppercase;letter-spacing:2.5px;font-weight:800">First Email Intro · 6-8 Page Package</div><h1 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:66px;line-height:.95;color:#F4D26A;font-style:italic;margin:12px 0">${d.buildingName || d.address}</h1><p style="font-size:20px;color:rgba(255,255,255,.82);line-height:1.55">A concise Camelot introduction built for first outreach: clear value, clean facts, no information overload.</p><p style="font-size:12px;color:rgba(255,255,255,.5);margin-top:34px">${d.address} · ${neighborhoodName(d)} · ${today}</p></div></div></div>
-<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Why We Are Reaching Out</div><div style="display:grid;grid-template-columns:1fr .9fr;gap:18px"><div><div class="gold-card" style="margin-bottom:14px"><div class="sub-heading">Property Snapshot</div><table><tr><td>Units</td><td>${fmtN(d.units)}</td></tr><tr><td>Type</td><td>${d.propertyType || 'Residential'}</td></tr><tr><td>Year Built</td><td>${d.yearBuilt || 'Verify'}</td></tr><tr><td>Current Management</td><td>${d.managementCompany || 'To verify'}</td></tr></table></div><div class="gold-card"><div class="sub-heading">Initial Read</div><p class="body-text">${hasRisks ? `Jackie found public-record signals worth reviewing: ${d.violationsOpen} open HPD violation(s), ${fmt$(d.ecbPenaltyBalance)} ECB balance, and ${d.ll97?.period1Penalty ? fmt$(d.ll97.period1Penalty) + ' LL97 modeled exposure' : 'LL97 context to verify'}.` : `The building appears suitable for a boutique, high-attention management review focused on financial clarity, resident experience, vendor control, and board support.`}</p></div></div>${imageCard(subjectImage, d.buildingName || d.address, `${d.buildingName || d.address} · subject-property visual reference`, 392)}</div><div class="source-note">Image sources: uploaded/verified property assets, official branding images, StreetEasy photos, or Google Street View fallback.</div></div></div>
-<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">New York Reach</div><div style="display:grid;grid-template-columns:1.05fr .95fr;gap:18px"><div>${imageCard(staticMapImage(d), 'Camelot HQ to subject property route map', `Camelot HQ at 477 Madison Avenue to ${d.buildingName || d.address}`, 250)}<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px"><div class="stat-box"><div class="stat-val">NYC</div><div class="stat-label">Local Company</div></div><div class="stat-box"><div class="stat-val">477</div><div class="stat-label">Madison HQ</div></div><div class="stat-box"><div class="stat-val">24/7</div><div class="stat-label">Emergency Line</div></div></div></div><div><div class="sub-heading">A New York Company for New York Boards</div><p class="body-text" style="margin-bottom:14px">Boards want to know how quickly help can arrive, whether the team understands the neighborhood, and whether the intelligence is specific. Jackie now makes that visible with route maps, local landmarks, source references, and neighborhood context.</p><div class="gold-card"><div class="sub-heading" style="font-size:17px">Nearby Context</div>${landmarks.map(l => `<div class="check"><span>•</span><div>${l}</div></div>`).join('')}</div></div></div><div class="source-note">Sources: Google Maps route imagery · LPC / neighborhood landmark context · Jackie property intelligence.</div></div></div>
+<div class="slide slide-dark"><img src="${subjectImage}" alt="${d.buildingName || d.address}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.34" onerror="this.style.display='none'"><div style="position:absolute;inset:0;background:linear-gradient(105deg,rgba(34,47,58,.98),rgba(34,47,58,.72))"></div><div class="pad" style="position:relative;z-index:2">${logoBadge()}<div style="height:100%;display:flex;flex-direction:column;justify-content:center;max-width:760px"><div style="font-size:13px;color:#B8973A;text-transform:uppercase;letter-spacing:2.5px;font-weight:800">First Email Intro · 6-8 Page Package</div><h1 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:66px;line-height:.95;color:#F4D26A;font-style:italic;margin:12px 0">${d.buildingName || d.address}</h1><p style="font-size:20px;color:rgba(255,255,255,.82);line-height:1.55">A concise Camelot introduction built for first outreach: clear value, clean facts, no information overload.</p><p style="font-size:12px;color:rgba(255,255,255,.5);margin-top:34px">${d.address} · ${neighborhoodName(d)} · ${today}</p></div></div></div>
+<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Why We Are Reaching Out</div><div style="display:grid;grid-template-columns:1fr .9fr;gap:18px"><div><div class="gold-card" style="margin-bottom:14px"><div class="sub-heading">Property Snapshot</div><table><tr><td>Units</td><td>${fmtN(d.units)}</td></tr><tr><td>Type</td><td>${d.propertyType || 'Residential'}</td></tr><tr><td>Year Built</td><td>${d.yearBuilt || 'Verify'}</td></tr><tr><td>Current Management</td><td>${d.managementCompany || 'To verify'}</td></tr></table></div><div class="gold-card"><div class="sub-heading">Initial Read</div><p class="body-text">${hasRisks ? `Jackie found public-record signals worth reviewing: ${d.violationsOpen} open HPD violation(s), ${fmt$(d.ecbPenaltyBalance)} ECB balance, and ${d.ll97?.period1Penalty ? fmt$(d.ll97.period1Penalty) + ' LL97 modeled exposure' : 'LL97 context to verify'}.` : `The building appears suitable for a boutique, high-attention management review focused on financial clarity, resident experience, vendor control, and board support.`}</p></div></div>${propertyImageCard(d, `${d.buildingName || d.address} · image or Google Street View fallback`, 392)}</div><div class="source-note">Image sources: uploaded/verified property assets, official branding images, StreetEasy photos, or embedded Google Street View fallback.</div></div></div>
+<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">New York Reach</div><div style="display:grid;grid-template-columns:1.05fr .95fr;gap:18px"><div>${iframeCard(directionsEmbedUrl(d), 'Camelot HQ to subject property route map', `Camelot HQ at 477 Madison Avenue to ${d.buildingName || d.address}`, 250)}<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px"><div class="stat-box"><div class="stat-val">NYC</div><div class="stat-label">Local Company</div></div><div class="stat-box"><div class="stat-val">477</div><div class="stat-label">Madison HQ</div></div><div class="stat-box"><div class="stat-val">24/7</div><div class="stat-label">Emergency Line</div></div></div></div><div><div class="sub-heading">A New York Company for New York Boards</div><p class="body-text" style="margin-bottom:14px">Boards want to know how quickly help can arrive, whether the team understands the neighborhood, and whether the intelligence is specific. Jackie now makes that visible with route maps, local landmarks, source references, and neighborhood context.</p><div class="gold-card"><div class="sub-heading" style="font-size:17px">Nearby Context</div>${landmarks.map(l => `<div class="check"><span>•</span><div>${l}</div></div>`).join('')}</div></div></div><div class="source-note">Sources: Embedded Google Maps route · LPC / neighborhood landmark context · Jackie property intelligence.</div></div></div>
 <div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Camelot In One Page</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px"><div class="stat-box"><div class="stat-val">41</div><div class="stat-label">Buildings</div></div><div class="stat-box"><div class="stat-val">$240M</div><div class="stat-label">AUM</div></div><div class="stat-box"><div class="stat-val">2006</div><div class="stat-label">Founded</div></div><div class="stat-box"><div class="stat-val">NYC</div><div class="stat-label">Local Team</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px"><div class="gold-card"><p class="body-text">Camelot is independent, hands-on, and built for boards that want senior attention, clean reporting, faster response, and a management partner that thinks like an owner.</p>${compactIntelligenceSources()}</div>${responseChart(d)}</div><div class="source-note">Sources: ${CAMELOT_OUR_TEAM_SOURCE} · ${CAMELOT_TEAM_SOURCE} · NYC Open Data · Google Maps · StreetEasy / public listing images.</div></div></div>
 ${mdsAccountingSlide()}
 ${residentPortalSlide(d)}
