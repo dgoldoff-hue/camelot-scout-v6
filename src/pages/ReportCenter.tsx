@@ -213,8 +213,11 @@ export default function ReportCenter() {
     const d = getDataWithPhotos();
     if (!d) return;
     const email = generatePitchEmail(d);
+    const subject = encodeURIComponent(`Camelot introduction for ${d.buildingName || d.address}`);
+    const body = encodeURIComponent(email.replace(/^Subject:.*\n\n/i, ''));
+    window.location.href = `mailto:?cc=info@camelot.nyc,dgoldoff@camelot.nyc&subject=${subject}&body=${body}`;
     copyToClipboard(email);
-    toast.success('Pitch email copied to clipboard');
+    toast.success('Email draft opened; pitch copy also copied to clipboard');
   };
 
   const handlePitchDeckPPTX = async () => {
@@ -675,7 +678,7 @@ export default function ReportCenter() {
               <button onClick={handleDownloadPitchHTML} className="px-4 py-3 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] font-medium flex flex-col items-center gap-1 text-sm">
                 <Download className="w-5 h-5" /> Download Selected
               </button>
-              <button onClick={() => setShowEmailModal(true)} className="px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex flex-col items-center gap-1 text-sm">
+              <button onClick={handlePitchEmail} className="px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex flex-col items-center gap-1 text-sm">
                 <Mail className="w-5 h-5" /> Email Draft
               </button>
               <button onClick={() => setShowCallerModal(true)} className="px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex flex-col items-center gap-1 text-sm">

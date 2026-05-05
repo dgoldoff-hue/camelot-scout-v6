@@ -11,7 +11,7 @@ export function openBrochureForPrint(html: string, filename: string): void {
   }
   win.document.write(html);
   win.document.close();
-  win.document.title = filename.replace(/\.html$/i, '');
+  win.document.title = filename.replace(/\.(html|pdf)$/i, '');
 }
 
 /** Download HTML string as an .html file */
