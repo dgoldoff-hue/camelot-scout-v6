@@ -138,7 +138,7 @@ function externalDeckCss(): string {
   @media print {
     html, body { width:13.333in !important; min-width:13.333in !important; margin:0 !important; padding:0 !important; overflow:visible !important; background:#fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .deck-action-bar { display:none !important; }
-    .slide { width:13.333in !important; height:7.5in !important; min-height:7.5in !important; max-height:7.5in !important; margin:0 !important; padding:0 !important; box-shadow:none !important; overflow:hidden !important; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }
+    .slide { width:13.333in !important; height:7.49in !important; min-height:7.49in !important; max-height:7.49in !important; margin:0 !important; padding:0 !important; box-shadow:none !important; overflow:hidden !important; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }
     .slide:last-child { page-break-after: auto; break-after: auto; }
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -189,7 +189,7 @@ function deckShell(title: string, slides: string): string {
 }
 
 function logoBadge(): string {
-  return `<div class="logo-badge"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none';this.parentElement.innerHTML='<div class=&quot;logo-badge-text&quot;>CAMELOT<span class=&quot;logo-badge-sub&quot;>REALTY GROUP</span></div>'"></div>`;
+  return `<div class="logo-badge"><div class="logo-badge-text">CAMELOT<span class="logo-badge-sub">REALTY GROUP</span></div></div>`;
 }
 
 function streetViewImage(d: MasterReportData, size = '900x600'): string {
@@ -398,7 +398,7 @@ export function generatePitchReport(d: MasterReportData): string {
   @page { size: 13.333in 7.5in; margin: 0; }
   @media print {
     html, body { width:13.333in !important; min-width:13.333in !important; margin:0 !important; padding:0 !important; overflow:visible !important; background:#fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .slide { width:13.333in !important; height:7.5in !important; min-height:7.5in !important; max-height:7.5in !important; margin:0 !important; padding:0 !important; box-shadow:none !important; overflow:hidden !important; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }
+    .slide { width:13.333in !important; height:7.49in !important; min-height:7.49in !important; max-height:7.49in !important; margin:0 !important; padding:0 !important; box-shadow:none !important; overflow:hidden !important; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }
     .slide:last-child { page-break-after: auto; break-after: auto; }
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }

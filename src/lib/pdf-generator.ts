@@ -16,7 +16,13 @@ export function openBrochureForPrint(html: string, filename: string): void {
 
 /** Download HTML string as an .html file */
 export function downloadAsHTML(html: string, filename: string): void {
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const portableHtml = baseUrl
+    ? html
+      .replace(/(src|href)=["']\.\/([^"']+)["']/g, `$1="${baseUrl}/$2"`)
+      .replace(/(src|href)=["']\/([^"']+)["']/g, `$1="${baseUrl}/$2"`)
+    : html;
+  const blob = new Blob([portableHtml], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

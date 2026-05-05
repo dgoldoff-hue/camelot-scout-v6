@@ -213,11 +213,20 @@ export default function ReportCenter() {
     const d = getDataWithPhotos();
     if (!d) return;
     const email = generatePitchEmail(d);
-    const subject = encodeURIComponent(`Camelot introduction for ${d.buildingName || d.address}`);
-    const body = encodeURIComponent(email.replace(/^Subject:.*\n\n/i, ''));
-    window.location.href = `mailto:?cc=info@camelot.nyc,dgoldoff@camelot.nyc&subject=${subject}&body=${body}`;
+    const html = generateSelectedPackageHTML(d);
+    const filename = selectedPackage === 'appendix_full' ? buildJackieIntelReportFilename(d, 'html') : buildJackiePackageFilename(d, selectedPackage, 'html');
+    downloadAsHTML(html, filename);
+    const subject = encodeURIComponent(`Introduction to Camelot Property Management regarding ${d.buildingName || d.address}`);
+    const body = encodeURIComponent(
+      `To the decision makers of ${d.buildingName || d.address},\n\n` +
+      `Thank you for taking the time to review Camelot Property Management. Attached is a brief property-specific introduction prepared by Jackie, Camelot OS, for ${d.buildingName || d.address}.\n\n` +
+      `Camelot is a New York-based property management company serving co-ops, condos, and rental buildings with senior attention, in-house accounting, legal and compliance guidance, practical technology, and hands-on local management. We would welcome the opportunity to speak with you by phone, Zoom, Google Meet, or in person to discuss where Camelot may be useful to your building.\n\n` +
+      `Please attach the downloaded HTML report file: ${filename}\n\n` +
+      `Sincerely,\nDavid A. Goldoff\nFounder & President\nCamelot Realty Group\n57 West 57th Street, Suite 410, New York, NY 10019\n(212) 206-9939 ext. 701\ninfo@camelot.nyc | dgoldoff@camelot.nyc`
+    );
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&cc=info@camelot.nyc,dgoldoff@camelot.nyc&su=${subject}&body=${body}`, '_blank', 'noopener,noreferrer');
     copyToClipboard(email);
-    toast.success('Email draft opened; pitch copy also copied to clipboard');
+    toast.success('Gmail draft opened and the HTML report downloaded for attachment');
   };
 
   const handlePitchDeckPPTX = async () => {
