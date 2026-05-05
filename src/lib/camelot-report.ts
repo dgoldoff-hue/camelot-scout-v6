@@ -1097,9 +1097,6 @@ const CAMELOT = {
 
 const LEGAL_TERMS_URL = 'https://camelot-scout-v6.onrender.com/#/legal-report-terms';
 const GOOGLE_MAPS_REPORT_KEY = 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8';
-const JACQUELINE_PORTRAIT_URL = 'https://archive.vanityfair.com/image/spread/20040501/135/0';
-const JACQUELINE_PORTRAIT_FALLBACK_URL = 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Jackie_Kennedy_Color_Portrait_%283x4_cropped%29.jpg';
-const VANITY_FAIR_CAMELOT_REFERENCE_URL = 'https://archive.vanityfair.com/article/share/77184080-31c6-4e95-b1cd-165ca2807775';
 
 function reportFilenameSafe(value: string): string {
   return value
@@ -5462,10 +5459,6 @@ ${buildPortfolioSection(d)}
 <!-- PAGE 25: BACK COVER -->
 <div class="back-cover" style="background:#3A4B5B;position:relative;overflow:hidden">
 
-<!-- Jackie Kennedy background image overlay -->
-<div style="position:absolute;top:44px;left:52px;width:190px;height:252px;border:2px solid rgba(168,144,53,0.7);box-shadow:0 18px 32px rgba(0,0,0,0.24);overflow:hidden;background:#23313B;z-index:1">
-<img src="${JACQUELINE_PORTRAIT_URL}" alt="Jacqueline Kennedy Onassis portrait" style="width:100%;height:100%;object-fit:cover;display:block" onerror="if(this.src!=='${JACQUELINE_PORTRAIT_FALLBACK_URL}'){this.src='${JACQUELINE_PORTRAIT_FALLBACK_URL}'}else{this.parentElement.innerHTML='<div style=&quot;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;color:#D5B24A;font-family:Georgia,serif;font-size:18px;line-height:1.35&quot;>Jacqueline<br>Kennedy<br>Onassis</div>'}">
-</div>
 <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(58,75,91,0.4) 0%,rgba(58,75,91,0.95) 40%,rgba(58,75,91,1) 70%)"></div>
 
 <!-- Content -->
