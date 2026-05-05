@@ -80,6 +80,10 @@ const requiredTokens = [
   ['Gut Check borough benchmark fallback', 'borough-level NYC benchmark'],
   ['LL97 missing-data workplan rule', 'the report must flag the missing data and provide the compliance workplan'],
   ['LL97 likely applicable fallback', 'll97LikelyApplicable'],
+  ['Jackie focus theme registry', 'REPORT_FOCUS_THEMES'],
+  ['Jackie inquiry-driven focus slide', 'Inquiry-Driven Focus'],
+  ['Jackie accounting focus monthly reports', 'monthly management reports deployed between the 20th and 25th'],
+  ['Jackie focus facts remain source checked', 'the selected focus only changes what Camelot emphasizes'],
   ['ConciergePlus partner logo', '/images/partners/conciergeplus.svg'],
   ['Select real web asset', 'https://d2e1363xcu3t9u.cloudfront.net/2024/images/share.png'],
   ['Domecile real logo asset', 'https://www.domecile.com/assets/default/domecile_logo_evolve-f47345567bc24e05b97fd7c7f893ef2e897c9679312a2b55776c7d7d5f2d1b7d.svg'],
@@ -129,6 +133,8 @@ const workflowTokens = [
   ['instant proposal locks external draft', 'Proposal draft locked until Jackie blockers are cleared'],
   ['property detail validates Jackie', 'validateJackieReport(data, html)'],
   ['property detail remains internal-accessible', 'Jackie internal review opened with'],
+  ['report center focus controls', 'Jackie Report Focus'],
+  ['report center focus notes', 'Optional notes from Get-a-Quote'],
 ];
 
 const workflowSource = [reportCenter, instantProposal, propertyDetail].join('\n');

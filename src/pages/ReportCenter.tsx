@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Search, FileText, Download, Mail, Phone, Table2, Link2, Loader2, Eye, Copy, Check, X, ShieldCheck, ShieldX, AlertTriangle, Lock } from 'lucide-react';
-import { buildJackieIntelReportFilename, buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, validateJackieReport, type MasterReportData, type QACheckResult } from '@/lib/camelot-report';
+import { REPORT_FOCUS_THEMES, buildJackieIntelReportFilename, buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, validateJackieReport, type MasterReportData, type QACheckResult, type ReportFocusInput, type ReportFocusKey } from '@/lib/camelot-report';
 import { generatePitchReport, generatePitchEmail } from '@/lib/pitch-report';
 import { generatePitchDeck } from '@/lib/pitch-deck-pptx';
 import { openBrochureForPrint, downloadAsHTML, triggerCSVDownload, copyToClipboard } from '@/lib/pdf-generator';
 import toast from 'react-hot-toast';
 
 type EmailType = 'intro' | 'followup' | 'proposal' | 'compliance' | 'loyalty';
+const REPORT_FOCUS_OPTIONS = Object.values(REPORT_FOCUS_THEMES);
 
 function ReleaseWorkflowPanel({
   qa,
@@ -113,7 +114,28 @@ export default function ReportCenter() {
   const [emailType, setEmailType] = useState<EmailType>('intro');
   const [copied, setCopied] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
+  const [selectedFocus, setSelectedFocus] = useState<ReportFocusKey[]>(['property_management']);
+  const [inquiryContact, setInquiryContact] = useState('');
+  const [inquiryOrganization, setInquiryOrganization] = useState('');
+  const [inquiryRole, setInquiryRole] = useState('');
+  const [inquiryNotes, setInquiryNotes] = useState('');
   const photoInputRef = useRef<HTMLInputElement | null>(null);
+
+  const buildReportFocus = useCallback((): ReportFocusInput => ({
+    selectedFocus: selectedFocus.length ? selectedFocus : ['property_management'],
+    inquiryContact: inquiryContact.trim() || undefined,
+    inquiryOrganization: inquiryOrganization.trim() || undefined,
+    inquiryRole: inquiryRole.trim() || undefined,
+    inquiryNotes: inquiryNotes.trim() || undefined,
+  }), [selectedFocus, inquiryContact, inquiryOrganization, inquiryRole, inquiryNotes]);
+
+  const toggleFocus = (key: ReportFocusKey) => {
+    setSelectedFocus(prev => {
+      const exists = prev.includes(key);
+      const next = exists ? prev.filter(item => item !== key) : [...prev, key];
+      return next.length ? next : ['property_management'];
+    });
+  };
 
   const generate = useCallback(async () => {
     if (!address.trim()) return;
@@ -126,14 +148,14 @@ export default function ReportCenter() {
       await new Promise(r => setTimeout(r, 200));
       setLoadingMsg('Fetching ACRIS ownership records...');
       const result = await buildMasterReport(address.trim(), borough || undefined);
-      setData(result);
+      setData({ ...result, reportFocus: buildReportFocus() });
     } catch (err) {
       console.error('Report generation failed:', err);
     } finally {
       setLoading(false);
       setLoadingMsg('');
     }
-  }, [address, borough]);
+  }, [address, borough, buildReportFocus]);
 
   const handlePreviewBrochure = () => {
     const d = getDataWithPhotos();
@@ -279,14 +301,15 @@ export default function ReportCenter() {
   // Inject uploaded photos into report data before generating
   const getDataWithPhotos = (): MasterReportData | null => {
     if (!data) return null;
-    if (uploadedPhotos.length === 0) return data;
+    const baseData = { ...data, reportFocus: buildReportFocus() };
+    if (uploadedPhotos.length === 0) return baseData;
     return {
-      ...data,
+      ...baseData,
       buildingPhotos: {
         exterior: uploadedPhotos.slice(0, 1),
         interior: uploadedPhotos.slice(1),
-        streetView: data.buildingPhotos?.streetView || '',
-        satellite: data.buildingPhotos?.satellite || '',
+        streetView: baseData.buildingPhotos?.streetView || '',
+        satellite: baseData.buildingPhotos?.satellite || '',
         source: 'Uploaded by Camelot team',
       },
     };
@@ -330,27 +353,90 @@ export default function ReportCenter() {
 
       {/* Search */}
       <div className="bg-white rounded-xl border p-6 shadow-sm">
-        <div className="flex gap-3">
-          <input
-            type="text" placeholder="Enter building address (e.g., 200 E 24th St)"
-            value={address} onChange={e => setAddress(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && generate()}
-            className="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#A89035]/50 focus:border-[#A89035]"
-          />
-          <select value={borough} onChange={e => setBorough(e.target.value)}
-            className="px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#A89035]/50">
-            <option value="">Borough</option>
-            <option value="manhattan">Manhattan</option>
-            <option value="brooklyn">Brooklyn</option>
-            <option value="queens">Queens</option>
-            <option value="bronx">Bronx</option>
-            <option value="staten island">Staten Island</option>
-          </select>
+        <div className="flex flex-col xl:flex-row gap-3">
+          <div className="flex flex-1 gap-3">
+            <input
+              type="text" placeholder="Enter building address (e.g., 200 E 24th St)"
+              value={address} onChange={e => setAddress(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && generate()}
+              className="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#A89035]/50 focus:border-[#A89035]"
+            />
+            <select value={borough} onChange={e => setBorough(e.target.value)}
+              className="px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#A89035]/50">
+              <option value="">Borough</option>
+              <option value="manhattan">Manhattan</option>
+              <option value="brooklyn">Brooklyn</option>
+              <option value="queens">Queens</option>
+              <option value="bronx">Bronx</option>
+              <option value="staten island">Staten Island</option>
+            </select>
+          </div>
           <button onClick={generate} disabled={loading || !address.trim()}
-            className="px-6 py-3 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] disabled:opacity-50 flex items-center gap-2 font-medium">
+            className="px-6 py-3 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] disabled:opacity-50 flex items-center justify-center gap-2 font-medium">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             Run Jackie
           </button>
+        </div>
+
+        <div className="mt-5 border-t pt-5">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div>
+              <h2 className="text-sm font-bold text-gray-900">Jackie Report Focus</h2>
+              <p className="text-xs text-gray-500 mt-1">Select one or more areas. Facts stay source-checked; Jackie only changes the emphasis and proposal angle.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedFocus(['property_management'])}
+              className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:text-[#A89035] hover:border-[#A89035]"
+            >
+              Reset
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2">
+            {REPORT_FOCUS_OPTIONS.map(option => {
+              const active = selectedFocus.includes(option.key);
+              return (
+                <button
+                  key={option.key}
+                  type="button"
+                  onClick={() => toggleFocus(option.key)}
+                  className={`text-left rounded-xl border p-3 transition-colors ${active ? 'border-[#A89035] bg-[#F8F3E3] text-[#2C3240]' : 'border-gray-200 bg-white text-gray-600 hover:border-[#A89035]/50'}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold ${active ? 'bg-[#3A4B5B] text-white' : 'bg-gray-100 text-gray-500'}`}>{option.icon}</span>
+                    <span className="text-xs font-bold leading-tight">{option.label}</span>
+                  </div>
+                  <p className="text-[10px] text-gray-500 mt-2 leading-snug">{option.headline}</p>
+                </button>
+              );
+            })}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+            <input
+              value={inquiryContact}
+              onChange={e => setInquiryContact(e.target.value)}
+              placeholder="Inquiry contact"
+              className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#A89035]/50"
+            />
+            <input
+              value={inquiryRole}
+              onChange={e => setInquiryRole(e.target.value)}
+              placeholder="Role (board member, landlord, developer)"
+              className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#A89035]/50"
+            />
+            <input
+              value={inquiryOrganization}
+              onChange={e => setInquiryOrganization(e.target.value)}
+              placeholder="Organization / building group"
+              className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#A89035]/50"
+            />
+          </div>
+          <textarea
+            value={inquiryNotes}
+            onChange={e => setInquiryNotes(e.target.value)}
+            placeholder="Optional notes from Get-a-Quote, email, call, or board conversation. Example: interested in accounting reports, collections, MDS, automation, compliance, staffing, capital projects..."
+            className="mt-3 w-full px-3 py-2 rounded-lg border border-gray-200 text-sm h-20 resize-none focus:outline-none focus:ring-2 focus:ring-[#A89035]/50"
+          />
         </div>
       </div>
 

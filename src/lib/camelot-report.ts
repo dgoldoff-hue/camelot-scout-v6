@@ -23,6 +23,7 @@ export interface MasterReportData {
   borough: string;
   buildingName: string;
   date: string;
+  reportFocus?: ReportFocusInput;
   // DOF
   units: number;
   stories: number;
@@ -150,6 +151,109 @@ export interface MasterReportData {
   neighborhoodIntel: { crimeScore: number; qualityScore: number; transitScore: number; crimeTotal: number; complaints311Total: number; crimeBreakdown: Array<{type: string; count: number}>; topComplaints: Array<{type: string; count: number}>; landmarks: Array<{name: string; type: string; date: string}>; crimePrecinct: string; scoreExplanation: string } | null;
   raw: any;
 }
+
+export type ReportFocusKey =
+  | 'property_management'
+  | 'accounting'
+  | 'automation'
+  | 'compliance'
+  | 'project_management'
+  | 'resident_experience'
+  | 'staffing'
+  | 'energy_savings'
+  | 'budget_savings';
+
+export interface ReportFocusInput {
+  selectedFocus: ReportFocusKey[];
+  inquiryContact?: string;
+  inquiryOrganization?: string;
+  inquiryRole?: string;
+  inquiryNotes?: string;
+}
+
+export interface ReportFocusTheme {
+  key: ReportFocusKey;
+  label: string;
+  icon: string;
+  headline: string;
+  narrative: string;
+  proofPoints: string[];
+}
+
+export const REPORT_FOCUS_THEMES: Record<ReportFocusKey, ReportFocusTheme> = {
+  property_management: {
+    key: 'property_management',
+    label: 'Property Management',
+    icon: 'PM',
+    headline: 'Hands-on management with senior accountability',
+    narrative: 'Jackie will emphasize Camelot as a responsive property management partner: senior oversight, weekly inspections, vendor coordination, resident communication, emergency response, and board-ready operational discipline.',
+    proofPoints: ['Senior management access', 'Weekly site visits and vendor follow-up', 'Direct escalation path for boards and resident managers'],
+  },
+  accounting: {
+    key: 'accounting',
+    label: 'Accounting & Reports',
+    icon: 'CPA',
+    headline: 'Accounting, collections, and board reporting strength',
+    narrative: 'Jackie will emphasize Camelot\'s accounting bench: CPA oversight, controller review, account managers, bookkeepers, MDS reporting, collections discipline, and monthly management reports deployed between the 20th and 25th.',
+    proofPoints: ['CPA, controller, account managers, and bookkeepers', 'MDS-backed monthly management reports', 'Collections, arrears, budgets, and custom board reporting'],
+  },
+  automation: {
+    key: 'automation',
+    label: 'Automation & AI',
+    icon: 'AI',
+    headline: 'Automation that makes service faster and cleaner',
+    narrative: 'Jackie will emphasize how Camelot uses ConciergePlus, MDS, AppFolio, Merlin AI, Jackie, SCOUT, and Camelot Central to move work orders, reporting, cost tracking, resident communication, and board support faster.',
+    proofPoints: ['AI-assisted meeting minutes and triage', 'Automated reporting and cost tracking', 'Integrated portal, accounting, and property operations tools'],
+  },
+  compliance: {
+    key: 'compliance',
+    label: 'Compliance & Violations',
+    icon: 'LL',
+    headline: 'Compliance pressure handled before it becomes board pain',
+    narrative: 'Jackie will emphasize HPD, DOB, ECB/OATH, DOF, LL97, LL11/FISP, DHCR, permits, tax liens, complaints, deadlines, and Camelot\'s release guardrails for verified compliance data.',
+    proofPoints: ['Violation and deadline tracking', 'LL97 and FISP compliance roadmap', 'Source-checked public-record risk review'],
+  },
+  project_management: {
+    key: 'project_management',
+    label: 'Project Management',
+    icon: 'CAP',
+    headline: 'Capital projects with scope, bidding, and accountability',
+    narrative: 'Jackie will emphasize capital planning, contractor bidding, project management, change-order control, engineering coordination, closeout discipline, and board communication for upcoming improvements.',
+    proofPoints: ['Bid leveling and vendor coordination', 'Construction oversight and change-order review', 'Board-facing project reporting'],
+  },
+  resident_experience: {
+    key: 'resident_experience',
+    label: 'Resident Experience',
+    icon: 'RX',
+    headline: 'A better daily experience for residents and boards',
+    narrative: 'Jackie will emphasize ConciergePlus, resident portals, work orders, amenity bookings, package/service communication, front desk coordination, and practical resident-facing service.',
+    proofPoints: ['Resident portal and mobile workflows', 'Work orders and amenity requests', 'Clearer communication between residents, staff, and management'],
+  },
+  staffing: {
+    key: 'staffing',
+    label: 'Staffing & Front Desk',
+    icon: 'STAFF',
+    headline: 'Creative staffing models that reduce burnout',
+    narrative: 'Jackie will emphasize fractional senior leadership, assistant manager support, concierge/front desk staffing, resident manager coordination, union and non-union staff supervision, and deeper bench coverage.',
+    proofPoints: ['Fractional GM/service manager options', 'Assistant manager and account support coverage', 'Concierge/front desk staffing structure'],
+  },
+  energy_savings: {
+    key: 'energy_savings',
+    label: 'Energy Savings',
+    icon: 'E',
+    headline: 'Energy, utility, and carbon savings with a compliance lens',
+    narrative: 'Jackie will emphasize utility benchmarking, LL97 exposure, Parity-style energy monitoring, vendor/rebate opportunities, and capital upgrades that reduce operating cost and carbon risk.',
+    proofPoints: ['LL97 penalty modeling', 'Utility tracking and energy monitoring', 'Rebates, incentives, and upgrade path review'],
+  },
+  budget_savings: {
+    key: 'budget_savings',
+    label: 'Budget Savings',
+    icon: '$',
+    headline: 'Savings from smarter operations, not service cuts',
+    narrative: 'Jackie will emphasize vendor rebidding, labor review, materials and supplies discipline, insurance review, purchasing controls, collections, and long-term value creation.',
+    proofPoints: ['Vendor bidding and scope control', 'Labor, materials, and supplies review', 'Budget, reserve, and operating expense discipline'],
+  },
+};
 
 export interface ComplianceSourceCheck {
   source: string;
@@ -2226,6 +2330,7 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     'The Property',
     'Commercial &amp; Amenity Intelligence',
     'Location &amp; Neighborhood',
+    'Inquiry-Driven Focus',
     'Community &amp; Industry Partnerships',
     'Creative Staffing &amp; Operating Model',
     'Experience Meets Innovation',
@@ -2748,6 +2853,16 @@ export function generateBrochureHTML(d: MasterReportData): string {
     ? 'FDR Drive, Harlem River Drive, and major crosstown corridors give Camelot multiple routes for inspections, vendor coordination, and emergency response.'
     : 'Major arterial access and vendor routing are reviewed during onboarding so emergency dispatch and inspections have clear coverage plans.';
   const safe = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+  const reportFocus = d.reportFocus || { selectedFocus: ['property_management' as ReportFocusKey] };
+  const selectedFocusKeys = (reportFocus.selectedFocus?.length ? reportFocus.selectedFocus : ['property_management'])
+    .filter((key): key is ReportFocusKey => Boolean(REPORT_FOCUS_THEMES[key as ReportFocusKey]));
+  const selectedFocusThemes = selectedFocusKeys.map(key => REPORT_FOCUS_THEMES[key]);
+  const primaryFocus = selectedFocusThemes[0] || REPORT_FOCUS_THEMES.property_management;
+  const inquiryMeta = [
+    reportFocus.inquiryContact ? `Contact: ${reportFocus.inquiryContact}` : null,
+    reportFocus.inquiryRole ? `Role: ${reportFocus.inquiryRole}` : null,
+    reportFocus.inquiryOrganization ? `Organization: ${reportFocus.inquiryOrganization}` : null,
+  ].filter(Boolean).join(' | ');
   const fmtDate = (value: unknown) => {
     if (!value) return 'N/A';
     const date = new Date(String(value));
@@ -3401,6 +3516,32 @@ ${d.streetEasy.activeListings.length > 0 ? `<div style="font-size:11px;color:#66
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:20px;margin-top:12px">
 <p style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:14px;color:#555;line-height:1.8;text-align:center">${hookLine}</p>
 </div>
+</div>
+
+<!-- PAGE 2B: INQUIRY-DRIVEN FOCUS -->
+<div class="section section-cream">
+<div class="section-title">Inquiry-Driven Focus</div>
+<div class="section-sub">${safe(primaryFocus.headline)} for ${safe(d.buildingName)}</div>
+${inquiryMeta ? `<div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#A89035;font-weight:800;margin-bottom:12px">${safe(inquiryMeta)}</div>` : ''}
+${reportFocus.inquiryNotes ? `<div style="background:#fff;border:1px solid #D5D0C6;border-left:4px solid #A89035;padding:12px 14px;margin-bottom:16px;color:#3A4B5B;font-size:11px;line-height:1.6"><strong>Inquiry notes:</strong> ${safe(reportFocus.inquiryNotes)}</div>` : ''}
+<p style="font-size:13px;color:#3A4B5B;line-height:1.75;margin-bottom:18px">Jackie uses this brief as a report lens. The source data, release guardrails, property identity checks, violations, ownership, LL97, DOB, HPD, DOF, ACRIS, and market records remain factual and source-driven; the selected focus only changes what Camelot emphasizes in the narrative, proposal language, and follow-up angle.</p>
+<div style="display:grid;grid-template-columns:repeat(${Math.min(selectedFocusThemes.length || 1, 3)},1fr);gap:14px;margin-bottom:18px">
+${selectedFocusThemes.map(theme => `
+<div style="background:#fff;border:1px solid #D5D0C6;border-top:4px solid #A89035;padding:16px;min-height:190px">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+<div style="width:42px;height:42px;background:#3A4B5B;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:0.6px">${safe(theme.icon)}</div>
+<div>
+<h4 style="font-size:15px;color:#0D2E63;margin:0">${safe(theme.label)}</h4>
+<div style="font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:#A89035;font-weight:700">Selected focus</div>
+</div>
+</div>
+<p style="font-size:11px;color:#555;line-height:1.65;margin-bottom:10px">${safe(theme.narrative)}</p>
+<ul style="padding-left:16px;margin:0;color:#3A4B5B;font-size:10px;line-height:1.7">
+${theme.proofPoints.map(point => `<li>${safe(point)}</li>`).join('')}
+</ul>
+</div>`).join('')}
+</div>
+<div style="background:#3A4B5B;color:#fff;padding:16px 20px;font-size:12px;line-height:1.7"><strong style="color:#D4AF37">Phase 1 Jackie rule:</strong> the report may be tailored around one or more selected focus areas, but Jackie must not change facts, scoring, source status, or release blockers to fit the sales angle.</div>
 </div>
 
 <div class="deck-slide">
