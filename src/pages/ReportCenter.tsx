@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Search, FileText, Download, Mail, Phone, Table2, Link2, Loader2, Eye, Copy, Check, X, ShieldCheck, ShieldX, AlertTriangle, Lock } from 'lucide-react';
 import { REPORT_FOCUS_THEMES, buildJackieIntelReportFilename, buildMasterReport, generateBrochureHTML, generateColdCallerSheet, generateEmailDraft, generateCSVExport, validateJackieReport, type MasterReportData, type QACheckResult, type ReportFocusInput, type ReportFocusKey } from '@/lib/camelot-report';
-import { generatePitchReport, generatePitchEmail } from '@/lib/pitch-report';
+import { JACKIE_REPORT_PACKAGES, buildJackiePackageFilename, generateBoardMeetingDeck, generateFirstEmailIntroReport, generateJackieReportPackage, generatePitchEmail, type JackieReportPackage } from '@/lib/pitch-report';
 import { generatePitchDeck } from '@/lib/pitch-deck-pptx';
 import { openBrochureForPrint, downloadAsHTML, triggerCSVDownload, copyToClipboard } from '@/lib/pdf-generator';
 import toast from 'react-hot-toast';
@@ -119,6 +119,7 @@ export default function ReportCenter() {
   const [inquiryOrganization, setInquiryOrganization] = useState('');
   const [inquiryRole, setInquiryRole] = useState('');
   const [inquiryNotes, setInquiryNotes] = useState('');
+  const [selectedPackage, setSelectedPackage] = useState<JackieReportPackage>('board_meeting_deck');
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const buildReportFocus = useCallback((): ReportFocusInput => ({
@@ -165,13 +166,37 @@ export default function ReportCenter() {
     openBrochureForPrint(html, buildJackieIntelReportFilename(d, 'pdf'));
   };
 
+  const generateSelectedPackageHTML = (d: MasterReportData): string => {
+    if (selectedPackage === 'appendix_full') return generateBrochureHTML(d);
+    return generateJackieReportPackage(d, selectedPackage);
+  };
+
+  const handlePreviewSelectedPackage = () => {
+    const d = getDataWithPhotos();
+    if (!d) return;
+    const releaseHtml = generateBrochureHTML(d);
+    if (!verifyJackieRelease(d, releaseHtml, selectedPackage === 'appendix_full' ? 'internal' : 'release')) return;
+    const html = generateSelectedPackageHTML(d);
+    const filename = selectedPackage === 'appendix_full' ? buildJackieIntelReportFilename(d, 'pdf') : buildJackiePackageFilename(d, selectedPackage, 'pdf');
+    openBrochureForPrint(html, filename);
+  };
+
   const handlePreviewPitch = () => {
     const d = getDataWithPhotos();
     if (!d) return;
     const releaseHtml = generateBrochureHTML(d);
     if (!verifyJackieRelease(d, releaseHtml)) return;
-    const html = generatePitchReport(d);
-    openBrochureForPrint(html, `Camelot-Pitch-${d.buildingName}`);
+    const html = generateFirstEmailIntroReport(d);
+    openBrochureForPrint(html, buildJackiePackageFilename(d, 'first_email_intro', 'pdf'));
+  };
+
+  const handlePreviewBoardDeck = () => {
+    const d = getDataWithPhotos();
+    if (!d) return;
+    const releaseHtml = generateBrochureHTML(d);
+    if (!verifyJackieRelease(d, releaseHtml)) return;
+    const html = generateBoardMeetingDeck(d);
+    openBrochureForPrint(html, buildJackiePackageFilename(d, 'board_meeting_deck', 'pdf'));
   };
 
   const handleDownloadPitchHTML = () => {
@@ -179,8 +204,9 @@ export default function ReportCenter() {
     if (!d) return;
     const releaseHtml = generateBrochureHTML(d);
     if (!verifyJackieRelease(d, releaseHtml)) return;
-    const html = generatePitchReport(d);
-    downloadAsHTML(html, `Camelot-Pitch-${(d.buildingName || d.address).replace(/[^a-zA-Z0-9]/g, '-')}.html`);
+    const html = generateSelectedPackageHTML(d);
+    const filename = selectedPackage === 'appendix_full' ? buildJackieIntelReportFilename(d, 'html') : buildJackiePackageFilename(d, selectedPackage, 'html');
+    downloadAsHTML(html, filename);
   };
 
   const handlePitchEmail = () => {
@@ -437,6 +463,32 @@ export default function ReportCenter() {
             placeholder="Optional notes from Get-a-Quote, email, call, or board conversation. Example: interested in accounting reports, collections, MDS, automation, compliance, staffing, capital projects..."
             className="mt-3 w-full px-3 py-2 rounded-lg border border-gray-200 text-sm h-20 resize-none focus:outline-none focus:ring-2 focus:ring-[#A89035]/50"
           />
+          <div className="mt-5 border-t pt-5">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <h2 className="text-sm font-bold text-gray-900">Jackie Output Package</h2>
+                <p className="text-xs text-gray-500 mt-1">Choose the client-facing length before preview or download. All packages use the same verified Jackie facts.</p>
+              </div>
+              <span className="text-[10px] uppercase tracking-[0.18em] text-[#A89035] font-bold">Facts strict · story tailored</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              {JACKIE_REPORT_PACKAGES.map(option => {
+                const active = selectedPackage === option.key;
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    onClick={() => setSelectedPackage(option.key)}
+                    className={`text-left rounded-xl border p-4 transition-colors ${active ? 'border-[#A89035] bg-[#F8F3E3] text-[#2C3240]' : 'border-gray-200 bg-white text-gray-600 hover:border-[#A89035]/50'}`}
+                  >
+                    <div className="text-sm font-bold">{option.label}</div>
+                    <div className="text-[11px] text-[#A89035] font-bold mt-1">{option.pages}</div>
+                    <p className="text-[11px] text-gray-500 mt-2 leading-snug">{option.description}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -507,14 +559,20 @@ export default function ReportCenter() {
             <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Jackie Property Intelligence Report</h2>
               <div className="flex items-center gap-2 flex-wrap">
+                <button onClick={handlePreviewSelectedPackage} className="px-4 py-2 bg-emerald-700 text-white rounded-lg hover:bg-emerald-800 text-sm font-medium flex items-center gap-2">
+                  <Eye className="w-4 h-4" /> Preview Selected Package
+                </button>
                 <button onClick={handlePreviewPitch} className="px-4 py-2 bg-[#0D2240] text-white rounded-lg hover:bg-[#1a3a5c] text-sm font-medium flex items-center gap-2">
-                  <Eye className="w-4 h-4" /> ✨ Pitch Report (5-Page)
+                  <Eye className="w-4 h-4" /> First Email Intro (6-8)
+                </button>
+                <button onClick={handlePreviewBoardDeck} className="px-4 py-2 bg-[#5B4A1F] text-white rounded-lg hover:bg-[#473916] text-sm font-medium flex items-center gap-2">
+                  <Eye className="w-4 h-4" /> Board Meeting Deck (15)
                 </button>
                 <button onClick={handlePreviewBrochure} className="px-4 py-2 bg-[#A89035] text-white rounded-lg hover:bg-[#8A7A2C] text-sm font-medium flex items-center gap-2">
-                  <Eye className="w-4 h-4" /> Full Report (Internal)
+                  <Eye className="w-4 h-4" /> Appendix: Full Jackie
                 </button>
                 <button onClick={handleDownloadPitchHTML} className="px-4 py-2 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] text-sm font-medium flex items-center gap-2">
-                  <Download className="w-4 h-4" /> Download Pitch PDF
+                  <Download className="w-4 h-4" /> Download Selected HTML
                 </button>
                 <button onClick={handlePitchDeckPPTX} className="px-4 py-2 bg-[#7C3AED] text-white rounded-lg hover:bg-[#6D28D9] text-sm font-medium flex items-center gap-2">
                   <Download className="w-4 h-4" /> 📊 PowerPoint Deck
@@ -609,13 +667,13 @@ export default function ReportCenter() {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               <button onClick={handlePreviewPitch} className="px-4 py-3 bg-[#0D2240] text-white rounded-lg hover:bg-[#1a3a5c] font-medium flex flex-col items-center gap-1 text-sm">
-                <Eye className="w-5 h-5" /> ✨ Pitch Report
+                <Eye className="w-5 h-5" /> First Email Intro
               </button>
               <button onClick={handlePreviewBrochure} className="px-4 py-3 bg-[#A89035] text-white rounded-lg hover:bg-[#8A7A2C] font-medium flex flex-col items-center gap-1 text-sm">
-                <Eye className="w-5 h-5" /> Full Report
+                <Eye className="w-5 h-5" /> Appendix
               </button>
               <button onClick={handleDownloadPitchHTML} className="px-4 py-3 bg-[#3A4B5B] text-white rounded-lg hover:bg-[#2d3d4d] font-medium flex flex-col items-center gap-1 text-sm">
-                <Download className="w-5 h-5" /> Download Pitch
+                <Download className="w-5 h-5" /> Download Selected
               </button>
               <button onClick={() => setShowEmailModal(true)} className="px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex flex-col items-center gap-1 text-sm">
                 <Mail className="w-5 h-5" /> Email Draft

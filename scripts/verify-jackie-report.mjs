@@ -7,6 +7,7 @@ const reportFile = resolve(root, 'src/lib/camelot-report.ts');
 const reportCenterFile = resolve(root, 'src/pages/ReportCenter.tsx');
 const instantProposalFile = resolve(root, 'src/pages/InstantProposal.tsx');
 const propertyDetailFile = resolve(root, 'src/components/PropertyDetail.tsx');
+const pitchReportFile = resolve(root, 'src/lib/pitch-report.ts');
 const streetEasyFile = resolve(root, 'src/lib/streeteasy.ts');
 const nycApiFile = resolve(root, 'src/lib/nyc-api.ts');
 const nycViolationsFile = resolve(root, 'src/lib/nyc-violations.ts');
@@ -19,7 +20,8 @@ const gutCheckSource = readFileSync(gutCheckFile, 'utf8');
 const reportCenter = readFileSync(reportCenterFile, 'utf8');
 const instantProposal = readFileSync(instantProposalFile, 'utf8');
 const propertyDetail = readFileSync(propertyDetailFile, 'utf8');
-const sourceStack = `${source}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}\n${gutCheckSource}`;
+const pitchReportSource = readFileSync(pitchReportFile, 'utf8');
+const sourceStack = `${source}\n${pitchReportSource}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}\n${gutCheckSource}`;
 
 const requiredTokens = [
   ['201 East 79 known profile', "canonicalAddress: '201 East 79th Street, New York, NY 10075'"],
@@ -84,6 +86,15 @@ const requiredTokens = [
   ['Jackie inquiry-driven focus slide', 'Inquiry-Driven Focus'],
   ['Jackie accounting focus monthly reports', 'monthly management reports deployed between the 20th and 25th'],
   ['Jackie focus facts remain source checked', 'the selected focus only changes what Camelot emphasizes'],
+  ['Jackie report package registry', 'JACKIE_REPORT_PACKAGES'],
+  ['Jackie first email intro package', 'First Email Intro'],
+  ['Jackie board meeting deck package', 'Board Meeting Deck'],
+  ['Jackie appendix package', 'Appendix: Full Jackie Report'],
+  ['Jackie executive roster slide', 'CAMELOT_EXECUTIVE_TEAM'],
+  ['Jackie MDS reporting proof', 'MDS_REPORT_PROOF_POINTS'],
+  ['Jackie onboarding checklist proof', 'ONBOARDING_CHECKLIST'],
+  ['Jackie agreement fee proof', 'STANDARD_AGREEMENT_PROOF_POINTS'],
+  ['Concierge Plus product-suite source', 'https://conciergeplus.com/product-suite/'],
   ['Neighborhood ZIP context model', 'neighborhoodSearchContext'],
   ['ZIP-first context source rule', 'ZIP-first neighborhood context from DOF/HPD/address parsing'],
   ['Neighborhood ZIP QA gate', 'Neighborhood / ZIP Search Context'],
@@ -146,6 +157,10 @@ const workflowTokens = [
   ['property detail remains internal-accessible', 'Jackie internal review opened with'],
   ['report center focus controls', 'Jackie Report Focus'],
   ['report center focus notes', 'Optional notes from Get-a-Quote'],
+  ['report center package controls', 'Jackie Output Package'],
+  ['report center selected package preview', 'Preview Selected Package'],
+  ['report center board meeting deck preview', 'Board Meeting Deck (15)'],
+  ['report center first email intro preview', 'First Email Intro (6-8)'],
 ];
 
 const workflowSource = [reportCenter, instantProposal, propertyDetail].join('\n');

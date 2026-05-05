@@ -8,6 +8,62 @@
 
 import type { MasterReportData } from './camelot-report';
 
+export type JackieReportPackage = 'first_email_intro' | 'board_meeting_deck' | 'appendix_full';
+
+export const JACKIE_REPORT_PACKAGES: Array<{ key: JackieReportPackage; label: string; pages: string; description: string }> = [
+  { key: 'first_email_intro', label: 'First Email Intro', pages: '6-8 pages', description: 'Short board-safe teaser for first outreach.' },
+  { key: 'board_meeting_deck', label: 'Board Meeting Deck', pages: '15 pages', description: 'Main presentation for live board meetings.' },
+  { key: 'appendix_full', label: 'Appendix: Full Jackie Report', pages: 'Full appendix', description: 'Complete source-backed internal and diligence packet.' },
+];
+
+const CAMELOT_EXECUTIVE_TEAM = [
+  { name: 'David Goldoff', title: 'Founder & President', note: 'Owner-minded leadership, client relationships, compliance strategy' },
+  { name: 'Valerie Ann Fiume', title: 'Director of Co-Ops & Condos / Vice President', note: 'Board operations, resident relations, property management execution' },
+  { name: 'Anthony Abruzzo, CPA', title: 'Chief Financial Officer, Senior Managing Tax Director', note: 'Financial controls, tax, reporting, accounting oversight' },
+  { name: 'Steven Milewicz', title: 'Chief Legal Officer, M&A', note: 'Legal guidance, transactions, acquisitions, governance support' },
+  { name: 'Robert Isaacs', title: 'Senior Managing Director, Asset Management & Compliance', note: 'Asset management, compliance, risk and operating standards' },
+  { name: 'Anthony Tavaglione', title: 'Senior Controller & Accounting Manager', note: 'Controller-level reporting, accounting workflows, monthly close support' },
+  { name: 'Tim Kelly', title: 'Senior Facility Manager', note: 'Facilities, field operations, staff/vendor coordination' },
+  { name: 'Eleni Palmeri', title: 'Licensed Real Estate Salesperson', note: 'Sales, leasing, resident-facing market support' },
+  { name: 'Jan Cohen', title: 'Expeditor and Registered Real Estate Agent', note: 'Permits, filings, agency follow-up, expediting support' },
+];
+
+const CAMELOT_TEAM_SOURCE = 'https://www.camelot.nyc/company-roster/';
+const CAMELOT_OUR_TEAM_SOURCE = 'https://www.camelot.nyc/our-team/';
+const CONCIERGE_PLUS_PRODUCT_SOURCE = 'https://conciergeplus.com/product-suite/';
+const CONCIERGE_PLUS_PLATFORM_IMAGE = 'https://pubcdn.conciergeplus.com/wp-content/uploads/2026/05/CP-Platform-Plus-Image-scaled.png';
+const CONCIERGE_PLUS_LOGO_IMAGE = 'https://pubcdn.conciergeplus.com/wp-content/uploads/2026/05/PLUS-Logo-01-1024x501.png';
+
+const MDS_REPORT_PROOF_POINTS = [
+  'Balance Sheet',
+  'Income Statement with Budget',
+  'Bank Reconciliation',
+  'Cash Disbursements Journal',
+  'Aged Delinquency Report',
+  'Charges & Collections',
+  'Paid Invoice Images',
+  'Monthly board package cadence: 20th-25th',
+];
+
+const ONBOARDING_CHECKLIST = [
+  'Full file and data transfer',
+  'Banking, lockbox, payables and arrears setup',
+  'Resident portal configuration and notices',
+  'Vendor contracts, W-9s, COIs and recurring costs',
+  'Compliance calendar: HPD, DOB, DOF, RPIE, LL97, FISP',
+  'Staff/vendor roles, SOPs and emergency contacts',
+  'First board-ready financial package and transition dashboard',
+  '90-day operating review with next-quarter roadmap',
+];
+
+const STANDARD_AGREEMENT_PROOF_POINTS = [
+  'Custom flat management fee after scope review',
+  'Annual escalation discussed and mutually agreed with the board',
+  'Additional services are separated from base management compensation',
+  'Closing, sublet, alteration, refinance and application services may be charged to the applicable unit owner where permitted',
+  'Emergency and special-assignment support can be billed by rate and scope when outside basic services',
+];
+
 function fmt$(n: number): string {
   if (!n) return 'N/A';
   if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(1) + 'M';
@@ -32,6 +88,112 @@ function inferBuildingDescription(d: MasterReportData): string {
 function neighborhoodName(d: MasterReportData): string {
   if (!d.neighborhoodName) return d.borough ? d.borough.charAt(0).toUpperCase() + d.borough.slice(1) : 'New York';
   return d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+}
+
+function cleanFileNamePart(value: string): string {
+  return value.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function externalDeckCss(): string {
+  return `
+  @page { size: 13.33in 7.5in; margin: 0; }
+  @media print { .slide { page-break-after: always; } .slide:last-child { page-break-after: auto; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; color: #1a1f36; font-size: 16px; line-height: 1.6; background: #e0e0e0; }
+  .slide { width: 1280px; height: 720px; margin: 20px auto; position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15); background:#FAF8F5; }
+  .slide-dark { background: #34444f; color: #fff; }
+  .pad { padding: 54px 64px; }
+  .logo-badge { position: absolute; top: 0; right: 0; width: 166px; height: 96px; background: #B8973A; display: flex; align-items: center; justify-content: center; z-index: 4; }
+  .logo-badge img { width: 136px; max-height: 62px; object-fit: contain; }
+  .logo-badge-text { color:#111827;font-size:15px;font-weight:800;letter-spacing:5px;text-align:center;line-height:1.3; }
+  .logo-badge-sub { display:block;font-size:7px;letter-spacing:3px;font-weight:500;margin-top:2px; }
+  .section-title { font-family:'Cormorant Garamond',Georgia,serif;font-size:48px;font-style:italic;font-weight:600;color:#B8973A;line-height:1.05;border-left:5px solid #B8973A;padding-left:20px;margin-bottom:22px; }
+  .sub-heading { font-size:22px;font-weight:800;color:#1a2744;margin-bottom:10px; }
+  .body-text { font-size:16px;color:#4a5568;line-height:1.7; }
+  .small { font-size:12px;color:#6b7280;line-height:1.55; }
+  .gold-card { border:1px solid rgba(184,151,58,0.38);border-left:4px solid #B8973A;background:#fff;padding:18px 20px;border-radius:8px;box-shadow:0 12px 28px rgba(26,31,54,0.07); }
+  .stat-box { background:#fff;border:1px solid rgba(184,151,58,0.25);border-radius:10px;padding:18px;text-align:center;box-shadow:0 12px 28px rgba(26,31,54,0.07); }
+  .stat-val { font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:700;color:#B8973A;line-height:1; }
+  .stat-label { font-size:12px;color:#6b7280;margin-top:5px;text-transform:uppercase;letter-spacing:.8px; }
+  .check { display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;color:#1a2744;font-size:14px;line-height:1.45; }
+  .check span { width:22px;height:22px;border-radius:50%;background:#B8973A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0; }
+  .source-note { position:absolute;bottom:18px;left:64px;right:64px;border-top:1px solid rgba(184,151,58,.25);padding-top:9px;font-size:9px;color:#8a8174; }
+  table { width:100%;border-collapse:collapse; }
+  th { background:#1a2744;color:#B8973A;padding:10px 14px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:1px; }
+  td { padding:9px 14px;border-bottom:1px solid #e5e7eb;font-size:13px;color:#344054;vertical-align:top; }
+  `;
+}
+
+function deckShell(title: string, slides: string): string {
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title}</title><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"><style>${externalDeckCss()}</style></head><body>${slides}</body></html>`;
+}
+
+function logoBadge(): string {
+  return `<div class="logo-badge"><img src="./images/camelot-logo.png" alt="Camelot Realty Group" onerror="this.style.display='none';this.parentElement.innerHTML='<div class=&quot;logo-badge-text&quot;>CAMELOT<span class=&quot;logo-badge-sub&quot;>REALTY GROUP</span></div>'"></div>`;
+}
+
+function streetViewImage(d: MasterReportData, size = '900x600'): string {
+  const location = d.latitude && d.longitude ? `${d.latitude},${d.longitude}` : `${d.address}, New York, NY`;
+  return `https://maps.googleapis.com/maps/api/streetview?size=${size}&location=${encodeURIComponent(location)}&fov=85&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`;
+}
+
+function bestExteriorImage(d: MasterReportData): string {
+  return d.buildingPhotos?.exterior?.[0] || d.commercialIntel?.brandingImages?.[0] || d.streetEasy?.photos?.[0] || streetViewImage(d);
+}
+
+function executiveTeamSlide(): string {
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Executive Team</div><p class="body-text" style="margin-bottom:18px">Camelot's board-facing team combines ownership perspective, property operations, accounting, compliance, legal, brokerage, and facility oversight.</p><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">${CAMELOT_EXECUTIVE_TEAM.map(member => `<div class="gold-card" style="min-height:118px"><div style="font-size:16px;font-weight:800;color:#1a2744">${member.name}</div><div style="font-size:11px;color:#B8973A;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin:4px 0">${member.title}</div><div class="small">${member.note}</div></div>`).join('')}</div><div class="source-note">Sources: ${CAMELOT_TEAM_SOURCE} · ${CAMELOT_OUR_TEAM_SOURCE}</div></div></div>`;
+}
+
+function residentPortalSlide(d: MasterReportData): string {
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Resident Portal &amp; Automation</div><div style="display:grid;grid-template-columns:1fr .95fr;gap:28px;align-items:center"><div><div class="sub-heading">Plus by Concierge Plus</div><p class="body-text" style="margin-bottom:16px">Plus brings property operations into one connected system: residents, management, payments, communication, service requests, documents, amenity booking, packages, and AI support.</p><div class="gold-card"><div class="check"><span>✓</span><div>Residents can book amenities, submit maintenance requests, pay fees, track packages, and stay connected from one mobile-friendly platform.</div></div><div class="check"><span>✓</span><div>Management gains cleaner visibility, fewer disconnected tools, and daily operational workflows that are easier to track.</div></div><div class="check"><span>✓</span><div>Over 26 modules allow the board to enable what ${d.buildingName || 'the building'} needs without overwhelming residents.</div></div></div></div><div><img src="${CONCIERGE_PLUS_LOGO_IMAGE}" alt="Plus by Concierge Plus" style="width:100%;height:110px;object-fit:contain;margin-bottom:18px"><img src="${CONCIERGE_PLUS_PLATFORM_IMAGE}" alt="Concierge Plus product suite" style="width:100%;height:340px;object-fit:contain"></div></div><div class="source-note">Source: ${CONCIERGE_PLUS_PRODUCT_SOURCE}</div></div></div>`;
+}
+
+function mdsAccountingSlide(): string {
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Accounting &amp; Reporting Proof</div><p class="body-text" style="margin-bottom:18px">Camelot's accounting package is built around board-ready monthly reporting, MDS workflows, clean backup, and a predictable reporting cadence.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px"><div class="gold-card"><div class="sub-heading" style="font-size:20px">Monthly Package Includes</div>${MDS_REPORT_PROOF_POINTS.map(item => `<div class="check"><span>✓</span><div>${item}</div></div>`).join('')}</div><div class="gold-card"><div class="sub-heading" style="font-size:20px">Why It Matters</div><p class="body-text">Boards should not chase basic financial answers. Camelot can deliver recurring financials, cash-flow visibility, budget comparisons, arrears tracking, disbursement backup, and paid-invoice images so meetings focus on decisions instead of missing data.</p></div></div><div class="source-note">Sources: MDS sample report packages uploaded by Camelot · monthly reporting cadence supplied by Camelot.</div></div></div>`;
+}
+
+function onboardingChecklistSlide(): string {
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Onboarding Checklist</div><p class="body-text" style="margin-bottom:18px">The transition is treated like an operating handoff, not just a contract start date.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">${ONBOARDING_CHECKLIST.map((item, idx) => `<div class="gold-card"><div style="font-size:12px;color:#B8973A;font-weight:900;letter-spacing:1px;margin-bottom:4px">STEP ${idx + 1}</div><div style="font-size:16px;font-weight:800;color:#1a2744">${item}</div></div>`).join('')}</div><div class="source-note">Sources: Camelot transition procedures, rental portfolio transition case-study workflow, and Jackie 90-day onboarding model.</div></div></div>`;
+}
+
+function standardAgreementSlide(): string {
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Agreement &amp; Fee Structure</div><p class="body-text" style="margin-bottom:18px">The board-facing proposal should be simple, but backed by a clean agreement structure.</p><div style="display:grid;grid-template-columns:1.05fr .95fr;gap:18px"><div class="gold-card"><div class="sub-heading" style="font-size:20px">Agreement Principles</div>${STANDARD_AGREEMENT_PROOF_POINTS.map(item => `<div class="check"><span>✓</span><div>${item}</div></div>`).join('')}</div><div class="gold-card"><div class="sub-heading" style="font-size:20px">Pricing Position</div><p class="body-text">Camelot should remain transparent on the core management fee, show value against the market, and keep non-core additional services clearly separated so the board understands what is included and what is charged by scope, unit event, or hourly rate.</p></div></div><div class="source-note">Source: Camelot condo/co-op management agreement and proposed rate-sheet template supplied by Camelot.</div></div></div>`;
+}
+
+export function generateFirstEmailIntroReport(d: MasterReportData): string {
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const subjectImage = bestExteriorImage(d);
+  const hasRisks = d.violationsOpen > 0 || d.ecbPenaltyBalance > 0 || Boolean(d.ll97?.period1Penalty);
+  const slides = `
+<div class="slide slide-dark" style="background:linear-gradient(105deg,rgba(34,47,58,.96),rgba(34,47,58,.78)),url('${subjectImage}') center/cover no-repeat"><div class="pad">${logoBadge()}<div style="height:100%;display:flex;flex-direction:column;justify-content:center;max-width:760px"><div style="font-size:13px;color:#B8973A;text-transform:uppercase;letter-spacing:2.5px;font-weight:800">First Email Intro · 6-8 Page Package</div><h1 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:66px;line-height:.95;color:#F4D26A;font-style:italic;margin:12px 0">${d.buildingName || d.address}</h1><p style="font-size:20px;color:rgba(255,255,255,.82);line-height:1.55">A concise Camelot introduction built for first outreach: clear value, clean facts, no information overload.</p><p style="font-size:12px;color:rgba(255,255,255,.5);margin-top:34px">${d.address} · ${neighborhoodName(d)} · ${today}</p></div></div></div>
+<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Why We Are Reaching Out</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px"><div class="gold-card"><div class="sub-heading">Property Snapshot</div><table><tr><td>Units</td><td>${fmtN(d.units)}</td></tr><tr><td>Type</td><td>${d.propertyType || 'Residential'}</td></tr><tr><td>Year Built</td><td>${d.yearBuilt || 'Verify'}</td></tr><tr><td>Current Management</td><td>${d.managementCompany || 'To verify'}</td></tr></table></div><div class="gold-card"><div class="sub-heading">Initial Read</div><p class="body-text">${hasRisks ? `Jackie found public-record signals worth reviewing: ${d.violationsOpen} open HPD violation(s), ${fmt$(d.ecbPenaltyBalance)} ECB balance, and ${d.ll97?.period1Penalty ? fmt$(d.ll97.period1Penalty) + ' LL97 modeled exposure' : 'LL97 context to verify'}.` : `The building appears suitable for a boutique, high-attention management review focused on financial clarity, resident experience, vendor control, and board support.`}</p></div></div></div></div>
+<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Camelot In One Page</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px"><div class="stat-box"><div class="stat-val">41</div><div class="stat-label">Buildings</div></div><div class="stat-box"><div class="stat-val">$240M</div><div class="stat-label">AUM</div></div><div class="stat-box"><div class="stat-val">2006</div><div class="stat-label">Founded</div></div><div class="stat-box"><div class="stat-val">NYC</div><div class="stat-label">Local Team</div></div></div><p class="body-text">Camelot is independent, hands-on, and built for boards that want senior attention, clean reporting, faster response, and a management partner that thinks like an owner.</p><div class="source-note">Sources: ${CAMELOT_OUR_TEAM_SOURCE} · ${CAMELOT_TEAM_SOURCE}</div></div></div>
+${mdsAccountingSlide()}
+${residentPortalSlide(d)}
+${onboardingChecklistSlide()}
+${standardAgreementSlide()}
+<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Proposed Next Step</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px"><div class="gold-card"><div class="sub-heading">15-Minute Intro Call</div><p class="body-text">Confirm the board's priorities, current pain points, reporting expectations, compliance exposure, staffing model, and timeline.</p></div><div class="gold-card"><div class="sub-heading">Then A Board Deck</div><p class="body-text">If there is interest, Jackie generates the 15-page board meeting deck with the verified property intelligence appendix behind it.</p></div></div><div class="source-note">Contact: David Goldoff · dgoldoff@camelot.nyc · 212-206-9939 ext. 701</div></div></div>`;
+  return deckShell(`Camelot First Email Intro - ${d.buildingName || d.address}`, slides);
+}
+
+export function generateBoardMeetingDeck(d: MasterReportData): string {
+  const base = generatePitchReport(d);
+  const insert = executiveTeamSlide();
+  return base.replace('<!-- SLIDE 13: Next Steps (Dark) -->', `${insert}\n<!-- SLIDE 13: Next Steps (Dark) -->`)
+    .replace('Property Intelligence Report', 'Board Meeting Deck')
+    .replace('<!-- SLIDE 14: Thank You (Dark) -->', '<!-- SLIDE 15: Thank You (Dark) -->');
+}
+
+export function generateJackieReportPackage(d: MasterReportData, reportPackage: JackieReportPackage): string {
+  if (reportPackage === 'first_email_intro') return generateFirstEmailIntroReport(d);
+  if (reportPackage === 'board_meeting_deck') return generateBoardMeetingDeck(d);
+  return '';
+}
+
+export function buildJackiePackageFilename(d: MasterReportData, reportPackage: JackieReportPackage, extension = 'html'): string {
+  const suffix = reportPackage === 'first_email_intro' ? 'First-Email-Intro' : reportPackage === 'board_meeting_deck' ? 'Board-Meeting-Deck' : 'Full-Jackie-Appendix';
+  return `Camelot-${suffix}-${cleanFileNamePart(d.buildingName || d.address)}.${extension}`;
 }
 
 /**
