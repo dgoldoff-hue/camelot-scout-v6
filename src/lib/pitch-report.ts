@@ -32,13 +32,13 @@ const CAMELOT_TEAM_SOURCE = 'https://www.camelot.nyc/company-roster/';
 const CAMELOT_OUR_TEAM_SOURCE = 'https://www.camelot.nyc/our-team/';
 const CAMELOT_CONTACT_NAME = 'David Goldoff';
 const CAMELOT_CONTACT_TITLE = 'Founder & President';
-const CAMELOT_CONTACT_EMAIL = 'valerie@camelot.nyc';
-const CAMELOT_GENERAL_EMAIL = 'valerie@camelot.nyc';
+const CAMELOT_CONTACT_EMAIL = 'info@camelot.nyc';
+const CAMELOT_GENERAL_EMAIL = 'info@camelot.nyc';
 const CAMELOT_PHONE = '212-206-9939 ext. 701';
 const CAMELOT_MOBILE = '646-523-9068';
 const CAMELOT_WEBSITE = 'www.camelot.nyc';
 const CAMELOT_OFFICE_ADDRESS = '57 West 57th Street, Suite 410, New York, NY 10019';
-const CAMELOT_JACQUELINE_QUOTE = "Don't let it be forgot, that once there was a spot, for one brief shining moment, that was known as Camelot.";
+const CAMELOT_JACQUELINE_QUOTE = "";
 const JACKIE_INTELLIGENT_REPORT_NOTE = 'This is an intelligent property introduction developed through Camelot OS by Jackie, Camelot’s report engine. It is designed to be more property-specific, source-aware, and useful than a standard generic introduction.';
 const CONCIERGE_PLUS_PRODUCT_SOURCE = 'https://conciergeplus.com/product-suite/';
 const CONCIERGE_PLUS_PLATFORM_IMAGE = 'https://pubcdn.conciergeplus.com/wp-content/uploads/2026/05/CP-Platform-Plus-Image-scaled.png';
@@ -306,7 +306,7 @@ export function generateFirstEmailIntroReport(d: MasterReportData): string {
 ${mdsAccountingSlide()}
 ${residentPortalSlide(d)}
 ${onboardingChecklistSlide()}
-<div class="slide slide-dark"><div class="pad">${logoBadge()}<div style="height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center;max-width:980px;margin:0 auto"><div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:48px;font-style:italic;color:#B8973A;margin-bottom:14px">Proposed Next Step</div><p style="font-size:20px;line-height:1.55;color:rgba(255,255,255,.86);margin-bottom:24px">We would welcome the opportunity to meet with the board, ownership, or decision-makers for ${d.buildingName || d.address}.</p><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px"><div class="gold-card" style="background:rgba(255,255,255,.96);text-align:left"><div class="sub-heading" style="font-size:18px">Zoom or Google Meet</div><p class="small">Best for a quick first screen share, report review, and Q&amp;A.</p></div><div class="gold-card" style="background:rgba(255,255,255,.96);text-align:left"><div class="sub-heading" style="font-size:18px">Phone Call</div><p class="small">A focused 15-minute call to confirm priorities and timing.</p></div><div class="gold-card" style="background:rgba(255,255,255,.96);text-align:left"><div class="sub-heading" style="font-size:18px">In-Person Meeting</div><p class="small">Camelot can meet near the building or at our New York office.</p></div></div><div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:23px;line-height:1.45;color:#F4D26A;font-style:italic;margin:4px auto 22px;max-width:820px">"${CAMELOT_JACQUELINE_QUOTE}"</div><div style="font-size:15px;color:rgba(255,255,255,.82);line-height:1.9"><strong style="color:#B8973A">${CAMELOT_CONTACT_NAME}, ${CAMELOT_CONTACT_TITLE}</strong><br>${CAMELOT_PHONE} | ${CAMELOT_MOBILE}<br>${CAMELOT_CONTACT_EMAIL} | ${CAMELOT_GENERAL_EMAIL}<br>${CAMELOT_WEBSITE}<br>${CAMELOT_OFFICE_ADDRESS}</div></div></div></div>`;
+<div class="slide slide-dark"><div class="pad">${logoBadge()}<div style="height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center;max-width:980px;margin:0 auto"><div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:48px;font-style:italic;color:#B8973A;margin-bottom:14px">Proposed Next Step</div><p style="font-size:20px;line-height:1.55;color:rgba(255,255,255,.86);margin-bottom:24px">We would welcome the opportunity to meet with the board, ownership, or decision-makers for ${d.buildingName || d.address}.</p><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px"><div class="gold-card" style="background:rgba(255,255,255,.96);text-align:left"><div class="sub-heading" style="font-size:18px">Zoom or Google Meet</div><p class="small">Best for a quick first screen share, report review, and Q&amp;A.</p></div><div class="gold-card" style="background:rgba(255,255,255,.96);text-align:left"><div class="sub-heading" style="font-size:18px">Phone Call</div><p class="small">A focused 15-minute call to confirm priorities and timing.</p></div><div class="gold-card" style="background:rgba(255,255,255,.96);text-align:left"><div class="sub-heading" style="font-size:18px">In-Person Meeting</div><p class="small">Camelot can meet near the building or at our New York office.</p></div></div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px auto 22px"><a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+Management+Discussion+-+${encodeURIComponent(d.buildingName || d.address)}&details=${encodeURIComponent('Please generate a Google Meet link for this Camelot management discussion.\n\nSubject property: ' + (d.buildingName || d.address))}&add=${CAMELOT_CONTACT_EMAIL}" target="_blank" style="background:#B8973A;color:#fff;text-decoration:none;border-radius:6px;padding:10px 14px;font-size:12px;font-weight:700">Google Meet</a><a href="https://zoom.us/start/videomeeting" target="_blank" rel="noopener" style="background:#2D8CFF;color:#fff;text-decoration:none;border-radius:6px;padding:10px 14px;font-size:12px;font-weight:700">Zoom</a><a href="tel:+12122069939;ext=701" style="background:#fff;color:#314655;text-decoration:none;border-radius:6px;padding:10px 14px;font-size:12px;font-weight:700">Call 212-206-9939 x701</a></div><div style="font-size:15px;color:rgba(255,255,255,.82);line-height:1.9"><strong style="color:#B8973A">${CAMELOT_CONTACT_NAME}, ${CAMELOT_CONTACT_TITLE}</strong><br>${CAMELOT_PHONE} | ${CAMELOT_MOBILE}<br>${CAMELOT_CONTACT_EMAIL} | ${CAMELOT_GENERAL_EMAIL}<br>${CAMELOT_WEBSITE}<br>${CAMELOT_OFFICE_ADDRESS}</div></div></div></div>`;
   return deckShell(`Camelot First Email Intro - ${d.buildingName || d.address}`, slides);
 }
 
@@ -716,9 +716,14 @@ export function generatePitchReport(d: MasterReportData): string {
     <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:52px;font-style:italic;color:#B8973A;margin-bottom:24px">Next Steps</div>
     <div style="font-size:18px;color:rgba(255,255,255,0.8);margin-bottom:40px">We welcome the opportunity to visit the property<br>and walk through our scope of work and proposed fee.</div>
     <div style="font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:20px;color:#B8973A;margin-bottom:16px">David Goldoff, Founder & President</div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:18px">
+      <a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+Management+Discussion+-+${encodeURIComponent(d.buildingName || d.address)}&details=${encodeURIComponent('Please generate a Google Meet link for this Camelot management discussion.\n\nSubject property: ' + (d.buildingName || d.address))}&add=${CAMELOT_CONTACT_EMAIL}" target="_blank" style="background:#B8973A;color:#fff;text-decoration:none;border-radius:6px;padding:10px 14px;font-size:12px;font-weight:700">Google Meet</a>
+      <a href="https://zoom.us/start/videomeeting" target="_blank" rel="noopener" style="background:#2D8CFF;color:#fff;text-decoration:none;border-radius:6px;padding:10px 14px;font-size:12px;font-weight:700">Zoom</a>
+      <a href="tel:+12122069939;ext=701" style="background:#fff;color:#314655;text-decoration:none;border-radius:6px;padding:10px 14px;font-size:12px;font-weight:700">Call 212-206-9939 x701</a>
+    </div>
     <div style="font-size:16px;color:rgba(255,255,255,0.7);line-height:2">
       212-206-9939 ext. 701  |  646-523-9068<br>
-      valerie@camelot.nyc<br>
+      info@camelot.nyc<br>
       www.camelot.nyc<br>
       57 West 57th Street, Suite 410, New York, NY 10019
     </div>
@@ -765,7 +770,10 @@ Founder & President
 Camelot Realty Group
 57 West 57th Street, Suite 410, New York, NY 10019
 (212) 206-9939 ext. 701  |  (646) 523-9068
-valerie@camelot.nyc  |  www.camelot.nyc
+info@camelot.nyc  |  www.camelot.nyc
 
 RED Awards 2025: PM Company of the Year | REBNY 2025: David Goldoff Leadership Award`;
 }
+
+
+

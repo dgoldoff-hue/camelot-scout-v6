@@ -1086,8 +1086,8 @@ const CAMELOT = {
   address: '57 West 57th Street, Suite 410, New York, NY 10019',
   phone: '(212) 206-9939',
   mobile: '(646) 523-9068',
-  email: 'valerie@camelot.nyc',
-  infoEmail: 'valerie@camelot.nyc',
+  email: 'info@camelot.nyc',
+  infoEmail: 'info@camelot.nyc',
   web: 'www.camelot.nyc',
   principal: 'David A. Goldoff',
   title: 'President',
@@ -5446,7 +5446,7 @@ ${buildPortfolioSection(d)}
 <p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:12px">\u00A9 ${new Date().getFullYear()} Camelot Realty Group. All rights reserved. Contents are protected by U.S. copyright and trade secret law. SCOUT, Jackie, Merlin AI, ConciergePlus, Prisma, Parity, and Camelot Central are proprietary platforms. This Report is for informational purposes only and does not constitute legal, financial, or investment advice. Data is sourced from NYC Open Data, ACRIS, StreetEasy, RealtyMX, and other third-party databases and is presented &ldquo;as is&rdquo; without warranty. AI-assisted analysis has been reviewed by licensed real estate professionals. Governed by the laws of the State of New York; venue in New York County.</p>
 <div style="text-align:center;margin-top:16px">
 <a href="${LEGAL_TERMS_URL}" target="_blank" rel="noopener" style="display:inline-block;background:#A89035;color:#fff;padding:10px 28px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.5px">Request Full Legal Terms</a>
-<div style="font-size:10px;color:#777;margin-top:8px">valerie@camelot.nyc · www.camelot.nyc</div>
+<div style="font-size:10px;color:#777;margin-top:8px">info@camelot.nyc · www.camelot.nyc</div>
 </div>
 </div>
 
@@ -5469,21 +5469,13 @@ ${buildPortfolioSection(d)}
 <!-- Content -->
 <div style="position:relative;z-index:1">
 
-<!-- Quote — large, emphasized, center stage -->
+<!-- Values note -->
 <div style="margin-bottom:26px;max-width:545px;margin-left:238px">
-<div style="font-size:64px;font-family:'Plus Jakarta Sans',-apple-system,sans-serif;color:#A89035;line-height:0.5;margin-bottom:16px;opacity:0.6">&ldquo;</div>
-<div style="font-family:'Cardo',Georgia,serif;font-style:italic;font-size:29px;color:#fff;line-height:1.45;font-weight:400;letter-spacing:0.2px;text-shadow:0 2px 12px rgba(0,0,0,0.22)">Don\u2019t let it be forgot, that once there was a spot, for one brief shining moment, that was known as <span style="color:#D5B24A;font-weight:700">Camelot</span>.</div>
-<div style="font-size:64px;font-family:'Plus Jakarta Sans',-apple-system,sans-serif;color:#A89035;line-height:0.5;text-align:right;margin-top:12px;opacity:0.6">&rdquo;</div>
-<div style="text-align:right;margin-top:12px">
-<div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:13px;color:#A89035;font-weight:600;font-style:italic">Jacqueline Kennedy</div>
-<div style="font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:1px;margin-top:2px">Life Magazine &nbsp;\u00B7&nbsp; December 6, 1963</div>
-<a href="${VANITY_FAIR_CAMELOT_REFERENCE_URL}" target="_blank" rel="noopener" style="display:inline-block;margin-top:7px;font-size:9px;color:rgba(255,255,255,0.42);letter-spacing:0.8px;text-decoration:none;text-transform:uppercase">Vanity Fair archive reference</a>
-</div>
+<div style="font-family:'Cardo',Georgia,serif;font-size:36px;color:#D5B24A;line-height:1.2;font-weight:600;letter-spacing:0.2px;text-shadow:0 2px 12px rgba(0,0,0,0.22)">A New York management partner built for board confidence.</div>
 <div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(168,144,53,0.25);font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:11.5px;color:rgba(255,255,255,0.72);line-height:1.7;font-style:normal">
-We use this quote because Jacqueline Kennedy&rsquo;s Camelot vision stood for grace, stewardship, taste, loyalty, discretion, and the protection of something rare. Those same values guide how Camelot treats every client relationship: preserve what makes each property special, act with dignity under pressure, solve problems before they grow, and protect the board, residents, and long-term value of the community.
+Camelot combines senior attention, practical technology, in-house accounting, and hands-on property management so boards have clearer answers, faster response, and a stronger operating partner. We welcome the opportunity to meet in person, by Zoom, Google Meet, or phone to discuss the next step for ${d.buildingName}.
 </div>
 </div>
-
 <!-- Divider -->
 <div style="width:80px;height:2px;background:#A89035;margin:0 auto 28px;opacity:0.5"></div>
 
@@ -5501,10 +5493,16 @@ We use this quote because Jacqueline Kennedy&rsquo;s Camelot vision stood for gr
 <a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+%E2%80%93+${encodeURIComponent(d.buildingName)}+Management+Discussion&details=${encodeURIComponent("Meeting with David A. Goldoff, President\nCamelot Realty Group\n\nJoin via Zoom:\nhttps://us06web.zoom.us/j/dgoldoff\n\nOr dial: +1 (646) 558-8656\n\nAgenda: Management proposal discussion for " + d.buildingName + "\n\nPrepared by Jackie | Camelot OS")}&location=${encodeURIComponent("Zoom Meeting — https://us06web.zoom.us/j/dgoldoff")}&add=${CAMELOT.email}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#2D8CFF;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
 <span style="font-size:15px">\uD83D\uDCC5</span> Schedule Meeting
 </a>
+<a href="https://zoom.us/start/videomeeting" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#1f6feb;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
+<span style="font-size:15px">\uD83D\uDCBB</span> Zoom
+</a>
 <a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+%E2%80%93+${encodeURIComponent(d.buildingName)}+Discussion&details=${encodeURIComponent("Meeting with David A. Goldoff\nCamelot Realty Group\n(212) 206-9939\n\nGoogle Meet link will be generated automatically.\n\nAgenda: Management proposal for " + d.buildingName)}&add=${CAMELOT.email}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#A89035;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
 <span style="font-size:15px">\uD83D\uDCC5</span> Google Meet
 </a>
-<a href="mailto:valerie@camelot.nyc?subject=${encodeURIComponent('Meeting Request — ' + d.buildingName + ' | Camelot Realty Group')}&body=${encodeURIComponent('Hello David,\n\nI would like to schedule a meeting to discuss the management proposal for ' + d.buildingName + ' at ' + d.address + '.\n\nPlease let me know your available dates and preferred meeting format (in-person, Zoom, or phone).\n\nBest regards')}" onclick="try{window.location.href=this.href}catch(e){window.open(this.href)};return false;" style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:#A89035;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px;border:2px solid #A89035">
+<a href="tel:+12122069939;ext=701" style="display:inline-flex;align-items:center;gap:8px;background:#1D3A4F;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
+<span style="font-size:15px">\u260E\uFE0F</span> Call 212-206-9939 x701
+</a>
+<a href="mailto:info@camelot.nyc?subject=${encodeURIComponent('Meeting Request — ' + d.buildingName + ' | Camelot Realty Group')}&body=${encodeURIComponent('Hello David,\n\nI would like to schedule a meeting to discuss the management proposal for ' + d.buildingName + ' at ' + d.address + '.\n\nPlease let me know your available dates and preferred meeting format (in-person, Zoom, or phone).\n\nBest regards')}" onclick="try{window.location.href=this.href}catch(e){window.open(this.href)};return false;" style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:#A89035;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px;border:2px solid #A89035">
 <span style="font-size:15px">\u2709\uFE0F</span> Email to Schedule
 </a>
 </div>
@@ -5974,4 +5972,7 @@ function generateProposal() {
     .replace(/\b-?Infinity\b/g, 'N/A')
     .replace(/\bNaN\b/g, 'N/A');
 }
+
+
+
 

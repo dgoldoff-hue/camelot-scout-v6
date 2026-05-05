@@ -364,7 +364,7 @@ export default function Settings() {
                     <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Email</label>
                     <input
                       type="email"
-                      defaultValue="valerie@camelot.nyc"
+                      defaultValue="info@camelot.nyc"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
                     />
                   </div>
@@ -417,3 +417,4 @@ export default function Settings() {
     </div>
   );
 }
+

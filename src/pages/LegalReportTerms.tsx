@@ -77,9 +77,9 @@ export default function LegalReportTerms() {
               <p>David A. Goldoff, Founder & President</p>
               <p>(212) 206-9939 ext. 701 | (646) 523-9068</p>
               <div className="mt-2 flex flex-wrap gap-3">
-                <a className="inline-flex items-center gap-2 font-semibold text-camelot-gold hover:underline" href="mailto:valerie@camelot.nyc">
+                <a className="inline-flex items-center gap-2 font-semibold text-camelot-gold hover:underline" href="mailto:info@camelot.nyc">
                   <Mail size={14} />
-                  valerie@camelot.nyc
+                  info@camelot.nyc
                 </a>
                 <a className="font-semibold text-camelot-gold hover:underline" href="https://www.camelot.nyc" target="_blank" rel="noopener">
                   www.camelot.nyc
@@ -92,3 +92,4 @@ export default function LegalReportTerms() {
     </div>
   );
 }
+

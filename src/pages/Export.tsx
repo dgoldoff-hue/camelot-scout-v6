@@ -177,7 +177,7 @@ export default function Export() {
       toast.success(`PDF report generated for ${toExport.length} buildings`);
     } else if (exportFormat === 'email') {
       // Open mailto: to team with formatted summary
-      const recipients = 'valerie@camelot.nyc,sam@camelot.nyc,carl@camelot.nyc,luigi@camelot.nyc';
+      const recipients = 'info@camelot.nyc,sam@camelot.nyc,carl@camelot.nyc,luigi@camelot.nyc';
       const subject = encodeURIComponent(`Camelot Scout Export — ${toExport.length} Buildings (${new Date().toLocaleDateString()})`);
 
       const stageCounts: Record<string, number> = {};
@@ -342,3 +342,4 @@ export default function Export() {
     </div>
   );
 }
+

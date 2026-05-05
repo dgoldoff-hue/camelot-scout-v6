@@ -281,7 +281,7 @@ export default function InstantProposal() {
       `Please find attached our Proposal of Property Management Services for ${buildingName}.\n\n` +
       `We have taken the time to research your building and are confident that Camelot can deliver measurable improvements in operations, transparency, and service quality.\n\n` +
       `We look forward to meeting with you — either in person or via Zoom — to discuss this proposal further.\n\n` +
-      `Warm regards,\nDavid A. Goldoff\nPresident\nCamelot Property Management Services Corp.\n(212) 206-9939 x 701 | (646) 523-9068\nvalerie@camelot.nyc | www.camelot.nyc\n57 West 57th Street, Suite 410, New York, NY 10019`;
+      `Warm regards,\nDavid A. Goldoff\nPresident\nCamelot Property Management Services Corp.\n(212) 206-9939 x 701 | (646) 523-9068\ninfo@camelot.nyc | www.camelot.nyc\n57 West 57th Street, Suite 410, New York, NY 10019`;
 
     const subject = `Proposal of Services — ${buildingName} | Camelot Realty Group`;
 
@@ -660,3 +660,4 @@ export default function InstantProposal() {
     </div>
   );
 }
+

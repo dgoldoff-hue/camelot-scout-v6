@@ -104,8 +104,8 @@ const requiredTokens = [
   ['Jackie intro phone meeting option', 'Phone Call'],
   ['Jackie intro office address', 'CAMELOT_OFFICE_ADDRESS'],
   ['Camelot current office address', '57 West 57th Street, Suite 410, New York, NY 10019'],
-  ['Camelot current email', 'valerie@camelot.nyc'],
-  ['Jackie intro Jacqueline quote', 'CAMELOT_JACQUELINE_QUOTE'],
+  ['Camelot current email', 'info@camelot.nyc'],
+  ['Jackie intro meeting actions', 'Call 212-206-9939 x701'],
   ['PropertyShark diligence targets', 'PropertyShark diligence targets:</strong> owner mailing / care-of address'],
   ['PropertyShark FAR/air-rights target', 'zoning map, FAR and unused air rights'],
   ['PropertyShark tax-bill target', 'assessment and tax-bill history'],
@@ -153,7 +153,7 @@ const requiredTokens = [
   ['Jacqueline fallback image', 'JACQUELINE_PORTRAIT_FALLBACK_URL'],
   ['Jacqueline Vanity Fair article', 'VANITY_FAIR_CAMELOT_REFERENCE_URL'],
   ['Jacqueline portrait QA gate', 'Jacqueline Portrait Slide'],
-  ['Jacqueline values language', 'grace, stewardship, taste, loyalty, discretion'],
+  ['Camelot closing values language', 'A New York management partner built for board confidence'],
   ['Legal terms URL check', 'LEGAL_TERMS_URL'],
   ['No self-managed without explicit source', 'Self-managed language requires an explicit source'],
 ];
@@ -170,7 +170,6 @@ const forbiddenTokens = [
   ['old Camelot 501 Madison office', '501 Madison Avenue'],
   ['old Camelot Canal office', '343 Canal Street'],
   ['old David email in report contact blocks', 'dgoldoff@camelot.nyc'],
-  ['old general info email in report contact blocks', 'info@camelot.nyc'],
 ];
 
 for (const [label, token] of forbiddenTokens) {
@@ -217,3 +216,4 @@ if (workflowFailures.length) {
 }
 
 console.log(`Jackie verification passed (${requiredTokens.length} source rules + ${workflowTokens.length} workflow rules checked).`);
+

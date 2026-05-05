@@ -146,7 +146,7 @@ export function localQueryEngine(
     resp += `David Goldoff\n`;
     resp += `Principal, Camelot Realty Group\n`;
     resp += `57 West 57th Street, Suite 410, New York, NY 10019\n`;
-    resp += `valerie@camelot.nyc\n\n`;
+    resp += `info@camelot.nyc\n\n`;
     resp += `---\n*You can copy this email or go to **Outreach → Compose** to customize it further.*`;
     return resp;
   }
@@ -392,3 +392,4 @@ Be brief (3-4 sentences), highlight action items.`;
 
   return chatCompletion([{ role: 'user', content: prompt }]);
 }
+

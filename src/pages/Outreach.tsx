@@ -239,7 +239,7 @@ export default function Outreach() {
   const handleFollowUp = (entry: typeof DEMO_OUTREACH_LOG[0]) => {
     const subject = encodeURIComponent(`Re: ${entry.subject}`);
     const body = encodeURIComponent(
-      `Hi ${entry.contact_name.split(' ')[0]},\n\nI wanted to follow up on my recent email about ${entry.building_name}. I'd love to find 15 minutes to discuss how Camelot can help with your property management needs.\n\nWe offer a complimentary 30-day property evaluation at no cost and no obligation — it's our way of demonstrating value upfront.\n\nWould this week work for a quick call?\n\nBest regards,\nDavid Goldoff\nPrincipal, Camelot Realty Group\n57 West 57th Street, Suite 410\nNew York, NY 10019\nvalerie@camelot.nyc\n212-206-9939 ext. 701`
+      `Hi ${entry.contact_name.split(' ')[0]},\n\nI wanted to follow up on my recent email about ${entry.building_name}. I'd love to find 15 minutes to discuss how Camelot can help with your property management needs.\n\nWe offer a complimentary 30-day property evaluation at no cost and no obligation — it's our way of demonstrating value upfront.\n\nWould this week work for a quick call?\n\nBest regards,\nDavid Goldoff\nPrincipal, Camelot Realty Group\n57 West 57th Street, Suite 410\nNew York, NY 10019\ninfo@camelot.nyc\n212-206-9939 ext. 701`
     );
     window.open(`mailto:${entry.contact_email}?subject=${subject}&body=${body}`, '_self');
     toast.success(`Follow-up email opened for ${entry.contact_name}`);
@@ -659,3 +659,4 @@ export default function Outreach() {
     </div>
   );
 }
+

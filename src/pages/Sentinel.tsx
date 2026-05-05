@@ -217,7 +217,7 @@ export default function Sentinel() {
                   TRACKED_BUILDINGS.map(b => `• ${b.name} — ${b.neighborhood} — ${b.performance === 'Above' ? '▲ Above' : '● At'} market ($${b.camelotPSF}/sqft vs $${b.neighborhoodPSF} neighborhood)`).join('\n') +
                   `\n\nReports are being downloaded to your computer. Please distribute to each building's board via ConciergePlus or MDS.\n\nFull market report available on Scout: https://camelot-scout-v6.onrender.com/sentinel\n\n— Merlin AI\nCamelot OS · Sentinel Engine`
                 );
-                window.open(`mailto:valerie@camelot.nyc?cc=valerie@camelot.nyc,sam@camelot.nyc&subject=${subject}&body=${body}`);
+                window.open(`mailto:info@camelot.nyc?cc=info@camelot.nyc,sam@camelot.nyc&subject=${subject}&body=${body}`);
                 // Download all reports
                 TRACKED_BUILDINGS.forEach((b, i) => {
                   const html = generateBuildingReport(b, input);
@@ -237,3 +237,4 @@ export default function Sentinel() {
     </div>
   );
 }
+

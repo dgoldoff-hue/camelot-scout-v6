@@ -189,7 +189,7 @@ export default function Violations() {
       + `\nPresident`
       + `\nCamelot Property Management Services Corp.`
       + `\n57 West 57th Street, Suite 410 | New York, NY 10019`
-      + `\n(646) 523-9068 | valerie@camelot.nyc | www.camelot.nyc`
+      + `\n(646) 523-9068 | info@camelot.nyc | www.camelot.nyc`
     );
     window.open(`https://mail.google.com/mail/?view=cm&su=${subject}&body=${body}`, '_blank');
     toast.success('Gmail opened \u2014 attach the downloaded PDF report');
@@ -440,3 +440,4 @@ export default function Violations() {
     </div>
   );
 }
+

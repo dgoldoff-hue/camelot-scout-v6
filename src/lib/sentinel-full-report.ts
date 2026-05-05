@@ -749,10 +749,10 @@ export function generateFullSentinelReport(): string {
   <h2>Our Standard. <em>Our Difference.</em></h2>
   <div class="gold-rule"></div>
   <blockquote>
-    "Don't let it be forgot, that once there was a spot, for one brief shining moment, that was known as Camelot."
-    <cite>— Jacqueline Kennedy, Life Magazine, November 29, 1963</cite>
+    "Boutique by design. Powered by intelligence. Built for New York properties."
+    <cite>— Camelot Realty Group</cite>
   </blockquote>
-  <p>After the loss of President Kennedy, Jackie chose one word to define what his presidency had meant: Camelot — idealism, excellence, glamour, and genuine care. That is what we named our company after. The conviction that the management of a building — someone's home, someone's investment — deserves to be done beautifully, intelligently, and with absolute intention.</p>
+  <p>Camelot stands for senior attention, practical technology, financial clarity, and hands-on stewardship. The conviction is simple: the management of a building — someone's home, someone's investment — deserves to be done beautifully, intelligently, and with absolute intention.</p>
   <p>We are not a traditional property management firm. We are a technology-first real estate intelligence operation, boutique by design and institutional in capability. Every building we manage benefits from tools, data, and insight that most management companies simply don't have.</p>
 
   <div style="margin-top:48px">
@@ -786,7 +786,7 @@ export function generateFullSentinelReport(): string {
     <div>
       <div class="footer-logo">Camelot Realty Group</div>
       <div>President/CEO &amp; Licensed Broker</div>
-      <div><a href="mailto:valerie@camelot.nyc">valerie@camelot.nyc</a></div>
+      <div><a href="mailto:info@camelot.nyc">info@camelot.nyc</a></div>
       <div>57 West 57th Street, Suite 410, New York, NY 10019</div>
       <div><a href="tel:2122069939">212-206-9939</a></div>
       <div><a href="https://www.camelot.nyc">www.camelot.nyc</a></div>
@@ -801,7 +801,7 @@ export function generateFullSentinelReport(): string {
   <div class="footer-divider">
     <div><strong>Boutique. By Design. Powered by Intelligence.</strong></div>
     <div class="disclaimer">
-      © 2026 Camelot Realty Group. All Rights Reserved. This report and all of its contents are the intellectual property of Camelot Realty Group. The information is provided for general informational and educational purposes only and does not constitute investment, financial, or legal advice. Market data is derived from publicly available records and licensed third-party data sources including RealtyMX, ACRIS, and StreetEasy. While Camelot has made reasonable efforts to ensure accuracy, no warranty is made as to completeness or fitness for any particular purpose. Permission requests: <a href="mailto:valerie@camelot.nyc">valerie@camelot.nyc</a>
+      © 2026 Camelot Realty Group. All Rights Reserved. This report and all of its contents are the intellectual property of Camelot Realty Group. The information is provided for general informational and educational purposes only and does not constitute investment, financial, or legal advice. Market data is derived from publicly available records and licensed third-party data sources including RealtyMX, ACRIS, and StreetEasy. While Camelot has made reasonable efforts to ensure accuracy, no warranty is made as to completeness or fitness for any particular purpose. Permission requests: <a href="mailto:info@camelot.nyc">info@camelot.nyc</a>
     </div>
   </div>
 </footer>
@@ -925,3 +925,6 @@ new Chart(document.getElementById('chart-yield'), {
 </body>
 </html>`;
 }
+
+
+

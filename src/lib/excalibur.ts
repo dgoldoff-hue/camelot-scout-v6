@@ -91,7 +91,7 @@ const CAMELOT = {
   address: '57 West 57th Street, Suite 410, New York, NY 10019',
   phone: '(212) 206-9939 x 701',
   mobile: '(646) 523-9068',
-  email: 'valerie@camelot.nyc',
+  email: 'info@camelot.nyc',
   web: 'www.camelot.nyc',
   principal: 'David A. Goldoff',
   title: 'President',
@@ -812,3 +812,4 @@ export function generateAgreement(input: AgreementInput): string {
     default: return generateRentalAgreement(input);
   }
 }
+

@@ -33,7 +33,7 @@ const TRISTATE_BUILDINGS: TriStateBuilding[] = [
   { address: '1 Warburton Avenue, Yonkers, NY', name: 'River Club at Hudson Park', area: 'Yonkers', region: 'Westchester', units: 514, type: 'rental', year_built: 2005, current_management: 'Collins Enterprises', market_value: 180000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
   { address: '25 Rockledge Avenue, Yonkers, NY', name: 'The Lofts at Saw Mill River', area: 'Yonkers', region: 'Westchester', units: 132, type: 'rental', year_built: 2015, current_management: 'Unknown', market_value: 55000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
   // Westchester — Mamaroneck
-  { address: '213 Halsey Avenue, Mamaroneck, NY', name: 'Augustin Building', area: 'Mamaroneck', region: 'Westchester', units: 1, type: 'mixed-use', year_built: 1955, current_management: 'Self-Managed', market_value: 2500000, contacts: [{ name: 'David Goldoff', role: 'owner', email: 'valerie@camelot.nyc', phone: '(646) 523-9068' }], notes: '🏘️ Westchester — Camelot acquisition target' },
+  { address: '213 Halsey Avenue, Mamaroneck, NY', name: 'Augustin Building', area: 'Mamaroneck', region: 'Westchester', units: 1, type: 'mixed-use', year_built: 1955, current_management: 'Self-Managed', market_value: 2500000, contacts: [{ name: 'David Goldoff', role: 'owner', email: 'info@camelot.nyc', phone: '(646) 523-9068' }], notes: '🏘️ Westchester — Camelot acquisition target' },
   // Westchester — Scarsdale / Bronxville
   { address: '3 Pondfield Road, Bronxville, NY', name: 'Pondfield Apartments', area: 'Bronxville', region: 'Westchester', units: 48, type: 'co-op', year_built: 1940, current_management: 'Unknown', market_value: 32000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
   { address: '1 Scarsdale Road, Tuckahoe, NY', name: 'Scarsdale Manor', area: 'Tuckahoe', region: 'Westchester', units: 96, type: 'co-op', year_built: 1950, current_management: 'Unknown', market_value: 42000000, contacts: [], notes: '🏘️ Westchester — AI-researched data (verify independently)' },
@@ -160,3 +160,4 @@ export function generateTriStateBuildings(selectedAreas: string[]): Building[] {
 export function isTriStateArea(area: string): boolean {
   return TRISTATE_BUILDINGS.some((b) => b.area === area);
 }
+
