@@ -638,11 +638,42 @@ export interface MarketFeeComparison {
   marketRangeHigh: number;
   camelotAnnualPerUnit: number;
   camelotMonthlyPerUnit: number;
+  minimumMonthlyFee: number;
+  minimumFeeLabel: string;
+  floorApplied: boolean;
   savings: string;          // e.g. "15-30% below market"
   tier: 'manhattan-luxury' | 'manhattan-standard' | 'outer-borough' | 'suburban';
   tierLabel: string;
   ancillaryFeesIncluded: string[];
   ancillaryComparison: Array<{ service: string; marketRate: string; camelotRate: string }>;
+}
+
+const MANHATTAN_MONTHLY_MINIMUM_FEE = 1500;
+const MANHATTAN_PREFERRED_MINIMUM_FEE = 2000;
+const OUTER_BOROUGH_MONTHLY_MINIMUM_FEE = 1200;
+const OUTER_BOROUGH_PREFERRED_MINIMUM_FEE = 1500;
+
+function getCamelotMinimumFeeRule(borough: string): { minimum: number; preferred: number; label: string } {
+  const bor = (borough || '').toLowerCase();
+  if (bor.includes('manhattan') || bor.includes('new york')) {
+    return {
+      minimum: MANHATTAN_MONTHLY_MINIMUM_FEE,
+      preferred: MANHATTAN_PREFERRED_MINIMUM_FEE,
+      label: '$1,500-$2,000/month Manhattan minimum',
+    };
+  }
+  if (bor.includes('brooklyn') || bor.includes('queens') || bor.includes('bronx') || bor.includes('staten')) {
+    return {
+      minimum: OUTER_BOROUGH_MONTHLY_MINIMUM_FEE,
+      preferred: OUTER_BOROUGH_PREFERRED_MINIMUM_FEE,
+      label: '$1,200-$1,500/month outer-borough minimum',
+    };
+  }
+  return {
+    minimum: OUTER_BOROUGH_MONTHLY_MINIMUM_FEE,
+    preferred: OUTER_BOROUGH_PREFERRED_MINIMUM_FEE,
+    label: '$1,200-$1,500/month minimum',
+  };
 }
 
 function roundToNearestFive(value: number): number {
@@ -698,12 +729,17 @@ function calculateMarketFeeComparison(
   const camelotMonthly = Math.round(camelotAnnual / 12);
   const savingsPct = Math.round(((midMarket - camelotAnnual) / midMarket) * 100);
   const savings = `${savingsPct}% below market average`;
+  const minimumFeeRule = getCamelotMinimumFeeRule(d.borough);
+  const calculatedMonthlyFee = camelotMonthly * Math.max(d.units || 1, 1);
 
   return {
     marketRangeLow: marketLow,
     marketRangeHigh: marketHigh,
     camelotAnnualPerUnit: camelotAnnual,
     camelotMonthlyPerUnit: camelotMonthly,
+    minimumMonthlyFee: minimumFeeRule.minimum,
+    minimumFeeLabel: minimumFeeRule.label,
+    floorApplied: calculatedMonthlyFee < minimumFeeRule.minimum,
     savings,
     tier,
     tierLabel,
@@ -1955,7 +1991,14 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   });
   // Jackie prices Camelot at 15% below the applicable market midpoint.
   let pricePerUnit = feeComparison.camelotMonthlyPerUnit;
-  const monthlyFee = pricePerUnit * (units || 1);
+  const monthlyFeeBeforeMinimum = pricePerUnit * (units || 1);
+  const monthlyFee = Math.max(monthlyFeeBeforeMinimum, feeComparison.minimumMonthlyFee);
+  if (monthlyFee !== monthlyFeeBeforeMinimum) {
+    pricePerUnit = Math.ceil(monthlyFee / Math.max(units || 1, 1));
+    feeComparison.camelotMonthlyPerUnit = pricePerUnit;
+    feeComparison.camelotAnnualPerUnit = pricePerUnit * 12;
+    feeComparison.floorApplied = true;
+  }
   const annualFee = monthlyFee * 12;
 
   // Scout scoring (simplified)
@@ -4659,7 +4702,7 @@ ${d.feeComparison ? `
 <div class="section-title">Fee Comparison — Market Rate Analysis</div>
 <div class="section-sub">${d.feeComparison.tierLabel} — How Camelot compares to industry standard pricing</div>
 <div style="background:#EDE9DF;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:16px">
-<p style="font-size:11px;color:#3A4B5B;line-height:1.6"><strong style="color:#A89035">Pricing formula:</strong> Camelot's base management fee is modeled at <strong>15% below the applicable market midpoint</strong> for this building class and location, while keeping core advisory, accounting, technology, and compliance services included.</p>
+<p style="font-size:11px;color:#3A4B5B;line-height:1.6"><strong style="color:#A89035">Pricing formula:</strong> Camelot's base management fee is modeled at <strong>15% below the applicable market midpoint</strong> for this building class and location, while keeping core advisory, accounting, technology, and compliance services included. <strong>Camelot minimum:</strong> ${d.feeComparison.minimumFeeLabel}${d.feeComparison.floorApplied ? ' (minimum floor applied to this preliminary quote).' : '.'}</p>
 </div>
 
 <!-- Market vs Camelot Visual -->
