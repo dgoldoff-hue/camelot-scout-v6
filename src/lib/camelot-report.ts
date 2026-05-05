@@ -3669,6 +3669,10 @@ ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borou
 <div class="stat-box"><div class="val">${d.yearBuilt || 'N/A'}</div><div class="lbl">Year Built</div></div>
 </div>
 
+<div style="background:#fff;border:1px solid #D5D0C6;border-left:4px solid #A89035;padding:10px 14px;margin-top:12px;font-size:10px;color:#555;line-height:1.55">
+<strong style="color:#A89035">PropertyShark diligence targets:</strong> owner mailing / care-of address Â· HPD officers and managing-agent history Â· DOB permit contacts Â· unit-level co-op/condo sales Â· assessment and tax-bill history Â· exemptions and abatements Â· zoning map, FAR and unused air rights Â· historic district/LPC, community district, school district, census tract, police/fire proximity Â· ACRIS deeds, mortgages, assignments, satisfactions, liens and UCC-style filings.
+</div>
+
 ${d.streetEasy ? `
 <!-- StreetEasy Building Profile -->
 <div style="background:#f8f6f0;border:1px solid #D5D0C6;border-radius:8px;padding:18px 20px;margin-top:12px">
