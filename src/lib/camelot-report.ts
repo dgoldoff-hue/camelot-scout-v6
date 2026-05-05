@@ -436,11 +436,12 @@ function getLpcLandmarkFallbackLabels(address: string, neighborhoodName = '', kn
   ];
 }
 
-function resolveNearbyLandmarkLabels(d: Pick<MasterReportData, 'address' | 'buildingName' | 'neighborhoodName' | 'neighborhoodIntel'>): string[] {
+function resolveNearbyLandmarkLabels(d: Pick<MasterReportData, 'address' | 'buildingName' | 'neighborhoodName' | 'neighborhoodIntel' | 'neighborhoodSearchContext'>): string[] {
   const knownFacts = getKnownPropertyFacts(d.address, d.buildingName);
   const liveLabels = (d.neighborhoodIntel?.landmarks || [])
     .map(l => `${l.name}: ${l.type || 'LPC landmark'}${l.date ? ` (${l.date.slice(0, 4)})` : ''}`);
-  const fallbackLabels = getLpcLandmarkFallbackLabels(d.address, d.neighborhoodName, knownFacts);
+  const landmarkNeighborhoodContext = d.neighborhoodName || d.neighborhoodSearchContext?.neighborhoodName || d.neighborhoodSearchContext?.query || '';
+  const fallbackLabels = getLpcLandmarkFallbackLabels(d.address, landmarkNeighborhoodContext, knownFacts);
   return dedupeText([...(knownFacts?.landmarks || []), ...liveLabels, ...fallbackLabels]).slice(0, 6);
 }
 
@@ -3481,7 +3482,7 @@ ${d.latitude && d.longitude ? `
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
 <div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
-<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${d.neighborhoodName ? encodeURIComponent(d.neighborhoodName + ' New York NY') : encodedAddr}&zoom=14" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedNeighborhoodContext}&zoom=14" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
 <div style="text-align:center;font-size:9px;color:#999;padding:4px">\uD83C\uDFD8\uFE0F Neighborhood Overview</div>
 </div>
 <div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
@@ -3572,7 +3573,7 @@ ${d.bbl ? `<a href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBLResult?Borou
 <div><div style="font-size:12px;font-weight:600;color:#A89035">DOB BIS (Building Info System)</div><div style="font-size:10px;color:rgba(255,255,255,0.6)">Permits, complaints, violations, certificates of occupancy</div></div>
 </a>
 </div>
-<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Data: HPD → DOF → StreetEasy → PropertyShark → Domecile (units) · ACRIS → DOF → HPD (ownership) · DOB/BIS → SiteCompli → Jack Jaffa (violations/permits) · DOF (abatements/liens) · LexisNexis → NYSCEF (legal) · NY AG (offering plans)</div>
+<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.35);text-align:center">Data: HPD → DOF → StreetEasy → PropertyShark → Domecile (units) · ACRIS → DOF → HPD (ownership) · DOB/BIS → SiteCompli → Jack Jaffa (violations/permits) · DOF (abatements/liens) · LexisNexis → NYSCEF (legal) · NY AG (offering plans) · ZIP/neighborhood context → broad searches</div>
 </div>
 
 <div class="stats-row">
@@ -3841,7 +3842,7 @@ ${d.distressSignals.length > 0 ? `
 <div style="background:#EDE9DF;border-radius:6px;padding:12px">
 <div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">Domecile — Fees & Management</div>
 <div style="font-size:10px;color:#555;line-height:1.5">Building fees (maintenance, common charges), current management company, amenities, and resident reviews. Useful for competitive fee benchmarking.</div>
-<a href="https://www.domecile.com/search?q=${encodedAddr}" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Search Domecile →</a>
+<a href="https://www.domecile.com/search?q=${encodedNeighborhoodContext}" target="_blank" style="font-size:10px;color:#A89035;text-decoration:underline;display:inline-block;margin-top:4px">Search Domecile by ZIP / neighborhood context →</a>
 </div>
 <div style="background:#EDE9DF;border-radius:6px;padding:12px">
 <div style="font-size:11px;font-weight:700;color:#2C3240;margin-bottom:4px">NYSCEF — Court E-Filings</div>
@@ -4203,7 +4204,7 @@ ${[
 
 <!-- Neighborhood Image — Google Maps area overview -->
 <div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:200px;margin-bottom:12px">
-<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${d.neighborhoodName ? encodeURIComponent(d.neighborhoodName + ', New York, NY') : encodedAddr}&zoom=14&maptype=roadmap" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedNeighborhoodContext}&zoom=14&maptype=roadmap" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
 </div>
 <div style="text-align:center;font-size:9px;color:#999;margin-bottom:12px">${d.neighborhoodName ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'Neighborhood'} \u2014 Area Overview</div>
 
