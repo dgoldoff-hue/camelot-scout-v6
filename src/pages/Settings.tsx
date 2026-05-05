@@ -340,7 +340,7 @@ export default function Settings() {
                     <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Address</label>
                     <input
                       type="text"
-                      defaultValue="477 Madison Avenue, 6th Fl"
+                      defaultValue="57 West 57th Street, Suite 410"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
                     />
                   </div>
@@ -348,7 +348,7 @@ export default function Settings() {
                     <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">City, State, ZIP</label>
                     <input
                       type="text"
-                      defaultValue="New York, NY 10022"
+                      defaultValue="New York, NY 10019"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
                     />
                   </div>
@@ -364,7 +364,7 @@ export default function Settings() {
                     <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Email</label>
                     <input
                       type="email"
-                      defaultValue="info@camelot.nyc"
+                      defaultValue="valerie@camelot.nyc"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-camelot-gold/50"
                     />
                   </div>

@@ -31,8 +31,8 @@ I'd love to schedule a 15-minute call to discuss how Camelot can serve {building
 Best regards,
 David Goldoff
 Principal, Camelot Realty Group
-477 Madison Avenue, 6th Fl
-New York, NY 10022`,
+57 West 57th Street, Suite 410
+New York, NY 10019`,
     category: 'cold', variables: ['building_name', 'address', 'unit_count', 'building_type', 'borough', 'violations_count', 'contact_name'], is_default: true, created_at: '', updated_at: '',
   },
   {
@@ -239,7 +239,7 @@ export default function Outreach() {
   const handleFollowUp = (entry: typeof DEMO_OUTREACH_LOG[0]) => {
     const subject = encodeURIComponent(`Re: ${entry.subject}`);
     const body = encodeURIComponent(
-      `Hi ${entry.contact_name.split(' ')[0]},\n\nI wanted to follow up on my recent email about ${entry.building_name}. I'd love to find 15 minutes to discuss how Camelot can help with your property management needs.\n\nWe offer a complimentary 30-day property evaluation at no cost and no obligation — it's our way of demonstrating value upfront.\n\nWould this week work for a quick call?\n\nBest regards,\nDavid Goldoff\nPrincipal, Camelot Realty Group\n477 Madison Avenue, 6th Fl\nNew York, NY 10022\ndgoldoff@camelot.nyc\n212-206-9939 ext. 701`
+      `Hi ${entry.contact_name.split(' ')[0]},\n\nI wanted to follow up on my recent email about ${entry.building_name}. I'd love to find 15 minutes to discuss how Camelot can help with your property management needs.\n\nWe offer a complimentary 30-day property evaluation at no cost and no obligation — it's our way of demonstrating value upfront.\n\nWould this week work for a quick call?\n\nBest regards,\nDavid Goldoff\nPrincipal, Camelot Realty Group\n57 West 57th Street, Suite 410\nNew York, NY 10019\nvalerie@camelot.nyc\n212-206-9939 ext. 701`
     );
     window.open(`mailto:${entry.contact_email}?subject=${subject}&body=${body}`, '_self');
     toast.success(`Follow-up email opened for ${entry.contact_name}`);

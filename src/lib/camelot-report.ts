@@ -424,7 +424,7 @@ function getLpcLandmarkFallbackLabels(address: string, neighborhoodName = '', kn
       'LPC Discover NYC Landmarks: verify nearby designated buildings and districts',
       'NYC landmark and historic district context: reviewed during Jackie source check',
       'Neighborhood civic, cultural, and transit anchors: verify by address before release',
-      'Camelot HQ: 477 Madison Avenue, 6th Floor',
+      'Camelot HQ: 57 West 57th Street, Suite 410',
     ];
   }
 
@@ -432,7 +432,7 @@ function getLpcLandmarkFallbackLabels(address: string, neighborhoodName = '', kn
     'Nearby landmarks: verify through LPC Discover NYC Landmarks',
     'Neighborhood anchors: reviewed during Camelot scope review',
     'Transit access: verified during onboarding',
-    'Camelot HQ: 477 Madison Avenue, 6th Floor',
+    'Camelot HQ: 57 West 57th Street, Suite 410',
   ];
 }
 
@@ -1083,11 +1083,11 @@ function gradeManagement(d: {
 const CAMELOT = {
   name: 'Camelot Realty Group',
   shortName: 'Camelot Realty Group',
-  address: '477 Madison Avenue, 6th Fl, New York, NY 10022',
+  address: '57 West 57th Street, Suite 410, New York, NY 10019',
   phone: '(212) 206-9939',
   mobile: '(646) 523-9068',
-  email: 'dgoldoff@camelot.nyc',
-  infoEmail: 'info@camelot.nyc',
+  email: 'valerie@camelot.nyc',
+  infoEmail: 'valerie@camelot.nyc',
   web: 'www.camelot.nyc',
   principal: 'David A. Goldoff',
   title: 'President',
@@ -2765,7 +2765,7 @@ MANAGEMENT: ${verifiedManagementLabel(d.managementCompany)} — verify via HPD M
 ${d.dofOwner ? `OWNER (DOF): ${d.dofOwner}` : ''}
 
 OPENING:
-"Hi, this is [Your Name] calling from Camelot Property Management. We're a boutique management firm based in Manhattan at 477 Madison Avenue, 6th Fl. I'm reaching out because we specialize in managing buildings like ${d.buildingName} in your area, and I wanted to introduce our services to the decision makers."
+"Hi, this is [Your Name] calling from Camelot Property Management. We're a boutique management firm based in Manhattan at 57 West 57th Street, Suite 410. I'm reaching out because we specialize in managing buildings like ${d.buildingName} in your area, and I wanted to introduce our services to the decision makers."
 
 KEY HOOKS:
 ${d.violationsOpen > 0 ? `• ${d.violationsOpen} OPEN HPD VIOLATIONS — "We noticed your building has ${d.violationsOpen} open HPD violations. We have a proven track record clearing these efficiently."\n` : ''}${d.ecbPenaltyBalance > 0 ? `• $${d.ecbPenaltyBalance.toLocaleString()} ECB PENALTY BALANCE — "Your building has outstanding ECB fines that we can help resolve."\n` : ''}${d.ll97 && d.ll97.period1Penalty > 0 ? `• LL97 PENALTY EXPOSURE: $${d.ll97.period1Penalty.toLocaleString()}/yr — "Under Local Law 97, your building faces estimated annual penalties. We include LL97 compliance at no extra charge."\n` : ''}${d.hasActiveLitigation ? `• ⚖️ ACTIVE HOUSING LITIGATION — "We see your building has active housing court cases. Camelot has experience stabilizing buildings in exactly this situation."\n` : ''}${d.isRentStabilized ? `• RENT STABILIZED — "We specialize in rent-stabilized buildings and understand the regulatory complexity."\n` : ''}${d.distressLevel === 'distressed' || d.distressLevel === 'critical' ? `• FINANCIAL DISTRESS DETECTED (${d.distressLevel.toUpperCase()}) — approach with sensitivity, but this building needs help.\n` : ''}
@@ -2813,7 +2813,7 @@ export function generateEmailDraft(d: MasterReportData, type: 'intro' | 'followu
       subject: `Introduction — Camelot Property Management | ${d.buildingName}`,
       body: `Dear Board Member,
 
-My name is David Goldoff, and I'm the principal of Camelot Realty Group, a boutique property management firm headquartered at 477 Madison Avenue, 6th Fl in New York City.
+My name is David Goldoff, and I'm the principal of Camelot Realty Group, a boutique property management firm headquartered at 57 West 57th Street, Suite 410 in New York City.
 
 I'm reaching out because we specialize in managing buildings like ${d.buildingName}, and I believe we could bring meaningful value to your ${d.units}-unit property.
 
@@ -2889,7 +2889,7 @@ Best regards,${sig}`,
       subject: `${d.buildingName} at ${d.address} — Property Intelligence Report from Camelot Realty Group`,
       body: `Dear Board Member,
 
-Camelot Realty Group is a boutique property management firm based at 477 Madison Avenue in New York City. For over 18 years, we have proudly managed cooperatives, condominiums, and multifamily buildings across the New York metropolitan area — delivering hands-on service, financial transparency, and technology-driven management to every property in our portfolio.
+Camelot Realty Group is a boutique property management firm based at 57 West 57th Street in New York City. For over 18 years, we have proudly managed cooperatives, condominiums, and multifamily buildings across the New York metropolitan area — delivering hands-on service, financial transparency, and technology-driven management to every property in our portfolio.
 
 We were pleased to prepare the attached Property Intelligence Report for ${d.buildingName} at ${d.address}. Our team took a close look at your ${d.units ? d.units + '-unit ' : ''}building and we believe there is a meaningful opportunity for Camelot to add value — from compliance and vendor optimization to financial reporting and resident services.
 
@@ -3017,7 +3017,7 @@ export function generateBrochureHTML(d: MasterReportData): string {
   const isManhattan = (d.borough || '').toLowerCase().includes('manhattan') || /fifth|madison|park|broadway|avenue|street/i.test(d.address);
   const accessBorough = d.borough || 'New York';
   const accessTransit = isManhattan
-    ? 'Subway and bus access supports routine senior-management visits from 477 Madison Avenue, with Midtown connections and crosstown options.'
+    ? 'Subway and bus access supports routine senior-management visits from 57 West 57th Street, with Midtown connections and crosstown options.'
     : `Regional transit and road access support scheduled inspections and manager coverage across ${accessBorough}.`;
   const accessHighway = isManhattan
     ? 'FDR Drive, Harlem River Drive, and major crosstown corridors give Camelot multiple routes for inspections, vendor coordination, and emergency response.'
@@ -3571,8 +3571,8 @@ ${d.latitude && d.longitude ? `
 <div style="text-align:center;font-size:9px;color:#999;padding:4px">\uD83C\uDFD8\uFE0F Neighborhood Overview</div>
 </div>
 <div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
-<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=driving" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
-<div style="text-align:center;font-size:9px;color:#999;padding:4px">\uD83D\uDE97 From Camelot HQ \u2014 477 Madison Ave</div>
+<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=57+West+57th+Street+Suite+410+New+York+NY+10019&destination=${encodedAddr}&mode=driving" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:9px;color:#999;padding:4px">\uD83D\uDE97 From Camelot HQ \u2014 57 West 57th Street</div>
 </div>
 </div>
 
@@ -3594,7 +3594,7 @@ ${d.latitude && d.longitude ? `
 </div>
 </div>
 <div style="background:#F5F0E5;border:1px solid #D5D0C6;border-left:3px solid #B8973A;padding:12px 16px;margin-bottom:14px;color:#343434">
-<strong>Camelot HQ: 477 Madison Avenue.</strong> Senior managers conduct regular on-site inspections; route planning and response coverage are part of the transition plan for ${d.buildingName}.
+<strong>Camelot HQ: 57 West 57th Street.</strong> Senior managers conduct regular on-site inspections; route planning and response coverage are part of the transition plan for ${d.buildingName}.
 </div>
 <div style="background:#fff;border:1px solid #D5D0C6;border-left:4px solid #3A4B5B;padding:12px 16px;margin-bottom:14px;color:#3A4B5B">
 <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#A89035;font-weight:800;margin-bottom:5px">Neighborhood / ZIP Search Context</div>
@@ -3775,23 +3775,23 @@ ${commercialIntel.brandingImages.length > 0 ? `<div style="display:grid;grid-tem
 
 <div style="margin-bottom:20px">
 <div style="margin-bottom:16px;border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:250px">
-<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=driving" width="100%" height="250" style="border:0" allowfullscreen loading="lazy"></iframe>
+<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=57+West+57th+Street+Suite+410+New+York+NY+10019&destination=${encodedAddr}&mode=driving" width="100%" height="250" style="border:0" allowfullscreen loading="lazy"></iframe>
 </div>
 <div style="background:#fff;border:1px solid #E5E3DE;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px">
 <h4 style="font-size:13px;font-weight:700;color:#2C3240;margin-bottom:4px">\uD83D\uDCCD Camelot Office \u2192 ${d.buildingName}</h4>
-<p style="font-size:12px;color:#555">Camelot Realty Group operates from <strong>477 Madison Avenue, 6th Floor</strong> (Midtown Manhattan). The map above shows the driving route to your property at ${d.address}. Camelot\u2019s senior managers conduct regular on-site inspections \u2014 your building is within our core service area with rapid response times.</p>
+<p style="font-size:12px;color:#555">Camelot Realty Group operates from <strong>57 West 57th Street, Suite 410</strong> (Midtown Manhattan). The map above shows the driving route to your property at ${d.address}. Camelot\u2019s senior managers conduct regular on-site inspections \u2014 your building is within our core service area with rapid response times.</p>
 </div>
 <div style="background:#fff;border:1px solid #E5E3DE;border-left:4px solid #A89035;border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px">
 <h4 style="font-size:13px;font-weight:700;color:#2C3240;margin-bottom:4px">\uD83D\uDE87 Transit Commute — Camelot Office ↔ ${d.buildingName}</h4>
-<p style="font-size:12px;color:#555;margin-bottom:10px">Transit route from <strong>477 Madison Ave (Camelot HQ)</strong> to your property. Camelot's senior management conducts regular on-site inspections via subway and car.</p>
+<p style="font-size:12px;color:#555;margin-bottom:10px">Transit route from <strong>57 West 57th Street (Camelot HQ)</strong> to your property. Camelot's senior management conducts regular on-site inspections via subway and car.</p>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
 <div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
-<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=transit" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=57+West+57th+Street+Suite+410+New+York+NY+10019&destination=${encodedAddr}&mode=transit" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
 <div style="text-align:center;font-size:9px;color:#999;padding:4px">🚇 Transit Route — Camelot → Property</div>
 </div>
 <div style="border-radius:8px;overflow:hidden;border:1px solid #D5D0C6">
-<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=walking" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
+<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=57+West+57th+Street+Suite+410+New+York+NY+10019&destination=${encodedAddr}&mode=walking" width="100%" height="200" style="border:0" allowfullscreen loading="lazy"></iframe>
 <div style="text-align:center;font-size:9px;color:#999;padding:4px">🚶 Walking Route — Camelot → Property</div>
 </div>
 </div>
@@ -3814,7 +3814,7 @@ Price Momentum: <strong style="color:${d.neighborhoodMarketData.momentum === 'Ve
 </div>
 <div style="font-size:10px;color:#777;line-height:1.55;margin-top:10px;background:#fff;border:1px solid #E5E3DE;border-radius:8px;padding:10px 12px">
 <strong style="color:#A89035">Neighborhood scoring source stack:</strong>
-Niche neighborhood livability, NeighborhoodScout crime context, NYC Open Data / 311 / NYPD signals, Zonda market snapshots, MTA subway/bus access, NYC DOT roadway/emergency access, and Camelot site-coverage modeling from 477 Madison Avenue.
+Niche neighborhood livability, NeighborhoodScout crime context, NYC Open Data / 311 / NYPD signals, Zonda market snapshots, MTA subway/bus access, NYC DOT roadway/emergency access, and Camelot site-coverage modeling from 57 West 57th Street.
 <div style="margin-top:5px"><span style="font-weight:700;color:#14356A">Ⓜ Subway &amp; Transit</span> · <span style="font-weight:700;color:#14356A">311 Bus &amp; Local Coverage</span> · <span style="font-weight:700;color:#14356A">DOT Road &amp; Emergency Access</span></div>
 </div>
 ` : ''}
@@ -5446,7 +5446,7 @@ ${buildPortfolioSection(d)}
 <p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:12px">\u00A9 ${new Date().getFullYear()} Camelot Realty Group. All rights reserved. Contents are protected by U.S. copyright and trade secret law. SCOUT, Jackie, Merlin AI, ConciergePlus, Prisma, Parity, and Camelot Central are proprietary platforms. This Report is for informational purposes only and does not constitute legal, financial, or investment advice. Data is sourced from NYC Open Data, ACRIS, StreetEasy, RealtyMX, and other third-party databases and is presented &ldquo;as is&rdquo; without warranty. AI-assisted analysis has been reviewed by licensed real estate professionals. Governed by the laws of the State of New York; venue in New York County.</p>
 <div style="text-align:center;margin-top:16px">
 <a href="${LEGAL_TERMS_URL}" target="_blank" rel="noopener" style="display:inline-block;background:#A89035;color:#fff;padding:10px 28px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.5px">Request Full Legal Terms</a>
-<div style="font-size:10px;color:#777;margin-top:8px">info@camelot.nyc · www.camelot.nyc</div>
+<div style="font-size:10px;color:#777;margin-top:8px">valerie@camelot.nyc · www.camelot.nyc</div>
 </div>
 </div>
 
@@ -5504,7 +5504,7 @@ We use this quote because Jacqueline Kennedy&rsquo;s Camelot vision stood for gr
 <a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+%E2%80%93+${encodeURIComponent(d.buildingName)}+Discussion&details=${encodeURIComponent("Meeting with David A. Goldoff\nCamelot Realty Group\n(212) 206-9939\n\nGoogle Meet link will be generated automatically.\n\nAgenda: Management proposal for " + d.buildingName)}&add=${CAMELOT.email}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#A89035;color:#fff;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px">
 <span style="font-size:15px">\uD83D\uDCC5</span> Google Meet
 </a>
-<a href="mailto:dgoldoff@camelot.nyc?subject=${encodeURIComponent('Meeting Request — ' + d.buildingName + ' | Camelot Realty Group')}&body=${encodeURIComponent('Hello David,\n\nI would like to schedule a meeting to discuss the management proposal for ' + d.buildingName + ' at ' + d.address + '.\n\nPlease let me know your available dates and preferred meeting format (in-person, Zoom, or phone).\n\nBest regards')}" onclick="try{window.location.href=this.href}catch(e){window.open(this.href)};return false;" style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:#A89035;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px;border:2px solid #A89035">
+<a href="mailto:valerie@camelot.nyc?subject=${encodeURIComponent('Meeting Request — ' + d.buildingName + ' | Camelot Realty Group')}&body=${encodeURIComponent('Hello David,\n\nI would like to schedule a meeting to discuss the management proposal for ' + d.buildingName + ' at ' + d.address + '.\n\nPlease let me know your available dates and preferred meeting format (in-person, Zoom, or phone).\n\nBest regards')}" onclick="try{window.location.href=this.href}catch(e){window.open(this.href)};return false;" style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:#A89035;padding:12px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.3px;border:2px solid #A89035">
 <span style="font-size:15px">\u2709\uFE0F</span> Email to Schedule
 </a>
 </div>
@@ -5950,12 +5950,12 @@ function generateProposal() {
   '<div style="background:#F5F0E5;border-left:3px solid #A89035;padding:10px 14px;margin:8px 0;font-size:10.5px">' +
   '<strong>Camelot Property Management Services Corp.</strong><br>' +
   'Att: Sam Lodge, Office Manager<br>' +
-  '477 Madison Avenue, 6th Floor, New York, NY 10022<br>' +
+  '57 West 57th Street, Suite 410, New York, NY 10019<br>' +
   'Email: <a href="mailto:management@camelot.nyc" style="color:#A89035">management@camelot.nyc</a> &nbsp;|&nbsp; Tel: (212) 206-9939</p>' +
   '</div>' +
 
   '<div class="hr"></div>' +
-  '<p style="font-size:9px;color:#888;text-align:center">Please refer to our property management agreement for a detailed description of all terms, conditions, and rates.<br>Camelot Property Management Services Corp. &nbsp;\u00B7&nbsp; 477 Madison Avenue, 6th Floor, New York, NY 10022 &nbsp;\u00B7&nbsp; (212) 206-9939 &nbsp;\u00B7&nbsp; www.camelot.nyc &nbsp;\u00B7&nbsp; Licensed Broker ID #10491200104</p>' +
+  '<p style="font-size:9px;color:#888;text-align:center">Please refer to our property management agreement for a detailed description of all terms, conditions, and rates.<br>Camelot Property Management Services Corp. &nbsp;\u00B7&nbsp; 57 West 57th Street, Suite 410, New York, NY 10019 &nbsp;\u00B7&nbsp; (212) 206-9939 &nbsp;\u00B7&nbsp; www.camelot.nyc &nbsp;\u00B7&nbsp; Licensed Broker ID #10491200104</p>' +
 
   '</body></html>';
 

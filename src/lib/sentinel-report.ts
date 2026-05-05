@@ -185,7 +185,7 @@ tr:nth-child(even){background:#EDE9DF}
 <div style="width:60px;height:2px;background:#B8973A;margin:30px auto"></div>
 <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:2">
 Published ${publishDate}<br>
-Camelot Realty Group · 477 Madison Avenue, 6th Floor · New York, NY 10022<br>
+Camelot Realty Group · 57 West 57th Street, Suite 410 · New York, NY 10019<br>
 SCOUT Market Intelligence · Sentinel Engine
 </div>
 <div style="position:absolute;bottom:20px;font-size:8px;color:rgba(255,255,255,0.2)">
@@ -355,7 +355,7 @@ OpEx ranges: ${NEIGHBORHOODS.map(n => `${n.name.split('/')[0].split(' ').slice(0
 
 <div style="background:#0D2240;border-radius:8px;padding:18px;color:#fff;text-align:center;margin-top:16px">
 <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:8px">Complimentary quarterly market intelligence for all Camelot-managed properties</div>
-<div style="font-size:14px;color:#B8973A;font-weight:700">Camelot Realty Group · 477 Madison Avenue · (212) 206-9939 · camelot.nyc</div>
+<div style="font-size:14px;color:#B8973A;font-weight:700">Camelot Realty Group · 57 West 57th Street · (212) 206-9939 · camelot.nyc</div>
 </div>
 
 <div class="footer">
@@ -534,7 +534,7 @@ Complimentary quarterly report from Camelot Realty Group
 ${building.name} continues to ${isAbove ? 'outperform' : 'track with'} the ${building.neighborhood} market at <strong style="color:#B8973A">$${building.camelotPSF}/sqft</strong> — ${isAbove ? psfPct + '% above' : 'at'} the neighborhood median of $${building.neighborhoodPSF}/sqft. This performance reflects the building's strong governance, proactive maintenance, and the financial discipline of the board and management team working together.
 </div>
 <div style="margin-top:16px;font-size:12px;color:#B8973A;font-weight:600">
-Camelot Realty Group · 477 Madison Avenue, 6th Floor · (212) 206-9939 · camelot.nyc
+Camelot Realty Group · 57 West 57th Street, Suite 410 · (212) 206-9939 · camelot.nyc
 </div>
 </div>
 

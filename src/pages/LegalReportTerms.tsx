@@ -68,7 +68,7 @@ export default function LegalReportTerms() {
           <div className="grid gap-4 text-sm leading-6 text-slate-600 md:grid-cols-2">
             <div>
               <p className="font-semibold text-slate-800">Camelot Realty Group</p>
-              <p>477 Madison Avenue, 6th Floor, New York, NY 10022</p>
+              <p>57 West 57th Street, Suite 410, New York, NY 10019</p>
               <p>Camelot Brokerage Services Corp #10311208308</p>
               <p>Camelot Realty Group LLC #10491200104</p>
             </div>
@@ -77,9 +77,9 @@ export default function LegalReportTerms() {
               <p>David A. Goldoff, Founder & President</p>
               <p>(212) 206-9939 ext. 701 | (646) 523-9068</p>
               <div className="mt-2 flex flex-wrap gap-3">
-                <a className="inline-flex items-center gap-2 font-semibold text-camelot-gold hover:underline" href="mailto:info@camelot.nyc">
+                <a className="inline-flex items-center gap-2 font-semibold text-camelot-gold hover:underline" href="mailto:valerie@camelot.nyc">
                   <Mail size={14} />
-                  info@camelot.nyc
+                  valerie@camelot.nyc
                 </a>
                 <a className="font-semibold text-camelot-gold hover:underline" href="https://www.camelot.nyc" target="_blank" rel="noopener">
                   www.camelot.nyc

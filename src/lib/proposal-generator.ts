@@ -11,7 +11,7 @@ import type { Building, Contact } from '@/types';
 
 export const CAMELOT_INFO = {
   name: 'Camelot Realty Group',
-  address: '477 Madison Ave, 6th Fl, New York, NY 10022',
+  address: '57 West 57th Street, Suite 410, New York, NY 10019',
   phone: '(212) 206-9939',
   website: 'www.camelot.nyc',
   licenses: [

@@ -140,7 +140,7 @@ export default function Violations() {
       + (openV.length>150?`<p style="color:#888;text-align:center">Showing 150 of ${openV.length}</p>`:'')
       + '<div class="footer">'
       + '<div class="co">CAMELOT PROPERTY MANAGEMENT SERVICES CORP.</div>'
-      + '501 Madison Avenue, Suite 1400 | New York, NY 10022 | (212) 206-9939 | www.camelot.nyc<br>'
+      + '57 West 57th Street, Suite 410 | New York, NY 10019 | (212) 206-9939 | www.camelot.nyc<br>'
       + 'Generated from NYC Open Data (HPD, DOB, ECB). Verify details with issuing agency.<br>'
       + `Report generated: ${new Date().toISOString().substring(0,19)} UTC`
       + '</div></body></html>';
@@ -188,8 +188,8 @@ export default function Violations() {
       + `\n\nDavid A. Goldoff`
       + `\nPresident`
       + `\nCamelot Property Management Services Corp.`
-      + `\n501 Madison Avenue, Suite 1400 | New York, NY 10022`
-      + `\n(646) 523-9068 | dgoldoff@camelot.nyc | www.camelot.nyc`
+      + `\n57 West 57th Street, Suite 410 | New York, NY 10019`
+      + `\n(646) 523-9068 | valerie@camelot.nyc | www.camelot.nyc`
     );
     window.open(`https://mail.google.com/mail/?view=cm&su=${subject}&body=${body}`, '_blank');
     toast.success('Gmail opened \u2014 attach the downloaded PDF report');

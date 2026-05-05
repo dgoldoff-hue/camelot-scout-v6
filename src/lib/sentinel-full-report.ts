@@ -786,8 +786,8 @@ export function generateFullSentinelReport(): string {
     <div>
       <div class="footer-logo">Camelot Realty Group</div>
       <div>President/CEO &amp; Licensed Broker</div>
-      <div><a href="mailto:info@camelot.nyc">info@camelot.nyc</a></div>
-      <div>477 Madison Avenue, 6th Floor, New York, NY 10022</div>
+      <div><a href="mailto:valerie@camelot.nyc">valerie@camelot.nyc</a></div>
+      <div>57 West 57th Street, Suite 410, New York, NY 10019</div>
       <div><a href="tel:2122069939">212-206-9939</a></div>
       <div><a href="https://www.camelot.nyc">www.camelot.nyc</a></div>
     </div>
@@ -801,7 +801,7 @@ export function generateFullSentinelReport(): string {
   <div class="footer-divider">
     <div><strong>Boutique. By Design. Powered by Intelligence.</strong></div>
     <div class="disclaimer">
-      © 2026 Camelot Realty Group. All Rights Reserved. This report and all of its contents are the intellectual property of Camelot Realty Group. The information is provided for general informational and educational purposes only and does not constitute investment, financial, or legal advice. Market data is derived from publicly available records and licensed third-party data sources including RealtyMX, ACRIS, and StreetEasy. While Camelot has made reasonable efforts to ensure accuracy, no warranty is made as to completeness or fitness for any particular purpose. Permission requests: <a href="mailto:info@camelot.nyc">info@camelot.nyc</a>
+      © 2026 Camelot Realty Group. All Rights Reserved. This report and all of its contents are the intellectual property of Camelot Realty Group. The information is provided for general informational and educational purposes only and does not constitute investment, financial, or legal advice. Market data is derived from publicly available records and licensed third-party data sources including RealtyMX, ACRIS, and StreetEasy. While Camelot has made reasonable efforts to ensure accuracy, no warranty is made as to completeness or fitness for any particular purpose. Permission requests: <a href="mailto:valerie@camelot.nyc">valerie@camelot.nyc</a>
     </div>
   </div>
 </footer>

@@ -103,6 +103,8 @@ const requiredTokens = [
   ['Jackie intro meeting options', 'Zoom or Google Meet'],
   ['Jackie intro phone meeting option', 'Phone Call'],
   ['Jackie intro office address', 'CAMELOT_OFFICE_ADDRESS'],
+  ['Camelot current office address', '57 West 57th Street, Suite 410, New York, NY 10019'],
+  ['Camelot current email', 'valerie@camelot.nyc'],
   ['Jackie intro Jacqueline quote', 'CAMELOT_JACQUELINE_QUOTE'],
   ['PropertyShark diligence targets', 'PropertyShark diligence targets:</strong> owner mailing / care-of address'],
   ['PropertyShark FAR/air-rights target', 'zoning map, FAR and unused air rights'],
@@ -164,6 +166,11 @@ const forbiddenTokens = [
   ['old Select card image', 'https://d2e1363xcu3t9u.cloudfront.net/2019/resized/Black_card_without_chip.png'],
   ['old Jacqueline background', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/JKOnassis.jpg/440px-JKOnassis.jpg'],
   ['broken Jacqueline thumb URL', 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Jackie_Kennedy_Color_Portrait_%283x4_cropped%29.jpg/512px-Jackie_Kennedy_Color_Portrait_%283x4_cropped%29.jpg'],
+  ['old Camelot Madison office', '477 Madison Avenue'],
+  ['old Camelot 501 Madison office', '501 Madison Avenue'],
+  ['old Camelot Canal office', '343 Canal Street'],
+  ['old David email in report contact blocks', 'dgoldoff@camelot.nyc'],
+  ['old general info email in report contact blocks', 'info@camelot.nyc'],
 ];
 
 for (const [label, token] of forbiddenTokens) {

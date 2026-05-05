@@ -549,8 +549,8 @@ export default function ReportCenter() {
               <div className="p-2 text-center text-xs text-gray-400">Location Map</div>
             </div>
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-              <iframe src={`https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodeURIComponent(data.address)}&mode=driving`} width="100%" height="220" style={{border:0}} allowFullScreen loading="lazy" title="Travel from Camelot HQ" />
-              <div className="p-2 text-center text-xs text-gray-400">Travel from Camelot HQ — 477 Madison Ave</div>
+              <iframe src={`https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=57+West+57th+Street+Suite+410+New+York+NY+10019&destination=${encodeURIComponent(data.address)}&mode=driving`} width="100%" height="220" style={{border:0}} allowFullScreen loading="lazy" title="Travel from Camelot HQ" />
+              <div className="p-2 text-center text-xs text-gray-400">Travel from Camelot HQ — 57 West 57th Street</div>
             </div>
           </div>
 

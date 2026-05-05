@@ -71,7 +71,7 @@ export async function generatePitchDeck(d: MasterReportData): Promise<void> {
   });
   
   // Footer
-  slide1.addText(`Prepared ${today} · Camelot Realty Group · 501 Madison Ave, Suite 1400, NYC 10022 · Powered by Camelot OS`, {
+  slide1.addText(`Prepared ${today} · Camelot Realty Group · 57 West 57th Street, Suite 410, NYC 10019 · Powered by Camelot OS`, {
     x: 0.8, y: 6.8, w: 11, h: 0.3, fontSize: 8, color: '666666', fontFace: 'Arial'
   });
 
@@ -268,8 +268,8 @@ export async function generatePitchDeck(d: MasterReportData): Promise<void> {
 
   // Contact info
   slide7.addText('David A. Goldoff · Principal', { x: 0.8, y: 4.4, w: 11, h: 0.35, fontSize: 16, color: GOLD, align: 'center', bold: true });
-  slide7.addText('📧 dgoldoff@camelot.nyc  ·  📞 (212) 206-9939 ext. 701  ·  📱 (646) 523-9068', { x: 0.8, y: 4.8, w: 11, h: 0.3, fontSize: 12, color: WHITE, align: 'center' });
-  slide7.addText('501 Madison Avenue, Suite 1400, New York, NY 10022  ·  camelot.nyc', { x: 0.8, y: 5.15, w: 11, h: 0.3, fontSize: 11, color: 'AAAAAA', align: 'center' });
+  slide7.addText('📧 valerie@camelot.nyc  ·  📞 (212) 206-9939 ext. 701  ·  📱 (646) 523-9068', { x: 0.8, y: 4.8, w: 11, h: 0.3, fontSize: 12, color: WHITE, align: 'center' });
+  slide7.addText('57 West 57th Street, Suite 410, New York, NY 10019  ·  camelot.nyc', { x: 0.8, y: 5.15, w: 11, h: 0.3, fontSize: 11, color: 'AAAAAA', align: 'center' });
   
   // Powered by
   slide7.addText('Powered by Camelot OS — The Operating System for Property Management', {

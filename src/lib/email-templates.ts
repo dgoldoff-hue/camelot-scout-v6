@@ -136,8 +136,8 @@ Would you be available for a brief call this week?
 Best regards,
 
 Camelot Realty Group
-477 Madison Avenue, 6th Fl
-New York, NY 10022
+57 West 57th Street, Suite 410
+New York, NY 10019
 Phone: (212) 206-9939
 Web: www.camelot.nyc`;
 

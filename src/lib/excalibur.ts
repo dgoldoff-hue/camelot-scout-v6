@@ -88,10 +88,10 @@ export const ASSET_CLASS_LABELS: Record<AssetClass, string> = {
 const CAMELOT = {
   name: 'CAMELOT PROPERTY MANAGEMENT SERVICES CORP.',
   shortName: 'Camelot Property Management Services Corp.',
-  address: '477 Madison Avenue, 6th Floor, New York, NY 10022',
+  address: '57 West 57th Street, Suite 410, New York, NY 10019',
   phone: '(212) 206-9939 x 701',
   mobile: '(646) 523-9068',
-  email: 'dgoldoff@camelot.nyc',
+  email: 'valerie@camelot.nyc',
   web: 'www.camelot.nyc',
   principal: 'David A. Goldoff',
   title: 'President',
@@ -253,8 +253,8 @@ ${input.jackieData?.latitude && input.jackieData?.longitude ? `
 <div style="text-align:center;font-size:8px;color:#999;padding:3px">📍 Property Location</div>
 </div>
 <div style="border-radius:6px;overflow:hidden;border:1px solid #D5D0C6">
-<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=477+Madison+Avenue+New+York+NY&destination=${encodedAddr}&mode=driving" width="100%" height="160" style="border:0" allowfullscreen loading="lazy"></iframe>
-<div style="text-align:center;font-size:8px;color:#999;padding:3px">🚗 From Camelot HQ — 477 Madison Ave</div>
+<iframe src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=57+West+57th+Street+Suite+410+New+York+NY+10019&destination=${encodedAddr}&mode=driving" width="100%" height="160" style="border:0" allowfullscreen loading="lazy"></iframe>
+<div style="text-align:center;font-size:8px;color:#999;padding:3px">🚗 From Camelot HQ — 57 West 57th Street</div>
 </div>
 </div>
 
