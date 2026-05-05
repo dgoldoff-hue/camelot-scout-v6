@@ -134,8 +134,13 @@ function cleanFileNamePart(value: string): string {
 
 function externalDeckCss(): string {
   return `
-  @page { size: 13.33in 7.5in; margin: 0; }
-  @media print { .deck-action-bar { display:none !important; } .slide { page-break-after: always; margin:0 auto; box-shadow:none; } .slide:last-child { page-break-after: auto; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background:#fff; } }
+  @page { size: 13.333in 7.5in; margin: 0; }
+  @media print {
+    html, body { width:13.333in !important; min-width:13.333in !important; margin:0 !important; padding:0 !important; overflow:visible !important; background:#fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .deck-action-bar { display:none !important; }
+    .slide { width:13.333in !important; height:7.5in !important; min-height:7.5in !important; max-height:7.5in !important; margin:0 !important; padding:0 !important; box-shadow:none !important; overflow:hidden !important; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }
+    .slide:last-child { page-break-after: auto; break-after: auto; }
+  }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { counter-reset: slide; }
   body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; color: #1a1f36; font-size: 16px; line-height: 1.6; background: #e0e0e0; }
@@ -390,8 +395,12 @@ export function generatePitchReport(d: MasterReportData): string {
 <title>Camelot — Management Proposal — ${d.buildingName || d.address}</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  @page { size: 13.33in 7.5in; margin: 0; }
-  @media print { .slide { page-break-after: always; } .slide:last-child { page-break-after: auto; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  @page { size: 13.333in 7.5in; margin: 0; }
+  @media print {
+    html, body { width:13.333in !important; min-width:13.333in !important; margin:0 !important; padding:0 !important; overflow:visible !important; background:#fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .slide { width:13.333in !important; height:7.5in !important; min-height:7.5in !important; max-height:7.5in !important; margin:0 !important; padding:0 !important; box-shadow:none !important; overflow:hidden !important; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }
+    .slide:last-child { page-break-after: auto; break-after: auto; }
+  }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; color: #1a1f36; font-size: 16px; line-height: 1.6; background: #e0e0e0; }
   
