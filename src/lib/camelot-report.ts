@@ -2542,19 +2542,21 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
     status: html.includes('./images/camelot-logo.png') || html.includes('./images/camelot-logo-white.png') ? 'pass' : 'fail',
     detail: 'Brand logo reference verified',
   });
-  const jacquelineTokens = [
-    JACQUELINE_PORTRAIT_URL,
-    JACQUELINE_PORTRAIT_FALLBACK_URL,
-    VANITY_FAIR_CAMELOT_REFERENCE_URL,
-    'Jacqueline Kennedy Onassis portrait',
+  const closingTokens = [
+    'A New York management partner built for board confidence',
+    'https://zoom.us/start/videomeeting',
+    'tel:+12122069939;ext=701',
+    'Call 212-206-9939 x701',
+    CAMELOT.address,
+    CAMELOT.email,
   ];
-  const missingJacquelineTokens = jacquelineTokens.filter(token => !html.includes(token));
+  const missingClosingTokens = closingTokens.filter(token => !html.includes(token));
   checks.push({
-    name: 'Jacqueline Portrait Slide',
-    status: missingJacquelineTokens.length === 0 ? 'pass' : 'fail',
-    detail: missingJacquelineTokens.length === 0
-      ? 'Portrait slide uses the Vanity Fair image with a live fallback and article reference'
-      : `Missing Jacqueline slide token(s): ${missingJacquelineTokens.join(', ')}`,
+    name: 'Closing Contact Links',
+    status: missingClosingTokens.length === 0 ? 'pass' : 'fail',
+    detail: missingClosingTokens.length === 0
+      ? 'Closing page includes Camelot values language, Zoom, Google Meet, phone, email, and current office address'
+      : `Missing closing contact token(s): ${missingClosingTokens.join(', ')}`,
   });
   const imageSources = [...html.matchAll(/<img[^>]+src=["']([^"']*)["']/gi)].map(m => m[1]);
   const badImages = imageSources.filter(src =>

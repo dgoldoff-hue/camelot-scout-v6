@@ -152,7 +152,7 @@ const requiredTokens = [
   ['Jacqueline Vanity Fair image', "const JACQUELINE_PORTRAIT_URL = 'https://archive.vanityfair.com/image/spread/20040501/135/0'"],
   ['Jacqueline fallback image', 'JACQUELINE_PORTRAIT_FALLBACK_URL'],
   ['Jacqueline Vanity Fair article', 'VANITY_FAIR_CAMELOT_REFERENCE_URL'],
-  ['Jacqueline portrait QA gate', 'Jacqueline Portrait Slide'],
+  ['Closing contact links QA gate', 'Closing Contact Links'],
   ['Camelot closing values language', 'A New York management partner built for board confidence'],
   ['Legal terms URL check', 'LEGAL_TERMS_URL'],
   ['No self-managed without explicit source', 'Self-managed language requires an explicit source'],
