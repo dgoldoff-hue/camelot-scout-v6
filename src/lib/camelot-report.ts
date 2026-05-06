@@ -267,8 +267,8 @@ export const REPORT_FOCUS_THEMES: Record<ReportFocusKey, ReportFocusTheme> = {
     label: 'HOA Recovery',
     icon: 'HOA',
     headline: 'Executive HOA stabilization, claims oversight, and field operations',
-    narrative: 'Jackie will emphasize Camelot as a hybrid HOA executive management platform for operational stabilization, financial transparency, claims/restoration oversight, vendor accountability, regional field support, and long-term asset preservation.',
-    proofPoints: ['Executive management layer plus regional field operations', 'Insurance and restoration coordination', '30-60-90 day HOA stabilization plan'],
+    narrative: 'Jackie will emphasize Camelot as a hybrid HOA executive management platform for operational stabilization, financial transparency, claims/restoration oversight, vendor accountability, regional field support, and long-term asset preservation. For Connecticut HOA and condo opportunities, Jackie searches local brokerage community profiles, Zillow, Apartments.com, Yelp / Google review signals, town assessor and land records, local building/planning records, reserve/insurance files, and board-provided documents before treating facts as board-facing.',
+    proofPoints: ['Executive management layer plus regional field operations', 'Insurance and restoration coordination', '30-60-90 day HOA stabilization plan', 'Connecticut HOA source stack: Dagny/local brokerage profiles, Zillow, Apartments.com, Yelp/Google reviews, town land/tax/building records'],
   },
 };
 
@@ -1864,14 +1864,25 @@ function isHoaExecutiveRecoveryReport(d: MasterReportData): boolean {
 }
 
 function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
-  const units = 120;
-  const pricePerUnit = 52;
+  const units = 186;
+  const pricePerUnit = 34;
   const monthlyFee = 6250;
   const annualFee = monthlyFee * 12;
+  const hillsCommunityImage = 'https://cdn.dagnysrealestate.com/communities/the-hills-of-monroe-monroe-ct/the-hills-of-monroe-monroe-ct-condominium-4952-w1900.webp';
+  const hillsWindgateImage = 'https://cdn.dagnysrealestate.com/homes-for-sale/24161220/t_condo-202-windgate-circle-monroe-ct-0-009d.jpeg';
+  const hillsKensingtonImage = 'https://cdn.dagnysrealestate.com/homes-for-sale/24160370/t_townhome-condo-5-kensington-road-monroe-ct-0-5ed6.jpeg';
+  const hillsWindgate208Image = 'https://cdn.dagnysrealestate.com/homes-for-sale/24159458/t_condo-208-windgate-circle-monroe-ct-0-13f5.jpeg';
+  const hillsSourceLinks = [
+    'https://dagnysrealestate.com/the-hills-of-monroe-monroe-ct-condos',
+    'https://www.zillow.com/b/208-windgate-cir-monroe-ct-5ZZ2qM/',
+    'https://www.apartments.com/condos/hills-of-monroe-monroe-ct/',
+    'https://www.yelp.com/biz/hills-of-monroe-monroe',
+    'https://www.makingcthome.com/monroe/monroe-condos-for-sale/',
+  ];
   const tieredPricing: TieredPricing = {
-    classic: { perUnit: 45, monthly: 5400, annual: 64800 },
+    classic: { perUnit: 29, monthly: 5400, annual: 64800 },
     intelligence: { perUnit: pricePerUnit, monthly: monthlyFee, annual: annualFee },
-    premier: { perUnit: 71, monthly: 8500, annual: 102000 },
+    premier: { perUnit: 46, monthly: 8500, annual: 102000 },
     recommended: 'intelligence',
     units,
   };
@@ -1908,7 +1919,7 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
     },
     units,
     stories: 2,
-    yearBuilt: 0,
+    yearBuilt: 1987,
     buildingClass: 'HOA',
     taxClass: 'HOA',
     marketValue: 0,
@@ -1961,6 +1972,8 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
       { source: 'DHCR', status: 'manual_required', count: 0, detail: 'Not applicable to HOA community' },
       { source: '311 Service Requests', status: 'manual_required', count: 0, detail: 'NYC 311 not applicable; resident/service logs to be collected from the HOA' },
       { source: 'HOA proposal brief', status: 'loaded', count: 1, detail: 'User-provided Hills of Monroe operating context loaded as proposal brief' },
+      { source: 'Dagny CT condo profile', status: 'loaded', count: 1, detail: 'Public Hills of Monroe profile loaded for property type, amenities, street references, year-built range, and subject imagery' },
+      { source: 'CT market image/source stack', status: 'loaded', count: 5, detail: 'Dagny, Zillow, Apartments.com, Yelp, Making CT Home, and Google review searches are the reusable CT HOA/condo discovery pattern' },
       { source: 'Insurance claim documentation', status: 'manual_required', count: 0, detail: 'Carrier, adjuster, restoration, scope, estimate, timeline, and settlement records to be collected' },
     ],
     complianceReleaseStatus: 'needs_review',
@@ -1978,7 +1991,7 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
     annualFee,
     latitude: 41.3326,
     longitude: -73.2073,
-    propertyType: 'Homeowners Association',
+    propertyType: 'Condo / HOA Community',
     neighborhoodName: 'Monroe, Connecticut',
     zipCode: '06468',
     neighborhoodSearchContext: { zipCode: '06468', neighborhoodName: 'Monroe, Connecticut', borough: 'Connecticut', query: 'Monroe CT HOA community management winter storm restoration insurance claims', source: 'User-provided HOA proposal brief + regional context' },
@@ -2014,16 +2027,16 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
     commercialIntel: {
       commercialSignals: ['HOA common-area operations', 'Insurance restoration coordination', 'Regional facilities oversight'],
       likelyCommercialUses: [],
-      amenities: ['Common areas', 'Roadways / drives', 'Landscape and seasonal maintenance areas', 'Storm-exposed exterior envelope components'],
-      revenueOpportunities: ['Vendor rebidding', 'Insurance recovery discipline', 'Preventive maintenance scheduling', 'Reserve planning'],
+      amenities: ['Gated community setting', 'Pool', 'Paddle tennis', 'Clubhouse', 'Guest parking', 'One-car attached garages', 'Patios with wooded views', 'Central air / city water context', 'Common roads / drives', 'Landscape and seasonal maintenance areas', 'Storm-exposed exterior envelope components'],
+      revenueOpportunities: ['Vendor rebidding', 'Insurance recovery discipline', 'Preventive maintenance scheduling', 'Reserve planning', 'Amenity rules and maintenance-cost review', 'Guest parking and common-area policy review'],
       officialWebsite: null,
       brandingTitle: 'Hills of Monroe HOA',
-      brandingDescription: 'Executive HOA management and recovery services proposal',
-      brandingImages: [],
-      researchSources: ['User-provided HOA proposal brief', 'Camelot insurance/restoration operating experience'],
+      brandingDescription: 'Townhouse and detached-home HOA community in Monroe, CT, with gated setting, pool, paddle tennis, clubhouse, guest parking, and wooded residential context.',
+      brandingImages: [hillsCommunityImage, hillsWindgateImage, hillsKensingtonImage, hillsWindgate208Image],
+      researchSources: ['Dagny Real Estate Hills of Monroe public profile', 'Zillow building/profile search', 'Apartments.com Hills of Monroe condo search', 'Yelp local profile / reviews search', 'Making CT Home Monroe condo search', 'Google reviews search', 'User-provided HOA proposal brief', 'Camelot insurance/restoration operating experience'],
       researchStatus: 'verified',
     },
-    buildingPhotos: { exterior: [], interior: [], streetView: '', satellite: '', source: 'HOA proposal visuals use regional map, architectural, winter, and infrastructure imagery' },
+    buildingPhotos: { exterior: [hillsCommunityImage, hillsWindgateImage, hillsKensingtonImage, hillsWindgate208Image], interior: [], streetView: '', satellite: '', source: 'Dagny Real Estate public Hills of Monroe profile and listing image feed' },
     neighborhoodIntel: {
       crimeScore: 0,
       qualityScore: 80,
@@ -2039,7 +2052,35 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
       crimePrecinct: '',
       scoreExplanation: 'Connecticut HOA context; NYC precinct scoring is not applicable.',
     },
-    raw: { proposalMode: 'hoa_executive_recovery', primaryContact: 'Carlos Capria', preparedBy: 'Camelot Property Management Services Corp.', projectTitle: 'Camelot HOA Executive Management & Recovery Services Proposal', lossEvent: 'Major winter-related loss event involving ice damage affecting portions of the community' },
+    raw: {
+      proposalMode: 'hoa_executive_recovery',
+      primaryContact: 'Carlos Capria',
+      preparedBy: 'Camelot Property Management Services Corp.',
+      projectTitle: 'Camelot HOA Executive Management & Recovery Services Proposal',
+      lossEvent: 'Major winter-related loss event involving ice damage affecting portions of the community',
+      unitCountStatus: 'source_backed_verify_with_hoa_roster',
+      yearBuiltRange: '1987-1994 public profile range; Dagny narrative also references 1988-1990 construction timing',
+      hoaCommunityFacts: {
+        unitTypes: ['Townhouse', 'Single-family detached'],
+        bedrooms: ['1 bedroom', '2 bedrooms', '3 bedrooms'],
+        communityFeatures: ['Gated community', 'Quiet wooded cul-de-sac setting'],
+        amenities: ['Pool', 'Paddle tennis', 'Clubhouse', 'Guest parking'],
+        streets: ['Windgate Circle', 'Kensington Road', 'Ivy Lane'],
+        homeFeatures: ['Vaulted ceilings', 'Fireplaces', 'Patios / wooded views', 'Walk-in closets', 'Central air', 'City water', 'Main-floor washer/dryer', 'One-car attached garage'],
+        sizeRanges: ['1BR / 1BA: approx. 900-1,200 SF', '2BR / 2.5BA: approx. 1,360-1,985 SF'],
+        unitCountEvidence: '186 units appears across public listing/profile sources including Homes.com, Realtor.com, Zillow, Compass, Redfin, and William Raveis listing data; final HOA roster should confirm before contract.',
+      },
+      ctHoaSourceSkill: {
+        currentSubjectSources: hillsSourceLinks,
+        futureCtSearchPattern: [
+          'Local brokerage / community profile pages for facts, amenities, photos, and street names',
+          'Zillow building/community pages for market image and listing context',
+          'Apartments.com condo/community search for rental and amenity context',
+          'Yelp and Google reviews for resident sentiment signals, never as sole factual proof',
+          'Town assessor, tax collector, land records, planning/zoning, inland wetlands, building department, and HOA/reserve/insurance files for official verification',
+        ],
+      },
+    },
   };
 }
 
@@ -2645,8 +2686,14 @@ export function runReportQA(d: MasterReportData): QACheckResult {
   
   // 8. Fee calculation sanity check
   const feePerUnit = d.tieredPricing?.intelligence?.perUnit || d.pricePerUnit;
-  const feeOk = feePerUnit >= 40 && feePerUnit <= 200;
-  checks.push({ name: 'Fee Calculation', status: feeOk ? 'pass' : 'warn', detail: `$${feePerUnit}/unit/mo (Intelligence tier)${!feeOk ? ' — REVIEW: may be too low or high for this building class' : ''}` });
+  const feeOk = isHoaRecovery ? d.monthlyFee >= 4500 && d.monthlyFee <= 7500 : feePerUnit >= 40 && feePerUnit <= 200;
+  checks.push({
+    name: 'Fee Calculation',
+    status: feeOk ? 'pass' : 'warn',
+    detail: isHoaRecovery
+      ? `$${d.monthlyFee.toLocaleString()}/mo HOA executive management proposal range${!feeOk ? ' — REVIEW: outside requested HOA range' : ''}`
+      : `$${feePerUnit}/unit/mo (Intelligence tier)${!feeOk ? ' — REVIEW: may be too low or high for this building class' : ''}`,
+  });
   
   // 9. Borough detected
   checks.push({ name: 'Borough', status: d.borough ? 'pass' : 'warn', detail: d.borough || 'Not detected' });

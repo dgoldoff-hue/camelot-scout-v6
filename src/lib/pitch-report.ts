@@ -43,7 +43,9 @@ const JACKIE_INTELLIGENT_REPORT_NOTE = 'This is an intelligent property introduc
 const CONCIERGE_PLUS_PRODUCT_SOURCE = 'https://conciergeplus.com/product-suite/';
 const CONCIERGE_PLUS_PLATFORM_IMAGE = 'https://pubcdn.conciergeplus.com/wp-content/uploads/2026/05/CP-Platform-Plus-Image-scaled.png';
 const CONCIERGE_PLUS_LOGO_IMAGE = 'https://pubcdn.conciergeplus.com/wp-content/uploads/2026/05/PLUS-Logo-01-1024x501.png';
-const HOA_ARCHITECTURE_IMAGE = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80';
+const HOA_ARCHITECTURE_IMAGE = 'https://cdn.dagnysrealestate.com/communities/the-hills-of-monroe-monroe-ct/the-hills-of-monroe-monroe-ct-condominium-4952-w1900.webp';
+const HOA_WINDGATE_IMAGE = 'https://cdn.dagnysrealestate.com/homes-for-sale/24161220/t_condo-202-windgate-circle-monroe-ct-0-009d.jpeg';
+const HOA_KENSINGTON_IMAGE = 'https://cdn.dagnysrealestate.com/homes-for-sale/24160370/t_townhome-condo-5-kensington-road-monroe-ct-0-5ed6.jpeg';
 const HOA_WINTER_IMAGE = 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?auto=format&fit=crop&w=1600&q=80';
 const HOA_INFRASTRUCTURE_IMAGE = 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1600&q=80';
 const HOA_DASHBOARD_IMAGE = 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80';
@@ -358,7 +360,15 @@ function hoaModelSlide(): string {
 
 function hoaOperationalAssessmentSlide(): string {
   const needs = ['Seasonal weather exposure and snow/ice risk', 'Roofing, drainage, and exterior envelope review', 'Insurance claim coordination and documentation control', 'Vendor management and contractor accountability', 'Resident communication during restoration work', 'Reserve planning and deferred maintenance risk', 'Board workload reduction and decision support', 'Long-term operating calendar and capital roadmap'];
-  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Understanding Hills of Monroe</div><div style="display:grid;grid-template-columns:.95fr 1.05fr;gap:22px"><div>${imageCard(HOA_WINTER_IMAGE, 'Winter storm and ice exposure', 'Winter-related loss events require organized claims, vendor, and resident communication controls', 430)}</div><div class="gold-card"><div class="sub-heading">Operational Assessment</div><p class="body-text" style="font-size:15px;margin-bottom:12px">The community's immediate need is stabilization: clear records, visible timelines, accountable vendors, consistent board communication, and a recovery plan that turns a loss event into a more professional operating platform.</p>${hoaBulletList(needs)}</div></div><div class="source-note">Assessment based on user-provided Hills of Monroe HOA operating brief.</div></div></div>`;
+  const facts = [
+    ['Unit types', 'Townhouse and single-family detached homes'],
+    ['Bedrooms', '1, 2, and 3 bedroom homes'],
+    ['Built', '1987-1994 public profile range'],
+    ['Community features', 'Gated setting, quiet wooded cul-de-sac context'],
+    ['Amenities', 'Pool, paddle tennis, clubhouse, guest parking'],
+    ['Known streets', 'Windgate Circle, Kensington Road, Ivy Lane'],
+  ];
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Understanding Hills of Monroe</div><div style="display:grid;grid-template-columns:.9fr 1.1fr;gap:18px"><div style="display:grid;gap:12px">${imageCard(HOA_ARCHITECTURE_IMAGE, 'Hills of Monroe community exterior', 'Public community image sourced from Dagny\'s Real Estate profile', 245)}${imageCard(HOA_WINDGATE_IMAGE, 'Windgate Circle listing image', 'Subject-area condominium image from Dagny\'s public listing feed', 170)}</div><div><div class="gold-card" style="margin-bottom:12px"><div class="sub-heading">Community Snapshot</div><table>${facts.map(([label, value]) => `<tr><td style="font-weight:800;color:#1a2744">${label}</td><td>${value}</td></tr>`).join('')}</table></div><div class="gold-card"><div class="sub-heading">Operational Assessment</div><p class="body-text" style="font-size:14px;margin-bottom:10px">The community's immediate need is stabilization: clear records, visible timelines, accountable vendors, consistent board communication, and a recovery plan that turns a loss event into a more professional operating platform.</p>${hoaBulletList(needs)}</div></div></div><div class="source-note">Sources: Dagny's Real Estate Hills of Monroe profile, Zillow/Apartments.com/Yelp/local CT condo search stack, and user-provided HOA operating brief.</div></div></div>`;
 }
 
 function hoaFailuresSlide(): string {
@@ -373,7 +383,7 @@ function hoaFailuresSlide(): string {
 }
 
 function hoaFieldOpsSlide(): string {
-  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Regional Facilities Coordinator Program</div><div style="display:grid;grid-template-columns:1fr .92fr;gap:22px"><div class="gold-card"><div class="sub-heading">Field Operations Support</div>${hoaBulletList(['Weekly or biweekly property inspections', 'Photo reporting and condition logs', 'Vendor walkthroughs and project monitoring', 'Emergency and storm preparation coordination', 'Resident issue escalation', 'Maintenance oversight and site condition assessments', 'Board-ready summary of open issues and next actions'])}</div>${imageCard(HOA_INFRASTRUCTURE_IMAGE, 'Infrastructure and project coordination', 'Localized field support keeps physical conditions connected to executive oversight', 430)}</div><div class="source-note">Regional field scope to be finalized based on inspection cadence and board expectations.</div></div></div>`;
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Regional Facilities Coordinator Program</div><div style="display:grid;grid-template-columns:1fr .92fr;gap:22px"><div class="gold-card"><div class="sub-heading">Field Operations Support</div>${hoaBulletList(['Weekly or biweekly property inspections', 'Photo reporting and condition logs', 'Vendor walkthroughs and project monitoring', 'Emergency and storm preparation coordination', 'Resident issue escalation', 'Maintenance oversight and site condition assessments', 'Board-ready summary of open issues and next actions'])}</div>${imageCard(HOA_KENSINGTON_IMAGE, 'Kensington Road community reference', 'Localized field support keeps physical conditions connected to executive oversight', 430)}</div><div class="source-note">Regional field scope to be finalized based on inspection cadence and board expectations. Community imagery sourced from Dagny's public CT condo listing feed.</div></div></div>`;
 }
 
 function hoaClaimsSlide(): string {
@@ -482,8 +492,14 @@ export function generateJackieReportPackage(d: MasterReportData, reportPackage: 
 }
 
 export function buildJackiePackageFilename(d: MasterReportData, reportPackage: JackieReportPackage, extension = 'html'): string {
-  const suffix = reportPackage === 'first_email_intro' ? 'First-Email-Intro' : reportPackage === 'board_meeting_deck' ? 'Board-Meeting-Deck' : 'Full-Jackie-Appendix';
-  return `Camelot-${suffix}-${cleanFileNamePart(d.buildingName || d.address)}.${extension}`;
+  const client = cleanFileNamePart(d.buildingName || d.address || 'Client');
+  const dateStamp = new Date().toISOString().slice(0, 10);
+  const suffix = reportPackage === 'first_email_intro'
+    ? 'CamelotEmailIntro'
+    : reportPackage === 'board_meeting_deck'
+      ? 'CamelotBoardDeck'
+      : 'CamelotFullJackieAppendix';
+  return `${client}_${suffix}__${dateStamp}.${extension}`;
 }
 
 /**
