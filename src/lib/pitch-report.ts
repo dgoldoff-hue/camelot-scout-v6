@@ -43,6 +43,10 @@ const JACKIE_INTELLIGENT_REPORT_NOTE = 'This is an intelligent property introduc
 const CONCIERGE_PLUS_PRODUCT_SOURCE = 'https://conciergeplus.com/product-suite/';
 const CONCIERGE_PLUS_PLATFORM_IMAGE = 'https://pubcdn.conciergeplus.com/wp-content/uploads/2026/05/CP-Platform-Plus-Image-scaled.png';
 const CONCIERGE_PLUS_LOGO_IMAGE = 'https://pubcdn.conciergeplus.com/wp-content/uploads/2026/05/PLUS-Logo-01-1024x501.png';
+const HOA_ARCHITECTURE_IMAGE = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80';
+const HOA_WINTER_IMAGE = 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?auto=format&fit=crop&w=1600&q=80';
+const HOA_INFRASTRUCTURE_IMAGE = 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1600&q=80';
+const HOA_DASHBOARD_IMAGE = 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80';
 
 const MDS_REPORT_PROOF_POINTS = [
   'Balance Sheet',
@@ -84,6 +88,10 @@ const PROPERTYSHARK_DILIGENCE_FIELDS = [
   'Historic district / LPC status plus community district, school district, census tract, police and fire proximity',
   'ACRIS document history: deeds, mortgages, satisfactions, assignments, liens, and UCC-style filings',
 ];
+
+function isHoaExecutiveOpportunity(d: MasterReportData): boolean {
+  return d.reportFocus?.selectedFocus?.includes('hoa_recovery') || d.raw?.proposalMode === 'hoa_executive_recovery' || /hills\s+of\s+monroe|monroe,\s*ct|homeowners association|hoa/i.test(`${d.buildingName} ${d.address} ${d.propertyType}`);
+}
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
@@ -320,7 +328,128 @@ function standardAgreementSlide(): string {
   return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Agreement &amp; Fee Structure</div><p class="body-text" style="margin-bottom:18px">The board-facing proposal should be simple, but backed by a clean agreement structure.</p><div style="display:grid;grid-template-columns:1.05fr .95fr;gap:18px"><div class="gold-card"><div class="sub-heading" style="font-size:20px">Agreement Principles</div>${STANDARD_AGREEMENT_PROOF_POINTS.map(item => `<div class="check"><span>✓</span><div>${item}</div></div>`).join('')}</div><div class="gold-card"><div class="sub-heading" style="font-size:20px">Pricing Position</div><p class="body-text">Camelot should remain transparent on the core management fee, show value against the market, and keep non-core additional services clearly separated so the board understands what is included and what is charged by scope, unit event, or hourly rate.</p></div></div><div class="source-note">Source: Camelot condo/co-op management agreement and proposed rate-sheet template supplied by Camelot.</div></div></div>`;
 }
 
+function hoaCoverLetter(d: MasterReportData): string {
+  const contact = d.reportFocus?.inquiryContact || 'Carlos Capria';
+  return `<div style="font-family:'Cormorant Garamond',Georgia,serif;color:#1a2744;font-size:18px;line-height:1.58"><p style="margin-bottom:15px"><strong style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px">Dear ${escapeHtml(contact)},</strong> thank you for the opportunity to introduce Camelot Property Management Services Corp. to the Hills of Monroe HOA. We understand the community is navigating the operational pressure that follows a winter-related loss event, including insurance coordination, restoration oversight, vendor accountability, board communication, and the need for a more organized operating cadence.</p><p style="margin-bottom:22px">Camelot's approach is calm, structured, and hands-on. We combine executive-level financial and operational oversight with regional field support, modern reporting tools, vendor discipline, and practical claims/restoration coordination so the board has a clearer picture of what is happening, what needs attention, who is accountable, and what comes next. We would welcome the opportunity to discuss how Camelot can become a long-term operating partner for the community.</p><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:#1a2744;line-height:1.7"><strong>Sincerely yours,</strong><br><br>David A. Goldoff<br>Founder & President<br>Camelot Property Management Services Corp.</div></div>`;
+}
+
+function hoaBulletList(items: string[]): string {
+  return items.map(item => `<div class="check"><span>✓</span><div>${item}</div></div>`).join('');
+}
+
+function hoaLayerCard(title: string, copy: string, icon: string): string {
+  return `<div class="gold-card" style="min-height:132px"><div style="display:flex;gap:12px;align-items:flex-start"><div class="icon-tile">${icon}</div><div><div class="sub-heading" style="font-size:17px;margin-bottom:5px">${title}</div><p class="small">${copy}</p></div></div></div>`;
+}
+
+function hoaExecutiveSummarySlide(): string {
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Executive Summary</div><div style="display:grid;grid-template-columns:1fr .92fr;gap:22px;align-items:stretch"><div class="gold-card"><div class="sub-heading">An Executive Operating Partner</div><p class="body-text" style="font-size:15px">Camelot is not simply a bookkeeping management company. For Hills of Monroe HOA, Camelot would operate as an executive operational partner: organizing financial reporting, stabilizing communication, coordinating vendors, tracking restoration work, supporting the board, and preserving the community's long-term asset value.</p><p class="body-text" style="font-size:15px;margin-top:12px">The proposed model blends institutional-quality systems with localized field operations support, giving the association structure without the overhead or distance often associated with large traditional management firms.</p></div>${imageCard(HOA_DASHBOARD_IMAGE, 'Executive reporting dashboard', 'Executive dashboards, reporting cadence, and operational visibility', 370)}</div><div class="source-note">Proposal context supplied by Camelot for Hills of Monroe HOA.</div></div></div>`;
+}
+
+function hoaModelSlide(): string {
+  const layers = [
+    ['Executive Management Layer', 'Senior oversight, board advisory, decision logs, escalation control, and owner-minded accountability.', 'GM'],
+    ['Financial Operations Layer', 'Budgeting, AP, collections, reserves, variance review, banking coordination, and monthly executive reports.', '$'],
+    ['Regional Field Operations Layer', 'Weekly or biweekly inspections, photo reporting, vendor walkthroughs, and storm preparation monitoring.', 'OPS'],
+    ['Vendor & Claims Coordination Layer', 'Restoration timelines, contractor accountability, public adjuster collaboration, documentation, and budget tracking.', 'PM'],
+    ['Technology & Reporting Layer', 'Cloud files, dashboards, work orders, board packets, AI-assisted summaries, and resident communication systems.', 'AI'],
+  ];
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Camelot Hybrid Management Model</div><p class="body-text" style="margin-bottom:16px">The model gives the HOA executive leadership, clean financial controls, local eyes on the property, and modern reporting without forcing the community into a one-size-fits-all large-firm structure.</p><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">${layers.map(([title, copy, icon]) => hoaLayerCard(title, copy, icon)).join('')}</div><div class="source-note">Hybrid management structure prepared for Hills of Monroe HOA.</div></div></div>`;
+}
+
+function hoaOperationalAssessmentSlide(): string {
+  const needs = ['Seasonal weather exposure and snow/ice risk', 'Roofing, drainage, and exterior envelope review', 'Insurance claim coordination and documentation control', 'Vendor management and contractor accountability', 'Resident communication during restoration work', 'Reserve planning and deferred maintenance risk', 'Board workload reduction and decision support', 'Long-term operating calendar and capital roadmap'];
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Understanding Hills of Monroe</div><div style="display:grid;grid-template-columns:.95fr 1.05fr;gap:22px"><div>${imageCard(HOA_WINTER_IMAGE, 'Winter storm and ice exposure', 'Winter-related loss events require organized claims, vendor, and resident communication controls', 430)}</div><div class="gold-card"><div class="sub-heading">Operational Assessment</div><p class="body-text" style="font-size:15px;margin-bottom:12px">The community's immediate need is stabilization: clear records, visible timelines, accountable vendors, consistent board communication, and a recovery plan that turns a loss event into a more professional operating platform.</p>${hoaBulletList(needs)}</div></div><div class="source-note">Assessment based on user-provided Hills of Monroe HOA operating brief.</div></div></div>`;
+}
+
+function hoaFailuresSlide(): string {
+  const rows = [
+    ['Reactive management', 'Create a 30-60-90 operating command center and board-facing action log'],
+    ['Poor communication', 'Weekly executive summaries during active restoration and monthly board packets after stabilization'],
+    ['Weak vendor oversight', 'Bid leveling, scope review, COI tracking, timeline control, and photo documentation'],
+    ['Inconsistent reporting', 'Standard monthly financial and operational dashboard cadence'],
+    ['Poor claims management', 'Public adjuster collaboration, damage documentation, budget tracking, and resident updates'],
+  ];
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Common HOA Management Failures</div><table><thead><tr><th>Traditional Failure</th><th>Camelot Response</th></tr></thead><tbody>${rows.map(([a, b]) => `<tr><td><strong>${a}</strong></td><td>${b}</td></tr>`).join('')}</tbody></table><div class="gold-card" style="margin-top:18px"><p class="body-text" style="font-size:15px">The goal is not to overwhelm the community with bureaucracy. The goal is to make the important work visible, assignable, measurable, and calm.</p></div><div class="source-note">Prepared for HOA board discussion.</div></div></div>`;
+}
+
+function hoaFieldOpsSlide(): string {
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Regional Facilities Coordinator Program</div><div style="display:grid;grid-template-columns:1fr .92fr;gap:22px"><div class="gold-card"><div class="sub-heading">Field Operations Support</div>${hoaBulletList(['Weekly or biweekly property inspections', 'Photo reporting and condition logs', 'Vendor walkthroughs and project monitoring', 'Emergency and storm preparation coordination', 'Resident issue escalation', 'Maintenance oversight and site condition assessments', 'Board-ready summary of open issues and next actions'])}</div>${imageCard(HOA_INFRASTRUCTURE_IMAGE, 'Infrastructure and project coordination', 'Localized field support keeps physical conditions connected to executive oversight', 430)}</div><div class="source-note">Regional field scope to be finalized based on inspection cadence and board expectations.</div></div></div>`;
+}
+
+function hoaClaimsSlide(): string {
+  const steps = ['Loss intake and file organization', 'Damage photo/document control', 'Public adjuster and carrier coordination', 'Restoration scope and vendor tracking', 'Timeline, budget, and change-order control', 'Resident and board communication cadence', 'Closeout package, warranties, and lessons learned'];
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Insurance &amp; Restoration Oversight</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:22px">${steps.map((step, idx) => `<div class="gold-card" style="min-height:240px;padding:16px 12px"><div class="stat-val" style="font-size:30px">${idx + 1}</div><div style="font-size:13px;font-weight:900;color:#1a2744;line-height:1.35;margin-top:10px">${step}</div></div>`).join('')}</div><p class="body-text" style="margin-top:20px;font-size:15px">Camelot acts as the operating coordinator, helping the board understand what has been documented, what is pending, what vendors are responsible for, and what decisions require approval.</p><div class="source-note">Claims workflow based on Camelot restoration and complex residential loss-event experience.</div></div></div>`;
+}
+
+function hoaTechnologySlide(): string {
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Technology &amp; Reporting</div><div style="display:grid;grid-template-columns:.95fr 1.05fr;gap:22px"><div class="gold-card"><div class="sub-heading">Reporting Stack</div>${hoaBulletList(['Digital board packets and executive summaries', 'Cloud-based document management', 'Vendor tracking and open-item logs', 'Inspection photos and work order workflows', 'Financial dashboards and variance analysis', 'AI-assisted operational summaries', 'Resident communication systems'])}</div>${imageCard(HOA_DASHBOARD_IMAGE, 'Modern reporting dashboard', 'Scout concepts, Camelot dashboards, and cloud collaboration systems', 430)}</div><div class="source-note">Technology stack customized to board needs and association records.</div></div></div>`;
+}
+
+function hoaFinancialSlide(): string {
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Financial Management Services</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><div class="gold-card">${hoaBulletList(['Accounts payable and invoice controls', 'Collections and delinquency tracking', 'Budget preparation and variance analysis', 'Reserve coordination and capital planning', 'Banking coordination and reconciliation'])}</div><div class="gold-card">${hoaBulletList(['Monthly executive reports', 'Audit coordination', 'Insurance proceeds tracking', 'Vendor contract and recurring cost review', 'Board-facing financial summaries'])}</div></div><div class="visual-card" style="padding:18px;margin-top:18px">${[['AP / invoice controls', 86], ['Budget and reserve visibility', 82], ['Claims cost tracking', 78], ['Board reporting cadence', 92]].map(([label, pct]) => `<div style="margin-bottom:13px"><div style="font-size:12px;font-weight:800;color:#1a2744">${label}</div><div class="mini-bar"><span style="width:${pct}%"></span></div></div>`).join('')}</div><div class="source-note">Financial scope based on monthly executive HOA reporting model.</div></div></div>`;
+}
+
+function hoaTransitionSlide(): string {
+  const cols = [
+    ['30 Days: Assessment', ['Document collection', 'Vendor and contract review', 'Financial and banking review', 'Insurance claim file review', 'Initial operational assessment']],
+    ['60 Days: Stabilization', ['Reporting implementation', 'Project coordination systems', 'Board communication cadence', 'Vendor oversight rhythm', 'Resident issue process']],
+    ['90 Days: Optimization', ['Strategic planning', 'Reserve review', 'Operating calendar', 'Capital planning roadmap', 'Performance review']],
+  ] as const;
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">30-60-90 Day Transition Plan</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">${cols.map(([title, items]) => `<div class="gold-card" style="min-height:390px"><div class="sub-heading">${title}</div>${hoaBulletList([...items])}</div>`).join('')}</div><div class="source-note">Transition plan built for a recovery-oriented HOA management engagement.</div></div></div>`;
+}
+
+function hoaServiceStructureSlide(): string {
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Proposed Service Structure</div><table><thead><tr><th>Service Component</th><th>Illustrative Structure</th><th>Purpose</th></tr></thead><tbody><tr><td><strong>Base Management</strong></td><td>$4,500-$7,500/month</td><td>Executive management, financial oversight, board support, vendor coordination</td></tr><tr><td><strong>Regional Field Operations</strong></td><td>$1,000-$2,500/month</td><td>Inspection cadence, photo reports, walkthroughs, storm prep, site monitoring</td></tr><tr><td><strong>Project &amp; Claims Oversight</strong></td><td>Separate consulting/project fees</td><td>Claim files, restoration timeline, contractor accountability, documentation</td></tr><tr><td><strong>Capital Project Coordination</strong></td><td>Hourly, fixed, or percentage-based</td><td>Bid leveling, scope management, change-order review, closeout</td></tr></tbody></table><p class="small" style="margin-top:18px">Final pricing should be based on unit count, board expectations, field cadence, active restoration workload, insurance claim complexity, and the level of reporting required.</p><div class="source-note">Illustrative fee ranges supplied by Camelot for HOA proposal discussion.</div></div></div>`;
+}
+
+function hoaChecklistSlide(): string {
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Operational Tools</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px"><div class="gold-card"><div class="sub-heading">Assessment Checklist</div>${hoaBulletList(['Insurance claim file', 'Vendor contracts and COIs', 'Open restoration items', 'Reserve study and capital list', 'Financial reports and bank records'])}</div><div class="gold-card"><div class="sub-heading">Board Interview Questions</div>${hoaBulletList(['What is most urgent?', 'Where is communication breaking down?', 'Which vendors are underperforming?', 'What information does the board lack?', 'What does success look like in 90 days?'])}</div><div class="gold-card"><div class="sub-heading">Inspection Template</div>${hoaBulletList(['Area inspected', 'Photo evidence', 'Risk level', 'Responsible vendor', 'Next action and due date'])}</div><div class="gold-card"><div class="sub-heading">Vendor Workflow</div>${hoaBulletList(['Scope', 'Bid', 'COI', 'Schedule', 'Progress photos', 'Invoice approval', 'Closeout'])}</div></div><div class="source-note">Additional deliverables: one-page sheet, service menu, Why Camelot page, claims workflow, vendor workflow, cover letter.</div></div></div>`;
+}
+
+function hoaWhyCamelotSlide(): string {
+  return `<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Why Camelot</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><div class="gold-card">${hoaBulletList(['Boutique attention with institutional systems', 'Executive oversight and responsive leadership', 'Financial discipline and monthly reporting', 'Claims/restoration coordination experience', 'Technology-enabled operations'])}</div><div class="gold-card">${hoaBulletList(['Vendor accountability', 'Regional scalability', 'Long-term asset preservation', 'Board support without unnecessary complexity', 'Calm operating cadence during stressful events'])}</div></div><div class="gold-card" style="margin-top:18px;background:#34444f;color:#fff"><p style="font-size:19px;line-height:1.55;color:#fff">Camelot combines executive-level financial and operational oversight with localized field operations support, allowing communities to benefit from institutional-quality management systems without the overhead of traditional large-scale property management firms.</p></div><div class="source-note">Positioning statement prepared for Hills of Monroe HOA.</div></div></div>`;
+}
+
+function hoaClosingSlide(d: MasterReportData): string {
+  return `<div class="slide slide-dark"><div class="pad">${logoBadge()}<div style="height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center;max-width:980px;margin:0 auto"><div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:56px;font-style:italic;color:#B8973A;margin-bottom:16px">A Calmer Operating Platform</div><p style="font-size:21px;line-height:1.55;color:rgba(255,255,255,.86);margin-bottom:28px">Camelot would welcome the opportunity to help Hills of Monroe HOA stabilize operations, organize the recovery process, support the board, and preserve the community's long-term value.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:24px"><a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=Camelot+HOA+Management+Discussion+-+Hills+of+Monroe&details=${encodeURIComponent('Discussion with Carlos Capria and Hills of Monroe HOA regarding Camelot HOA Executive Management & Recovery Services Proposal.')}&add=${CAMELOT_CONTACT_EMAIL}" target="_blank" style="background:#B8973A;color:#fff;text-decoration:none;border-radius:6px;padding:10px 14px;font-size:12px;font-weight:700">Google Meet</a><a href="https://zoom.us/start/videomeeting" target="_blank" rel="noopener" style="background:#2D8CFF;color:#fff;text-decoration:none;border-radius:6px;padding:10px 14px;font-size:12px;font-weight:700">Zoom</a><a href="tel:+12122069939;ext=701" style="background:#fff;color:#314655;text-decoration:none;border-radius:6px;padding:10px 14px;font-size:12px;font-weight:700">Call 212-206-9939 x701</a></div><div style="font-size:15px;color:rgba(255,255,255,.82);line-height:1.9"><strong style="color:#B8973A">${CAMELOT_CONTACT_NAME}, ${CAMELOT_CONTACT_TITLE}</strong><br>${CAMELOT_PHONE} | ${CAMELOT_MOBILE}<br>${CAMELOT_CONTACT_EMAIL} | ${CAMELOT_GENERAL_EMAIL}<br>${CAMELOT_WEBSITE}<br>${CAMELOT_OFFICE_ADDRESS}</div></div></div></div>`;
+}
+
+function generateHoaFirstEmailIntroReport(d: MasterReportData): string {
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const slides = `
+<div class="slide slide-dark"><div style="position:absolute;inset:0"><img src="${HOA_ARCHITECTURE_IMAGE}" alt="Institutional architecture" style="width:100%;height:100%;object-fit:cover;opacity:.38"></div><div style="position:absolute;inset:0;background:linear-gradient(105deg,rgba(10,16,24,.98),rgba(34,47,58,.82),rgba(34,47,58,.38))"></div><div class="pad" style="position:relative;z-index:3">${logoBadge()}<div style="height:100%;display:flex;flex-direction:column;justify-content:center;max-width:760px"><div style="font-size:13px;color:#B8973A;text-transform:uppercase;letter-spacing:2.5px;font-weight:800">Camelot HOA Executive Management &amp; Recovery Services Proposal</div><h1 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:68px;line-height:.95;color:#F4D26A;font-style:italic;margin:12px 0">Hills of Monroe HOA</h1><p style="font-size:21px;color:rgba(255,255,255,.86);line-height:1.55">Executive management, community operations, claims oversight, and long-term asset preservation.</p><p style="font-size:12px;color:rgba(255,255,255,.58);margin-top:28px">Prepared for Carlos Capria · Prepared by Camelot Property Management Services Corp. · ${today}</p></div></div></div>
+<div class="slide"><div class="pad" style="padding:56px 86px">${logoBadge()}<div class="section-title" style="margin-bottom:20px">Cover Letter</div><div style="max-width:900px;background:#fff;border:1px solid rgba(184,151,58,.38);border-left:5px solid #B8973A;border-radius:6px;padding:34px 42px;box-shadow:0 14px 28px rgba(26,31,54,.06)">${hoaCoverLetter(d)}</div><div class="source-note">Prepared by Camelot Property Management Services Corp. for Hills of Monroe HOA.</div></div></div>
+${hoaExecutiveSummarySlide()}
+${hoaOperationalAssessmentSlide()}
+${hoaModelSlide()}
+${hoaFieldOpsSlide()}
+${hoaClaimsSlide()}
+${hoaClosingSlide(d)}`;
+  return deckShell('Camelot HOA Executive Management Proposal - Hills of Monroe HOA', slides);
+}
+
+function generateHoaBoardMeetingDeck(d: MasterReportData): string {
+  const slides = `
+<div class="slide slide-dark"><div style="position:absolute;inset:0"><img src="${HOA_ARCHITECTURE_IMAGE}" alt="Modern development architecture" style="width:100%;height:100%;object-fit:cover;opacity:.34"></div><div style="position:absolute;inset:0;background:linear-gradient(105deg,rgba(10,16,24,.98),rgba(34,47,58,.86),rgba(34,47,58,.46))"></div><div class="pad" style="position:relative;z-index:3">${logoBadge()}<div style="height:100%;display:flex;flex-direction:column;justify-content:center;max-width:820px"><div style="font-size:13px;color:#B8973A;text-transform:uppercase;letter-spacing:2.5px;font-weight:800">Camelot Property Management Services Corp.</div><h1 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:66px;line-height:.96;color:#F4D26A;font-style:italic;margin:12px 0">Hills of Monroe HOA</h1><p style="font-size:22px;color:rgba(255,255,255,.86);line-height:1.55">Executive Management &amp; Community Operations Proposal</p></div></div></div>
+${hoaExecutiveSummarySlide()}
+<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">About Camelot</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><div class="gold-card">${hoaBulletList(['Boutique institutional approach', 'Complex property operations experience', 'Financial reporting expertise', 'Vendor coordination systems', 'Claims and restoration operating experience'])}</div><div class="gold-card">${hoaBulletList(['Accounting systems and board reporting', 'Digital management systems', 'Operational coordination', 'Capital planning support', 'Executive leadership philosophy'])}</div></div><div class="source-note">Camelot company overview adapted for HOA executive management.</div></div></div>
+${hoaOperationalAssessmentSlide()}
+${hoaFailuresSlide()}
+${hoaModelSlide()}
+${hoaFieldOpsSlide()}
+${hoaClaimsSlide()}
+${hoaTechnologySlide()}
+${hoaFinancialSlide()}
+${hoaTransitionSlide()}
+${hoaServiceStructureSlide()}
+${hoaChecklistSlide()}
+${hoaWhyCamelotSlide()}
+${hoaClosingSlide(d)}`;
+  return deckShell('Camelot HOA Board Meeting Deck - Hills of Monroe HOA', slides);
+}
+
 export function generateFirstEmailIntroReport(d: MasterReportData): string {
+  if (isHoaExecutiveOpportunity(d)) return generateHoaFirstEmailIntroReport(d);
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const subjectImage = bestExteriorImage(d);
   const hasRisks = d.violationsOpen > 0 || d.ecbPenaltyBalance > 0 || Boolean(d.ll97?.period1Penalty);
@@ -338,6 +467,7 @@ ${onboardingChecklistSlide()}
 }
 
 export function generateBoardMeetingDeck(d: MasterReportData): string {
+  if (isHoaExecutiveOpportunity(d)) return generateHoaBoardMeetingDeck(d);
   const base = generatePitchReport(d);
   const insert = executiveTeamSlide();
   return base.replace('<!-- SLIDE 13: Next Steps (Dark) -->', `${insert}\n<!-- SLIDE 13: Next Steps (Dark) -->`)
