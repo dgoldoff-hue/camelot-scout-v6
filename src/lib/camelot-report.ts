@@ -1973,7 +1973,7 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
       { source: 'DHCR', status: 'manual_required', count: 0, detail: 'Not applicable to HOA community' },
       { source: '311 Service Requests', status: 'manual_required', count: 0, detail: 'NYC 311 not applicable; resident/service logs to be collected from the HOA' },
       { source: 'HOA proposal brief', status: 'loaded', count: 1, detail: 'User-provided Hills of Monroe operating context loaded as proposal brief' },
-      { source: 'Dagny CT condo profile', status: 'loaded', count: 1, detail: 'Public Hills of Monroe profile loaded for property type, amenities, street references, year-built range, and subject imagery' },
+      { source: 'Dagny CT condo profile', status: 'loaded', count: 1, detail: 'Public Hills of Monroe profile loaded for property type, amenities, street references, year-built range, active listings, recent sales, and subject imagery' },
       { source: 'CT market image/source stack', status: 'loaded', count: 5, detail: 'Dagny, Zillow, Apartments.com, Yelp, Making CT Home, and Google review searches are the reusable CT HOA/condo discovery pattern' },
       { source: 'Insurance claim documentation', status: 'manual_required', count: 0, detail: 'Carrier, adjuster, restoration, scope, estimate, timeline, and settlement records to be collected' },
     ],
@@ -2080,6 +2080,18 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
         homeFeatures: ['Vaulted ceilings', 'Fireplaces', 'Patios / wooded views', 'Walk-in closets', 'Central air', 'City water', 'Main-floor washer/dryer', 'One-car attached garage'],
         sizeRanges: ['1BR / 1BA: approx. 900-1,200 SF', '2BR / 2.5BA: approx. 1,360-1,985 SF'],
         unitCountEvidence: '186 units appears across public listing/profile sources including Homes.com, Realtor.com, Zillow, Compass, Redfin, and William Raveis listing data; final HOA roster should confirm before contract.',
+      },
+      dagnyMarketSnapshot: {
+        activeListings: [
+          { address: '202 Windgate Circle, Monroe', price: 335000, type: 'Ranch condo', beds: 1, baths: 1, sqft: 983, yearBuilt: 1987, source: 'Dagny / SmartMLS listing display, listed March 25, 2026' },
+          { address: '5 Kensington Road, Monroe', price: 510000, type: 'Townhouse condo', beds: 2, baths: 3, sqft: 2028, yearBuilt: 1989, source: 'Dagny / SmartMLS listing display, listed March 17, 2026' },
+        ],
+        recentSalesSummary: 'Dagny displayed 11 homes sold in the past 12 months.',
+        latestSales: [
+          { address: '208 Windgate Circle, Monroe', price: 380000, daysOnMarket: 43, saleToListRatio: '101%', beds: 1, baths: 2, sqft: 1279, yearBuilt: 1987, soldDate: 'May 1, 2026' },
+          { address: '208 Windgate Circle, Monroe', price: 389000, daysOnMarket: 37, saleToListRatio: '100%', beds: 1, baths: 2, sqft: 1279, yearBuilt: 1987, soldDate: 'April 1, 2026' },
+          { address: '302 Fairmount Drive, Monroe', price: 389900, daysOnMarket: 78, saleToListRatio: '100%', beds: 2, baths: 2, sqft: 1317, yearBuilt: 1988, soldDate: 'December 5, 2025' },
+        ],
       },
       ctHoaSourceSkill: {
         currentSubjectSources: hillsSourceLinks,
