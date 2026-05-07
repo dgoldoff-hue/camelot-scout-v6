@@ -27,7 +27,7 @@ function ReleaseWorkflowPanel({
     },
     {
       title: 'Sources',
-      desc: 'DOF, DOB, HPD, ACRIS, PropertyShark, commercial, amenities, contacts, market sources.',
+      desc: 'State/town public records, assessor/land records, compliance, commercial/amenity, contacts, and market sources.',
       checks: qa.checks.filter(c => /Source|Commercial|Stakeholder|DOF|Market|Case Studies|Value Creation|Tax|Management Context/i.test(c.name)),
     },
     {
@@ -143,11 +143,12 @@ export default function ReportCenter() {
     setLoading(true);
     setData(null);
     try {
-      setLoadingMsg('Querying HPD violations...');
+      const regionalSearch = /connecticut|\bct\b|monroe|new jersey|\bnj\b|florida|\bfl\b|nys|new york state/i.test(`${borough} ${address}`);
+      setLoadingMsg(regionalSearch ? 'Querying state and town records...' : 'Querying HPD violations...');
       await new Promise(r => setTimeout(r, 300));
-      setLoadingMsg('Pulling DOF property data...');
+      setLoadingMsg(regionalSearch ? 'Pulling assessor, land-record, and market data...' : 'Pulling DOF property data...');
       await new Promise(r => setTimeout(r, 200));
-      setLoadingMsg('Fetching ACRIS ownership records...');
+      setLoadingMsg(regionalSearch ? 'Checking HOA/entity and source-specific records...' : 'Fetching ACRIS ownership records...');
       const result = await buildMasterReport(address.trim(), borough || undefined);
       setData({ ...result, reportFocus: buildReportFocus() });
     } catch (err) {
@@ -376,6 +377,8 @@ export default function ReportCenter() {
   const callerSheet = data ? generateColdCallerSheet(data) : '';
   const fmtMoney = (n: number) => n >= 1e6 ? `$${(n/1e6).toFixed(1)}M` : `$${n.toLocaleString()}`;
   const releaseData = getDataWithPhotos();
+  const isRegionalMode = /connecticut|\bct\b|new jersey|\bnj\b|florida|\bfl\b|nys|new york state/i.test(`${borough} ${address} ${data?.borough || ''} ${data?.address || ''}`);
+  const isConnecticutMode = /connecticut|\bct\b|monroe/i.test(`${borough} ${address} ${data?.borough || ''} ${data?.address || ''}`);
   const releaseQA = useMemo(() => {
     if (!releaseData) return null;
     return validateJackieReport(releaseData, generateBrochureHTML(releaseData));
@@ -401,12 +404,16 @@ export default function ReportCenter() {
             />
             <select value={borough} onChange={e => setBorough(e.target.value)}
               className="px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#A89035]/50">
-              <option value="">Borough</option>
+              <option value="">Region</option>
               <option value="manhattan">Manhattan</option>
               <option value="brooklyn">Brooklyn</option>
               <option value="queens">Queens</option>
               <option value="bronx">Bronx</option>
               <option value="staten island">Staten Island</option>
+              <option value="New York State">NYS / New York State</option>
+              <option value="Connecticut">CT / Connecticut</option>
+              <option value="New Jersey">NJ / New Jersey</option>
+              <option value="Florida">FLA / Florida</option>
             </select>
           </div>
           <button onClick={generate} disabled={loading || !address.trim()}
@@ -509,7 +516,7 @@ export default function ReportCenter() {
         <div className="bg-white rounded-xl border p-12 shadow-sm flex flex-col items-center justify-center">
           <Loader2 className="w-12 h-12 animate-spin text-[#A89035] mb-4" />
           <p className="text-gray-500 font-medium">{loadingMsg || 'Building your report...'}</p>
-          <p className="text-gray-400 text-sm mt-1">HPD • DOB • DOF • LL97 • ACRIS • ECB • Housing Court • Rent Stabilization</p>
+          <p className="text-gray-400 text-sm mt-1">{isConnecticutMode ? 'CT entity records • Monroe land records • Assessor • Municipal files • HOA budget/claim docs • Market sources' : isRegionalMode ? 'State records • county/town records • assessor • land records • compliance • market sources' : 'HPD • DOB • DOF • LL97 • ACRIS • ECB • Housing Court • Rent Stabilization'}</p>
         </div>
       )}
 
@@ -531,9 +538,9 @@ export default function ReportCenter() {
               <p className="text-xl font-bold text-gray-900">{data.units || 'N/A'}</p>
             </div>
             <div className="bg-white rounded-xl border p-4 shadow-sm text-center">
-              <p className="text-xs text-gray-500 uppercase font-medium">HPD Violations</p>
-              <p className={`text-xl font-bold ${data.violationsOpen > 10 ? 'text-red-600' : data.violationsOpen > 0 ? 'text-orange-500' : 'text-green-600'}`}>{data.violationsTotal}</p>
-              <p className="text-xs text-gray-400">{data.violationsOpen} open</p>
+              <p className="text-xs text-gray-500 uppercase font-medium">{isConnecticutMode ? 'HOA Findings' : 'HPD Violations'}</p>
+              <p className={`text-xl font-bold ${data.violationsOpen > 10 ? 'text-red-600' : data.violationsOpen > 0 ? 'text-orange-500' : 'text-green-600'}`}>{isConnecticutMode ? (data.distressSignals?.length || 0) : data.violationsTotal}</p>
+              <p className="text-xs text-gray-400">{isConnecticutMode ? 'operating signals' : `${data.violationsOpen} open`}</p>
             </div>
             <div className="bg-white rounded-xl border p-4 shadow-sm text-center">
               <p className="text-xs text-gray-500 uppercase font-medium">Scout Grade</p>
@@ -541,8 +548,8 @@ export default function ReportCenter() {
               <p className="text-xs text-gray-400">{data.scoutScore}/100</p>
             </div>
             <div className="bg-white rounded-xl border p-4 shadow-sm text-center">
-              <p className="text-xs text-gray-500 uppercase font-medium">LL97 Penalty</p>
-              <p className={`text-xl font-bold ${data.ll97 && data.ll97.period1Penalty > 0 ? 'text-red-600' : 'text-green-600'}`}>{data.ll97 ? `$${data.ll97.period1Penalty.toLocaleString()}/yr` : 'N/A'}</p>
+              <p className="text-xs text-gray-500 uppercase font-medium">{isConnecticutMode ? 'Claim / Project Risk' : 'LL97 Penalty'}</p>
+              <p className={`text-xl font-bold ${data.ll97 && data.ll97.period1Penalty > 0 ? 'text-red-600' : 'text-green-600'}`}>{isConnecticutMode ? 'Scope' : data.ll97 ? `$${data.ll97.period1Penalty.toLocaleString()}/yr` : 'N/A'}</p>
             </div>
             <div className="bg-white rounded-xl border p-4 shadow-sm text-center">
               <p className="text-xs text-gray-500 uppercase font-medium">Distress</p>
@@ -603,13 +610,13 @@ export default function ReportCenter() {
                 <div><span className="text-gray-400 text-xs uppercase block">Scout Grade</span><span className="font-bold">{data.scoutGrade} ({data.scoutScore}/100)</span></div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
-                <div><span className="text-gray-400 text-xs uppercase block">HPD Violations</span><span className={`font-medium ${data.violationsOpen > 5 ? 'text-red-600' : 'text-gray-900'}`}>{data.violationsTotal} total / {data.violationsOpen} open</span></div>
-                <div><span className="text-gray-400 text-xs uppercase block">ECB Penalties</span><span className="font-medium text-orange-600">${data.ecbPenaltyBalance.toLocaleString()}</span></div>
-                <div><span className="text-gray-400 text-xs uppercase block">LL97 Penalty</span><span className={`font-medium ${data.ll97 && data.ll97.period1Penalty > 0 ? 'text-red-600' : 'text-green-600'}`}>{data.ll97 ? `$${data.ll97.period1Penalty.toLocaleString()}/yr` : 'N/A'}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">{isConnecticutMode ? 'HOA Findings' : 'HPD Violations'}</span><span className={`font-medium ${data.violationsOpen > 5 ? 'text-red-600' : 'text-gray-900'}`}>{isConnecticutMode ? `${data.distressSignals?.length || 0} signals` : `${data.violationsTotal} total / ${data.violationsOpen} open`}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">{isConnecticutMode ? 'Municipal / Lien Leads' : 'ECB Penalties'}</span><span className="font-medium text-orange-600">{isConnecticutMode ? 'Manual review' : `$${data.ecbPenaltyBalance.toLocaleString()}`}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">{isConnecticutMode ? 'Claim / Project Risk' : 'LL97 Penalty'}</span><span className={`font-medium ${data.ll97 && data.ll97.period1Penalty > 0 ? 'text-red-600' : 'text-green-600'}`}>{isConnecticutMode ? 'Scope pending' : data.ll97 ? `$${data.ll97.period1Penalty.toLocaleString()}/yr` : 'N/A'}</span></div>
                 <div><span className="text-gray-400 text-xs uppercase block">Distress Level</span><span className={`font-medium ${data.distressLevel === 'critical' || data.distressLevel === 'distressed' ? 'text-red-600' : 'text-green-600'}`}>{data.distressLevel.toUpperCase()} ({data.distressScore}/100)</span></div>
-                <div><span className="text-gray-400 text-xs uppercase block">Owner (DOF)</span><span className="font-medium">{data.dofOwner || 'N/A'}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">{isConnecticutMode ? 'Association / Entity' : 'Owner (DOF)'}</span><span className="font-medium">{data.dofOwner || 'N/A'}</span></div>
                 <div><span className="text-gray-400 text-xs uppercase block">Last Sale</span><span className="font-medium">{data.lastSaleDate ? new Date(data.lastSaleDate).toLocaleDateString() : 'N/A'} — {data.lastSalePrice ? fmtMoney(data.lastSalePrice) : 'N/A'}</span></div>
-                <div><span className="text-gray-400 text-xs uppercase block">Neighborhood</span><span className="font-medium capitalize">{data.neighborhoodName || data.borough || 'NYC'}</span></div>
+                <div><span className="text-gray-400 text-xs uppercase block">Neighborhood</span><span className="font-medium capitalize">{data.neighborhoodName || data.borough || (isRegionalMode ? 'Regional' : 'NYC')}</span></div>
                 <div><span className="text-gray-400 text-xs uppercase block">Proposed Fee</span><span className="font-medium text-[#A89035]">${data.monthlyFee.toLocaleString()}/mo (${data.pricePerUnit}/unit)</span></div>
               </div>
               {data.distressSignals && data.distressSignals.length > 0 && (

@@ -267,7 +267,7 @@ export const REPORT_FOCUS_THEMES: Record<ReportFocusKey, ReportFocusTheme> = {
     label: 'HOA Recovery',
     icon: 'HOA',
     headline: 'Executive HOA stabilization, claims oversight, and field operations',
-    narrative: 'Jackie will emphasize Camelot as a hybrid HOA executive management platform for operational stabilization, financial transparency, claims/restoration oversight, vendor accountability, regional field support, and long-term asset preservation. For Connecticut HOA and condo opportunities, Jackie searches local brokerage community profiles, Zillow, Apartments.com, Yelp / Google review signals, town assessor and land records, local building/planning records, reserve/insurance files, and board-provided documents before treating facts as board-facing.',
+    narrative: 'Camelot will emphasize a hybrid HOA executive management platform for operational stabilization, financial transparency, claims/restoration oversight, vendor accountability, regional field support, and long-term asset preservation. For Connecticut HOA and condo opportunities, Camelot searches local brokerage community profiles, Zillow, Apartments.com, Yelp / Google review signals, town assessor and land records, local building/planning records, reserve/insurance files, and board-provided documents before treating facts as board-facing.',
     proofPoints: ['Executive management layer plus regional field operations', 'Insurance and restoration coordination', '30-60-90 day HOA stabilization plan', 'Connecticut HOA source stack: Dagny/local brokerage profiles, Zillow, Apartments.com, Yelp/Google reviews, town land/tax/building records'],
   },
 };
@@ -1906,15 +1906,16 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
     ],
   };
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const canonicalHoaAddress = '645 Main Street, Monroe, CT 06468';
   return {
-    address: address || 'Hills of Monroe HOA, Monroe, CT',
+    address: /hills of monroe|monroe|645 main/i.test(address || '') ? canonicalHoaAddress : (address || canonicalHoaAddress),
     borough: 'Connecticut',
-    buildingName: 'Hills of Monroe HOA',
+    buildingName: 'Hills of Monroe Condominium',
     date: today,
     reportFocus: {
       selectedFocus: ['hoa_recovery', 'project_management', 'accounting', 'automation'],
       inquiryContact: 'Carlos Capria',
-      inquiryOrganization: 'Hills of Monroe HOA',
+      inquiryOrganization: 'Hills of Monroe Condominium',
       inquiryRole: 'Primary Contact',
       inquiryNotes: 'Major winter-related loss event involving ice damage; focus on executive HOA management, insurance restoration oversight, field operations, board support, financial organization, vendor accountability, and long-term asset preservation. Core management, accounting, reporting, resident portal, automation, governance support, and board support are ready to propose; local on-site project/facilities support should be scoped separately after reviewing rent roll, current budget, financials, claim documents, vendor contracts, and desired site-visit cadence.',
     },
@@ -1928,10 +1929,10 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
     landValue: 0,
     lotArea: 0,
     buildingArea: 0,
-    dofOwner: 'Hills of Monroe HOA',
-    bbl: 'Connecticut HOA - public-record lookup not applicable',
-    registrationOwner: 'Hills of Monroe HOA',
-    managementCompany: 'Management transition / recovery opportunity',
+    dofOwner: 'Hills of Monroe Condominium Association (legal name / agent to verify)',
+    bbl: 'Connecticut HOA - Monroe land/assessor records replace parcel profile',
+    registrationOwner: 'Hills of Monroe Condominium Association (to verify via Connecticut Secretary of the State)',
+    managementCompany: 'Current HOA management / local facilities model to verify; historical CMG public reporting noted',
     violationsTotal: 0,
     violationsOpen: 0,
     violationClassA: 0,
@@ -1964,24 +1965,23 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
     courtIndexCount: 0,
     acrisLienClaimCount: 0,
     complianceSourceChecks: [
-      { source: 'HPD Online', status: 'manual_required', count: 0, detail: 'Not applicable to Connecticut HOA; retained for release workflow compatibility' },
-      { source: 'DOB BIS', status: 'manual_required', count: 0, detail: 'NYC DOB not applicable; Connecticut municipal records to be reviewed manually' },
-      { source: 'DOB NOW Safety', status: 'manual_required', count: 0, detail: 'NYC DOB NOW not applicable; roof, storm, and restoration files to be collected' },
-      { source: 'ECB/OATH', status: 'manual_required', count: 0, detail: 'NYC ECB/OATH not applicable to this Connecticut HOA proposal' },
-      { source: 'DOF tax liens', status: 'manual_required', count: 0, detail: 'NYC DOF not applicable; municipal/tax and association records to be reviewed' },
-      { source: 'ACRIS', status: 'manual_required', count: 0, detail: 'NYC ACRIS not applicable; Connecticut land records to be reviewed if needed' },
-      { source: 'DHCR', status: 'manual_required', count: 0, detail: 'Not applicable to HOA community' },
-      { source: '311 Service Requests', status: 'manual_required', count: 0, detail: 'NYC 311 not applicable; resident/service logs to be collected from the HOA' },
-      { source: 'HOA proposal brief', status: 'loaded', count: 1, detail: 'User-provided Hills of Monroe operating context loaded as proposal brief' },
-      { source: 'Dagny CT condo profile', status: 'loaded', count: 1, detail: 'Public Hills of Monroe profile loaded for property type, amenities, street references, year-built range, active listings, recent sales, and subject imagery' },
-      { source: 'CT market image/source stack', status: 'loaded', count: 5, detail: 'Dagny, Zillow, Apartments.com, Yelp, Making CT Home, and Google review searches are the reusable CT HOA/condo discovery pattern' },
-      { source: 'Insurance claim documentation', status: 'manual_required', count: 0, detail: 'Carrier, adjuster, restoration, scope, estimate, timeline, and settlement records to be collected' },
+      { source: 'Connecticut Secretary of the State business/entity search path', status: 'manual_required', count: 0, detail: 'Pull exact legal name, registered agent, principal office, mailing address, annual reports, and filing history from the Connecticut state business system.' },
+      { source: 'Monroe Town Clerk land records / declaration / maps search path', status: 'manual_required', count: 0, detail: 'Pull recorded declaration, amendments, condominium maps/plans, notices, and any recorded liens by Hills of Monroe, Windgate Circle, Kensington Road, Fairmount Drive, and Map 69 / Block 13.' },
+      { source: 'Monroe Assessor / Vision Government Solutions unit/APN search path', status: 'manual_required', count: 0, detail: 'Verify the 186-unit count, unit identifiers, assessor records, tax/assessment roll, and APN examples for Windgate and Kensington units.' },
+      { source: 'Monroe municipal building / fire marshal / public-record request path', status: 'manual_required', count: 0, detail: 'Use town building, fire marshal, and municipal files for permits, inspections, drainage, roof/ice, storm-damage, and engineering correspondence.' },
+      { source: 'CT condo resale/budget/source package request path', status: 'manual_required', count: 0, detail: 'Request current operating budget, prior-year actuals, reserve study, insurance dec pages, claim file, declaration/bylaws/rules, vendor list, and special-assessment history from the board/current manager.' },
+      { source: 'Hills of Monroe public market/listing source stack', status: 'loaded', count: 12, detail: 'Dagny, Houlihan Lawrence, Zillow, Redfin, Apartments.com, Good Living CT, MapQuest, and similar listing sources support unit count, amenities, street network, year-built range, common-charge evidence, and imagery.' },
+      { source: 'Patch 2011 ice-dam public report', status: 'loaded', count: 1, detail: 'Public reporting identified 139 units damaged, roof-snow-removal spend, and special-assessment discussion; treat as a verified historical operating-risk signal.' },
+      { source: 'Advanced Asphalt filing lead / primary-record follow-up', status: 'manual_required', count: 1, detail: 'Secondary record trail reported a $26,519.59 filing involving Hills of Monroe Association and Consolidated Management Group; confirm with official land, court, or UCC records before board-facing diligence conclusions.' },
+      { source: 'Insurance claim documentation', status: 'manual_required', count: 0, detail: 'Carrier, adjuster, restoration, scope, estimate, timeline, settlement, vendor, and board-communication records still need to be collected.' },
+      { source: 'HOA proposal brief', status: 'loaded', count: 1, detail: 'User-provided Hills of Monroe operating context loaded as proposal brief.' },
     ],
     complianceReleaseStatus: 'needs_review',
     distressScore: 42,
     distressLevel: 'recovery opportunity',
     distressSignals: [
-      { type: 'Winter loss event', description: 'Ice damage created restoration, communication, vendor, and insurance coordination needs', severity: 'medium' },
+      { type: 'Winter loss event', description: 'Ice damage created restoration, communication, vendor, insurance, and potential special-assessment coordination needs', severity: 'medium' },
+      { type: 'Historical weather-loss public record', description: 'Public reporting from 2011 described 139 damaged units and a $1,000-$2,000 per-owner special assessment discussion', severity: 'medium' },
       { type: 'Board workload', description: 'Community requires executive-level board support and organized operating cadence', severity: 'medium' },
     ],
     scoutScore: 68,
@@ -2004,8 +2004,8 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
     boardMembers: [{ name: 'Carlos Capria', title: 'Primary Contact' }],
     buildingStaff: [{ role: 'Regional facilities support', name: 'To be structured during transition' }],
     professionals: { lawFirm: null, accountingFirm: null, engineer: null, architect: null },
-    contactResearchSources: ['User-provided primary contact: Carlos Capria', 'Board roster to be confirmed during transition'],
-    professionalResearchSources: ['Insurance, public adjuster, engineering, restoration, and reserve-study professionals to be collected during onboarding'],
+    contactResearchSources: ['User-provided primary contact: Carlos Capria', 'Connecticut Secretary of the State business/entity search path', 'Monroe Town Clerk land records / declaration / maps search path', 'Board roster to be confirmed during transition'],
+    professionalResearchSources: ['Insurance, public adjuster, engineering, restoration, and reserve-study professionals to be collected during onboarding', 'Monroe municipal building / fire marshal / public-record request path', 'CT condo resale/budget/source package request path'],
     dobArchitects: [],
     dobEngineers: [],
     dobOwners: [],
@@ -2031,10 +2031,28 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
       amenities: ['Gated community setting', 'Pool', 'Paddle tennis', 'Clubhouse', 'Guest parking', 'One-car attached garages', 'Patios with wooded views', 'Central air / city water context', 'Common roads / drives', 'Landscape and seasonal maintenance areas', 'Storm-exposed exterior envelope components'],
       revenueOpportunities: ['Vendor rebidding', 'Insurance recovery discipline', 'Preventive maintenance scheduling', 'Reserve planning', 'Amenity rules and maintenance-cost review', 'Guest parking and common-area policy review', 'Use operating savings to offset local field/project management labor where practical'],
       officialWebsite: null,
-      brandingTitle: 'Hills of Monroe HOA',
+      brandingTitle: 'Hills of Monroe Condominium',
       brandingDescription: 'Townhouse and detached-home HOA community in Monroe, CT, with gated setting, pool, paddle tennis, clubhouse, guest parking, and wooded residential context.',
       brandingImages: [hillsCommunityImage, hillsWindgateImage, hillsKensingtonImage, hillsWindgate208Image],
-      researchSources: ['Dagny Real Estate Hills of Monroe public profile', 'Zillow building/profile search', 'Apartments.com Hills of Monroe condo search', 'Yelp local profile / reviews search', 'Making CT Home Monroe condo search', 'Google reviews search', 'User-provided HOA proposal brief', 'Camelot insurance/restoration operating experience'],
+      researchSources: [
+        'Connecticut Secretary of the State business/entity search path',
+        'Monroe Town Clerk land records / declaration / maps search path',
+        'Monroe Assessor / Vision Government Solutions unit/APN search path',
+        'Monroe municipal building / fire marshal / public-record request path',
+        'CT condo resale/budget/source package request path',
+        'Hills of Monroe public market/listing source stack',
+        'Patch 2011 ice-dam public report',
+        'Advanced Asphalt filing lead / primary-record follow-up',
+        'Dagny Real Estate Hills of Monroe public profile',
+        'Houlihan Lawrence Hills of Monroe unit references',
+        'Zillow The Hills of Monroe community references',
+        'Redfin Hills of Monroe property-history reference',
+        'Apartments.com Hills of Monroe condo search',
+        'Good Living CT active inventory reference',
+        'MapQuest 645 Main Street location reference',
+        'User-provided HOA proposal brief',
+        'Camelot insurance/restoration operating experience',
+      ],
       researchStatus: 'verified',
     },
     buildingPhotos: { exterior: [hillsCommunityImage, hillsWindgateImage, hillsKensingtonImage, hillsWindgate208Image], interior: [], streetView: '', satellite: '', source: 'Dagny Real Estate public Hills of Monroe profile and listing image feed' },
@@ -2051,7 +2069,7 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
         { name: 'Fairfield County operating market', type: 'Regional management context', date: 'Current' },
       ],
       crimePrecinct: '',
-      scoreExplanation: 'Connecticut HOA context; NYC precinct scoring is not applicable.',
+      scoreExplanation: 'Connecticut HOA context; local police/community scoring should use Monroe and Fairfield County sources.',
     },
     raw: {
       proposalMode: 'hoa_executive_recovery',
@@ -2080,6 +2098,15 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
         homeFeatures: ['Vaulted ceilings', 'Fireplaces', 'Patios / wooded views', 'Walk-in closets', 'Central air', 'City water', 'Main-floor washer/dryer', 'One-car attached garage'],
         sizeRanges: ['1BR / 1BA: approx. 900-1,200 SF', '2BR / 2.5BA: approx. 1,360-1,985 SF'],
         unitCountEvidence: '186 units appears across public listing/profile sources including Homes.com, Realtor.com, Zillow, Compass, Redfin, and William Raveis listing data; final HOA roster should confirm before contract.',
+      },
+      publicRecordDiligence: {
+        communityEntranceAddress: '645 Main Street, Monroe, CT 06468 appears in MLS/MapQuest wayfinding; not yet proven as formal corporate or mailing address.',
+        corporateAddressStatus: 'Exact legal entity, registered agent, principal office, and mailing address must be verified through Connecticut Secretary of the State records.',
+        unitCountFinding: '186 units is the strongest public indicator across current listing/public-record pages; declaration and condo plans should confirm the legal unit schedule.',
+        apnExamples: ['MNRO M:069 B:013 L:00-HM00202E', 'M:069 B:013 L:00-MH000012'],
+        commonChargeEvidence: ['$359/month HOA for a current one-bedroom Windgate unit', '$757/month HOA for a larger Kensington townhouse', '$227/month historical HOA for a 2013 Windgate listing'],
+        missingDocuments: ['Recorded declaration', 'Declaration amendments', 'Condominium maps/plans', 'Schedule A / Schedule B budget pages', 'Current operating budget', 'Reserve study', 'Insurance dec pages', 'Open claim file'],
+        ctFoiRule: 'Connecticut FOIA applies to public agencies such as the town clerk, assessor, building department, and fire marshal; it does not ordinarily compel a private condominium association to produce internal records.',
       },
       dagnyMarketSnapshot: {
         activeListings: [
@@ -2919,13 +2946,21 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
       ? `Signals: ${[...d.commercialIntel.commercialSignals, ...d.commercialIntel.amenities].slice(0, 5).join(', ') || 'Verified research completed'}`
       : 'No confirmed commercial/amenity/official website signals yet; verify with site visit, offering plan, or board materials',
   });
-  const requiredCommercialSources = [
-    'LoopNet public listing search attempted',
-    'CoStar public listing search attempted',
-    'PropertyShark-style owner / tax / commercial-use review',
-    'NYC DOT/DOB parking garage and curb-cut signal review',
-    'NYC parking operator scan',
-  ];
+  const requiredCommercialSources = isHoaRecovery
+    ? [
+        'Connecticut Secretary of the State business/entity search path',
+        'Monroe Town Clerk land records / declaration / maps search path',
+        'Monroe Assessor / Vision Government Solutions unit/APN search path',
+        'CT condo resale/budget/source package request path',
+        'Hills of Monroe public market/listing source stack',
+      ]
+    : [
+        'LoopNet public listing search attempted',
+        'CoStar public listing search attempted',
+        'PropertyShark-style owner / tax / commercial-use review',
+        'NYC DOT/DOB parking garage and curb-cut signal review',
+        'NYC parking operator scan',
+      ];
   for (const source of requiredCommercialSources) {
     checks.push({
       name: `Commercial Source: ${source.split(' ')[0]}`,
@@ -2948,17 +2983,22 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
       : `${d.boardMembers.length} board/owner signal(s), ${d.buildingStaff.length} staff/management signal(s) — verify HPD MDR, ACRIS, DOB, PropertyShark, board materials, or site contact before board-facing release`,
   });
   const contactSourceText = (d.contactResearchSources || []).join(' ');
-  for (const source of ['HPD MDR', 'ACRIS', 'DOB', 'PropertyShark', 'Apollo']) {
+  const requiredStakeholderSources = isHoaRecovery
+    ? ['Connecticut Secretary of the State', 'Monroe Town Clerk', 'Board roster']
+    : ['HPD MDR', 'ACRIS', 'DOB', 'PropertyShark', 'Apollo'];
+  for (const source of requiredStakeholderSources) {
     checks.push({
       name: `Stakeholder Source: ${source}`,
       status: contactSourceText.includes(source) || html.includes(source) ? 'pass' : 'fail',
-      detail: `${source} must be part of Jackie contact/stakeholder research`,
+      detail: `${source} must be part of Camelot contact/stakeholder research`,
     });
   }
   checks.push({
     name: 'Current Management Performance Fallback',
-    status: !/[A-F]/.test(d.managementGrade) && !html.includes('Public-record review pending') ? 'fail' : 'pass',
-    detail: /[A-F]/.test(d.managementGrade) ? `Grade ${d.managementGrade}` : 'Pending public-record review message required',
+    status: isHoaRecovery ? 'pass' : (!/[A-F]/.test(d.managementGrade) && !html.includes('Public-record review pending') ? 'fail' : 'pass'),
+    detail: isHoaRecovery
+      ? 'Connecticut HOA mode: current manager and field-support structure must be verified through board/current-management documents'
+      : /[A-F]/.test(d.managementGrade) ? `Grade ${d.managementGrade}` : 'Pending public-record review message required',
   });
   const managementRiskSignals = getManagementPublicRiskSignals(d);
   checks.push({
@@ -3303,6 +3343,7 @@ export function generateBrochureHTML(d: MasterReportData): string {
   const fmtMoney = (n: number) => n >= 1e6 ? `$${(n/1e6).toFixed(1)}M` : `$${n.toLocaleString()}`;
   const modelUnits = Math.max(d.units || 0, 1);
   const isManhattan = (d.borough || '').toLowerCase().includes('manhattan') || /fifth|madison|park|broadway|avenue|street/i.test(d.address);
+  const isHoaRecovery = isHoaExecutiveRecoveryReport(d);
   const accessBorough = d.borough || 'New York';
   const accessTransit = isManhattan
     ? 'Subway and bus access supports routine senior-management visits from 57 West 57th Street, with Midtown connections and crosstown options.'
@@ -3355,7 +3396,9 @@ export function generateBrochureHTML(d: MasterReportData): string {
     ? d.neighborhoodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
     : d.borough || 'New York City';
   const nearbyLandmarkLabels = resolveNearbyLandmarkLabels(d);
-  const managementRiskFlags = [
+  const managementRiskFlags = isHoaRecovery
+    ? (d.distressSignals || []).map(signal => `${signal.type}: ${signal.description}`)
+    : [
     d.violationsOpen > 0 ? `${d.violationsOpen} open HPD violation(s)` : null,
     d.dobViolationOpen > 0 ? `${d.dobViolationOpen} open DOB violation signal(s)` : null,
     d.ecbCount > 0 ? `${d.ecbCount} ECB/OATH record(s)` : null,
@@ -3369,8 +3412,12 @@ export function generateBrochureHTML(d: MasterReportData): string {
     d.complianceReleaseStatus === 'needs_review' ? 'compliance source coverage needs review' : null,
   ].filter((flag): flag is string => Boolean(flag));
   const managementRiskSummary = managementRiskFlags.length
-    ? `Management Public-Record Risk: Jackie reconciled this grade against ${managementRiskFlags.slice(0, 5).join('; ')}. The score is not allowed to show a clean 100 when violations, liens, DOB/FISP issues, litigation, ECB/OATH records, or DOF risk appear elsewhere in the report.`
-    : 'No material public-record risk signal loaded from HPD, DOB, ECB/OATH, DOF, ACRIS, court, FISP, or 311 sources. Jackie still recommends confirming staff, managing agent, and board materials before release.';
+    ? isHoaRecovery
+      ? `HOA operating-risk context: Camelot reconciled this management read against ${managementRiskFlags.slice(0, 5).join('; ')}. The report should not imply a clean operating environment until claim files, budget records, vendor contracts, and board documents are reviewed.`
+      : `Management Public-Record Risk: Jackie reconciled this grade against ${managementRiskFlags.slice(0, 5).join('; ')}. The score is not allowed to show a clean 100 when violations, liens, DOB/FISP issues, litigation, ECB/OATH records, or DOF risk appear elsewhere in the report.`
+    : isHoaRecovery
+      ? 'No material HOA operating-risk documents have been loaded yet; Camelot still needs the claim file, current budget, vendor list, reserve study, and board materials.'
+      : 'No material public-record risk signal loaded from HPD, DOB, ECB/OATH, DOF, ACRIS, court, FISP, or 311 sources. Jackie still recommends confirming staff, managing agent, and board materials before release.';
   const managementRiskChipHTML = managementRiskFlags.map(flag => `<span style="display:inline-block;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991b1b;padding:6px 12px;border-radius:18px;font-size:10px;font-weight:600">${safe(flag)}</span>`).join('');
   const propertyPedigree = is1280Fifth ? {
     title: 'A Robert A.M. Stern Masterpiece',
@@ -3389,10 +3436,10 @@ export function generateBrochureHTML(d: MasterReportData): string {
       d.yearBuilt ? `Built ${d.yearBuilt} | ${d.propertyType}` : d.propertyType,
       `${d.units || 'N/A'} Units${d.stories ? ` | ${d.stories} Floors` : ''}`,
       d.buildingArea ? `${d.buildingArea.toLocaleString()} SF` : 'Building area to be verified',
-      d.borough ? `${d.borough} location` : 'NYC location',
-      d.neighborhoodName ? `${prettyNeighborhood} neighborhood` : 'Neighborhood profile generated by Jackie',
+      d.borough ? `${d.borough} location` : isHoaRecovery ? 'Regional location' : 'NYC location',
+      d.neighborhoodName ? `${prettyNeighborhood} neighborhood` : 'Neighborhood profile generated by Camelot',
     ],
-    foot: 'Property-specific history is verified during Camelot scope review and onboarding.',
+    foot: isHoaRecovery ? 'Public HOA facts are source-backed where available; declaration, budget, claim file, and board records still control final scope.' : 'Property-specific history is verified during Camelot scope review and onboarding.',
     locationTitle: `${prettyNeighborhood} Positioning`,
     locationCopy: `${d.buildingName} sits within ${prettyNeighborhood}, where access, operations, and neighborhood fundamentals shape resident experience and long-term value.`,
     lifestyleTitle: 'Access, Service & Liquidity',
@@ -5731,7 +5778,9 @@ ${buildPortfolioSection(d)}
 <div style="background:#EDE9DF;border:1px solid #D5D0C6;border-radius:8px;padding:24px;margin-bottom:16px">
 <div style="display:flex;gap:10px;margin-bottom:12px;color:#A89035;font-size:22px;align-items:center"><span title="Court">🏛️</span><span title="Law">⚖️</span><span title="Legal terms">🔨</span><span title="Confidentiality">🔒</span></div>
 <p style="font-size:12px;color:#2C3240;line-height:1.8;margin-bottom:12px">\uD83D\uDD12 This Property Intelligence Report is <strong>confidential and proprietary</strong> to Camelot Realty Group. It is intended solely for the named recipient(s) and may not be reproduced, distributed, or disclosed without prior written consent.</p>
-<p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:12px">\u00A9 ${new Date().getFullYear()} Camelot Realty Group. All rights reserved. Contents are protected by U.S. copyright and trade secret law. SCOUT, Jackie, Merlin AI, ConciergePlus, Prisma, Parity, and Camelot Central are proprietary platforms. This Report is for informational purposes only and does not constitute legal, financial, or investment advice. Data is sourced from NYC Open Data, ACRIS, StreetEasy, RealtyMX, and other third-party databases and is presented &ldquo;as is&rdquo; without warranty. AI-assisted analysis has been reviewed by licensed real estate professionals. Governed by the laws of the State of New York; venue in New York County.</p>
+<p style="font-size:11px;color:#555;line-height:1.7;margin-bottom:12px">${isHoaRecovery
+  ? `\u00A9 ${new Date().getFullYear()} Camelot Realty Group. All rights reserved. Contents are protected by U.S. copyright and trade secret law. SCOUT, Merlin AI, ConciergePlus, Prisma, Parity, Camelot Central, and Camelot OS are proprietary platforms. This Report is for informational and proposal discussion purposes only and does not constitute legal, financial, insurance, construction, or investment advice. Data is sourced from Connecticut public-record paths, Monroe municipal/land/assessor records, HOA-supplied documents when available, listing/market references, and third-party databases and is presented &ldquo;as is&rdquo; without warranty. Final terms, scope, field-operations cadence, and governing law are controlled by the executed management or consulting agreement.`
+  : `\u00A9 ${new Date().getFullYear()} Camelot Realty Group. All rights reserved. Contents are protected by U.S. copyright and trade secret law. SCOUT, Jackie, Merlin AI, ConciergePlus, Prisma, Parity, and Camelot Central are proprietary platforms. This Report is for informational purposes only and does not constitute legal, financial, or investment advice. Data is sourced from NYC Open Data, ACRIS, StreetEasy, RealtyMX, and other third-party databases and is presented &ldquo;as is&rdquo; without warranty. AI-assisted analysis has been reviewed by licensed real estate professionals. Governed by the laws of the State of New York; venue in New York County.`}</p>
 <div style="text-align:center;margin-top:16px">
 <a href="${LEGAL_TERMS_URL}" target="_blank" rel="noopener" style="display:inline-block;background:#A89035;color:#fff;padding:10px 28px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:0.5px">Request Full Legal Terms</a>
 <div style="font-size:10px;color:#777;margin-top:8px">info@camelot.nyc · www.camelot.nyc</div>
