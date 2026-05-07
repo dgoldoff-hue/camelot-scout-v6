@@ -1899,8 +1899,9 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
     tierLabel: 'Connecticut HOA / Executive Community Operations',
     ancillaryFeesIncluded: ['Monthly executive reporting', 'Board support', 'Vendor accountability dashboard', 'Insurance restoration coordination framework'],
     ancillaryComparison: [
-      { service: 'Regional Field Operations', marketRate: '$1,000-$2,500/mo', camelotRate: 'Scoped by inspection cadence' },
-      { service: 'Claims / Restoration Oversight', marketRate: 'Separate consulting fee', camelotRate: 'Separate project agreement' },
+      { service: 'Local Field Operations Retainer', marketRate: '$1,500-$3,500/mo', camelotRate: 'Scoped after budget, claim file, and inspection cadence review' },
+      { service: 'Hourly Field / Facilities Support', marketRate: '$95-$175/hr', camelotRate: '$95-$150/hr, plus approved travel/admin where applicable' },
+      { service: 'Claims / Restoration Oversight', marketRate: 'Separate consulting fee', camelotRate: 'Separate project agreement; can include selected board meeting attendance' },
       { service: 'Capital Project Coordination', marketRate: 'Hourly or % of project', camelotRate: '$150/hr or agreed fixed/project fee' },
     ],
   };
@@ -1915,7 +1916,7 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
       inquiryContact: 'Carlos Capria',
       inquiryOrganization: 'Hills of Monroe HOA',
       inquiryRole: 'Primary Contact',
-      inquiryNotes: 'Major winter-related loss event involving ice damage; focus on executive HOA management, insurance restoration oversight, field operations, board support, financial organization, vendor accountability, and long-term asset preservation.',
+      inquiryNotes: 'Major winter-related loss event involving ice damage; focus on executive HOA management, insurance restoration oversight, field operations, board support, financial organization, vendor accountability, and long-term asset preservation. Core management, accounting, reporting, resident portal, automation, governance support, and board support are ready to propose; local on-site project/facilities support should be scoped separately after reviewing rent roll, current budget, financials, claim documents, vendor contracts, and desired site-visit cadence.',
     },
     units,
     stories: 2,
@@ -2025,10 +2026,10 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
     feeComparison,
     streetEasy: null,
     commercialIntel: {
-      commercialSignals: ['HOA common-area operations', 'Insurance restoration coordination', 'Regional facilities oversight'],
+      commercialSignals: ['HOA common-area operations', 'Insurance restoration coordination', 'Local project / facilities coordinator need to scope', 'Regional facilities oversight'],
       likelyCommercialUses: [],
       amenities: ['Gated community setting', 'Pool', 'Paddle tennis', 'Clubhouse', 'Guest parking', 'One-car attached garages', 'Patios with wooded views', 'Central air / city water context', 'Common roads / drives', 'Landscape and seasonal maintenance areas', 'Storm-exposed exterior envelope components'],
-      revenueOpportunities: ['Vendor rebidding', 'Insurance recovery discipline', 'Preventive maintenance scheduling', 'Reserve planning', 'Amenity rules and maintenance-cost review', 'Guest parking and common-area policy review'],
+      revenueOpportunities: ['Vendor rebidding', 'Insurance recovery discipline', 'Preventive maintenance scheduling', 'Reserve planning', 'Amenity rules and maintenance-cost review', 'Guest parking and common-area policy review', 'Use operating savings to offset local field/project management labor where practical'],
       officialWebsite: null,
       brandingTitle: 'Hills of Monroe HOA',
       brandingDescription: 'Townhouse and detached-home HOA community in Monroe, CT, with gated setting, pool, paddle tennis, clubhouse, guest parking, and wooded residential context.',
@@ -2059,6 +2060,16 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
       projectTitle: 'Camelot HOA Executive Management & Recovery Services Proposal',
       lossEvent: 'Major winter-related loss event involving ice damage affecting portions of the community',
       unitCountStatus: 'source_backed_verify_with_hoa_roster',
+      localFieldSupportStrategy: {
+        status: 'scope_after_board_discovery',
+        rationale: 'Camelot can confidently lead executive management, accounting, reporting, automation, governance support, and board communication now; the local on-site field layer should be priced after confirming visit frequency, active projects, resident interface needs, contractor load, and travel/local staffing availability.',
+        pricingOptions: [
+          'Option A: Core executive management only, with field support billed hourly as needed',
+          'Option B: Core executive management plus limited monthly field retainer for several site visits',
+          'Option C: Core executive management plus project-specific facilities/project manager for restoration or capital work',
+        ],
+        discoveryNeeded: ['Rent roll', 'Current operating budget', 'Most recent financials', 'Audited financials', 'Insurance claim files', 'Vendor contracts', 'Open project list', 'Board meeting cadence', 'Expected monthly site visits'],
+      },
       yearBuiltRange: '1987-1994 public profile range; Dagny narrative also references 1988-1990 construction timing',
       hoaCommunityFacts: {
         unitTypes: ['Townhouse', 'Single-family detached'],
