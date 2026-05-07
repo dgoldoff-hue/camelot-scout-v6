@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { BotStatus } from '@/types';
 import { cn, formatDate } from '@/lib/utils';
+import { SCOUT_AGENT_DOCTRINES } from '@/lib/scout-ai-doctrines';
 import {
   AlertCircle,
   Archive,
@@ -11,6 +12,7 @@ import {
   Crown,
   Database,
   FileText,
+  Gavel,
   Mail,
   Pause,
   Play,
@@ -55,6 +57,8 @@ type BotRun = {
 
 const DRIVE_FOLDER = 'Google Drive folder 1T6WD8q-2h9Cq1kxCwFmIcdb4lo-A3EAF';
 
+const doctrineById = Object.fromEntries(SCOUT_AGENT_DOCTRINES.map((agent) => [agent.id, agent]));
+
 const DEMO_BOTS: DashboardBot[] = [
   {
     id: 'jackie',
@@ -96,6 +100,35 @@ const DEMO_BOTS: DashboardBot[] = [
     ],
   },
   {
+    id: 'merlin',
+    name: 'Merlin Operating Copilot',
+    type: 'merlin',
+    description:
+      'Answers operational, pipeline, compliance, market, proposal, staffing, and savings questions with the same fact discipline as Jackie.',
+    status: 'active',
+    owner: 'Camelot OS',
+    tasks_completed: 64,
+    tasks_queued: 2,
+    last_run_at: new Date(Date.now() - 1000 * 60 * 11).toISOString(),
+    outputs: ['Pipeline brief', 'Board talking points', 'Outreach draft', 'Savings plan', 'Verification checklist'],
+    quality_gates: [
+      ...(doctrineById.merlin?.releaseGates || []),
+      'Local quick actions work without an external AI backend',
+      'Answers identify missing documents instead of inventing them',
+      'Client-facing copy says Camelot, not internal bot language',
+    ],
+    sources: [
+      { name: 'src/lib/ai-client.ts', kind: 'Repo', status: 'synced' },
+      { name: 'src/lib/scout-ai-doctrines.ts', kind: 'Repo', status: 'synced' },
+      { name: 'src/components/ChatInterface.tsx', kind: 'Repo', status: 'synced' },
+    ],
+    actions: [
+      { label: 'Chat', href: '/chat', icon: Sparkles },
+      { label: 'Pipeline', href: '/pipeline', icon: RefreshCw },
+      { label: 'Outreach', href: '/outreach', icon: Mail },
+    ],
+  },
+  {
     id: 'scout',
     name: 'Scout Market Intelligence',
     type: 'scout',
@@ -108,11 +141,11 @@ const DEMO_BOTS: DashboardBot[] = [
     last_run_at: new Date(Date.now() - 1000 * 60 * 9).toISOString(),
     outputs: ['Lead scores', 'Violation signals', 'Owner intel', 'Pipeline tasks'],
     quality_gates: [
+      ...(doctrineById.scout?.releaseGates || []),
       'Source address verified before content is exported or published',
-      'HPD/DOF/DOB sources checked',
-      'Grade A/B/C score generated',
-      'Pipeline stage updated',
-      'Fixes and API errors resolved before handoff',
+      'HPD/DOF/DOB or state/local equivalents checked',
+      'Pipeline stage updated with the next useful action',
+      'Image, owner, management and unit-count enrichment gaps flagged',
     ],
     sources: [
       { name: 'src/lib/scoring.ts', kind: 'Repo', status: 'synced' },
@@ -138,10 +171,9 @@ const DEMO_BOTS: DashboardBot[] = [
     last_run_at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
     outputs: ['Market report', 'Competitive summary', 'Pricing context'],
     quality_gates: [
+      ...(doctrineById.sentinel?.releaseGates || []),
       'Subject property address checked against selected market source',
-      'Report template present',
-      'Reference parser present',
-      'Manual review before sending',
+      'Charts, maps, comps and neighborhood proof included',
       'No broken links or missing sections before publish',
     ],
     sources: [
@@ -151,6 +183,65 @@ const DEMO_BOTS: DashboardBot[] = [
     actions: [
       { label: 'Sentinel', href: '/sentinel', icon: Sparkles },
       { label: 'Intelligence', href: '/intelligence', icon: Database },
+    ],
+  },
+  {
+    id: 'guardian',
+    name: 'Guardian Compliance Shield',
+    type: 'guardian',
+    description:
+      'Turns violations, liens, lawsuits, LL97/FISP, insurance, claims, and release blockers into a source-checked risk plan.',
+    status: 'active',
+    owner: 'Camelot OS',
+    tasks_completed: 42,
+    tasks_queued: 3,
+    last_run_at: new Date(Date.now() - 1000 * 60 * 17).toISOString(),
+    outputs: ['Compliance risk brief', 'Violation resolution plan', 'LL97/FISP workplan', 'Release blocker memo'],
+    quality_gates: [
+      ...(doctrineById.guardian?.releaseGates || []),
+      'State-specific compliance language only',
+      'All-zero result must show source coverage and confidence',
+      'Current management score reconciled against liens, violations, claims, and court signals',
+    ],
+    sources: [
+      { name: 'src/lib/nyc-violations.ts', kind: 'Repo', status: 'synced' },
+      { name: 'src/lib/nyc-api.ts', kind: 'Repo', status: 'synced' },
+      { name: 'src/lib/ll97-calculator.ts', kind: 'Repo', status: 'synced' },
+      { name: 'src/lib/gut-check.ts', kind: 'Repo', status: 'synced' },
+    ],
+    actions: [
+      { label: 'Shield', href: '/compliance', icon: ShieldCheck },
+      { label: 'Violations', href: '/violations', icon: AlertCircle },
+      { label: 'Reports', href: '/reports', icon: FileText },
+    ],
+  },
+  {
+    id: 'excalibur',
+    name: 'Excalibur Proposal Engine',
+    type: 'excalibur',
+    description:
+      'Builds proposal logic, fee comparisons, service menus, rate assumptions, agreement support, and board-safe scope language.',
+    status: 'active',
+    owner: 'Camelot OS',
+    tasks_completed: 26,
+    tasks_queued: 4,
+    last_run_at: new Date(Date.now() - 1000 * 60 * 36).toISOString(),
+    outputs: ['Fee comparison', 'Service menu', 'Proposal of services', 'Agreement checklist'],
+    quality_gates: [
+      ...(doctrineById.excalibur?.releaseGates || []),
+      'Camelot minimum fee rules applied',
+      'Ancillary services separated from included services',
+      'Formal proposal waits for budget, audited financials, prior report, and service scope',
+    ],
+    sources: [
+      { name: 'Management agreement rate sheet', kind: 'Drive', status: 'reference' },
+      { name: 'src/lib/pitch-report.ts', kind: 'Repo', status: 'synced' },
+      { name: 'src/pages/InstantProposal.tsx', kind: 'Repo', status: 'synced' },
+    ],
+    actions: [
+      { label: 'Instant Proposal', href: '/instant-proposal', icon: Zap },
+      { label: 'Agreements', href: '/agreements', icon: Gavel },
+      { label: 'Report Center', href: '/report-center', icon: Crown },
     ],
   },
   {
@@ -166,10 +257,10 @@ const DEMO_BOTS: DashboardBot[] = [
     last_run_at: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString(),
     outputs: ['Follow-up prompts', 'Email drafts', 'Pipeline nudges'],
     quality_gates: [
+      ...(doctrineById.outreach?.releaseGates || []),
       'Property address verified before any draft is handed off',
       'Draft only, never auto-send',
-      'Building context included',
-      'Owner review required',
+      'Building context and selected report focus included',
       'Corrections rechecked clean before release',
     ],
     sources: [
@@ -209,8 +300,11 @@ const DEMO_RUNS: BotRun[] = [
 
 const BOT_ICONS: Record<string, typeof BotIcon> = {
   jackie: Crown,
+  merlin: Sparkles,
   scout: Database,
   sentinel: Sparkles,
+  guardian: ShieldCheck,
+  excalibur: Gavel,
   outreach: Mail,
 };
 

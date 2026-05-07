@@ -21,6 +21,12 @@ const QUICK_ACTIONS = [
   { label: 'Draft Email', icon: Mail, prompt: 'Draft a cold outreach email for our highest-scored building that hasn\'t been contacted yet.' },
   { label: 'Untouched Leads', icon: AlertCircle, prompt: 'Which leads have been in the "discovered" stage for more than 7 days without any contact?' },
   { label: 'Competitive Analysis', icon: Zap, prompt: 'What can you tell me about the current competitive landscape for property management in NYC? What are common pain points buildings have with their current management?' },
+  { label: 'Compliance Brief', icon: AlertCircle, prompt: 'Give me a Guardian compliance risk brief. Which buildings need source checks for violations, liens, LL97, court filings, or management-score reconciliation?' },
+  { label: 'Market Brief', icon: BarChart3, prompt: 'Create a Sentinel market and comp brief from the current Scout database. What charts, sources, and neighborhood proof should go into the next report?' },
+  { label: 'Proposal Angle', icon: Sparkles, prompt: 'Create an Excalibur board proposal angle for our strongest current lead, including fee positioning, service scope, and what financial documents we need before a final proposal.' },
+  { label: 'Savings Plan', icon: RefreshCw, prompt: 'Build a value creation and vendor savings plan that shows how Camelot can save time, money, risk, and board effort.' },
+  { label: 'HOA Recovery', icon: Target, prompt: 'Create an HOA recovery and field operations brief that separates executive back office, local facilities support, and claims/project oversight.' },
+  { label: 'Agent Skill Sets', icon: Bot, prompt: 'Summarize the upgraded Scout agent skill sets across Merlin, Scout, Guardian, Sentinel, Outreach, and Excalibur.' },
 ];
 
 export default function ChatInterface() {

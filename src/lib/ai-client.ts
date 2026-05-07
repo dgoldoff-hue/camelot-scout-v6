@@ -10,6 +10,7 @@ export interface AIChatMessage {
 }
 
 import { JACKIE_V2_ORCHESTRATOR_PROMPT } from './jackie-v2-orchestrator';
+import { SCOUT_AGENT_DOCTRINE_PROMPT } from './scout-ai-doctrines';
 
 export interface AIConfig {
   apiUrl: string;
@@ -36,7 +37,45 @@ Be concise, data-driven, and actionable. Use specific numbers when available. Fo
 
 When the user asks about acquisitions, underwriting, capital markets, real estate investment strategy, value-add deals, distressed assets, HOA/condo turnarounds, zoning, debt, capital stacks, investor decks, lender decks, LOIs, or sponsor strategy, apply the Jackie v2 acquisition-orchestrator doctrine below.
 
-${JACKIE_V2_ORCHESTRATOR_PROMPT}`;
+${JACKIE_V2_ORCHESTRATOR_PROMPT}
+
+Apply the Scout-wide agent doctrine below for Merlin, Scout, Guardian, Sentinel, Outreach, and Excalibur work.
+
+${SCOUT_AGENT_DOCTRINE_PROMPT}`;
+
+type LocalBuilding = {
+  address: string;
+  name?: string;
+  score: number;
+  grade: string;
+  pipeline_stage: string;
+  pipeline_moved_at?: string;
+  status: string;
+  units?: number;
+  violations_count: number;
+  open_violations_count: number;
+  current_management?: string;
+  contacts: { name: string; role: string; email?: string; phone?: string }[];
+  borough?: string;
+  region?: string;
+  type: string;
+};
+
+function highestRiskBuildings(buildings: LocalBuilding[], count = 5) {
+  return [...buildings]
+    .sort((a, b) => {
+      const riskA = (a.open_violations_count || 0) * 4 + (a.violations_count || 0) + (100 - (a.score || 0));
+      const riskB = (b.open_violations_count || 0) * 4 + (b.violations_count || 0) + (100 - (b.score || 0));
+      return riskB - riskA;
+    })
+    .slice(0, count);
+}
+
+function formatBuildingLine(building: LocalBuilding, index: number): string {
+  const name = building.name || building.address;
+  const place = building.borough || building.region || 'market';
+  return `**${index + 1}. ${name}** - ${building.units || '?'} units, ${building.type}, ${place}, score ${building.score}/100, ${building.open_violations_count || 0} open violations, management: ${building.current_management || 'to verify'}`;
+}
 
 /**
  * Check if AI is configured (external API)
@@ -51,13 +90,7 @@ export function isAIConfigured(): boolean {
  */
 export function localQueryEngine(
   query: string,
-  buildings: { 
-    address: string; name?: string; score: number; grade: string; 
-    pipeline_stage: string; pipeline_moved_at?: string; status: string;
-    units?: number; violations_count: number; open_violations_count: number;
-    current_management?: string; contacts: { name: string; role: string; email?: string; phone?: string }[];
-    borough?: string; region?: string; type: string;
-  }[]
+  buildings: LocalBuilding[]
 ): string | null {
   const q = query.toLowerCase();
   const active = buildings.filter((b) => b.status === 'active');
@@ -205,7 +238,84 @@ export function localQueryEngine(
     return resp;
   }
 
-  // No match — return null (will show fallback message)
+  if (q.includes('compliance') || q.includes('guardian') || q.includes('violation') || q.includes('risk brief')) {
+    const risk = highestRiskBuildings(active, 5);
+    let resp = `## Guardian Compliance Brief\n\n`;
+    resp += `Scout should treat compliance as a source-backed operating risk, not a cosmetic score. For NYC assets, verify HPD, DOB BIS, DOB NOW, ECB/OATH, DOF, ACRIS, 311, LL97/FISP, liens and court-index signals. Outside NYC, switch to state, county, assessor, town clerk, building department, court and association-record equivalents.\n\n`;
+    resp += `**Highest-risk buildings in the current database:**\n\n`;
+    if (risk.length === 0) {
+      resp += `No active buildings are available for compliance ranking.\n`;
+    } else {
+      risk.forEach((b, i) => {
+        resp += `${formatBuildingLine(b, i)}\n`;
+      });
+    }
+    resp += `\n**Release rule:** if every source returns zero, the report should show the source coverage and label the result as verified or still pending. A building with liens, open violations, complaints, claims, or penalties cannot receive a perfect current-management score.`;
+    return resp;
+  }
+
+  if (q.includes('market') || q.includes('sentinel') || q.includes(' comps') || q.includes('comparable') || q.includes('quarterly')) {
+    const totalUnits = active.reduce((sum, b) => sum + (b.units || 0), 0);
+    const regions: Record<string, number> = {};
+    active.forEach((b) => {
+      const region = b.borough || b.region || 'Unknown';
+      regions[region] = (regions[region] || 0) + 1;
+    });
+    const regionLines = Object.entries(regions)
+      .sort(([, a], [, b]) => b - a)
+      .map(([name, count]) => `- ${name}: ${count} tracked building${count === 1 ? '' : 's'}`)
+      .join('\n');
+    let resp = `## Sentinel Market Intelligence Brief\n\n`;
+    resp += `Sentinel should turn market data into a board-facing value story: how the building stacks up in value, $/SF, leasing velocity, safety, amenities, cost pressure, sales activity, and neighborhood demand.\n\n`;
+    resp += `**Current Scout footprint:** ${active.length} active buildings, ${totalUnits.toLocaleString()} total units.\n${regionLines || '- No region data yet'}\n\n`;
+    resp += `**Source stack to use:** Miller Samuel / REBNY-style market reports, StreetEasy, Zillow, PropertyShark, local MLS, Niche, NeighborhoodScout, NYC Open Data or state/local equivalents, plus Camelot portfolio case studies and nearby managed buildings.\n\n`;
+    resp += `**Deliverable:** quarterly market report with maps, charts, comp table, local Camelot presence, and a clear "what your unit/building may be worth" explanation.`;
+    return resp;
+  }
+
+  if (q.includes('proposal') || q.includes('board') || q.includes('excalibur') || q.includes('fee')) {
+    const target = [...active].sort((a, b) => b.score - a.score)[0];
+    let resp = `## Excalibur Proposal Angle\n\n`;
+    if (target) {
+      resp += `**Best current target:** ${target.name || target.address}\n`;
+      resp += `- ${target.units || '?'} units, ${target.type}, ${target.borough || target.region || 'market to verify'}\n`;
+      resp += `- Current management: ${target.current_management || 'to verify'}\n`;
+      resp += `- Score: ${target.score}/100, Grade ${target.grade}, ${target.open_violations_count || 0} open violations\n\n`;
+    }
+    resp += `**Proposal logic:** position Camelot as 15% below the relevant market management-fee benchmark while keeping ancillary services separate: lease renewals, sales packages, closings, alteration agreement review, after-hours meetings, project management over threshold, and state/local compliance work. Label all fee assumptions until the budget, audited financials, prior management report, rent roll, and service scope are reviewed.\n\n`;
+    resp += `**Board-safe message:** Camelot can be creative with staffing, automation, accounting, reporting, and vendor oversight, but the formal proposal should wait for financials and a verified operating picture.`;
+    return resp;
+  }
+
+  if (q.includes('savings') || q.includes('vendor') || q.includes('value creation') || q.includes('save money')) {
+    let resp = `## Value Creation and Vendor Savings Plan\n\n`;
+    resp += `Camelot's savings story should be positive but credible: reduce avoidable spend, improve scope control, catch issues earlier, and free board time without pretending inflation disappears.\n\n`;
+    resp += `**Savings levers Scout should model:**\n`;
+    resp += `- Vendor rebidding and scope control for recurring contracts\n`;
+    resp += `- Insurance, utilities, repairs, supplies, payroll/staffing design, and consultant fee review\n`;
+    resp += `- Preventive maintenance to avoid emergency pricing and resident disruption\n`;
+    resp += `- Automation for work orders, payments, reporting, board packets, meeting minutes, document access, and resident communication\n`;
+    resp += `- Project oversight that reduces change-order drift and improves closeout documentation\n\n`;
+    resp += `**Report rule:** show a five-year value case with controllable savings and board-time savings as benefits. Do not show negative ROI as the headline unless the user explicitly asks for a downside-only underwriting case.`;
+    return resp;
+  }
+
+  if (q.includes('hoa') || q.includes('recovery') || q.includes('field operations') || q.includes('facilities')) {
+    let resp = `## HOA Recovery and Field Operations Brief\n\n`;
+    resp += `For HOA and non-NYC communities, Scout should remove NYC-only law language and use state/county/town sources. The management model should separate virtual executive back-office strength from local field support.\n\n`;
+    resp += `**Recommended structure:**\n`;
+    resp += `- Core management: financials, billing, collections, board reporting, document controls, resident portal, vendor coordination\n`;
+    resp += `- Local facilities retainer: weekly or biweekly inspections, photo reporting, vendor walkthroughs, emergency response, project monitoring\n`;
+    resp += `- Claims/project oversight: separate cover with public adjuster, insurance, restoration and contractor workflow\n\n`;
+    resp += `**Diligence needed before final fee:** current budget, last audited financials, prior manager report, insurance dec page, reserve study, vendor list, open claim status, bylaws/rules, rent/unit roster, and board priorities.`;
+    return resp;
+  }
+
+  if (q.includes('agent') || q.includes('bot') || q.includes('skill set') || q.includes('skillset')) {
+    return `## Scout Agent Skill Set\n\nScout now treats the bots as a coordinated operating bench:\n\n- **Merlin:** operating copilot for pipeline, drafts, strategy and board talking points.\n- **Scout:** lead intelligence, scoring, owner/manager enrichment and source gap detection.\n- **Guardian:** compliance, violations, liens, lawsuits, LL97/FISP and release-blocker discipline.\n- **Sentinel:** market reports, comps, neighborhood context, charts, maps and portfolio proof.\n- **Outreach:** first emails, follow-ups, call scripts and meeting requests with property-specific copy.\n- **Excalibur:** proposals, fee comparisons, service menus, rate assumptions and agreement support.\n\nEach agent uses the Jackie standard: creative in positioning, strict with facts, source conflicts blocked before client-facing release.`;
+  }
+
+  // No match: return null so the external AI backend can answer if configured.
   return null;
 }
 

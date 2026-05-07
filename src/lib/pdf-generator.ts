@@ -21,6 +21,18 @@ export function downloadAsHTML(html: string, filename: string): void {
     ? html
       .replace(/(src|href)=["']\.\/([^"']+)["']/g, `$1="${baseUrl}/$2"`)
       .replace(/(src|href)=["']\/([^"']+)["']/g, `$1="${baseUrl}/$2"`)
+      .replace(/srcset=["']([^"']+)["']/g, (_match, value: string) => {
+        const rewritten = value
+          .split(',')
+          .map((entry) => {
+            const [url, descriptor] = entry.trim().split(/\s+/, 2);
+            const absolute = url.startsWith('/') ? `${baseUrl}${url}` : url.startsWith('./') ? `${baseUrl}/${url.slice(2)}` : url;
+            return descriptor ? `${absolute} ${descriptor}` : absolute;
+          })
+          .join(', ');
+        return `srcset="${rewritten}"`;
+      })
+      .replace(/url\((['"]?)\/([^)'"]+)\1\)/g, `url($1${baseUrl}/$2$1)`)
     : html;
   const blob = new Blob([portableHtml], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
@@ -29,6 +41,23 @@ export function downloadAsHTML(html: string, filename: string): void {
   a.download = filename.endsWith('.html') ? filename : `${filename}.html`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/** Open a mail client with a prepared client-facing draft. Attachments still require manual attachment by the user. */
+export function openEmailDraft(params: {
+  to?: string;
+  cc?: string;
+  subject: string;
+  body: string;
+  preferGmail?: boolean;
+}): void {
+  const to = encodeURIComponent(params.to || '');
+  const cc = params.cc ? `&cc=${encodeURIComponent(params.cc)}` : '';
+  const subject = encodeURIComponent(params.subject);
+  const body = encodeURIComponent(params.body);
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${to}${cc}&su=${subject}&body=${body}`;
+  const mailtoUrl = `mailto:${to}?subject=${subject}${cc}&body=${body}`;
+  window.open(params.preferGmail === false ? mailtoUrl : gmailUrl, '_blank');
 }
 
 /** Download CSV string as a .csv file */

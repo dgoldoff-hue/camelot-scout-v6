@@ -13,17 +13,19 @@ const nycApiFile = resolve(root, 'src/lib/nyc-api.ts');
 const nycViolationsFile = resolve(root, 'src/lib/nyc-violations.ts');
 const gutCheckFile = resolve(root, 'src/lib/gut-check.ts');
 const jackieV2File = resolve(root, 'src/lib/jackie-v2-orchestrator.ts');
+const scoutDoctrineFile = resolve(root, 'src/lib/scout-ai-doctrines.ts');
 const source = readFileSync(reportFile, 'utf8');
 const streetEasySource = readFileSync(streetEasyFile, 'utf8');
 const nycApiSource = readFileSync(nycApiFile, 'utf8');
 const nycViolationsSource = readFileSync(nycViolationsFile, 'utf8');
 const gutCheckSource = readFileSync(gutCheckFile, 'utf8');
 const jackieV2Source = readFileSync(jackieV2File, 'utf8');
+const scoutDoctrineSource = readFileSync(scoutDoctrineFile, 'utf8');
 const reportCenter = readFileSync(reportCenterFile, 'utf8');
 const instantProposal = readFileSync(instantProposalFile, 'utf8');
 const propertyDetail = readFileSync(propertyDetailFile, 'utf8');
 const pitchReportSource = readFileSync(pitchReportFile, 'utf8');
-const sourceStack = `${source}\n${pitchReportSource}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}\n${gutCheckSource}\n${jackieV2Source}`;
+const sourceStack = `${source}\n${pitchReportSource}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}\n${gutCheckSource}\n${jackieV2Source}\n${scoutDoctrineSource}`;
 
 const requiredTokens = [
   ['201 East 79 known profile', "canonicalAddress: '201 East 79th Street, New York, NY 10075'"],
@@ -163,6 +165,15 @@ const requiredTokens = [
   ['Jackie v2 hidden value doctrine', 'underutilized FAR'],
   ['Jackie v2 lender deliverable', 'lender deck'],
   ['Jackie v2 downside discipline', 'Do not hallucinate financial assumptions'],
+  ['Scout-wide agent doctrine', 'SCOUT_AGENT_DOCTRINES'],
+  ['Merlin operating copilot doctrine', 'Merlin Operating Copilot'],
+  ['Scout lead intelligence doctrine', 'Scout Lead Intelligence'],
+  ['Guardian compliance doctrine', 'Guardian Compliance Shield'],
+  ['Sentinel market doctrine', 'Sentinel Market Intelligence'],
+  ['Outreach relationship doctrine', 'Outreach Relationship Engine'],
+  ['Excalibur proposal doctrine', 'Excalibur Proposal and Agreement Engine'],
+  ['Scout competitive operating standard', 'resident self-service portals'],
+  ['Scout export operating standard', 'print, PDF, HTML, and email workflows'],
 ];
 
 const failures = requiredTokens
