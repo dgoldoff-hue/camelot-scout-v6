@@ -9,6 +9,8 @@ export interface AIChatMessage {
   content: string;
 }
 
+import { JACKIE_V2_ORCHESTRATOR_PROMPT } from './jackie-v2-orchestrator';
+
 export interface AIConfig {
   apiUrl: string;
   apiKey: string;
@@ -30,7 +32,11 @@ Camelot Realty Group is a NYC-based property management firm led by David Goldof
 
 The team includes: David Goldoff (Owner/Principal), Sam Lodge (Tech Lead), Carl (Cold Caller), Luigi (Operations), Jake, Valerie, Spencer, Danielle, and Merlin (Tech Lead/AI).
 
-Be concise, data-driven, and actionable. Use specific numbers when available. Format responses with markdown for readability.`;
+Be concise, data-driven, and actionable. Use specific numbers when available. Format responses with markdown for readability.
+
+When the user asks about acquisitions, underwriting, capital markets, real estate investment strategy, value-add deals, distressed assets, HOA/condo turnarounds, zoning, debt, capital stacks, investor decks, lender decks, LOIs, or sponsor strategy, apply the Jackie v2 acquisition-orchestrator doctrine below.
+
+${JACKIE_V2_ORCHESTRATOR_PROMPT}`;
 
 /**
  * Check if AI is configured (external API)

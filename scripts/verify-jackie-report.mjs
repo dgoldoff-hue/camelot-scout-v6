@@ -12,16 +12,18 @@ const streetEasyFile = resolve(root, 'src/lib/streeteasy.ts');
 const nycApiFile = resolve(root, 'src/lib/nyc-api.ts');
 const nycViolationsFile = resolve(root, 'src/lib/nyc-violations.ts');
 const gutCheckFile = resolve(root, 'src/lib/gut-check.ts');
+const jackieV2File = resolve(root, 'src/lib/jackie-v2-orchestrator.ts');
 const source = readFileSync(reportFile, 'utf8');
 const streetEasySource = readFileSync(streetEasyFile, 'utf8');
 const nycApiSource = readFileSync(nycApiFile, 'utf8');
 const nycViolationsSource = readFileSync(nycViolationsFile, 'utf8');
 const gutCheckSource = readFileSync(gutCheckFile, 'utf8');
+const jackieV2Source = readFileSync(jackieV2File, 'utf8');
 const reportCenter = readFileSync(reportCenterFile, 'utf8');
 const instantProposal = readFileSync(instantProposalFile, 'utf8');
 const propertyDetail = readFileSync(propertyDetailFile, 'utf8');
 const pitchReportSource = readFileSync(pitchReportFile, 'utf8');
-const sourceStack = `${source}\n${pitchReportSource}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}\n${gutCheckSource}`;
+const sourceStack = `${source}\n${pitchReportSource}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}\n${gutCheckSource}\n${jackieV2Source}`;
 
 const requiredTokens = [
   ['201 East 79 known profile', "canonicalAddress: '201 East 79th Street, New York, NY 10075'"],
@@ -153,6 +155,12 @@ const requiredTokens = [
   ['Camelot closing values language', 'A New York management partner built for board confidence'],
   ['Legal terms URL check', 'LEGAL_TERMS_URL'],
   ['No self-managed without explicit source', 'Self-managed language requires an explicit source'],
+  ['Jackie v2 orchestrator prompt', 'JACKIE_V2_ORCHESTRATOR_PROMPT'],
+  ['Jackie v2 acquisition role', 'head of acquisitions'],
+  ['Jackie v2 capital structure arbitrage', 'capital-structure arbitrage'],
+  ['Jackie v2 hidden value doctrine', 'underutilized FAR'],
+  ['Jackie v2 lender deliverable', 'lender deck'],
+  ['Jackie v2 downside discipline', 'Do not hallucinate financial assumptions'],
 ];
 
 const failures = requiredTokens
