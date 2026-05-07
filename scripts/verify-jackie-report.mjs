@@ -119,6 +119,8 @@ const requiredTokens = [
   ['Camelot minimum fee visible in report', 'Camelot minimum:'],
   ['Jackie executive roster slide', 'CAMELOT_EXECUTIVE_TEAM'],
   ['Jackie MDS reporting proof', 'MDS_REPORT_PROOF_POINTS'],
+  ['Jackie MDS sample financial report image', 'mds-sample-financial-report.png'],
+  ['Jackie HOA operational command center', 'Operating Command Center'],
   ['Jackie onboarding checklist proof', 'ONBOARDING_CHECKLIST'],
   ['Jackie agreement fee proof', 'STANDARD_AGREEMENT_PROOF_POINTS'],
   ['Jackie visual route map slide', 'New York Reach'],
