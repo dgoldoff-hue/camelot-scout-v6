@@ -1,14 +1,27 @@
 import { useState } from 'react';
-import { Eye, Download, Share2, BarChart3, Building2, TrendingUp, DollarSign, MapPin, Loader2 } from 'lucide-react';
+import { Eye, Download, Share2, BarChart3, Building2, TrendingUp, DollarSign, MapPin, Search, ShieldAlert, Home, Landmark } from 'lucide-react';
 import { openBrochureForPrint, downloadAsHTML } from '@/lib/pdf-generator';
-import { generateSentinelReport, generateBuildingReport, TRACKED_BUILDINGS, type SentinelInput, DEFAULT_SENTINEL_INPUT, QUARTERS } from '@/lib/sentinel-report';
+import {
+  generateBuildingReport,
+  generateSubjectMarketReport,
+  buildSentinelMarketFilename,
+  TRACKED_BUILDINGS,
+  SENTINEL_EXPANSION_SOURCE_STACK,
+  SENTINEL_UNIT_MIX_BENCHMARKS,
+  SENTINEL_MANAGEMENT_FEE_BENCHMARKS,
+  type SentinelInput,
+  DEFAULT_SENTINEL_INPUT,
+  QUARTERS,
+} from '@/lib/sentinel-report';
 import { generateFullSentinelReport } from '@/lib/sentinel-full-report';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 
 export default function Sentinel() {
-  const [input, setInput] = useState<SentinelInput>({ ...DEFAULT_SENTINEL_INPUT });
+  const realtyMxConfigured = Boolean(import.meta.env.VITE_REALTYMX_API_KEY);
+  const [input, setInput] = useState<SentinelInput>({ ...DEFAULT_SENTINEL_INPUT, realtyMxEnabled: realtyMxConfigured });
   const [generated, setGenerated] = useState(false);
+  const [subjectGenerated, setSubjectGenerated] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState<number | null>(null);
   const [buildingGenerated, setBuildingGenerated] = useState(false);
 
@@ -30,8 +43,36 @@ export default function Sentinel() {
     toast.success('Report downloaded');
   };
 
+  const handleSubjectGenerate = () => {
+    if (!input.subjectAddress?.trim()) {
+      toast.error('Enter a subject building address first');
+      return;
+    }
+    setSubjectGenerated(true);
+    toast.success('Subject market stack-up generated');
+  };
+
+  const handleSubjectPreview = () => {
+    if (!input.subjectAddress?.trim()) {
+      toast.error('Enter a subject building address first');
+      return;
+    }
+    const html = generateSubjectMarketReport(input);
+    openBrochureForPrint(html, buildSentinelMarketFilename(input, 'html').replace(/\.html$/, ''));
+  };
+
+  const handleSubjectDownload = () => {
+    if (!input.subjectAddress?.trim()) {
+      toast.error('Enter a subject building address first');
+      return;
+    }
+    const html = generateSubjectMarketReport(input);
+    downloadAsHTML(html, buildSentinelMarketFilename(input, 'html'));
+    toast.success('Subject market report downloaded');
+  };
+
   return (
-    <div className="p-6 space-y-6 max-w-4xl">
+    <div className="p-6 space-y-6 max-w-6xl">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
@@ -47,9 +88,9 @@ export default function Sentinel() {
       <div className="grid grid-cols-4 gap-4">
         {[
           { icon: Building2, label: 'Tracked Buildings', value: '6' },
-          { icon: MapPin, label: 'Neighborhoods', value: '12' },
-          { icon: TrendingUp, label: 'Camelot Rent Growth', value: '10.55%' },
-          { icon: DollarSign, label: 'Market Avg', value: '5.20%' },
+          { icon: MapPin, label: 'Markets', value: 'NYC+' },
+          { icon: TrendingUp, label: 'Unit Mix Rules', value: String(SENTINEL_UNIT_MIX_BENCHMARKS.length) },
+          { icon: DollarSign, label: 'Fee Benchmarks', value: String(SENTINEL_MANAGEMENT_FEE_BENCHMARKS.length) },
         ].map(({ icon: Icon, label, value }) => (
           <div key={label} className="bg-white rounded-xl border p-4 text-center">
             <Icon size={20} className="mx-auto text-camelot-gold mb-2" />
@@ -57,6 +98,148 @@ export default function Sentinel() {
             <div className="text-xs text-gray-500">{label}</div>
           </div>
         ))}
+      </div>
+
+      {/* Subject Building Market Stack-Up */}
+      <div className="bg-white rounded-xl border shadow-sm divide-y">
+        <div className="p-6">
+          <div className="flex items-start justify-between gap-4 mb-5">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
+                <Search size={18} className="text-camelot-gold" /> Subject Building Market Stack-Up
+              </h2>
+              <p className="text-gray-500 text-sm">
+                Enter any Scout or Jackie location and Sentinel will frame value, unit velocity, default/foreclosure risk, new construction, land values, and management-fee benchmarks.
+              </p>
+            </div>
+            <div className="hidden md:flex items-center gap-2 text-xs text-gray-500 bg-gray-50 border rounded-lg px-3 py-2">
+              <ShieldAlert size={14} className="text-camelot-gold" />
+              {realtyMxConfigured ? 'RealtyMX key detected.' : 'RealtyMX-ready; public-source fallback stays active.'}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-3">
+              <label className="text-xs text-gray-600 font-medium mb-1 block">Building Address</label>
+              <input
+                type="text"
+                value={input.subjectAddress || ''}
+                onChange={e => { update({ subjectAddress: e.target.value }); setSubjectGenerated(false); }}
+                placeholder="e.g., 201 East 79th Street, New York, NY"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 font-medium mb-1 block">Market / State</label>
+              <select
+                value={input.subjectBorough || ''}
+                onChange={e => update({ subjectBorough: e.target.value as SentinelInput['subjectBorough'] })}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+              >
+                {['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island', 'Westchester / Riverdale', 'New Jersey', 'Connecticut', 'Florida'].map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 font-medium mb-1 block">Asset Class</label>
+              <select
+                value={input.subjectAssetClass || ''}
+                onChange={e => update({ subjectAssetClass: e.target.value as SentinelInput['subjectAssetClass'] })}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+              >
+                {['Co-op / Condo', 'Rental', 'Mixed-Use', 'HOA / Condo Community', 'Land / Development', 'Commercial'].map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 font-medium mb-1 block">Units</label>
+              <input
+                type="number"
+                min="0"
+                value={input.subjectUnits || ''}
+                onChange={e => update({ subjectUnits: e.target.value })}
+                placeholder="e.g., 167"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 font-medium mb-1 block">Union Status</label>
+              <select
+                value={input.subjectUnionStatus || 'Unknown'}
+                onChange={e => update({ subjectUnionStatus: e.target.value as SentinelInput['subjectUnionStatus'] })}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+              >
+                {['Unknown', 'Union', 'Non-union', 'Mixed'].map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 font-medium mb-1 block">Service Level</label>
+              <select
+                value={input.subjectServiceLevel || ''}
+                onChange={e => update({ subjectServiceLevel: e.target.value as SentinelInput['subjectServiceLevel'] })}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+              >
+                {['Standard / Walk-Up', 'Elevator', 'Full-Service / Doorman', 'Luxury / Amenity', 'HOA / Field Operations'].map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+            <div className="lg:col-span-3">
+              <label className="text-xs text-gray-600 font-medium mb-1 block">Amenities / Notes</label>
+              <input
+                type="text"
+                value={input.subjectAmenities || ''}
+                onChange={e => update({ subjectAmenities: e.target.value })}
+                placeholder="Pool, garage, roof deck, storage, concierge, elevator, commercial space, etc."
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+              />
+            </div>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="rounded-lg border bg-slate-50 p-4">
+              <Home size={18} className="text-camelot-gold mb-2" />
+              <div className="font-semibold text-sm">Unit Mix Velocity</div>
+              <p className="text-xs text-gray-500 mt-1">Studio through duplex sweet spots, DOM risk, stale-price signals, and RealtyMX enrichment path.</p>
+            </div>
+            <div className="rounded-lg border bg-slate-50 p-4">
+              <ShieldAlert size={18} className="text-camelot-gold mb-2" />
+              <div className="font-semibold text-sm">Default Watch</div>
+              <p className="text-xs text-gray-500 mt-1">Mortgage, lis pendens, tax lien, foreclosure, and stale-listing warning stack.</p>
+            </div>
+            <div className="rounded-lg border bg-slate-50 p-4">
+              <Landmark size={18} className="text-camelot-gold mb-2" />
+              <div className="font-semibold text-sm">Fees & Land Context</div>
+              <p className="text-xs text-gray-500 mt-1">Management fees by borough, service level, union/staffing, amenities, and land PSF guides.</p>
+            </div>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              onClick={handleSubjectGenerate}
+              className="bg-camelot-navy text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-camelot-navy/90 transition-all flex items-center gap-2"
+            >
+              <BarChart3 size={16} /> Generate Stack-Up
+            </button>
+            {(subjectGenerated || input.subjectAddress) && (
+              <>
+                <button onClick={handleSubjectPreview} className="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 flex items-center gap-2">
+                  <Eye size={16} /> Preview
+                </button>
+                <button onClick={handleSubjectDownload} className="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 flex items-center gap-2">
+                  <Download size={16} /> Download HTML
+                </button>
+              </>
+            )}
+          </div>
+          <div className="mt-4 text-xs text-gray-400">
+            Source stack: {SENTINEL_EXPANSION_SOURCE_STACK.slice(0, 5).join(' | ')}.
+          </div>
+        </div>
       </div>
 
       {/* Form */}

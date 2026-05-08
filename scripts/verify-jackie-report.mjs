@@ -14,6 +14,7 @@ const nycViolationsFile = resolve(root, 'src/lib/nyc-violations.ts');
 const gutCheckFile = resolve(root, 'src/lib/gut-check.ts');
 const jackieV2File = resolve(root, 'src/lib/jackie-v2-orchestrator.ts');
 const scoutDoctrineFile = resolve(root, 'src/lib/scout-ai-doctrines.ts');
+const sentinelReportFile = resolve(root, 'src/lib/sentinel-report.ts');
 const source = readFileSync(reportFile, 'utf8');
 const streetEasySource = readFileSync(streetEasyFile, 'utf8');
 const nycApiSource = readFileSync(nycApiFile, 'utf8');
@@ -21,11 +22,12 @@ const nycViolationsSource = readFileSync(nycViolationsFile, 'utf8');
 const gutCheckSource = readFileSync(gutCheckFile, 'utf8');
 const jackieV2Source = readFileSync(jackieV2File, 'utf8');
 const scoutDoctrineSource = readFileSync(scoutDoctrineFile, 'utf8');
+const sentinelReportSource = readFileSync(sentinelReportFile, 'utf8');
 const reportCenter = readFileSync(reportCenterFile, 'utf8');
 const instantProposal = readFileSync(instantProposalFile, 'utf8');
 const propertyDetail = readFileSync(propertyDetailFile, 'utf8');
 const pitchReportSource = readFileSync(pitchReportFile, 'utf8');
-const sourceStack = `${source}\n${pitchReportSource}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}\n${gutCheckSource}\n${jackieV2Source}\n${scoutDoctrineSource}`;
+const sourceStack = `${source}\n${pitchReportSource}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}\n${gutCheckSource}\n${jackieV2Source}\n${scoutDoctrineSource}\n${sentinelReportSource}`;
 
 const requiredTokens = [
   ['201 East 79 known profile', "canonicalAddress: '201 East 79th Street, New York, NY 10075'"],
@@ -174,6 +176,18 @@ const requiredTokens = [
   ['Excalibur proposal doctrine', 'Excalibur Proposal and Agreement Engine'],
   ['Scout competitive operating standard', 'resident self-service portals'],
   ['Scout export operating standard', 'print, PDF, HTML, and email workflows'],
+  ['Sentinel subject market stack report', 'generateSubjectMarketReport'],
+  ['Sentinel market filename helper', 'buildSentinelMarketFilename'],
+  ['Sentinel unit mix benchmarks', 'SENTINEL_UNIT_MIX_BENCHMARKS'],
+  ['Sentinel foreclosure default signals', 'SENTINEL_FORECLOSURE_DEFAULT_SIGNALS'],
+  ['Sentinel new construction benchmarks', 'SENTINEL_NEW_CONSTRUCTION_BENCHMARKS'],
+  ['Sentinel management fee benchmarks', 'SENTINEL_MANAGEMENT_FEE_BENCHMARKS'],
+  ['Sentinel source stack', 'SENTINEL_EXPANSION_SOURCE_STACK'],
+  ['Sentinel RealtyMX API rule', 'RealtyMX API/CSV'],
+  ['Sentinel StreetEasy market source', 'StreetEasy Data Dashboard'],
+  ['Sentinel PLUTO land context source', 'NYC DCP PLUTO/MapPLUTO'],
+  ['Sentinel ACRIS foreclosure source', 'lis pendens'],
+  ['Sentinel 15 percent pricing rule', '15% below comparable large-firm pricing'],
 ];
 
 const failures = requiredTokens

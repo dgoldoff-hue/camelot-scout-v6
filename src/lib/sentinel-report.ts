@@ -26,6 +26,14 @@ export interface SentinelInput {
   insight3: string; // Rate Sensitivity
   insight4: string; // Rent vs. Buy
   insight5: string; // Neighborhood Value Spectrum
+  subjectAddress?: string;
+  subjectBorough?: 'Manhattan' | 'Brooklyn' | 'Queens' | 'Bronx' | 'Staten Island' | 'Westchester / Riverdale' | 'New Jersey' | 'Connecticut' | 'Florida' | '';
+  subjectAssetClass?: 'Co-op / Condo' | 'Rental' | 'Mixed-Use' | 'HOA / Condo Community' | 'Land / Development' | 'Commercial' | '';
+  subjectUnits?: string;
+  subjectUnionStatus?: 'Unknown' | 'Union' | 'Non-union' | 'Mixed' | '';
+  subjectServiceLevel?: 'Standard / Walk-Up' | 'Elevator' | 'Full-Service / Doorman' | 'Luxury / Amenity' | 'HOA / Field Operations' | '';
+  subjectAmenities?: string;
+  realtyMxEnabled?: boolean;
 }
 
 export const DEFAULT_SENTINEL_INPUT: SentinelInput = {
@@ -36,6 +44,14 @@ export const DEFAULT_SENTINEL_INPUT: SentinelInput = {
   insight3: 'Every 50bps rate drop unlocks 8–10% more buying power',
   insight4: 'Break-even: 20 yrs in Sunnyside, 38+ yrs in Tribeca',
   insight5: '$/sqft ranges from $660 (Sunnyside) to $2,100 (Tribeca/SoHo)',
+  subjectAddress: '',
+  subjectBorough: 'Manhattan',
+  subjectAssetClass: 'Co-op / Condo',
+  subjectUnits: '',
+  subjectUnionStatus: 'Unknown',
+  subjectServiceLevel: 'Standard / Walk-Up',
+  subjectAmenities: '',
+  realtyMxEnabled: false,
 };
 
 // ============================================================
@@ -98,6 +114,298 @@ export const TRACKED_BUILDINGS: TrackedBuilding[] = [
   { name: '137 Franklin Street', address: '137 Franklin St', neighborhood: 'Tribeca / SoHo', units: 8, type: 'Co-op', camelotPSF: 2050, neighborhoodPSF: 2100, performance: 'At Market' },
   { name: '58 White Street', address: '58 White St', neighborhood: 'Tribeca / SoHo', units: 10, type: 'Co-op', camelotPSF: 2200, neighborhoodPSF: 2100, performance: 'Above' },
 ];
+
+// ============================================================
+// Sentinel v2 - Address-Driven Market Intelligence Rules
+// ============================================================
+
+export interface UnitMixBenchmark {
+  unitType: string;
+  expectedDOM: string;
+  rentalSweetSpot: string;
+  saleSweetSpot: string;
+  slowerMarketSignal: string;
+  scoutRead: string;
+}
+
+export const SENTINEL_UNIT_MIX_BENCHMARKS: UnitMixBenchmark[] = [
+  { unitType: 'Studio', expectedDOM: '10-24 days', rentalSweetSpot: '$2,400-$3,500/mo', saleSweetSpot: '$575K-$850K', slowerMarketSignal: 'Softens fastest when priced above entry-level buyer/renter budgets.', scoutRead: 'Best as affordability inventory; pricing discipline matters more than finish level.' },
+  { unitType: '1 Bedroom', expectedDOM: '12-30 days', rentalSweetSpot: '$3,100-$4,800/mo', saleSweetSpot: '$700K-$1.25M', slowerMarketSignal: 'Longer exposure once monthly carry exceeds a comparable rental by too much.', scoutRead: 'Deepest demand pool in Manhattan, Queens, and prime Brooklyn.' },
+  { unitType: '2 Bedroom', expectedDOM: '18-45 days', rentalSweetSpot: '$4,500-$7,800/mo', saleSweetSpot: '$1.15M-$2.2M', slowerMarketSignal: 'Pauses when family buyers compare school district, maintenance, and financing limits.', scoutRead: 'Strongest board-facing value signal for livability and resale liquidity.' },
+  { unitType: '3 Bedroom', expectedDOM: '35-75 days', rentalSweetSpot: '$7,500-$13,500/mo', saleSweetSpot: '$2.0M-$4.5M', slowerMarketSignal: 'Highly finish-sensitive; buyers punish awkward layouts or high monthly common charges.', scoutRead: 'Needs sharper comp selection and buyer narrative.' },
+  { unitType: '4 Bedroom+', expectedDOM: '60-120+ days', rentalSweetSpot: '$12,000+/mo', saleSweetSpot: '$3.5M+', slowerMarketSignal: 'Luxury inventory can sit when price misses by even 5-8%.', scoutRead: 'High upside but thinner buyer pool; use quarterly luxury comps.' },
+  { unitType: 'Duplex / Unique', expectedDOM: '45-120+ days', rentalSweetSpot: 'Market-specific', saleSweetSpot: 'Layout-specific', slowerMarketSignal: 'Unique layouts need visual proof, renovation logic, and a very tight comp set.', scoutRead: 'Good for storytelling; dangerous for generic averages.' },
+];
+
+export interface DefaultSignal {
+  category: string;
+  source: string;
+  whatSentinelChecks: string;
+  clientUse: string;
+}
+
+export const SENTINEL_FORECLOSURE_DEFAULT_SIGNALS: DefaultSignal[] = [
+  { category: 'Foreclosure / Lis Pendens', source: 'ACRIS document search, county clerk, PropertyShark-style foreclosure records', whatSentinelChecks: 'Notices of pendency, referee deeds, foreclosure filings, and distressed transfer patterns.', clientUse: 'Flags pressure around sponsors, owners, or nearby comparable buildings.' },
+  { category: 'Mortgage Maturity / Default Risk', source: 'ACRIS mortgages and assignments, DOF tax balances, lender notices when available', whatSentinelChecks: 'High-rate refinance exposure, recent assignments, unpaid taxes, and old debt nearing maturity.', clientUse: 'Helps identify default risk, acquisition opportunities, and board/vendor payment stress.' },
+  { category: 'Tax / Water Lien Exposure', source: 'NYC DOF lien sale datasets and property tax portals; local equivalents outside NYC', whatSentinelChecks: 'Tax liens, water/sewer arrears, and lienable municipal charges.', clientUse: 'Converts public-record risk into an operations and collections talking point.' },
+  { category: 'Unit-Level Market Stress', source: 'StreetEasy, Zillow, RealtyMX, MLS/RLS exports', whatSentinelChecks: 'Repeated price cuts, long DOM, relists, concessions, and stale rental listings.', clientUse: 'Shows which unit types are missing the market and why.' },
+];
+
+export interface NewConstructionBenchmark {
+  market: string;
+  salesPipeline: string;
+  rentalPipeline: string;
+  landPSFRange: string;
+  scoutRead: string;
+}
+
+export const SENTINEL_NEW_CONSTRUCTION_BENCHMARKS: NewConstructionBenchmark[] = [
+  { market: 'Harlem / Upper Manhattan', salesPipeline: 'Selective condo demand; buyer value-sensitive.', rentalPipeline: 'Strong rental demand near transit and institutional anchors.', landPSFRange: '$175-$450/BSF guide range', scoutRead: 'Best opportunities are operating turnarounds, tax appeals, and under-managed condo/coop boards.' },
+  { market: 'Upper East / Upper West Side', salesPipeline: 'Liquid but quality-sensitive resale market.', rentalPipeline: 'High-income renters support premium 1BR/2BR pricing.', landPSFRange: '$500-$1,200+/BSF guide range', scoutRead: 'Management quality protects value because monthly charges and service expectations are high.' },
+  { market: 'Midtown / Chelsea / Flatiron', salesPipeline: 'Mixed office-return and luxury demand signals.', rentalPipeline: 'Strong furnished and executive rental demand.', landPSFRange: '$650-$1,500+/BSF guide range', scoutRead: 'Good for mixed-use, amenity, and hospitality-adjacent repositioning narratives.' },
+  { market: 'Lower Manhattan / Tribeca / SoHo', salesPipeline: 'Premium but thinner buyer pool at high price points.', rentalPipeline: 'Luxury rentals strong when product is polished.', landPSFRange: '$900-$2,000+/BSF guide range', scoutRead: 'Highest upside, highest execution risk; comps must be exact.' },
+  { market: 'Brooklyn Core', salesPipeline: 'Deep buyer demand but rate-sensitive.', rentalPipeline: 'Strong absorption near transit and lifestyle corridors.', landPSFRange: '$250-$900/BSF guide range', scoutRead: 'Unit mix and taxes drive the story more than borough averages.' },
+  { market: 'Queens Core / LIC / Astoria / Sunnyside', salesPipeline: 'Value and transit-driven buyer demand.', rentalPipeline: 'Very strong rental absorption for studios and 1BRs.', landPSFRange: '$150-$650/BSF guide range', scoutRead: 'Sweet spot for Camelot local-presence and growth narrative.' },
+  { market: 'Bronx / Riverdale / Westchester', salesPipeline: 'More price-sensitive and carrying-cost aware.', rentalPipeline: 'Stable for well-located, well-managed properties.', landPSFRange: '$60-$350/BSF guide range', scoutRead: 'Management fee discipline and operations savings matter heavily.' },
+];
+
+export interface ManagementFeeBenchmark {
+  market: string;
+  assetClass: string;
+  baseFeeRange: string;
+  perUnitRange: string;
+  unionImpact: string;
+  amenityImpact: string;
+  scoutRead: string;
+}
+
+export const SENTINEL_MANAGEMENT_FEE_BENCHMARKS: ManagementFeeBenchmark[] = [
+  { market: 'Manhattan', assetClass: 'Large full-service co-op / condo', baseFeeRange: '$50K-$100K+ annual minimum at larger firms', perUnitRange: '$800-$1,200+/unit/year', unionImpact: '+10-25% complexity for 32BJ staffing, benefits, grievance, and coverage administration', amenityImpact: '+5-15% when pools, garages, gyms, roof decks, package rooms, or concierge services require active oversight', scoutRead: 'Camelot should price 15% below comparable large-firm base management when scope is comparable, subject to minimum fee discipline.' },
+  { market: 'Manhattan', assetClass: 'Small/mid-size walk-up co-op / condo', baseFeeRange: '$1,500-$2,000/mo Camelot minimum guidance', perUnitRange: '$600-$900/unit/year', unionImpact: 'Usually limited unless staff exists', amenityImpact: 'Modest unless there is elevator, roof, storage, or live-in super scope', scoutRead: 'Avoid underpricing small buildings; the minimum protects service quality.' },
+  { market: 'Brooklyn / Queens / Bronx / Staten Island', assetClass: 'Outer-borough co-op / condo', baseFeeRange: '$1,200-$1,500/mo Camelot minimum guidance', perUnitRange: '$300-$800/unit/year', unionImpact: '+10-20% when staffed/unionized', amenityImpact: '+5-12% for amenities and high communication volume', scoutRead: 'Good Camelot value zone where high-touch service can beat large-firm response time.' },
+  { market: 'Riverdale / Southern Westchester', assetClass: 'Co-op / condo / HOA', baseFeeRange: '$1,200-$2,500/mo depending service level', perUnitRange: '$300-$650/unit/year', unionImpact: '+10-20% for staff-heavy communities', amenityImpact: '+8-18% for pool, clubhouse, roads, snow, and field coordination', scoutRead: 'Separate back-office management from local field operations or project retainers.' },
+  { market: 'NYC / surrounding rental', assetClass: 'Multifamily rental', baseFeeRange: '5-12% of collected rent or flat monthly per-unit fee', perUnitRange: '$150-$300/unit/month where flat-fee model applies', unionImpact: 'Payroll and compliance complexity can justify higher base fee', amenityImpact: 'Amenities and leasing velocity add reporting and coordination burden', scoutRead: 'Compare fee to rent roll, vacancy risk, and leasing/admin extras.' },
+];
+
+export const SENTINEL_EXPANSION_SOURCE_STACK = [
+  'RealtyMX API/CSV: rental inventory, price changes, DOM, unit mix, broker notes, and listing velocity',
+  'StreetEasy Data Dashboard and building pages: monthly rent/sale medians, inventory, days on market, and building imagery',
+  'Zillow/Apartments.com/Redfin: supplemental listing images, rental/sale ranges, active inventory, and unit mix proof',
+  'ACRIS/County Clerk: sales, mortgages, mortgage assignments, lis pendens, referee deeds, liens, and distressed transfers',
+  'NYC DOF/PROS and lien datasets: assessed value, tax bills, liens, abatements, and property tax balances',
+  'NYC DCP PLUTO/MapPLUTO: lot area, zoning, land use, year built, FAR, and land/development context',
+  'DOB/DOB NOW/HPD/OATH-ECB or state/local equivalents: permits, violations, complaints, facade/elevator/boiler/local-law risk',
+  'Miller Samuel, REBNY, OneKey/RLS, and market reports: quarterly narrative, absorption, luxury trends, and brokerage context',
+  'PropertyShark-style sources: ownership, foreclosure, tax map, zoning, liens, and comparable sales cross-check',
+];
+
+function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function cleanFilename(value: string): string {
+  return value.trim().replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'Subject-Building';
+}
+
+export function buildSentinelMarketFilename(input: SentinelInput, extension: 'html' | 'pdf' = 'html'): string {
+  const address = cleanFilename(input.subjectAddress || 'Subject-Building');
+  const date = new Date().toISOString().slice(0, 10);
+  return `Camelot-Sentinel-Market-Stack-${address}-${date}.${extension}`;
+}
+
+export function inferSentinelNeighborhood(input: SentinelInput): NeighborhoodBenchmark {
+  const text = `${input.subjectAddress || ''} ${input.subjectBorough || ''}`.toLowerCase();
+  if (text.includes('harlem') || text.includes('fifth avenue') || text.includes('5th avenue') || text.includes('10029')) return NEIGHBORHOODS.find(n => n.name === 'East Harlem')!;
+  if (text.includes('79') || text.includes('park avenue') || text.includes('madison') || text.includes('yorkville') || text.includes('upper east')) return NEIGHBORHOODS.find(n => n.name === 'Upper East Side')!;
+  if (text.includes('upper west') || text.includes('73') || text.includes('93')) return NEIGHBORHOODS.find(n => n.name === 'Upper West Side')!;
+  if (text.includes('tribeca') || text.includes('soho') || text.includes('white street') || text.includes('franklin')) return NEIGHBORHOODS.find(n => n.name === 'Tribeca / SoHo')!;
+  if (text.includes('chelsea') || text.includes('flatiron')) return NEIGHBORHOODS.find(n => n.name === 'Chelsea')!;
+  if (text.includes('brooklyn heights')) return NEIGHBORHOODS.find(n => n.name === 'Brooklyn Heights')!;
+  if (text.includes('park slope')) return NEIGHBORHOODS.find(n => n.name === 'Park Slope')!;
+  if (text.includes('williamsburg') || text.includes('greenpoint')) return NEIGHBORHOODS.find(n => n.name === 'Greenpoint / Williamsburg')!;
+  if (text.includes('lic') || text.includes('long island city')) return NEIGHBORHOODS.find(n => n.name === 'Long Island City')!;
+  if (text.includes('sunnyside') || text.includes('woodside') || text.includes('jackson heights') || text.includes('astoria') || text.includes('queens')) return NEIGHBORHOODS.find(n => n.name === 'Sunnyside / Woodside')!;
+  if (text.includes('midtown') || text.includes('57') || text.includes('38')) return NEIGHBORHOODS.find(n => n.name === 'Midtown')!;
+  return NEIGHBORHOODS.find(n => n.name === 'Upper East Side')!;
+}
+
+function getFeeBenchmark(input: SentinelInput): ManagementFeeBenchmark {
+  const market = input.subjectBorough || '';
+  const asset = input.subjectAssetClass || '';
+  if (market.includes('Westchester') || market.includes('Connecticut') || asset.includes('HOA')) return SENTINEL_MANAGEMENT_FEE_BENCHMARKS[3];
+  if (asset.includes('Rental')) return SENTINEL_MANAGEMENT_FEE_BENCHMARKS[4];
+  if (market === 'Manhattan' && (input.subjectServiceLevel || '').includes('Full')) return SENTINEL_MANAGEMENT_FEE_BENCHMARKS[0];
+  if (market === 'Manhattan') return SENTINEL_MANAGEMENT_FEE_BENCHMARKS[1];
+  return SENTINEL_MANAGEMENT_FEE_BENCHMARKS[2];
+}
+
+function subjectProsCons(input: SentinelInput, hood: NeighborhoodBenchmark): { pros: string[]; cons: string[] } {
+  const service = input.subjectServiceLevel || '';
+  const amenities = (input.subjectAmenities || '').trim();
+  const units = Number.parseInt(input.subjectUnits || '', 10);
+  const pros = [
+    `${hood.name} benchmark shows ${hood.momentum.toLowerCase()} momentum and ${hood.daysOnMarket}-day average market exposure.`,
+    `Current neighborhood rent guides: 1BR around $${hood.medianRent1BR.toLocaleString()} and 2BR around $${hood.medianRent2BR.toLocaleString()}.`,
+    service.includes('Luxury') || amenities ? 'Amenities create a stronger resident-retention story when fees and operations are managed tightly.' : 'Lower-service buildings can compete on value when management is responsive and reporting is clean.',
+  ];
+  const cons = [
+    `Operating-cost range of ${hood.opexRange}/SF/year needs benchmarking against actual budget and payroll/vendor load.`,
+    'Foreclosure, mortgage maturity, tax lien, and stale-listing signals must be cross-checked before presenting value conclusions.',
+    Number.isFinite(units) && units < 30 ? 'Small buildings can be fee-sensitive; minimum management pricing should be protected with a tight scope.' : 'Larger buildings need unit-mix, amenity, staffing, and compliance detail before pricing can be final.',
+  ];
+  return { pros, cons };
+}
+
+export function generateSubjectMarketReport(input: SentinelInput): string {
+  const hood = inferSentinelNeighborhood(input);
+  const fee = getFeeBenchmark(input);
+  const { pros, cons } = subjectProsCons(input, hood);
+  const address = escapeHtml(input.subjectAddress || 'Subject building');
+  const borough = escapeHtml(input.subjectBorough || 'Market to verify');
+  const assetClass = escapeHtml(input.subjectAssetClass || 'Asset class to verify');
+  const units = escapeHtml(input.subjectUnits || 'To verify');
+  const amenities = escapeHtml(input.subjectAmenities || 'To verify through listing, website, offering plan, and board package');
+  const union = escapeHtml(input.subjectUnionStatus || 'Unknown');
+  const service = escapeHtml(input.subjectServiceLevel || 'To verify');
+  const generated = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const realtyMxStatus = input.realtyMxEnabled
+    ? 'RealtyMX API-ready: Sentinel should enrich the next run with live listing velocity and unit-mix data.'
+    : 'RealtyMX API-ready: add the API key as VITE_REALTYMX_API_KEY or provide a CSV export to replace guide ranges with live inventory.';
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinel Market Stack - ${address}</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eef1f4;color:#172033;font-family:Arial,Helvetica,sans-serif;line-height:1.45}.page{width:1120px;margin:0 auto;background:#fbfaf6}.slide{min-height:720px;padding:46px 58px;border:1px solid #d8d0bd;page-break-after:always;position:relative;background:#fbfaf6}.dark{background:#263542;color:#fff}.kicker{color:#b3912f;text-transform:uppercase;letter-spacing:2.5px;font-size:12px;font-weight:700}.brand{position:absolute;right:46px;top:32px;background:#c5a43a;color:#111;padding:20px 30px;letter-spacing:8px;font-size:17px}.title{font-family:Georgia,serif;color:#b3912f;font-size:48px;line-height:1.05;margin:24px 0 14px}.dark .title{color:#d7b84e}.subtitle{font-size:19px;max-width:760px}.grid{display:grid;gap:18px}.cols2{grid-template-columns:1fr 1fr}.cols3{grid-template-columns:repeat(3,1fr)}.cols4{grid-template-columns:repeat(4,1fr)}.card{background:#fff;border:1px solid #d8d0bd;border-radius:10px;padding:18px;box-shadow:0 10px 24px rgba(0,0,0,.05)}.dark .card{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}h2{font-family:Georgia,serif;color:#b3912f;font-size:34px;margin:0 0 18px;border-left:5px solid #b3912f;padding-left:14px}h3{margin:0 0 9px;color:#0b1d3b;font-size:17px}.dark h3{color:#fff}.metric{font-size:28px;color:#b3912f;font-weight:800}.label{font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:#667085}table{width:100%;border-collapse:collapse;font-size:12px;background:#fff}th{background:#304557;color:#fff;padding:10px;text-align:left;text-transform:uppercase;font-size:10px;letter-spacing:1px}td{padding:10px;border-bottom:1px solid #e5dfd2;vertical-align:top}tr:nth-child(even){background:#f3efe7}.pill{display:inline-block;border:1px solid #d8d0bd;border-radius:999px;padding:6px 10px;margin:4px 6px 4px 0;background:#fff;font-size:12px}.source{font-size:10px;color:#6b7280;position:absolute;bottom:22px;left:58px;right:58px;border-top:1px solid #ddd4c0;padding-top:8px}.num{position:absolute;right:28px;bottom:18px;font-size:11px;color:#6b7280}.bar{height:8px;background:#e7e9ee;border-radius:99px;overflow:hidden}.bar span{display:block;height:100%;background:linear-gradient(90deg,#b3912f,#304557)}ul{padding-left:18px}li{margin:7px 0}@media print{@page{size:letter landscape;margin:.2in}body{background:#fff}.page{width:auto}.slide{break-after:page;page-break-after:always;min-height:7.1in;padding:34px 42px}.brand{top:20px;right:32px}.source{left:42px;right:42px}}
+</style>
+</head>
+<body>
+<main class="page">
+<section class="slide dark">
+  <div class="brand">CAMELOT</div>
+  <div class="kicker">Sentinel Market Intelligence</div>
+  <h1 class="title">${address}</h1>
+  <p class="subtitle">Market stack-up, unit-mix velocity, foreclosure/default watch, new-construction context, and management-fee benchmark for ${borough}.</p>
+  <div class="grid cols4" style="margin-top:42px">
+    <div class="card"><div class="metric">${assetClass}</div><div class="label">Asset Class</div></div>
+    <div class="card"><div class="metric">${units}</div><div class="label">Units</div></div>
+    <div class="card"><div class="metric">${hood.name}</div><div class="label">Matched Market</div></div>
+    <div class="card"><div class="metric">${hood.momentum}</div><div class="label">Momentum</div></div>
+  </div>
+  <p style="margin-top:34px;color:#d8dee7;font-size:14px">${realtyMxStatus}</p>
+  <div class="source">Generated ${generated}. Sources: RealtyMX API/CSV, StreetEasy, Zillow, ACRIS, DOF, PLUTO, DOB/HPD/OATH-ECB, Miller Samuel/REBNY-style market reports, PropertyShark-style foreclosure and ownership checks.</div>
+  <div class="num">1</div>
+</section>
+
+<section class="slide">
+  <div class="brand">CAMELOT</div>
+  <h2>Market Stack-Up</h2>
+  <div class="grid cols4">
+    <div class="card"><div class="metric">$${hood.condoPSF.toLocaleString()}</div><div class="label">Condo $/SF Guide</div></div>
+    <div class="card"><div class="metric">$${hood.coopPSF.toLocaleString()}</div><div class="label">Co-op $/SF Guide</div></div>
+    <div class="card"><div class="metric">$${hood.medianRent1BR.toLocaleString()}</div><div class="label">Median 1BR Rent</div></div>
+    <div class="card"><div class="metric">${hood.daysOnMarket}d</div><div class="label">Avg Market Exposure</div></div>
+  </div>
+  <div class="grid cols2" style="margin-top:22px">
+    <div class="card"><h3>Pros Sentinel Can Use</h3><ul>${pros.map(p => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
+    <div class="card"><h3>Cons / Questions to Verify</h3><ul>${cons.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul></div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <h3>Subject Service Read</h3>
+    <p><strong>Service level:</strong> ${service} &nbsp; <strong>Union status:</strong> ${union} &nbsp; <strong>Amenities:</strong> ${amenities}</p>
+  </div>
+  <div class="source">Stack-up is a guide until live listing inventory, closed comps, building financials, and actual unit mix are loaded.</div>
+  <div class="num">2</div>
+</section>
+
+<section class="slide">
+  <div class="brand">CAMELOT</div>
+  <h2>Unit Mix Velocity</h2>
+  <table>
+    <thead><tr><th>Unit Type</th><th>Expected DOM</th><th>Rental Sweet Spot</th><th>Sale Sweet Spot</th><th>Slower Market Signal</th><th>Sentinel Read</th></tr></thead>
+    <tbody>${SENTINEL_UNIT_MIX_BENCHMARKS.map(row => `<tr><td><strong>${row.unitType}</strong></td><td>${row.expectedDOM}</td><td>${row.rentalSweetSpot}</td><td>${row.saleSweetSpot}</td><td>${row.slowerMarketSignal}</td><td>${row.scoutRead}</td></tr>`).join('')}</tbody>
+  </table>
+  <div class="card" style="margin-top:16px">
+    <h3>What Sentinel Should Calculate With RealtyMX</h3>
+    <p>For each unit type, Sentinel should compare active price, last price change, days listed, concession language, floor/location, and building amenities against the neighborhood range. The output should identify the fastest-clearing price band and which units are stale because price, layout, carrying cost, or seasonality is off.</p>
+  </div>
+  <div class="source">Primary data path: RealtyMX API/CSV, StreetEasy, Zillow, Apartments.com, MLS/RLS exports.</div>
+  <div class="num">3</div>
+</section>
+
+<section class="slide">
+  <div class="brand">CAMELOT</div>
+  <h2>Default, Foreclosure & Distress Watch</h2>
+  <div class="grid cols2">
+    ${SENTINEL_FORECLOSURE_DEFAULT_SIGNALS.map(row => `<div class="card"><h3>${row.category}</h3><p><strong>Sources:</strong> ${row.source}</p><p><strong>Checks:</strong> ${row.whatSentinelChecks}</p><p><strong>Use:</strong> ${row.clientUse}</p></div>`).join('')}
+  </div>
+  <div class="card" style="margin-top:18px;border-left:5px solid #b3912f">
+    <h3>Release Rule</h3>
+    <p>Sentinel should not say a market is clean just because one source is empty. It should state which sources were checked, which were unavailable, and whether the conclusion is confirmed, partial, or needs manual verification.</p>
+  </div>
+  <div class="source">Core public-record sources: ACRIS/county clerk, DOF/tax portals, court/lis pendens records, PropertyShark-style foreclosure checks.</div>
+  <div class="num">4</div>
+</section>
+
+<section class="slide">
+  <div class="brand">CAMELOT</div>
+  <h2>New Construction & Land Context</h2>
+  <table>
+    <thead><tr><th>Market</th><th>Sales Pipeline</th><th>Rental Pipeline</th><th>Land $/BSF Guide</th><th>Sentinel Read</th></tr></thead>
+    <tbody>${SENTINEL_NEW_CONSTRUCTION_BENCHMARKS.map(row => `<tr><td><strong>${row.market}</strong></td><td>${row.salesPipeline}</td><td>${row.rentalPipeline}</td><td>${row.landPSFRange}</td><td>${row.scoutRead}</td></tr>`).join('')}</tbody>
+  </table>
+  <div class="source">Land values are guide ranges and must be refined with PLUTO zoning/FAR, recent ACRIS land trades, DOB new-building permits, and broker/developer comps.</div>
+  <div class="num">5</div>
+</section>
+
+<section class="slide">
+  <div class="brand">CAMELOT</div>
+  <h2>Management Fee Benchmark</h2>
+  <div class="grid cols2">
+    <div class="card">
+      <h3>Matched Fee Market</h3>
+      <p><strong>${fee.market}</strong> - ${fee.assetClass}</p>
+      <p><span class="pill">Base: ${fee.baseFeeRange}</span><span class="pill">Per-unit: ${fee.perUnitRange}</span></p>
+      <p><strong>Union impact:</strong> ${fee.unionImpact}</p>
+      <p><strong>Amenity impact:</strong> ${fee.amenityImpact}</p>
+    </div>
+    <div class="card">
+      <h3>Camelot Pricing Position</h3>
+      <p>${fee.scoutRead}</p>
+      <div class="bar" style="margin:18px 0"><span style="width:85%"></span></div>
+      <p><strong>Rule:</strong> Camelot should compare against the relevant competitor market rate, then target a base-management fee approximately 15% below comparable large-firm pricing while preserving minimum fee rules and separating ancillary/project services.</p>
+    </div>
+  </div>
+  <table style="margin-top:18px">
+    <thead><tr><th>Benchmark</th><th>Rule</th></tr></thead>
+    <tbody>${SENTINEL_MANAGEMENT_FEE_BENCHMARKS.map(row => `<tr><td><strong>${row.market}</strong><br>${row.assetClass}</td><td>${row.baseFeeRange}; ${row.perUnitRange}. ${row.scoutRead}</td></tr>`).join('')}</tbody>
+  </table>
+  <div class="source">Fee guide based on uploaded Camelot fee-structure document and market ranges; formal proposals require budget, prior management report, audited financials, service expectations, staffing, and amenity scope.</div>
+  <div class="num">6</div>
+</section>
+
+<section class="slide dark">
+  <div class="brand">CAMELOT</div>
+  <h2 style="color:#d7b84e">Source Checklist</h2>
+  <div class="grid cols2">
+    ${SENTINEL_EXPANSION_SOURCE_STACK.map(source => `<div class="card">${escapeHtml(source)}</div>`).join('')}
+  </div>
+  <p style="margin-top:22px;color:#d8dee7">Sentinel's job is to turn market data into a practical board or owner conversation: value, velocity, risk, pricing, and where Camelot can create operational leverage.</p>
+  <div class="source" style="color:#c9d2dc">Camelot Realty Group - 57 West 57th Street, Suite 410, New York, NY 10019 - info@camelot.nyc - www.camelot.nyc</div>
+  <div class="num" style="color:#c9d2dc">7</div>
+</section>
+</main>
+</body>
+</html>`;
+}
 
 // ============================================================
 // Rate Scenario Data
