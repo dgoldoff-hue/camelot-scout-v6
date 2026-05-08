@@ -16,6 +16,7 @@ import toast from 'react-hot-toast';
 import { useBuildings } from '@/hooks/useBuildings';
 import type { Building } from '@/types';
 import { cn } from '@/lib/utils';
+import { LEAD_GENERATOR_DEPLOYMENT_PROMPT } from '@/lib/scout-ai-doctrines';
 import {
   auditLeadQuality,
   getIntegrationStatus,
@@ -300,6 +301,29 @@ export default function Integrations() {
                 <Feature icon={Route} title="Routing" text="Team, region, priority, and tags generated from the property profile." />
                 <Feature icon={Users} title="Data Hygiene" text="Safe name parsing, phone normalization, missing contact fields, and valuation gaps." />
                 <Feature icon={GitBranch} title="Lifecycle Ready" text="Built to add two-way Scout and HubSpot outcome sync next." />
+              </div>
+            </section>
+
+            <section className="bg-white border border-gray-200 rounded-lg p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-bold">Lead Generator Prompt</h2>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Deployment doctrine for hybrid batch processing, real-time webhooks, Scout export, HubSpot sync, and Slack monitoring.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(LEAD_GENERATOR_DEPLOYMENT_PROMPT);
+                    toast.success('Lead generator deployment prompt copied');
+                  }}
+                  className="text-xs bg-camelot-gold text-camelot-dark px-3 py-2 rounded-md hover:bg-camelot-gold-light"
+                >
+                  Copy
+                </button>
+              </div>
+              <div className="mt-4 rounded-md border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600 max-h-48 overflow-y-auto whitespace-pre-wrap">
+                {LEAD_GENERATOR_DEPLOYMENT_PROMPT.trim()}
               </div>
             </section>
 

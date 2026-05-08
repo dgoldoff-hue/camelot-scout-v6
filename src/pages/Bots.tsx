@@ -203,6 +203,7 @@ const DEMO_BOTS: DashboardBot[] = [
       'Single-word contact names do not duplicate into firstname and lastname',
       'HubSpot associations use the v3 batch endpoint before deal linkage is considered complete',
       'No lead is pushed without property address and quality/routing metadata',
+      'Lead Generator Deployment Prompt covers hybrid batch processing, real-time webhooks, Slack alerts, Scout export, and HubSpot sync',
       'Bidirectional Scout outcome and HubSpot deal status sync is tracked as the next lifecycle phase',
     ],
     sources: [

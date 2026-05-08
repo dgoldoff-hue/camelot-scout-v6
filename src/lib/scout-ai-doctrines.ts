@@ -24,6 +24,96 @@ Scout competitive operating standard:
 - Client-facing exports must support print, PDF, HTML, and email workflows with clean filenames, concise cover notes, page numbers where applicable, and no broken images or placeholder data.
 `;
 
+export const LEAD_GENERATOR_DEPLOYMENT_PROMPT = `
+Lead Generator Deployment Prompt - Scout Hybrid Lead System
+
+1. Executive Summary
+- The lead generator operates as a hybrid system: daily batch processing plus real-time webhook ingestion.
+- Key features: deduplication, validation, confidence scoring, lead tiering, geographic routing, Scout export, HubSpot sync, conversion tracking, real-time monitoring, and Slack alerts.
+- Success criteria: bot runs daily, webhooks accept leads, duplicate leads are blocked or merged, Slack alerts fire on failures, and the Scout dashboard updates with push status.
+
+2. Architecture Overview
+- Batch flow: source scrapers -> validation_quality_rules.py -> scoring_lead_quality.py -> geo_classifier.py -> scout_format.py -> hubspot_export_enhanced.py -> reporting_status_dashboard.py.
+- Webhook flow: external lead source -> webhooks_lead_ingestion.py -> validation_quality_rules.py -> scoring_lead_quality.py -> queue_lead -> dashboard / Scout / HubSpot.
+- Seven core modules:
+  - validation_quality_rules.py - Complete
+  - scoring_lead_quality.py - Complete
+  - webhooks_lead_ingestion.py - Complete
+  - reporting_status_dashboard.py - Complete
+  - main_hybrid.py - Complete
+  - geo_classifier.py - Needs Implementation
+  - scout_format.py / hubspot_export_enhanced.py - Needs Implementation
+- Dependency rule: source ingestion calls validation first, scoring second, routing third, then exports or queues. No export happens before validation and quality score.
+
+3. What Already Exists
+- Production-ready modules located at /sessions/amazing-upbeat-gauss/mnt/outputs/:
+  - validation_quality_rules.py: deduplication, validation, confidence scoring.
+  - scoring_lead_quality.py: tiering and geographic routing.
+  - webhooks_lead_ingestion.py: signature verification and rate limiting.
+  - reporting_status_dashboard.py: HTML dashboard and JSON status.
+  - main_hybrid.py: orchestrator for batch and webhook workflow.
+
+4. What Needs Building
+- GeoClassifier module: enrich leads with borough, region, neighborhood, ZIP and state context.
+- ScoutFormatReporter module: prepare and push leads to Scout API.
+- HubSpotExportEnhanced module: create/update HubSpot contacts and optional deals.
+- _fetch_leads_from_sources(): implement actual scrapers and API pulls.
+- _push_to_scout(): implement Scout webhook/API integration.
+- _queue_lead(): implement lead queue backing store.
+- Flask/FastAPI wrapper: expose webhook endpoint.
+- Environment templates: HUBSPOT_API_KEY, SLACK_WEBHOOK_URL, SCOUT_API_URL, SCOUT_API_KEY, SCOUT_WORKSPACE_ID.
+- Bug fixes: no default webhook secret in production, import cleanup, stronger type checks, safer contact-name parsing, HubSpot v3 association payload.
+
+5. Step-by-Step Setup
+- Create the lead generator directory structure.
+- Copy the five existing modules into the service package.
+- Build geo_classifier.py, scout_format.py and hubspot_export_enhanced.py from skeletons.
+- Implement stubbed methods for source fetching, Scout push and queue storage.
+- Fix known bugs before deployment.
+- Configure environment variables.
+- Configure HubSpot custom fields and optional deal stage IDs.
+- Configure Scout team mapping.
+- Configure Slack webhook.
+- Test each component independently, then run full batch and webhook tests.
+
+6. Configuration Reference
+- Required: HUBSPOT_API_KEY, SCOUT_API_URL, SCOUT_API_KEY, SCOUT_WORKSPACE_ID, SLACK_WEBHOOK_URL, WEBHOOK_SECRET.
+- Optional: HUBSPOT_CREATE_DEALS, HUBSPOT_PIPELINE_ID, HUBSPOT_DEAL_STAGE_ID, LEAD_MIN_CONFIDENCE, LEAD_HOT_THRESHOLD, LEAD_WARM_THRESHOLD.
+- Quality defaults: min_confidence 55, hot_threshold 76, warm_threshold 55.
+- Lead source configuration should list source name, fetch cadence, API credentials, source priority and allowed lead types.
+- Team mapping format should route by state, borough/region, property type, unit count, lead tier and compliance pain.
+
+7. Testing & Validation
+- Test quality rules with duplicate email, duplicate phone, duplicate address and conflicting owner examples.
+- Test scoring with hot/warm/cold/review sample leads and verify tier assignment.
+- Test webhook with curl and HMAC signature, including bad signature and rate-limit cases.
+- Test dashboard generation and JSON status output.
+- Test HubSpot sync with single-word names, missing email, contact update and optional deal association.
+- Test Scout push with missing credentials, valid credentials and failed API responses.
+
+8. Production Deployment
+- Use cron, APScheduler or a systemd timer for daily batch execution.
+- Use Gunicorn or uWSGI behind the web server for the webhook endpoint.
+- Rotate /tmp/lead_bot.log or production log path.
+- Publish a monitoring dashboard URL for run status.
+- Verify Slack alerts for success, partial failure and critical failure.
+
+9. Known Issues & Fixes
+- Default webhook secret is a security issue: require WEBHOOK_SECRET in production.
+- Single-word contact names must not duplicate into firstname and lastname.
+- HubSpot association endpoint must use /crm/v3/associations/contacts/deals/batch/create with v3 payload.
+- Import cleanup is required before packaging so optional modules do not crash batch runs.
+- Type checking must reject malformed leads before export.
+
+10. Claude / Codex Implementation Instruction
+- Create CLAUDE_CODE_DEPLOYMENT_PROMPT.md with this deployment prompt.
+- Include exact paths for the five existing modules.
+- Include skeleton code for geo_classifier.py, scout_format.py and hubspot_export_enhanced.py.
+- Include sample curl commands for webhook tests.
+- Include .env.example.
+- Implement every TODO, then run unit tests, webhook tests, dashboard generation and one dry-run export.
+`;
+
 export const SCOUT_AGENT_DOCTRINES: ScoutAgentDoctrine[] = [
   {
     id: 'merlin',
@@ -55,6 +145,8 @@ export const SCOUT_AGENT_DOCTRINES: ScoutAgentDoctrine[] = [
       'Separate acquisition leads, management leads, HOA recovery leads, and compliance-only leads.',
       'Use ZIP/neighborhood context when the exact address is weak, then narrow back to the subject property before release.',
       'Flag buildings that need contact enrichment, image enrichment, management verification, or source conflict review.',
+      'Lead Generator Deployment Prompt must guide hybrid batch processing, webhook ingestion, deduplication, scoring, auto-routing, Scout export, HubSpot sync, conversion tracking and Slack monitoring.',
+      'No lead-generator export can occur before validation_quality_rules.py-style checks and scoring_lead_quality.py-style tiering are complete.',
     ],
     requiredSources: [
       'DOF / assessor records',
@@ -63,8 +155,8 @@ export const SCOUT_AGENT_DOCTRINES: ScoutAgentDoctrine[] = [
       'StreetEasy / Zillow / MLS-style listings',
       'Official building websites and management websites',
     ],
-    deliverables: ['Lead score', 'Owner / manager intel', 'Source gap list', 'Pipeline next action', 'Neighborhood opportunity brief'],
-    releaseGates: ['Address and unit-count sanity check', 'Owner/manager confidence label', 'Commercial and amenity scan when applicable'],
+    deliverables: ['Lead score', 'Owner / manager intel', 'Source gap list', 'Pipeline next action', 'Neighborhood opportunity brief', 'Lead generator deployment prompt'],
+    releaseGates: ['Address and unit-count sanity check', 'Owner/manager confidence label', 'Commercial and amenity scan when applicable', 'Hybrid batch/webhook workflow has environment variables and webhook secret configured'],
   },
   {
     id: 'guardian',
