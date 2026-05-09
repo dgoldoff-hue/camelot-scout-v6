@@ -19,6 +19,7 @@ import {
   DEFAULT_ARTHUR_CRITERIA,
   type ArthurCriteria,
   type ArthurDealType,
+  type ArthurModel,
   type ArthurProperty,
   arthurDealTypeLabel,
   buildArthurFilename,
@@ -49,6 +50,7 @@ export default function Arthur() {
   const [selectedId, setSelectedId] = useState(results[0]?.id || '');
   const [isSearching, setIsSearching] = useState(false);
   const [isPushing, setIsPushing] = useState(false);
+  const [pushStatus, setPushStatus] = useState('');
   const detailRef = useRef<HTMLElement | null>(null);
 
   const selected = useMemo(
@@ -74,6 +76,8 @@ export default function Arthur() {
 
   const selectProperty = (id: string) => {
     setSelectedId(id);
+    const picked = results.find((property) => property.id === id);
+    if (picked) toast.success(`Selected ${picked.name}. Underwriting results updated.`);
     window.setTimeout(() => {
       detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 50);
@@ -91,6 +95,7 @@ export default function Arthur() {
   const sendToHubSpot = async () => {
     if (!selected) return;
     setIsPushing(true);
+    setPushStatus('');
     const quality = { score: Math.round((selected.neighborhoodScore + selected.commuteScore) / 2), tier: 'hot', missingFields: [], strengths: selected.pros, warnings: selected.cons };
     const routing = { team: 'Arthur / acquisitions desk', region: selected.location, priority: 'same-day', tags: ['arthur-underwriting', selected.type, 'investment-candidate'] };
     try {
@@ -129,11 +134,13 @@ export default function Arthur() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok && data.status === 'error') throw new Error(data.hubspot?.message || data.scout?.message || 'HubSpot push failed');
-      const scoutMessage = data.scout?.message || 'Scout workflow complete.';
-      const hubspotMessage = data.hubspot?.message || 'HubSpot workflow complete.';
-      if (data.status === 'ok') toast.success(`${scoutMessage} ${hubspotMessage}`);
-      else if (data.status === 'partial' || data.status === 'skipped') toast(`${scoutMessage} ${hubspotMessage}`, { icon: '⚠️' });
-      else toast.error(`${scoutMessage} ${hubspotMessage}`);
+      const scoutMessage = data.scout?.message || 'Saved to Scout/local lead queue.';
+      const hubspotMessage = data.hubspot?.message || 'HubSpot sync attempted.';
+      const nextStatus = `${selected.name} was queued for Scout/HubSpot. Scout: ${scoutMessage} HubSpot: ${hubspotMessage}`;
+      setPushStatus(nextStatus);
+      if (data.status === 'ok') toast.success(`Queued ${selected.name} for Scout/HubSpot`);
+      else if (data.status === 'partial' || data.status === 'skipped') toast(`Queued with follow-up needed: ${selected.name}`, { icon: '!' });
+      else toast.error(`Scout/HubSpot follow-up needed for ${selected.name}`);
     } catch (err: any) {
       toast.error(err.message || 'HubSpot workflow failed');
     } finally {
@@ -222,6 +229,22 @@ export default function Arthur() {
                   />
                 ))}
               </div>
+              {selected && model && (
+                <div className="px-4 pb-4">
+                  <UnderwritingResultsSummary
+                    property={selected}
+                    model={model}
+                    onPush={sendToHubSpot}
+                    isPushing={isPushing}
+                    pushStatus={pushStatus}
+                    onSourceSearch={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(selected.address + ' property records listing zoning ownership')}`, '_blank')}
+                    onPrint={() => openBrochureForPrint(reportHtml, buildArthurFilename(selected, 'html'))}
+                    onHtml={() => downloadAsHTML(reportHtml, buildArthurFilename(selected, 'html'))}
+                    onExcel={() => downloadArthurExcel(selected, criteria)}
+                    onEmail={emailReport}
+                  />
+                </div>
+              )}
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
@@ -269,7 +292,8 @@ export default function Arthur() {
             <div className="bg-white border border-gray-200 rounded-lg p-5">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <h2 className="text-xl font-bold">{selected.name}</h2>
+                  <p className="text-xs uppercase tracking-[0.18em] text-camelot-gold font-semibold">Detailed Arthur Report</p>
+                  <h2 className="text-xl font-bold mt-1">{selected.name}</h2>
                   <p className="text-sm text-gray-500">{selected.address}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -285,6 +309,7 @@ export default function Arthur() {
                   </button>
                 </div>
               </div>
+              {pushStatus && <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">{pushStatus}</p>}
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
                 <Metric label="Total Basis" value={formatCurrency(model.totalBasis)} />
@@ -512,6 +537,7 @@ function ListingCard({ property, active, onSelect }: { property: ArthurProperty;
   const score = Math.round((property.commuteScore + property.neighborhoodScore + (100 - Math.min(80, property.violations))) / 3);
   return (
     <button
+      type="button"
       onClick={onSelect}
       className={cn(
         'text-left border rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow',
@@ -540,6 +566,105 @@ function ListingCard({ property, active, onSelect }: { property: ArthurProperty;
         <p className="text-xs text-gray-500 mt-3 line-clamp-2">{property.brokerNotes}</p>
       </div>
     </button>
+  );
+}
+
+function UnderwritingResultsSummary({
+  property,
+  model,
+  onPush,
+  isPushing,
+  pushStatus,
+  onSourceSearch,
+  onPrint,
+  onHtml,
+  onExcel,
+  onEmail,
+}: {
+  property: ArthurProperty;
+  model: ArthurModel;
+  onPush: () => void;
+  isPushing: boolean;
+  pushStatus: string;
+  onSourceSearch: () => void;
+  onPrint: () => void;
+  onHtml: () => void;
+  onExcel: () => void;
+  onEmail: () => void;
+}) {
+  return (
+    <section className="rounded-lg border border-camelot-gold/40 bg-camelot-cream/70 p-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.18em] text-camelot-gold font-semibold">Underwriting Results on Selected Listing</p>
+          <h3 className="text-lg font-bold mt-1">{property.name}</h3>
+          <p className="text-sm text-gray-500">{property.address} | {arthurDealTypeLabel(property.type)} | {property.units} units</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={onPush}
+            disabled={isPushing}
+            className="inline-flex items-center gap-2 bg-emerald-700 text-white px-3 py-2 rounded-md text-sm hover:bg-emerald-800 disabled:opacity-60"
+          >
+            {isPushing ? <RefreshCw size={15} className="animate-spin" /> : <Send size={15} />} Queue Scout / HubSpot
+          </button>
+          <button type="button" onClick={onSourceSearch} className="action-btn">
+            <ExternalLink size={15} /> Source Search
+          </button>
+          <button type="button" onClick={onPrint} className="action-btn"><Printer size={15} /> Print / PDF</button>
+          <button type="button" onClick={onHtml} className="action-btn"><FileText size={15} /> HTML</button>
+          <button type="button" onClick={onExcel} className="action-btn"><FileSpreadsheet size={15} /> Excel</button>
+          <button type="button" onClick={onEmail} className="action-btn"><Mail size={15} /> Email</button>
+        </div>
+      </div>
+
+      {pushStatus && <p className="mt-3 rounded-md border border-emerald-200 bg-white px-3 py-2 text-xs text-emerald-900">{pushStatus}</p>}
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+        <Metric label="Total Basis" value={formatCurrency(model.totalBasis)} />
+        <Metric label="Equity Required" value={formatCurrency(model.equityRequired)} />
+        <Metric label="Base IRR" value={`${(model.irr * 100).toFixed(1)}%`} />
+        <Metric label="Equity Multiple" value={`${model.equityMultiple.toFixed(2)}x`} />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-[260px_minmax(0,1fr)] gap-4 mt-4">
+        <div className="rounded-lg border border-gray-200 overflow-hidden bg-white">
+          <PropertyImage src={property.imageUrl} alt={property.name} className="h-44 w-full object-cover" />
+          <div className="p-3 text-xs text-gray-600">
+            <p><span className="font-semibold">Source:</span> {property.listingSource}</p>
+            <p className="mt-1"><span className="font-semibold">Agent:</span> {property.listingAgent}</p>
+            <p className="mt-1"><span className="font-semibold">Ownership:</span> {property.ownership}</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="rounded-lg border border-gray-200 bg-white p-3">
+            <h4 className="font-bold text-sm">Pros</h4>
+            <div className="mt-2">{property.pros.slice(0, 4).map((item) => <Bullet key={item} positive>{item}</Bullet>)}</div>
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-3">
+            <h4 className="font-bold text-sm">Cons / Caveats</h4>
+            <div className="mt-2">{property.cons.slice(0, 4).map((item) => <Bullet key={item}>{item}</Bullet>)}</div>
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-3">
+            <h4 className="font-bold text-sm">Owner, Zoning & Massing</h4>
+            <Info label="Zoning" value={property.zoning} />
+            <Info label="Flood Zone" value={property.floodZone} />
+            <Info label="Violations" value={`${property.violations}`} />
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-3">
+            <h4 className="font-bold text-sm">Comps & Model Inputs</h4>
+            {property.comps.slice(0, 2).map((comp) => (
+              <p key={comp.address} className="text-xs text-gray-600 mt-2">
+                <span className="font-semibold">{comp.address}</span>: {formatCurrency(comp.price)} | {comp.units} units | {(comp.capRate * 100).toFixed(1)}% cap
+              </p>
+            ))}
+            <p className="text-xs text-gray-600 mt-2"><span className="font-semibold">Repair Cost:</span> {formatCurrency(model.repairCost)}</p>
+            <p className="text-xs text-gray-600 mt-1"><span className="font-semibold">DSCR:</span> {model.dscr.toFixed(2)}x</p>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
