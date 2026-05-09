@@ -28,6 +28,7 @@ import {
   buildArthurModel,
   buildArthurReportHtml,
   downloadArthurExcel,
+  sanitizeArthurCriteria,
   searchArthurListings,
 } from '@/lib/arthur-underwriting';
 
@@ -56,6 +57,7 @@ export default function Arthur() {
     () => results.find((property) => property.id === selectedId) || results[0],
     [results, selectedId]
   );
+  const hasNearestResults = results.some((property) => property.matchStatus === 'nearest');
   const model = useMemo(() => selected ? buildArthurModel(selected) : null, [selected]);
   const reportHtml = useMemo(() => selected && model ? buildArthurReportHtml(selected, criteria, model) : '', [selected, criteria, model]);
 
@@ -66,7 +68,8 @@ export default function Arthur() {
       setResults(next);
       setSelectedId(next[0]?.id || '');
       setIsSearching(false);
-      toast.success(`${next.length} Arthur candidate${next.length === 1 ? '' : 's'} found`);
+      const nearest = next.some((property) => property.matchStatus === 'nearest');
+      toast.success(nearest ? `${next.length} nearest Arthur candidates shown` : `${next.length} Arthur candidate${next.length === 1 ? '' : 's'} found`);
     }, 300);
   };
 
@@ -187,6 +190,11 @@ export default function Arthur() {
                 </div>
                 <span className="text-xs text-gray-500">{results.length} candidates</span>
               </div>
+              {hasNearestResults && (
+                <div className="mx-4 mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  No exact match was found for the current unit/SF/type range, so Arthur is showing nearest candidates instead of returning an empty report queue.
+                </div>
+              )}
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
@@ -212,6 +220,7 @@ export default function Arthur() {
                           <td className="p-3">
                             <p className="font-semibold">{property.name}</p>
                             <p className="text-xs text-gray-500">{property.address}</p>
+                            {property.matchStatus === 'nearest' && <p className="text-[11px] font-semibold text-amber-700 mt-1">Nearest candidate</p>}
                           </td>
                           <td className="p-3">{arthurDealTypeLabel(property.type)}</td>
                           <td className="p-3 text-right">{formatCurrency(property.askingPrice)}</td>
@@ -352,8 +361,18 @@ function CriteriaPanel({
 }) {
   return (
     <section className="bg-white border border-gray-200 rounded-lg p-5 h-fit">
-      <h2 className="font-bold flex items-center gap-2"><Search size={18} className="text-camelot-gold" /> Arthur Search Criteria</h2>
-      <p className="text-xs text-gray-500 mt-1">Change assumptions here before or after report generation.</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-bold flex items-center gap-2"><Search size={18} className="text-camelot-gold" /> Arthur Search Criteria</h2>
+          <p className="text-xs text-gray-500 mt-1">Change assumptions here before or after report generation.</p>
+        </div>
+        <button
+          onClick={() => setCriteria(sanitizeArthurCriteria(DEFAULT_ARTHUR_CRITERIA))}
+          className="text-xs border border-gray-200 rounded-md px-2 py-1 hover:bg-gray-50"
+        >
+          Reset
+        </button>
+      </div>
 
       <div className="space-y-4 mt-5">
         <label className="block">
@@ -368,9 +387,9 @@ function CriteriaPanel({
 
         <div className="grid grid-cols-2 gap-3">
           <NumberInput label="Min Units" value={criteria.minUnits} onChange={(value) => setCriteria((p) => ({ ...p, minUnits: value }))} />
-          <NumberInput label="Max Units" value={criteria.maxUnits} onChange={(value) => setCriteria((p) => ({ ...p, maxUnits: value }))} />
+          <NumberInput label="Max Units" hint="0 = no max" value={criteria.maxUnits} onChange={(value) => setCriteria((p) => ({ ...p, maxUnits: value }))} />
           <NumberInput label="Min SF" value={criteria.minSqft} onChange={(value) => setCriteria((p) => ({ ...p, minSqft: value }))} />
-          <NumberInput label="Max SF" value={criteria.maxSqft} onChange={(value) => setCriteria((p) => ({ ...p, maxSqft: value }))} />
+          <NumberInput label="Max SF" hint="0 = no max" value={criteria.maxSqft} onChange={(value) => setCriteria((p) => ({ ...p, maxSqft: value }))} />
         </div>
 
         <div>
@@ -409,11 +428,18 @@ function CriteriaPanel({
   );
 }
 
-function NumberInput({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
+function NumberInput({ label, hint, value, onChange }: { label: string; hint?: string; value: number; onChange: (value: number) => void }) {
   return (
     <label>
       <span className="text-xs uppercase tracking-wide text-gray-500">{label}</span>
-      <input type="number" value={value} onChange={(e) => onChange(Number(e.target.value) || 0)} className="mt-1 w-full border border-gray-200 rounded-md px-3 py-2 text-sm" />
+      <input
+        type="number"
+        min={0}
+        value={value}
+        onChange={(e) => onChange(e.target.value === '' ? 0 : Number(e.target.value) || 0)}
+        className="mt-1 w-full border border-gray-200 rounded-md px-3 py-2 text-sm"
+      />
+      {hint && <span className="mt-1 block text-[11px] text-gray-400">{hint}</span>}
     </label>
   );
 }

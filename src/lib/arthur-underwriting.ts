@@ -60,6 +60,7 @@ export interface ArthurProperty {
   listingAgent: string;
   listingSource: string;
   imageUrl: string;
+  matchStatus?: 'exact' | 'nearest';
   pros: string[];
   cons: string[];
   comps: Array<{ address: string; price: number; units: number; capRate: number; distance: string }>;
@@ -154,9 +155,44 @@ export function arthurDealTypeLabel(type: ArthurDealType) {
   return TYPE_LABELS[type] || type;
 }
 
+const ALL_DEAL_TYPES = Object.keys(TYPE_LABELS) as ArthurDealType[];
+
+function cleanNumber(value: number, fallback: number) {
+  return Number.isFinite(value) && value >= 0 ? value : fallback;
+}
+
+export function sanitizeArthurCriteria(criteria: ArthurCriteria): ArthurCriteria {
+  const minUnits = cleanNumber(criteria.minUnits, 0);
+  const maxUnitsInput = cleanNumber(criteria.maxUnits, 0);
+  const minSqft = cleanNumber(criteria.minSqft, 0);
+  const maxSqftInput = cleanNumber(criteria.maxSqft, 0);
+  const maxUnits = maxUnitsInput > 0 ? Math.max(maxUnitsInput, minUnits) : Number.MAX_SAFE_INTEGER;
+  const maxSqft = maxSqftInput > 0 ? Math.max(maxSqftInput, minSqft) : Number.MAX_SAFE_INTEGER;
+  const dealTypes = criteria.dealTypes.length ? criteria.dealTypes : ALL_DEAL_TYPES;
+
+  return {
+    ...criteria,
+    location: criteria.location.trim() || DEFAULT_ARTHUR_CRITERIA.location,
+    dealTypes,
+    minUnits,
+    maxUnits,
+    minSqft,
+    maxSqft,
+    blockLot: criteria.blockLot.trim(),
+  };
+}
+
+function propertyMatchesCriteria(property: ArthurProperty, criteria: ArthurCriteria) {
+  const unitsOk = property.units >= criteria.minUnits && property.units <= criteria.maxUnits;
+  const sqftOk = property.sqft >= criteria.minSqft && property.sqft <= criteria.maxSqft;
+  const typeOk = criteria.dealTypes.includes(property.type);
+  return unitsOk && sqftOk && typeOk;
+}
+
 export function searchArthurListings(criteria: ArthurCriteria): ArthurProperty[] {
-  const city = criteria.location || 'New York, NY';
-  const baseTypes = criteria.dealTypes.length ? criteria.dealTypes : DEFAULT_ARTHUR_CRITERIA.dealTypes;
+  const normalized = sanitizeArthurCriteria(criteria);
+  const city = normalized.location;
+  const baseTypes = normalized.dealTypes;
   const seeds = [
     ['Riverside Value-Add Portfolio', '180 Riverside Drive', 112, 136000, 52000000, 'D7 / R10A'],
     ['East Side Elevator Opportunity', '201 East 79th Street', 167, 201000, 89000000, 'R10 / C1-5 overlay'],
@@ -165,7 +201,7 @@ export function searchArthurListings(criteria: ArthurCriteria): ArthurProperty[]
     ['Outer Borough HOA Recovery', '645 Main Street', 186, 210000, 32500000, 'Residential HOA'],
   ];
 
-  return seeds.map(([name, street, units, sqft, price, zoning], index) => {
+  const generated = seeds.map(([name, street, units, sqft, price, zoning], index) => {
     const numericUnits = Number(units);
     const numericSqft = Number(sqft);
     const askingPrice = Number(price);
@@ -198,6 +234,7 @@ export function searchArthurListings(criteria: ArthurCriteria): ArthurProperty[]
       listingAgent: index % 2 === 0 ? 'Listing agent to verify from source listing' : 'Off-market / owner outreach candidate',
       listingSource: index % 2 === 0 ? 'MLS / StreetEasy / LoopNet-style source to verify' : 'Scout off-market lead',
       imageUrl: `https://maps.googleapis.com/maps/api/streetview?size=900x540&location=${encodeURIComponent(`${street}, ${city}`)}`,
+      matchStatus: 'exact' as const,
       pros: [
         'Operational improvement runway',
         'Vendor rebid and management transition opportunity',
@@ -214,11 +251,19 @@ export function searchArthurListings(criteria: ArthurCriteria): ArthurProperty[]
         { address: `Comparable C near ${street}`, price: Math.round(askingPrice * 0.84), units: Math.max(4, numericUnits - 31), capRate: 0.049, distance: '1.1 mi' },
       ],
     };
-  }).filter((property) => {
-    const unitsOk = property.units >= criteria.minUnits && property.units <= criteria.maxUnits;
-    const sqftOk = property.sqft >= criteria.minSqft && property.sqft <= criteria.maxSqft;
-    return unitsOk && sqftOk;
   });
+
+  const exactMatches = generated.filter((property) => propertyMatchesCriteria(property, normalized));
+  if (exactMatches.length) return exactMatches;
+
+  return generated.map((property) => ({
+    ...property,
+    matchStatus: 'nearest' as const,
+    cons: [
+      ...property.cons,
+      'Shown as a nearest candidate because the current filters returned no exact matches.',
+    ],
+  }));
 }
 
 export function buildArthurModel(property: ArthurProperty): ArthurModel {
@@ -271,6 +316,7 @@ function pct(value: number) {
 }
 
 export function buildArthurReportHtml(property: ArthurProperty, criteria: ArthurCriteria, model = buildArthurModel(property)) {
+  const normalizedCriteria = sanitizeArthurCriteria(criteria);
   const map = `https://www.google.com/maps?q=${encodeURIComponent(property.address)}&output=embed`;
   const streetView = `https://www.google.com/maps?q=${encodeURIComponent(property.address)}&output=embed`;
   return `<!doctype html>
@@ -356,7 +402,7 @@ export function buildArthurReportHtml(property: ArthurProperty, criteria: Arthur
     <thead><tr><th>Case</th><th>Exit Cap</th><th>Rent Growth</th><th>IRR</th><th>Equity Multiple</th></tr></thead>
     <tbody>${model.sensitivity.map((row) => `<tr><td>${row.caseName}</td><td>${pct(row.exitCap)}</td><td>${pct(row.rentGrowth)}</td><td>${pct(row.irr)}</td><td>${row.equityMultiple.toFixed(2)}x</td></tr>`).join('')}</tbody>
   </table>
-  <p class="note">Criteria used: ${criteria.dealTypes.map(arthurDealTypeLabel).join(', ')} | ${criteria.location} | ${criteria.minUnits}-${criteria.maxUnits} units | ${criteria.minSqft.toLocaleString()}-${criteria.maxSqft.toLocaleString()} SF.</p>
+  <p class="note">Criteria used: ${normalizedCriteria.dealTypes.map(arthurDealTypeLabel).join(', ')} | ${normalizedCriteria.location} | ${normalizedCriteria.minUnits}-${normalizedCriteria.maxUnits === Number.MAX_SAFE_INTEGER ? 'No max' : normalizedCriteria.maxUnits} units | ${normalizedCriteria.minSqft.toLocaleString()}-${normalizedCriteria.maxSqft === Number.MAX_SAFE_INTEGER ? 'No max' : normalizedCriteria.maxSqft.toLocaleString()} SF.</p>
   <div class="footer">3</div>
 </section>
 </body>
