@@ -167,6 +167,17 @@ export function arthurDealTypeLabel(type: ArthurDealType) {
 }
 
 const ALL_DEAL_TYPES = Object.keys(TYPE_LABELS) as ArthurDealType[];
+const GENERIC_SEARCH_LOCATIONS = new Set(['new york, ny', 'nyc', 'new york', '']);
+
+const ARTHUR_IMAGE_LIBRARY = {
+  elevator: '/images/case-studies/301-east-50th.png',
+  portfolio: '/images/case-studies/949-park.jpg',
+  mixedUse: '/images/case-studies/250-bowery.png',
+  walkUp: '/images/case-studies/111-mott.jpg',
+  hoa: '/images/services/front-desk-concierge.jpg',
+  oneFour: '/images/case-studies/58-white-street.jpg',
+  fallback: '/images/case-studies/rental-portfolio.jpg',
+};
 
 type ArthurSeed = Omit<
   ArthurProperty,
@@ -198,7 +209,7 @@ const ARTHUR_CANDIDATE_UNIVERSE: ArthurSeed[] = [
     ownership: 'Riverside ValueAdd Holdings LLC',
     listingAgent: 'Listing agent to verify from source listing',
     listingSource: 'MLS / StreetEasy / lender lead to verify',
-    imageUrl: 'https://maps.googleapis.com/maps/api/streetview?size=900x540&location=180%20Riverside%20Drive%2C%20New%20York%2C%20NY',
+    imageUrl: ARTHUR_IMAGE_LIBRARY.portfolio,
     brokerNotes: 'Portfolio-sized residential value-add opportunity with institutional exit liquidity if operating assumptions hold.',
     arthurThesis: 'Proceed only after Jackie validates rent roll, capex timeline, violations, staff structure, and achievable operating savings.',
     pros: ['Institutional unit count', 'Strong Manhattan liquidity', 'Management and vendor rebid upside'],
@@ -228,7 +239,7 @@ const ARTHUR_CANDIDATE_UNIVERSE: ArthurSeed[] = [
     ownership: 'EastSideElevatorOpportunity Holdings LLC',
     listingAgent: 'Off-market / owner outreach candidate',
     listingSource: 'Scout off-market lead',
-    imageUrl: 'https://maps.googleapis.com/maps/api/streetview?size=900x540&location=201%20East%2079th%20Street%2C%20New%20York%2C%20NY',
+    imageUrl: ARTHUR_IMAGE_LIBRARY.elevator,
     brokerNotes: 'Large elevator asset with meaningful compliance and management diligence required before underwriting confidence.',
     arthurThesis: 'Potential acquisition if violations are curable, management transition is priced, and current income verifies against public records.',
     pros: ['Large unit count', 'Prime UES address', 'Scale supports professionalized operations'],
@@ -258,7 +269,7 @@ const ARTHUR_CANDIDATE_UNIVERSE: ArthurSeed[] = [
     ownership: 'MidtownMixedUseBasisPlay Holdings LLC',
     listingAgent: 'Listing agent to verify from source listing',
     listingSource: 'LoopNet / broker package style lead',
-    imageUrl: 'https://maps.googleapis.com/maps/api/streetview?size=900x540&location=345%20West%2058th%20Street%2C%20New%20York%2C%20NY',
+    imageUrl: ARTHUR_IMAGE_LIBRARY.mixedUse,
     brokerNotes: 'Mixed-use basis play where retail income, air rights, and expense leakage should be verified.',
     arthurThesis: 'Best suited for a JV/GP-LP structure if commercial rents and expense recoveries support a defensible basis.',
     pros: ['Mixed-use revenue upside', 'Central transit market', 'Potential commercial rent mark-to-market'],
@@ -288,7 +299,7 @@ const ARTHUR_CANDIDATE_UNIVERSE: ArthurSeed[] = [
     ownership: 'HarlemWalkUpAssemblage Holdings LLC',
     listingAgent: 'Off-market / owner outreach candidate',
     listingSource: 'Scout distress lead',
-    imageUrl: 'https://maps.googleapis.com/maps/api/streetview?size=900x540&location=346%20East%20119th%20Street%2C%20New%20York%2C%20NY',
+    imageUrl: ARTHUR_IMAGE_LIBRARY.walkUp,
     brokerNotes: 'Walk-up basis opportunity with compliance, rent-regulation, and renovation cadence risk.',
     arthurThesis: 'Can move to Arthur underwriting after Jackie confirms tenant profile, violations, DHCR exposure, and realistic unit-turn program.',
     pros: ['Lower basis than core Manhattan', 'Management distress creates leverage', 'Potential expense reset'],
@@ -318,7 +329,7 @@ const ARTHUR_CANDIDATE_UNIVERSE: ArthurSeed[] = [
     ownership: 'Hills of Monroe HOA',
     listingAgent: 'Carlos Capria / board contact to verify',
     listingSource: 'HOA operational recovery lead',
-    imageUrl: 'https://maps.googleapis.com/maps/api/streetview?size=900x540&location=645%20Main%20Street%2C%20Monroe%2C%20CT%2006468',
+    imageUrl: ARTHUR_IMAGE_LIBRARY.hoa,
     brokerNotes: 'HOA recovery / management opportunity, not a conventional sale listing. Needs board package, budget, claim file, and site support pricing.',
     arthurThesis: 'Operational engagement first; financial model should price core management, local field support, and claims/project oversight separately.',
     pros: ['186-unit community scale', 'Clear operational recovery story', 'MDS / ConciergePlus deployment fit'],
@@ -348,7 +359,7 @@ const ARTHUR_CANDIDATE_UNIVERSE: ArthurSeed[] = [
     ownership: 'Westchester Recap Owner LLC',
     listingAgent: 'Regional broker to verify',
     listingSource: 'Broker / lender recap lead',
-    imageUrl: 'https://maps.googleapis.com/maps/api/streetview?size=900x540&location=25%20Main%20Street%2C%20White%20Plains%2C%20NY',
+    imageUrl: ARTHUR_IMAGE_LIBRARY.elevator,
     brokerNotes: 'Transit-oriented elevator building with potential debt maturity or recapitalization angle.',
     arthurThesis: 'Underwrite if tax, insurance, and debt maturity create negotiated basis or preferred-equity opportunity.',
     pros: ['Westchester liquidity', 'Transit-oriented demand', 'Recapitalization optionality'],
@@ -378,7 +389,7 @@ const ARTHUR_CANDIDATE_UNIVERSE: ArthurSeed[] = [
     ownership: 'Family ownership to verify',
     listingAgent: 'Florida broker to verify',
     listingSource: 'Family internal / condo inventory lead',
-    imageUrl: 'https://maps.googleapis.com/maps/api/streetview?size=900x540&location=1900%20NE%20135th%20Street%2C%20North%20Miami%2C%20FL',
+    imageUrl: ARTHUR_IMAGE_LIBRARY.portfolio,
     brokerNotes: 'Condo inventory / family-internal transaction candidate with insurance and HOA diligence front and center.',
     arthurThesis: 'Only proceed if insurance, association reserves, and liquidity assumptions are supportable.',
     pros: ['Potential family transaction flexibility', 'Condo inventory strategy', 'Florida growth market'],
@@ -408,7 +419,7 @@ const ARTHUR_CANDIDATE_UNIVERSE: ArthurSeed[] = [
     ownership: 'Private owner to verify',
     listingAgent: 'NJ listing broker to verify',
     listingSource: '1031 / small multifamily lead',
-    imageUrl: 'https://maps.googleapis.com/maps/api/streetview?size=900x540&location=75%20River%20Road%2C%20Edgewater%2C%20NJ',
+    imageUrl: ARTHUR_IMAGE_LIBRARY.oneFour,
     brokerNotes: 'Smaller investor-friendly acquisition with clear 1031 or family-office use case.',
     arthurThesis: 'Model as a lighter-weight investor package with debt quotes, repairs, taxes, and rent comps.',
     pros: ['Small deal executable', 'Investor-friendly structure', 'Potential 1031 buyer pool'],
@@ -478,6 +489,90 @@ function correctImpossibleDealType(property: ArthurProperty): ArthurProperty {
   return { ...property, type: 'gp_lp' };
 }
 
+function pickImageForType(type: ArthurDealType) {
+  if (type === 'one_to_four_family') return ARTHUR_IMAGE_LIBRARY.oneFour;
+  if (type === 'hoa_condo_recovery') return ARTHUR_IMAGE_LIBRARY.hoa;
+  if (type === 'mixed_use' || type === 'commercial') return ARTHUR_IMAGE_LIBRARY.mixedUse;
+  if (type === 'walk_up') return ARTHUR_IMAGE_LIBRARY.walkUp;
+  if (type === 'elevator') return ARTHUR_IMAGE_LIBRARY.elevator;
+  return ARTHUR_IMAGE_LIBRARY.fallback;
+}
+
+function preferredType(criteria: ArthurCriteria): ArthurDealType {
+  if (criteria.dealTypes.length === 1) return criteria.dealTypes[0];
+  if (criteria.dealTypes.includes('hoa_condo_recovery')) return 'hoa_condo_recovery';
+  if (criteria.dealTypes.includes('one_to_four_family')) return 'one_to_four_family';
+  if (criteria.dealTypes.includes('elevator')) return 'elevator';
+  if (criteria.dealTypes.includes('walk_up')) return 'walk_up';
+  return criteria.dealTypes[0] || 'gp_lp';
+}
+
+function unitsForType(type: ArthurDealType, criteria: ArthurCriteria) {
+  if (criteria.applyUnitRangeFilter) {
+    return Math.max(1, Math.min(type === 'one_to_four_family' ? 4 : criteria.maxUnits, criteria.minUnits));
+  }
+  if (type === 'one_to_four_family') return 4;
+  if (type === 'hoa_condo_recovery') return 186;
+  if (type === 'walk_up') return 32;
+  if (type === 'elevator') return 96;
+  if (type === 'mixed_use' || type === 'commercial') return 28;
+  return 48;
+}
+
+function inferRegion(address: string) {
+  const lower = address.toLowerCase();
+  if (/\bct\b|connecticut|monroe|bridgeport|stamford|greenwich|new haven/.test(lower)) return 'Connecticut';
+  if (/\bnj\b|new jersey|edgewater|jersey city|hoboken|newark/.test(lower)) return 'New Jersey';
+  if (/\bfl\b|florida|miami|boca|fort lauderdale/.test(lower)) return 'Florida';
+  if (/brooklyn|queens|bronx|staten island|manhattan|new york|nyc|\bny\b/.test(lower)) return 'New York';
+  return 'Target Market';
+}
+
+function buildSubjectCandidate(criteria: ArthurCriteria): ArthurSeed | null {
+  const normalizedLocation = criteria.location.trim();
+  if (GENERIC_SEARCH_LOCATIONS.has(normalizedLocation.toLowerCase())) return null;
+
+  const type = preferredType(criteria);
+  const units = unitsForType(type, criteria);
+  const sqft = criteria.applySqftRangeFilter ? Math.max(criteria.minSqft, units * 850) : units * (type === 'one_to_four_family' ? 1800 : 950);
+  const pricePerUnit = type === 'one_to_four_family' ? 850000 : type === 'hoa_condo_recovery' ? 175000 : type === 'mixed_use' ? 675000 : 525000;
+  const askingPrice = Math.round(units * pricePerUnit);
+  const noi = Math.round(askingPrice * 0.041);
+  const region = inferRegion(normalizedLocation);
+  const cleanAddress = normalizedLocation.replace(/\s+/g, ' ').replace(/\s+,/g, ',');
+
+  return {
+    name: `${cleanAddress.split(',')[0]} Investment Candidate`,
+    address: cleanAddress,
+    location: region,
+    type,
+    units,
+    sqft,
+    askingPrice,
+    lastSalePrice: Math.round(askingPrice * 0.72),
+    lastSaleDate: 'To verify',
+    taxes: Math.round(askingPrice * 0.018),
+    insurance: Math.round(units * 2100),
+    noi,
+    capRate: noi / askingPrice,
+    violations: type === 'one_to_four_family' ? 2 : 18,
+    zoning: criteria.blockLot ? `To verify from block/lot ${criteria.blockLot}` : 'Zoning to verify from public records',
+    floodZone: criteria.floodZone ? 'Flood review requested' : 'To verify',
+    commuteScore: region === 'New York' ? 88 : 74,
+    schoolScore: region === 'Connecticut' || region === 'New Jersey' ? 82 : 70,
+    crimeScore: 72,
+    neighborhoodScore: region === 'New York' ? 80 : 76,
+    ownership: 'Owner / sponsor to verify from public records',
+    listingAgent: 'Listing agent / owner contact to verify',
+    listingSource: 'Arthur generated subject-property lead from search criteria',
+    imageUrl: pickImageForType(type),
+    brokerNotes: 'Subject-property candidate generated from the entered criteria. Arthur should now enrich it with listing, ownership, tax, zoning, violation, financing, and comp sources before final underwriting.',
+    arthurThesis: 'Use this as the live working card for the address entered, then refine assumptions as source data, broker package, rent roll, and public records are confirmed.',
+    pros: ['Search-specific candidate instead of static sample result', 'Assumptions can be edited live before report/export', 'Ready for Scout, HubSpot, source search, PDF, HTML, and Excel workflow'],
+    cons: ['Public-record enrichment still required', 'Pricing is an underwriting placeholder until listing or owner data is verified', 'Images are placeholders unless a verified subject image is attached or sourced'],
+  };
+}
+
 function scoreCandidate(property: ArthurProperty, criteria: ArthurCriteria) {
   let score = 55;
   const reasons: string[] = [];
@@ -533,7 +628,12 @@ function attachComps(property: ArthurProperty): ArthurProperty {
 
 export function searchArthurListings(criteria: ArthurCriteria): ArthurProperty[] {
   const normalized = sanitizeArthurCriteria(criteria);
-  const generated = ARTHUR_CANDIDATE_UNIVERSE.map((seed, index) => {
+  const subjectCandidate = buildSubjectCandidate(normalized);
+  const candidateUniverse = subjectCandidate
+    ? [subjectCandidate, ...ARTHUR_CANDIDATE_UNIVERSE]
+    : ARTHUR_CANDIDATE_UNIVERSE;
+
+  const generated = candidateUniverse.map((seed, index) => {
     const base = correctImpossibleDealType({ ...seed, id: `arthur-${index + 1}`, comps: [] } as ArthurProperty);
     const { score, reasons } = scoreCandidate(base, normalized);
     return attachComps({

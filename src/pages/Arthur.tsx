@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   BarChart3,
   ExternalLink,
@@ -49,6 +49,7 @@ export default function Arthur() {
   const [selectedId, setSelectedId] = useState(results[0]?.id || '');
   const [isSearching, setIsSearching] = useState(false);
   const [isPushing, setIsPushing] = useState(false);
+  const detailRef = useRef<HTMLElement | null>(null);
 
   const selected = useMemo(
     () => results.find((property) => property.id === selectedId) || results[0],
@@ -69,6 +70,13 @@ export default function Arthur() {
       const nearest = next.some((property) => property.matchStatus === 'nearest');
       toast.success(nearest ? `${next.length} nearest Arthur candidates shown` : `${next.length} Arthur candidate${next.length === 1 ? '' : 's'} found`);
     }, 300);
+  };
+
+  const selectProperty = (id: string) => {
+    setSelectedId(id);
+    window.setTimeout(() => {
+      detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
   };
 
   const toggleDealType = (type: ArthurDealType) => {
@@ -210,7 +218,7 @@ export default function Arthur() {
                     key={property.id}
                     property={property}
                     active={selected?.id === property.id}
-                    onSelect={() => setSelectedId(property.id)}
+                    onSelect={() => selectProperty(property.id)}
                   />
                 ))}
               </div>
@@ -233,7 +241,7 @@ export default function Arthur() {
                       return (
                         <tr
                           key={property.id}
-                          onClick={() => setSelectedId(property.id)}
+                          onClick={() => selectProperty(property.id)}
                           className={cn('border-t border-gray-100 cursor-pointer hover:bg-camelot-gold/5', active && 'bg-camelot-gold/10')}
                         >
                           <td className="p-3">
@@ -257,7 +265,7 @@ export default function Arthur() {
         </section>
 
         {selected && model && (
-          <section className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px] gap-5">
+          <section ref={detailRef} className="scroll-mt-24 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px] gap-5">
             <div className="bg-white border border-gray-200 rounded-lg p-5">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
@@ -287,7 +295,7 @@ export default function Arthur() {
 
               <div className="grid grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] gap-4 mt-5">
                 <div className="rounded-lg border border-gray-200 overflow-hidden bg-camelot-cream">
-                  <img src={selected.imageUrl} alt={selected.name} className="h-52 w-full object-cover" />
+                  <PropertyImage src={selected.imageUrl} alt={selected.name} className="h-52 w-full object-cover" />
                   <div className="p-3">
                     <p className="text-xs uppercase tracking-wide text-gray-500">Selected Listing Card</p>
                     <p className="font-semibold">{selected.listingSource}</p>
@@ -511,9 +519,10 @@ function ListingCard({ property, active, onSelect }: { property: ArthurProperty;
       )}
     >
       <div className="relative h-36 bg-camelot-cream">
-        <img src={property.imageUrl} alt={property.name} className="h-full w-full object-cover" />
+        <PropertyImage src={property.imageUrl} alt={property.name} className="h-full w-full object-cover" />
         <span className="absolute top-2 left-2 rounded bg-camelot-navy text-white text-[11px] px-2 py-1">{arthurDealTypeLabel(property.type)}</span>
         {property.matchStatus === 'nearest' && <span className="absolute top-2 right-2 rounded bg-amber-600 text-white text-[11px] px-2 py-1">Nearest</span>}
+        {active && <span className="absolute bottom-2 right-2 rounded bg-camelot-gold text-camelot-navy text-[11px] font-semibold px-2 py-1">Selected - details below</span>}
       </div>
       <div className="p-3">
         <div className="flex items-start justify-between gap-3">
@@ -565,6 +574,21 @@ function Metric({ label, value }: { label: string; value: string }) {
       <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
       <p className="text-lg font-bold mt-1">{value}</p>
     </div>
+  );
+}
+
+function PropertyImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  return (
+    <img
+      src={src || '/images/case-studies/rental-portfolio.jpg'}
+      alt={alt}
+      className={className}
+      loading="lazy"
+      onError={(event) => {
+        event.currentTarget.onerror = null;
+        event.currentTarget.src = '/images/case-studies/rental-portfolio.jpg';
+      }}
+    />
   );
 }
 
