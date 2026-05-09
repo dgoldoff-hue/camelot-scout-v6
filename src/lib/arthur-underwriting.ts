@@ -462,6 +462,22 @@ function propertyMatchesCriteria(property: ArthurProperty, criteria: ArthurCrite
   return unitsOk && sqftOk && typeOk && locationOk;
 }
 
+function propertyMatchesHardCriteriaWithoutLocation(property: ArthurProperty, criteria: ArthurCriteria) {
+  const unitsOk = !criteria.applyUnitRangeFilter || (property.units >= criteria.minUnits && property.units <= criteria.maxUnits);
+  const sqftOk = !criteria.applySqftRangeFilter || (property.sqft >= criteria.minSqft && property.sqft <= criteria.maxSqft);
+  const typeOk = !criteria.applyDealTypeFilter || criteria.dealTypes.includes(property.type);
+  return unitsOk && sqftOk && typeOk;
+}
+
+function correctImpossibleDealType(property: ArthurProperty): ArthurProperty {
+  if (property.type !== 'one_to_four_family' || property.units <= 4) return property;
+  if (/hoa|condo/i.test(`${property.name} ${property.zoning}`)) return { ...property, type: 'hoa_condo_recovery' };
+  if (/mixed|retail|commercial|overlay|c6/i.test(`${property.name} ${property.zoning}`)) return { ...property, type: 'mixed_use' };
+  if (/walk-up|walk up/i.test(property.name)) return { ...property, type: 'walk_up' };
+  if (/elevator/i.test(property.name) || property.units >= 80) return { ...property, type: 'elevator' };
+  return { ...property, type: 'gp_lp' };
+}
+
 function scoreCandidate(property: ArthurProperty, criteria: ArthurCriteria) {
   let score = 55;
   const reasons: string[] = [];
@@ -503,13 +519,14 @@ function buildSelectedCriteriaNotes(criteria: ArthurCriteria) {
 }
 
 function attachComps(property: ArthurProperty): ArthurProperty {
-  const street = property.address.split(',')[0];
+  const normalizedProperty = correctImpossibleDealType(property);
+  const street = normalizedProperty.address.split(',')[0];
   return {
-    ...property,
+    ...normalizedProperty,
     comps: [
-      { address: `Comparable A near ${street}`, price: Math.round(property.askingPrice * 0.92), units: Math.max(2, property.units - 18), capRate: 0.045, distance: '0.3 mi' },
-      { address: `Comparable B near ${street}`, price: Math.round(property.askingPrice * 1.08), units: property.units + 22, capRate: 0.041, distance: '0.7 mi' },
-      { address: `Comparable C near ${street}`, price: Math.round(property.askingPrice * 0.84), units: Math.max(2, property.units - 31), capRate: 0.049, distance: '1.1 mi' },
+      { address: `Comparable A near ${street}`, price: Math.round(normalizedProperty.askingPrice * 0.92), units: Math.max(2, normalizedProperty.units - 18), capRate: 0.045, distance: '0.3 mi' },
+      { address: `Comparable B near ${street}`, price: Math.round(normalizedProperty.askingPrice * 1.08), units: normalizedProperty.units + 22, capRate: 0.041, distance: '0.7 mi' },
+      { address: `Comparable C near ${street}`, price: Math.round(normalizedProperty.askingPrice * 0.84), units: Math.max(2, normalizedProperty.units - 31), capRate: 0.049, distance: '1.1 mi' },
     ],
   };
 }
@@ -517,7 +534,7 @@ function attachComps(property: ArthurProperty): ArthurProperty {
 export function searchArthurListings(criteria: ArthurCriteria): ArthurProperty[] {
   const normalized = sanitizeArthurCriteria(criteria);
   const generated = ARTHUR_CANDIDATE_UNIVERSE.map((seed, index) => {
-    const base = { ...seed, id: `arthur-${index + 1}`, comps: [] } as ArthurProperty;
+    const base = correctImpossibleDealType({ ...seed, id: `arthur-${index + 1}`, comps: [] } as ArthurProperty);
     const { score, reasons } = scoreCandidate(base, normalized);
     return attachComps({
       ...base,
@@ -531,7 +548,12 @@ export function searchArthurListings(criteria: ArthurCriteria): ArthurProperty[]
   const exactMatches = generated.filter((property) => propertyMatchesCriteria(property, normalized));
   if (exactMatches.length) return exactMatches.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
 
-  return generated
+  const sameHardCriteriaOutsideLocation = generated.filter((property) =>
+    propertyMatchesHardCriteriaWithoutLocation(property, normalized)
+  );
+  const fallbackPool = sameHardCriteriaOutsideLocation.length ? sameHardCriteriaOutsideLocation : generated;
+
+  return fallbackPool
     .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
     .slice(0, 5)
     .map((property) => ({
@@ -539,7 +561,9 @@ export function searchArthurListings(criteria: ArthurCriteria): ArthurProperty[]
       matchStatus: 'nearest',
       cons: [
         ...property.cons,
-        'Shown as a nearest candidate because the current active filters returned no exact listing matches.',
+        sameHardCriteriaOutsideLocation.length
+          ? 'Shown as a nearest candidate because the asset class and range match, but the location filter has no exact listing match.'
+          : 'Shown as a nearest candidate because the current active filters returned no exact listing matches.',
       ],
     }));
 }

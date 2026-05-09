@@ -195,11 +195,13 @@ export default function Arthur() {
                   <h2 className="font-bold">Listing Search Results</h2>
                   <p className="text-xs text-gray-500">Pick a property card or row to drill into the listing, report, and editable model.</p>
                 </div>
-                <span className="text-xs text-gray-500">{hasNearestResults ? `${exactResultCount} exact / ${results.length} nearest` : `${results.length} candidates`}</span>
+                <span className="text-xs text-gray-500">
+                  {hasNearestResults ? `${exactResultCount} exact / ${results.length - exactResultCount} nearest` : `${results.length} candidates`}
+                </span>
               </div>
               {hasNearestResults && (
                 <div className="mx-4 mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                  No exact match was found for the active hard filters, so Arthur is showing nearest candidates. Turn off hard filters or widen the ranges to broaden the true listing queue.
+                  No exact match was found for the active hard filters, so Arthur is showing nearest candidates with their actual asset class. Turn off hard filters or widen the ranges to broaden the true listing queue.
                 </div>
               )}
               <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4 p-4">
