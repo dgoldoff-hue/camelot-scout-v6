@@ -1,5 +1,9 @@
-const express = require('express');
-const path = require('path');
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 10000;
 
@@ -16,6 +20,20 @@ function getScoutConfig() {
     apiKey: process.env.SCOUT_API_KEY || '',
     workspaceId: process.env.SCOUT_WORKSPACE_ID || '',
   };
+}
+
+const LOCAL_SCOUT_LEADS = [];
+
+function saveLocalScoutLead(payload) {
+  const id = `local-scout-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const lead = {
+    id,
+    ...payload,
+    saved_at: new Date().toISOString(),
+  };
+  LOCAL_SCOUT_LEADS.unshift(lead);
+  LOCAL_SCOUT_LEADS.splice(250);
+  return lead;
 }
 
 function parseContactName(fullName = '') {
@@ -252,12 +270,21 @@ app.get('/api/integrations/status', (_req, res) => {
       configured: Boolean(scout.apiUrl && scout.apiKey && scout.workspaceId),
       apiUrlSet: Boolean(scout.apiUrl),
       workspaceSet: Boolean(scout.workspaceId),
+      localQueueSize: LOCAL_SCOUT_LEADS.length,
     },
     hubspot: {
       configured: Boolean(hubspotKey),
       dealsEnabled: process.env.HUBSPOT_CREATE_DEALS === 'true' && Boolean(process.env.HUBSPOT_DEAL_STAGE_ID),
       associationEndpoint: '/crm/v3/associations/contacts/deals/batch/create',
     },
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get('/api/integrations/local-leads', (_req, res) => {
+  res.json({
+    leads: LOCAL_SCOUT_LEADS,
+    count: LOCAL_SCOUT_LEADS.length,
     timestamp: new Date().toISOString(),
   });
 });
@@ -272,7 +299,7 @@ app.post('/api/integrations/push-building', async (req, res) => {
     status: 'ok',
     quality,
     routing,
-    scout: { status: 'skipped', message: 'Scout API not configured.' },
+    scout: { status: 'skipped', message: 'Scout lead not saved yet.' },
     hubspot: { status: 'skipped', message: 'HubSpot API key not configured.' },
   };
 
@@ -283,13 +310,53 @@ app.post('/api/integrations/push-building', async (req, res) => {
     return res.status(400).json(result);
   }
 
+  const localLead = saveLocalScoutLead({
+    source: 'Arthur AI Underwriter',
+    building,
+    contact,
+    quality,
+    routing,
+  });
+  result.scout = {
+    status: 'ok',
+    message: 'Saved to Scout local lead queue.',
+    id: localLead.id,
+    url: '/api/integrations/local-leads',
+  };
+
   const hubspotKey = getHubSpotApiKey();
   if (hubspotKey) {
     if (!contact.email) {
-      result.hubspot = {
-        status: 'skipped',
-        message: 'HubSpot contact skipped because no verified email is available.',
-      };
+      if (process.env.HUBSPOT_CREATE_DEALS === 'true' && process.env.HUBSPOT_DEAL_STAGE_ID) {
+        try {
+          const dealPayload = {
+            properties: {
+              dealname: `${building.name || building.address} - Scout Lead`,
+              dealstage: process.env.HUBSPOT_DEAL_STAGE_ID,
+              pipeline: process.env.HUBSPOT_PIPELINE_ID || 'default',
+              amount: String(building.market_value || ''),
+            },
+          };
+          const deal = await hubspotRequest('/crm/v3/objects/deals', dealPayload);
+          result.hubspot = {
+            status: 'ok',
+            message: 'HubSpot deal synced without contact; add a verified email to create/associate a contact.',
+            id: deal.id,
+            warnings: ['No verified contact email was available for contact creation.'],
+          };
+        } catch (dealErr) {
+          result.hubspot = {
+            status: 'error',
+            message: dealErr.message || 'HubSpot deal sync failed.',
+          };
+        }
+      } else {
+        result.hubspot = {
+          status: 'skipped',
+          message: 'HubSpot skipped: no verified email and deal sync is not enabled.',
+          warnings: ['Set HUBSPOT_CREATE_DEALS=true and HUBSPOT_DEAL_STAGE_ID to create property deals without contacts.'],
+        };
+      }
     } else {
       try {
         const parsedName = parseContactName(contact.name);
@@ -370,20 +437,26 @@ app.post('/api/integrations/push-building', async (req, res) => {
       if (!resp.ok) throw new Error(data?.message || data?.error || `Scout API failed: ${resp.status}`);
       result.scout = {
         status: 'ok',
-        message: 'Scout lead pushed.',
+        message: 'Scout lead pushed to external Scout API and saved locally.',
         id: data.id || data.lead_id || data.uuid,
         url: data.url,
       };
     } catch (err) {
       result.scout = {
-        status: 'error',
-        message: err.message || 'Scout API push failed.',
+        status: 'ok',
+        message: `Saved locally. External Scout API push failed: ${err.message || 'Scout API push failed.'}`,
+        id: localLead.id,
+        url: '/api/integrations/local-leads',
+        warnings: [err.message || 'Scout API push failed.'],
       };
     }
   } else {
     result.scout = {
-      status: 'skipped',
-      message: 'Scout API not configured. Set SCOUT_API_URL, SCOUT_API_KEY, and SCOUT_WORKSPACE_ID.',
+      status: 'ok',
+      message: 'Saved locally. External Scout API not configured.',
+      id: localLead.id,
+      url: '/api/integrations/local-leads',
+      warnings: ['Set SCOUT_API_URL, SCOUT_API_KEY, and SCOUT_WORKSPACE_ID for external Scout push.'],
     };
   }
 

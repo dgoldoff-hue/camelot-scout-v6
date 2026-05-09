@@ -48,6 +48,7 @@ export default function Arthur() {
   const [results, setResults] = useState<ArthurProperty[]>(() => searchArthurListings(DEFAULT_ARTHUR_CRITERIA));
   const [selectedId, setSelectedId] = useState(results[0]?.id || '');
   const [isSearching, setIsSearching] = useState(false);
+  const [isPushing, setIsPushing] = useState(false);
 
   const selected = useMemo(
     () => results.find((property) => property.id === selectedId) || results[0],
@@ -81,6 +82,7 @@ export default function Arthur() {
 
   const sendToHubSpot = async () => {
     if (!selected) return;
+    setIsPushing(true);
     const quality = { score: Math.round((selected.neighborhoodScore + selected.commuteScore) / 2), tier: 'hot', missingFields: [], strengths: selected.pros, warnings: selected.cons };
     const routing = { team: 'Arthur / acquisitions desk', region: selected.location, priority: 'same-day', tags: ['arthur-underwriting', selected.type, 'investment-candidate'] };
     try {
@@ -92,11 +94,13 @@ export default function Arthur() {
             id: selected.id,
             name: selected.name,
             address: selected.address,
+            region: selected.location,
+            neighborhood: selected.location,
             units: selected.units,
-            type: 'mixed-use',
+            type: selected.type,
             score: quality.score,
             grade: quality.score >= 76 ? 'A' : 'B',
-            current_management: 'Owner / management to verify',
+            current_management: selected.ownership,
             market_value: selected.askingPrice,
             assessed_value: selected.lastSalePrice,
             violations_count: selected.violations,
@@ -115,11 +119,17 @@ export default function Arthur() {
           routing,
         }),
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok && data.status === 'error') throw new Error(data.hubspot?.message || data.scout?.message || 'HubSpot push failed');
-      toast.success('Arthur candidate sent through Scout/HubSpot integration workflow');
+      const scoutMessage = data.scout?.message || 'Scout workflow complete.';
+      const hubspotMessage = data.hubspot?.message || 'HubSpot workflow complete.';
+      if (data.status === 'ok') toast.success(`${scoutMessage} ${hubspotMessage}`);
+      else if (data.status === 'partial' || data.status === 'skipped') toast(`${scoutMessage} ${hubspotMessage}`, { icon: '⚠️' });
+      else toast.error(`${scoutMessage} ${hubspotMessage}`);
     } catch (err: any) {
       toast.error(err.message || 'HubSpot workflow failed');
+    } finally {
+      setIsPushing(false);
     }
   };
 
@@ -253,8 +263,12 @@ export default function Arthur() {
                   <p className="text-sm text-gray-500">{selected.address}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={sendToHubSpot} className="inline-flex items-center gap-2 bg-emerald-700 text-white px-3 py-2 rounded-md text-sm hover:bg-emerald-800">
-                    <Send size={15} /> Scout / HubSpot
+                  <button
+                    onClick={sendToHubSpot}
+                    disabled={isPushing}
+                    className="inline-flex items-center gap-2 bg-emerald-700 text-white px-3 py-2 rounded-md text-sm hover:bg-emerald-800 disabled:opacity-60"
+                  >
+                    {isPushing ? <RefreshCw size={15} className="animate-spin" /> : <Send size={15} />} Scout / HubSpot
                   </button>
                   <button onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(selected.address + ' property records')}`, '_blank')} className="action-btn">
                     <ExternalLink size={15} /> Source Search

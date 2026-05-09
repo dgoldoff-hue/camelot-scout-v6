@@ -22,6 +22,7 @@ export interface IntegrationStatus {
     configured: boolean;
     apiUrlSet: boolean;
     workspaceSet: boolean;
+    localQueueSize?: number;
   };
   hubspot: {
     configured: boolean;
