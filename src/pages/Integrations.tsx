@@ -16,6 +16,7 @@ import toast from 'react-hot-toast';
 import { useBuildings } from '@/hooks/useBuildings';
 import type { Building } from '@/types';
 import { cn } from '@/lib/utils';
+import { CAMELOT_ACQUISITION_PIPELINE, SENTINEL_HANDOFF_RULES } from '@/lib/acquisition-pipeline';
 import { LEAD_GENERATOR_DEPLOYMENT_PROMPT } from '@/lib/scout-ai-doctrines';
 import {
   auditLeadQuality,
@@ -193,6 +194,28 @@ export default function Integrations() {
           <StatusCard label="Lead Quality Avg" ok={summary.avg >= 55} detail={`${summary.avg}/100 across visible audit`} />
           <StatusCard label="Feedback Loop" ok={false} soft detail="Planned: Scout outcomes and HubSpot deal status sync back" />
         </div>
+
+        <section className="bg-white border border-gray-200 rounded-lg p-5">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="font-bold">Scout &rarr; Sentinel &rarr; Jackie &rarr; Arthur</h2>
+              <p className="text-sm text-gray-500">
+                Lead generation now uses an institutional gate sequence: sources first, analyst scoring second, operator validation third, underwriting last.
+              </p>
+            </div>
+            <p className="text-xs text-gray-500">
+              Sentinel promotes {SENTINEL_HANDOFF_RULES.promoteAt}+ only; Arthur runs after Jackie pass.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mt-4">
+            {CAMELOT_ACQUISITION_PIPELINE.map((stage) => (
+              <div key={stage.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <p className="font-semibold">{stage.name}</p>
+                <p className="text-xs text-gray-500 mt-1">{stage.output}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-5">
           <section className="bg-white border border-gray-200 rounded-lg overflow-hidden">

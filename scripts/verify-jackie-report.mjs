@@ -19,6 +19,7 @@ const integrationsFile = resolve(root, 'src/lib/integrations.ts');
 const integrationsPageFile = resolve(root, 'src/pages/Integrations.tsx');
 const serverFile = resolve(root, 'server.js');
 const botsPageFile = resolve(root, 'src/pages/Bots.tsx');
+const acquisitionPipelineFile = resolve(root, 'src/lib/acquisition-pipeline.ts');
 const source = readFileSync(reportFile, 'utf8');
 const streetEasySource = readFileSync(streetEasyFile, 'utf8');
 const nycApiSource = readFileSync(nycApiFile, 'utf8');
@@ -31,11 +32,12 @@ const integrationsSource = readFileSync(integrationsFile, 'utf8');
 const integrationsPageSource = readFileSync(integrationsPageFile, 'utf8');
 const serverSource = readFileSync(serverFile, 'utf8');
 const botsPageSource = readFileSync(botsPageFile, 'utf8');
+const acquisitionPipelineSource = readFileSync(acquisitionPipelineFile, 'utf8');
 const reportCenter = readFileSync(reportCenterFile, 'utf8');
 const instantProposal = readFileSync(instantProposalFile, 'utf8');
 const propertyDetail = readFileSync(propertyDetailFile, 'utf8');
 const pitchReportSource = readFileSync(pitchReportFile, 'utf8');
-const sourceStack = `${source}\n${pitchReportSource}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}\n${gutCheckSource}\n${jackieV2Source}\n${scoutDoctrineSource}\n${sentinelReportSource}\n${integrationsSource}\n${integrationsPageSource}\n${serverSource}\n${botsPageSource}`;
+const sourceStack = `${source}\n${pitchReportSource}\n${streetEasySource}\n${nycApiSource}\n${nycViolationsSource}\n${gutCheckSource}\n${jackieV2Source}\n${scoutDoctrineSource}\n${sentinelReportSource}\n${integrationsSource}\n${integrationsPageSource}\n${serverSource}\n${botsPageSource}\n${acquisitionPipelineSource}`;
 
 const requiredTokens = [
   ['201 East 79 known profile', "canonicalAddress: '201 East 79th Street, New York, NY 10075'"],
@@ -218,6 +220,15 @@ const requiredTokens = [
   ['Lead routing feature', 'routeLead'],
   ['Bidirectional lifecycle note', 'Bidirectional Scout outcome and HubSpot deal status sync'],
   ['Scout HubSpot bot dashboard', 'Scout + HubSpot Sync Bot'],
+  ['Acquisition pipeline constant', 'CAMELOT_ACQUISITION_PIPELINE'],
+  ['Four-stage acquisition doctrine', 'SCOUT -> SENTINEL -> JACKIE -> ARTHUR -> DELIVER'],
+  ['Sentinel promote gate', 'promoteAt: 70'],
+  ['Jackie acquisition fit prompt', 'JACKIE_ACQUISITION_FIT_PROMPT'],
+  ['Jackie before Arthur rule', 'Arthur cannot underwrite a deal until Jackie'],
+  ['Jackie acquisition fit sections', 'JACKIE_ACQUISITION_FIT_SECTIONS'],
+  ['Arthur underwriting prompt', 'ARTHUR_UNDERWRITING_PROMPT'],
+  ['Arthur bot dashboard', 'Arthur Financial Underwriter'],
+  ['Arthur no Sentinel-only rule', 'No Arthur model runs on Sentinel-only leads'],
 ];
 
 const failures = requiredTokens

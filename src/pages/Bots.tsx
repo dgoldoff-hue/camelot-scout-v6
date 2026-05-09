@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { BotStatus } from '@/types';
 import { cn, formatDate } from '@/lib/utils';
 import { SCOUT_AGENT_DOCTRINES } from '@/lib/scout-ai-doctrines';
+import { CAMELOT_ACQUISITION_PIPELINE, JACKIE_ACQUISITION_FIT_SECTIONS, SENTINEL_HANDOFF_RULES } from '@/lib/acquisition-pipeline';
 import {
   AlertCircle,
   Archive,
@@ -14,6 +15,7 @@ import {
   FileText,
   Gavel,
   GitBranch,
+  Landmark,
   Mail,
   Pause,
   Play,
@@ -85,6 +87,8 @@ const DEMO_BOTS: DashboardBot[] = [
       'Commercial and amenity sources checked: LoopNet, CoStar, PropertyShark, HPD, DOF, DOB/DOT parking, operators, StreetEasy, official site',
       'No self-managed language unless confirmed; known staffed buildings show board/staff/management context',
       'Gut Check, Quarterly Market Reports, DOF link, partner logos, case studies, and duplicate closing pages verified',
+      'Acquisition-fit mode sits after Sentinel and before Arthur: no financial underwriting until Jackie validates operations',
+      'Acquisition Fit Brief includes current management, building condition, compliance, tenant base, vendor/super landscape, 90-day plan, value-add levers, red flags, capex and score',
     ],
     sources: [
       { name: 'Jackie_SKILL_Updated.md', kind: 'Drive', status: 'synced' },
@@ -98,6 +102,34 @@ const DEMO_BOTS: DashboardBot[] = [
       { label: 'Proposal Library', href: '/proposals', icon: FileText },
       { label: 'Jackie Reports', href: '/report-center', icon: Crown },
       { label: 'Agreements', href: '/agreements', icon: ShieldCheck },
+    ],
+  },
+  {
+    id: 'arthur',
+    name: 'Arthur Financial Underwriter',
+    type: 'arthur',
+    description:
+      'Runs institutional acquisition underwriting only after Sentinel finds the deal and Jackie validates the operating thesis, capex, lease-up and compliance path.',
+    status: 'idle',
+    owner: 'Camelot Acquisition & Equity Group',
+    tasks_completed: 0,
+    tasks_queued: 0,
+    outputs: ['Base/downside/upside/lender models', 'Investor deck', 'Lender deck', 'Sponsor summary', 'LOI'],
+    quality_gates: [
+      ...(doctrineById.arthur?.releaseGates || []),
+      'Arthur receives Jackie-validated capex, lease-up timeline, rent assumptions, transition cost and compliance cost',
+      'No Arthur model runs on Sentinel-only leads',
+      'Caveats from Jackie become sensitivity cases',
+    ],
+    sources: [
+      { name: 'src/lib/acquisition-pipeline.ts', kind: 'Repo', status: 'synced' },
+      { name: 'Jackie Acquisition Fit Brief', kind: 'Generated', status: 'reference' },
+      { name: 'Sentinel Memo', kind: 'Generated', status: 'reference' },
+    ],
+    actions: [
+      { label: 'Sentinel', href: '/sentinel', icon: Sparkles },
+      { label: 'Jackie Reports', href: '/report-center', icon: Crown },
+      { label: 'Integrations', href: '/integrations', icon: GitBranch },
     ],
   },
   {
@@ -332,6 +364,7 @@ const DEMO_RUNS: BotRun[] = [
 
 const BOT_ICONS: Record<string, typeof BotIcon> = {
   jackie: Crown,
+  arthur: Landmark,
   merlin: Sparkles,
   scout: Database,
   sentinel: Sparkles,
@@ -411,6 +444,33 @@ export default function Bots() {
       </div>
 
       <div className="p-6 md:p-8 space-y-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-5">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="text-lg font-bold">Acquisition Pipeline Doctrine</h2>
+              <p className="text-sm text-gray-500">
+                Scout sources. Sentinel screens. Jackie validates operations. Arthur underwrites only after Jackie passes the deal.
+              </p>
+            </div>
+            <div className="text-xs text-gray-500">
+              Sentinel gates: kill &lt; {SENTINEL_HANDOFF_RULES.killBelow} | watch {SENTINEL_HANDOFF_RULES.watchRange} | promote {SENTINEL_HANDOFF_RULES.promoteAt}+
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mt-4">
+            {CAMELOT_ACQUISITION_PIPELINE.map((stage, index) => (
+              <div key={stage.id} className="relative border border-gray-200 rounded-lg p-3 bg-gray-50">
+                <p className="text-[10px] uppercase tracking-wide text-camelot-gold font-bold">Stage {index + 1}</p>
+                <h3 className="font-bold mt-1">{stage.name}</h3>
+                <p className="text-xs text-gray-500 mt-1">{stage.role}</p>
+                <p className="text-[11px] text-gray-400 mt-2">{stage.handoffTrigger}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-3">
+            Jackie Acquisition Fit sections: {JACKIE_ACQUISITION_FIT_SECTIONS.join(' | ')}
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-5">
           <div className="space-y-3">
             {bots.map((bot) => {

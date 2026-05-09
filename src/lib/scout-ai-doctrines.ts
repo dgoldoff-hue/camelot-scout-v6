@@ -1,10 +1,12 @@
 export type ScoutAgentId =
+  | 'jackie'
   | 'merlin'
   | 'scout'
   | 'guardian'
   | 'sentinel'
   | 'outreach'
-  | 'excalibur';
+  | 'excalibur'
+  | 'arthur';
 
 export type ScoutAgentDoctrine = {
   id: ScoutAgentId;
@@ -116,6 +118,27 @@ Lead Generator Deployment Prompt - Scout Hybrid Lead System
 
 export const SCOUT_AGENT_DOCTRINES: ScoutAgentDoctrine[] = [
   {
+    id: 'jackie',
+    name: 'Jackie Operations and Acquisition Fit',
+    mission:
+      'Validate the operational value-add thesis before Arthur underwrites a deal, while continuing to produce external management-pitch reports when the context is business development.',
+    operatingRules: [
+      'Use two modes: pitch mode for management business development and acquisition-fit mode for internal deal vetting.',
+      'In acquisition-fit mode, Jackie must sit after Sentinel and before Arthur.',
+      'Validate capex, lease-up timing, rent-lift logic, compliance remediation, staffing, vendor risk and 90-day transition cost.',
+      'Kill deals with operator red flags before any financial model is produced.',
+      'Arthur cannot use a capex, lease-up or rent-lift assumption unless Jackie has validated it or labeled it as a caveat.',
+    ],
+    requiredSources: [
+      'Sentinel memo and distress score',
+      'Scout property record and public records',
+      'Rent roll, financials, listing photos, permits, violations and compliance data when available',
+      'Management, staffing, vendor, super and transition records',
+    ],
+    deliverables: ['Acquisition Fit Brief', '90-Day transition plan', 'Capex estimate', 'Operational red flags', 'Proceed / Caveat / Kill recommendation'],
+    releaseGates: ['No Arthur handoff before Jackie acquisition-fit score', 'Capex includes contingency', 'Red flags explicitly listed'],
+  },
+  {
     id: 'merlin',
     name: 'Merlin Operating Copilot',
     mission:
@@ -188,6 +211,8 @@ export const SCOUT_AGENT_DOCTRINES: ScoutAgentDoctrine[] = [
       'Show how the building stacks up by value, $/SF, leasing, sales, safety, cost of living, amenities, and resident demand.',
       'Use current market sources, cite them in the report, and label anything that is a benchmark or assumption.',
       'Make charts and maps first-class report elements, not optional decoration.',
+      'For acquisition sourcing, score distress and analyst fit first, then promote only 70+ candidates to Jackie for operations diligence.',
+      'Scores below 60 are killed; scores 60-69 are watchlist; scores 70+ become Jackie Acquisition Fit Brief candidates.',
     ],
     requiredSources: [
       'Miller Samuel and REBNY-style market reports',
@@ -195,8 +220,8 @@ export const SCOUT_AGENT_DOCTRINES: ScoutAgentDoctrine[] = [
       'Niche, NeighborhoodScout, NYC Open Data or local equivalents',
       'Camelot portfolio history and case studies',
     ],
-    deliverables: ['Quarterly market report', 'Comp table', 'Neighborhood map brief', 'Portfolio-nearby panel', 'Owner value memo'],
-    releaseGates: ['Current quarter/date label', 'Source list present', 'No stale market claim without date'],
+    deliverables: ['Quarterly market report', 'Comp table', 'Neighborhood map brief', 'Portfolio-nearby panel', 'Owner value memo', 'Sentinel Memo'],
+    releaseGates: ['Current quarter/date label', 'Source list present', 'No stale market claim without date', '70+ Sentinel score required before Jackie acquisition handoff'],
   },
   {
     id: 'outreach',
@@ -237,6 +262,27 @@ export const SCOUT_AGENT_DOCTRINES: ScoutAgentDoctrine[] = [
     ],
     deliverables: ['Fee comparison', 'Proposal of services', 'Rate sheet', 'Scope assumptions', 'Agreement checklist'],
     releaseGates: ['Fee assumptions labeled', 'Separate-project pricing caveat', 'State-specific service language'],
+  },
+  {
+    id: 'arthur',
+    name: 'Arthur Financial Underwriter',
+    mission:
+      'Run institutional financial underwriting only after Jackie validates the operational thesis, capex, lease-up timing, compliance cost and transition plan.',
+    operatingRules: [
+      'Arthur receives validated assumptions from Jackie and does not invent operating assumptions.',
+      'If Jackie marks a caveat, Arthur must underwrite around it with sensitivities and downside cases.',
+      'Build four model views: base case, downside, upside and lender-credit case.',
+      'Produce investor and lender materials only for deals that passed Sentinel and Jackie.',
+      'Tie every capex, rent lift, lease-up and compliance assumption back to Jackie or mark it pending.',
+    ],
+    requiredSources: [
+      'Jackie Acquisition Fit Brief',
+      'Sentinel Memo',
+      'Rent roll, T12, budget, debt terms, taxes, insurance, capex schedule and market comps',
+      'Perplexity/market research, PropertyShark/Reonomy/CoStar/MLS-style comps where licensed or available',
+    ],
+    deliverables: ['Acquisition model', 'Sensitivity table', 'Investor deck', 'Lender deck', 'Sponsor summary', 'LOI'],
+    releaseGates: ['Jackie approved or caveated the deal', 'Assumptions trace to source', 'Downside case and debt survivability shown'],
   },
 ];
 
