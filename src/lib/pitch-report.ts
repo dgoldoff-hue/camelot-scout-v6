@@ -227,7 +227,28 @@ function placeEmbedUrl(d: MasterReportData): string {
 }
 
 function bestExteriorImage(d: MasterReportData): string {
-  return d.buildingPhotos?.exterior?.[0] || d.commercialIntel?.brandingImages?.[0] || d.streetEasy?.photos?.[0] || streetViewImage(d);
+  return d.buildingPhotos?.exterior?.[0] || d.buildingPhotos?.interior?.[0] || d.commercialIntel?.brandingImages?.[0] || d.streetEasy?.photos?.[0] || streetViewImage(d);
+}
+
+function propertyPhotoStack(d: MasterReportData): string[] {
+  const seen = new Set<string>();
+  return [
+    ...(d.buildingPhotos?.exterior || []),
+    ...(d.buildingPhotos?.interior || []),
+    ...(d.commercialIntel?.brandingImages || []),
+    ...(d.streetEasy?.photos || []),
+  ].map(url => String(url || '').trim()).filter(url => {
+    if (!url || seen.has(url)) return false;
+    if (/undefined|null|\[object Object\]/i.test(url)) return false;
+    seen.add(url);
+    return true;
+  });
+}
+
+function propertyPhotoGallery(d: MasterReportData, limit = 12): string {
+  const photos = propertyPhotoStack(d).slice(0, limit);
+  if (photos.length <= 1) return '';
+  return `<div class="visual-card" style="padding:10px"><div style="font-size:10px;color:#B8973A;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:7px">Uploaded Property Photos</div><div style="display:grid;grid-template-columns:repeat(${Math.min(4, photos.length)},1fr);gap:6px">${photos.map((url, index) => `<div style="height:58px;border:1px solid rgba(184,151,58,.24);border-radius:5px;overflow:hidden;background:#EDE9DF"><img src="${escapeHtml(url)}" alt="${escapeHtml(d.buildingName || d.address)} property photo ${index + 1}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'"></div>`).join('')}</div></div>`;
 }
 
 function staticMapImage(d: MasterReportData, size = '640x360'): string {
@@ -511,7 +532,7 @@ export function generateFirstEmailIntroReport(d: MasterReportData): string {
   const slides = `
 <div class="slide slide-dark"><div style="position:absolute;inset:0;opacity:.48">${rawIframeFrame(streetViewEmbedUrl(d), `${d.buildingName || d.address} street view`)}</div><div style="position:absolute;inset:0;background:linear-gradient(105deg,rgba(34,47,58,.98) 0%,rgba(34,47,58,.74) 48%,rgba(34,47,58,.34) 100%)"></div><div style="position:absolute;right:62px;bottom:58px;width:410px;display:grid;grid-template-columns:1fr 1fr;gap:10px;z-index:2"><div style="height:150px;border:1px solid rgba(244,210,106,.55);box-shadow:0 18px 40px rgba(0,0,0,.28);overflow:hidden;background:#111">${rawIframeFrame(placeEmbedUrl(d), `${neighborhoodName(d)} neighborhood map`)}</div><div style="height:150px;border:1px solid rgba(244,210,106,.55);box-shadow:0 18px 40px rgba(0,0,0,.28);overflow:hidden;background:#111">${rawIframeFrame(directionsEmbedUrl(d), 'Camelot route map')}</div></div><div class="pad" style="position:relative;z-index:3">${logoBadge()}<div style="height:100%;display:flex;flex-direction:column;justify-content:center;max-width:720px"><div style="font-size:13px;color:#B8973A;text-transform:uppercase;letter-spacing:2.5px;font-weight:800">First Email Intro · Camelot Property Management</div><h1 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:68px;line-height:.95;color:#F4D26A;font-style:italic;margin:12px 0">${d.buildingName || d.address}</h1><p style="font-size:20px;color:rgba(255,255,255,.84);line-height:1.55">A concise Camelot introduction with property imagery, neighborhood context, and a clear next step.</p><div style="margin-top:18px;max-width:620px;border-left:3px solid #B8973A;padding:10px 14px;background:rgba(255,255,255,.08);font-size:11px;color:rgba(255,255,255,.76);line-height:1.55">${JACKIE_INTELLIGENT_REPORT_NOTE}</div><p style="font-size:12px;color:rgba(255,255,255,.58);margin-top:28px">${d.address} · ${neighborhoodName(d)} · ${today}</p></div></div></div>
 <div class="slide"><div class="pad" style="padding:56px 86px">${logoBadge()}<div class="section-title" style="margin-bottom:20px">Cover Letter</div><div style="max-width:880px;background:#fff;border:1px solid rgba(184,151,58,.38);border-left:5px solid #B8973A;border-radius:6px;padding:34px 42px;box-shadow:0 14px 28px rgba(26,31,54,.06)">${coverLetterParagraphs(d)}</div><div class="source-note">Prepared by Camelot Property Management for ${d.buildingName || d.address} · ${today}</div></div></div>
-<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Property Snapshot &amp; New York Reach</div><div style="display:grid;grid-template-columns:.9fr 1.1fr;gap:18px"><div><div class="gold-card" style="margin-bottom:12px"><div class="sub-heading">Property Snapshot</div><table><tr><td>Units</td><td>${fmtN(d.units)}</td></tr><tr><td>Type</td><td>${d.propertyType || 'Residential'}</td></tr><tr><td>Year Built</td><td>${d.yearBuilt || 'Verify'}</td></tr><tr><td>Current Management</td><td>${d.managementCompany || 'To verify'}</td></tr></table></div><div class="gold-card" style="margin-bottom:12px"><div class="sub-heading">Initial Read</div><p class="body-text">${hasRisks ? `Camelot identified public-record signals worth reviewing: ${d.violationsOpen} open HPD violation(s), ${fmt$(d.ecbPenaltyBalance)} ECB balance, and ${d.ll97?.period1Penalty ? fmt$(d.ll97.period1Penalty) + ' LL97 modeled exposure' : 'LL97 context to verify'}.` : `The building appears suitable for a boutique, high-attention management review focused on financial clarity, resident experience, vendor control, and board support.`}</p></div><div class="gold-card" style="padding:12px 14px"><div class="sub-heading" style="font-size:15px;margin-bottom:6px">Nearby Context</div>${landmarks.slice(0, 3).map(l => `<div class="check"><span>•</span><div>${l}</div></div>`).join('')}</div></div><div style="display:grid;grid-template-columns:1fr;gap:12px">${propertyImageCard(d, `${d.buildingName || d.address} · image or Google Street View fallback`, 250)}${iframeCard(directionsEmbedUrl(d), 'Camelot HQ to subject property route map', `Camelot HQ at 57 West 57th Street to ${d.buildingName || d.address}`, 170)}</div></div><div class="source-note">Sources: Embedded Google Maps route · LPC / neighborhood landmark context · Camelot property intelligence · uploaded/verified property assets, official branding images, StreetEasy photos, or embedded Google Street View fallback.</div></div></div>
+<div class="slide"><div class="pad">${logoBadge()}<div class="section-title">Property Snapshot &amp; New York Reach</div><div style="display:grid;grid-template-columns:.9fr 1.1fr;gap:18px"><div><div class="gold-card" style="margin-bottom:12px"><div class="sub-heading">Property Snapshot</div><table><tr><td>Units</td><td>${fmtN(d.units)}</td></tr><tr><td>Type</td><td>${d.propertyType || 'Residential'}</td></tr><tr><td>Year Built</td><td>${d.yearBuilt || 'Verify'}</td></tr><tr><td>Current Management</td><td>${d.managementCompany || 'To verify'}</td></tr></table></div><div class="gold-card" style="margin-bottom:12px"><div class="sub-heading">Initial Read</div><p class="body-text">${hasRisks ? `Camelot identified public-record signals worth reviewing: ${d.violationsOpen} open HPD violation(s), ${fmt$(d.ecbPenaltyBalance)} ECB balance, and ${d.ll97?.period1Penalty ? fmt$(d.ll97.period1Penalty) + ' LL97 modeled exposure' : 'LL97 context to verify'}.` : `The building appears suitable for a boutique, high-attention management review focused on financial clarity, resident experience, vendor control, and board support.`}</p></div><div class="gold-card" style="padding:12px 14px"><div class="sub-heading" style="font-size:15px;margin-bottom:6px">Nearby Context</div>${landmarks.slice(0, 3).map(l => `<div class="check"><span>•</span><div>${l}</div></div>`).join('')}</div></div><div style="display:grid;grid-template-columns:1fr;gap:12px">${propertyImageCard(d, `${d.buildingName || d.address} · image or Google Street View fallback`, 250)}${propertyPhotoGallery(d, 12)}${iframeCard(directionsEmbedUrl(d), 'Camelot HQ to subject property route map', `Camelot HQ at 57 West 57th Street to ${d.buildingName || d.address}`, 170)}</div></div><div class="source-note">Sources: Embedded Google Maps route · LPC / neighborhood landmark context · Camelot property intelligence · uploaded/verified property assets, official branding images, StreetEasy photos, or embedded Google Street View fallback.</div></div></div>
 ${camelotOnePageSlide(d)}
 ${mdsAccountingSlide()}
 ${residentPortalSlide(d)}
@@ -562,8 +583,9 @@ export function generatePitchReport(d: MasterReportData): string {
   // Street view URLs
   // Use address-based Street View (no geocode dependency)
   const svUrl = `https://maps.googleapis.com/maps/api/streetview?size=800x500&location=${encodeURIComponent(d.address + ', New York, NY')}&fov=90&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8`;
-  const exteriorImage = d.buildingPhotos?.exterior?.[0] || d.commercialIntel?.brandingImages?.[0] || svUrl;
-  const interiorImage = d.buildingPhotos?.interior?.[0] || d.buildingPhotos?.exterior?.[1] || d.commercialIntel?.brandingImages?.[1] || exteriorImage;
+  const reportPhotoStack = propertyPhotoStack(d);
+  const exteriorImage = reportPhotoStack[0] || svUrl;
+  const interiorImage = reportPhotoStack[1] || exteriorImage;
   const subjectImage = exteriorImage;
   const factCards = [
     { label: 'Units', value: d.units ? fmtN(d.units) : 'Verify' },
@@ -740,6 +762,7 @@ export function generatePitchReport(d: MasterReportData): string {
         <div style="display:grid;grid-template-columns:1fr;gap:12px">
           <div class="photo-frame"><img src="${exteriorImage}" style="width:420px;height:180px;object-fit:cover;display:block" onerror="this.src='${svUrl}'" /></div>
           <div class="photo-frame"><img src="${interiorImage}" style="width:420px;height:180px;object-fit:cover;display:block" onerror="this.src='${exteriorImage}'" /></div>
+          ${propertyPhotoGallery(d, 12)}
         </div>
       </div>
     </div>

@@ -342,14 +342,17 @@ export default function ReportCenter() {
     if (!data) return null;
     const baseData = { ...data, reportFocus: buildReportFocus() };
     if (uploadedPhotos.length === 0) return baseData;
+    const uploadedStack = uploadedPhotos.filter(Boolean);
+    const existingExterior = baseData.buildingPhotos?.exterior || [];
+    const existingInterior = baseData.buildingPhotos?.interior || [];
     return {
       ...baseData,
       buildingPhotos: {
-        exterior: uploadedPhotos.slice(0, 1),
-        interior: uploadedPhotos.slice(1),
+        exterior: [...uploadedStack, ...existingExterior],
+        interior: existingInterior,
         streetView: baseData.buildingPhotos?.streetView || '',
         satellite: baseData.buildingPhotos?.satellite || '',
-        source: 'Uploaded by Camelot team',
+        source: `Uploaded by Camelot team (${uploadedStack.length} photo${uploadedStack.length === 1 ? '' : 's'})`,
       },
     };
   };

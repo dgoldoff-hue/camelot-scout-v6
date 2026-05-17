@@ -1801,7 +1801,7 @@ function splitPropertyImages(imageUrls: string[] = []): { exterior: string[]; in
 
   return {
     exterior: exterior.length ? exterior : imageUrls.slice(0, 1),
-    interior: interior.length ? interior : imageUrls.filter(url => !exterior.includes(url)).slice(0, 4),
+    interior: interior.length ? interior : imageUrls.filter(url => !exterior.includes(url)),
   };
 }
 
@@ -1837,6 +1837,7 @@ function subjectImageOnErrorChain(fallbackUrls: string[], label: string): string
 function buildSubjectImageCandidates(d: MasterReportData): string[] {
   return uniqueImageUrls([
     ...(d.buildingPhotos?.exterior || []),
+    ...(d.buildingPhotos?.interior || []),
     ...(d.commercialIntel?.brandingImages || []),
     ...(d.streetEasy?.photos || []),
     d.buildingPhotos?.streetView,
@@ -1853,6 +1854,20 @@ function renderSubjectImage(d: MasterReportData, options: { height?: number; alt
   const alt = escape(options.alt || d.buildingName);
   const sourceLabel = d.buildingPhotos?.source || (d.streetEasy?.photos?.length ? 'StreetEasy public building photos' : 'Google Street View reference');
   return `<div class="deck-photo"${height}><img src="${first}" alt="${alt}" data-fallback-index="0" data-image-source="${escape(sourceLabel)}" onerror="${subjectImageOnErrorChain(rest.length ? rest : [buildSubjectStreetViewUrl(d)], d.buildingName)}"></div>`;
+}
+
+function renderPropertyPhotoGallery(d: MasterReportData, options: { limit?: number; height?: number; columns?: number } = {}): string {
+  const photos = uniqueImageUrls([
+    ...(d.buildingPhotos?.exterior || []),
+    ...(d.buildingPhotos?.interior || []),
+  ]).slice(0, options.limit || 12);
+  if (photos.length <= 1) return '';
+  const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+  const columns = Math.min(options.columns || (photos.length > 8 ? 4 : 3), photos.length);
+  const height = options.height || 92;
+  return `<div style="display:grid;grid-template-columns:repeat(${columns},1fr);gap:7px;margin-bottom:12px">
+${photos.map((url, index) => `<div style="border-radius:6px;overflow:hidden;height:${height}px;border:1px solid #D5D0C6;background:#EDE9DF"><img src="${escape(url)}" alt="${escape(d.buildingName)} property photo ${index + 1}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'"></div>`).join('\n')}
+</div>`;
 }
 
 function isHoaExecutiveRecoveryOpportunity(address: string, borough?: string): boolean {
@@ -3747,6 +3762,7 @@ function generateFloridaReceivershipBrochureHTML(d: MasterReportData): string {
   const photoCandidates = buildSubjectImageCandidates(d);
   const firstPhoto = photoCandidates[0] || buildSubjectStreetViewUrl(d);
   const secondPhoto = photoCandidates[1] || `https://maps.googleapis.com/maps/api/staticmap?center=${encodedAddr}&zoom=16&size=900x500&markers=color:red%7C${encodedAddr}&key=${GOOGLE_MAPS_REPORT_KEY}`;
+  const uploadedPhotoGallery = renderPropertyPhotoGallery(d, { limit: 12, columns: 6, height: 74 });
   const mapEmbed = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_REPORT_KEY}&q=${encodedAddr}&zoom=16`;
   const directionsEmbed = `https://www.google.com/maps/embed/v1/directions?key=${GOOGLE_MAPS_REPORT_KEY}&origin=North+Miami+FL&destination=${encodedAddr}&mode=driving`;
   const filename = buildJackieIntelReportFilename(d, 'html');
@@ -3837,6 +3853,7 @@ Camelot is working with the court-appointed receiver, past board members, board 
 <div class="stat"><div class="val">${safe(d.scoutGrade)} (${d.scoutScore}/100)</div><div class="lbl">Receivership opportunity score</div></div>
 </div>
 </div>
+${uploadedPhotoGallery ? `<div style="margin-top:14px"><div class="kicker" style="margin-bottom:8px">Uploaded Property Photo Set</div>${uploadedPhotoGallery}</div>` : ''}
 <div class="footer">Receivership management report | Florida jurisdiction only</div><div class="page">2</div>
 </section>
 
@@ -4520,13 +4537,10 @@ ${d.buildingPhotos && d.buildingPhotos.exterior.length > 0 && d.buildingPhotos.s
 <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(58,75,91,0.9));padding:16px 20px 12px;color:#fff">
 <div style="font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:20px;font-weight:700">${d.buildingName}</div>
 <div style="font-size:11px;opacity:0.8">${d.address} \u00B7 ${d.propertyType} \u00B7 ${d.units ? d.units + ' Units' : ''} ${d.stories ? '\u00B7 ' + d.stories + ' Floors' : ''} ${d.yearBuilt ? '\u00B7 Built ' + d.yearBuilt : ''}</div>
-<div style="font-size:8px;opacity:0.4;margin-top:2px">Photo: ${d.buildingPhotos.source}</div>
-</div>
-</div>
-${[...(d.buildingPhotos.interior || []), ...d.buildingPhotos.exterior.slice(1)].length > 0 ? `
-<div style="display:grid;grid-template-columns:repeat(${Math.min([...(d.buildingPhotos.interior || []), ...d.buildingPhotos.exterior.slice(1)].length, 3)},1fr);gap:6px;margin-bottom:12px">
-${[...(d.buildingPhotos.interior || []), ...d.buildingPhotos.exterior.slice(1)].slice(0, 4).map(url => `<div style="border-radius:6px;overflow:hidden;height:120px;border:1px solid #D5D0C6"><img src="${url}" alt="${d.buildingName} interior or amenity photo" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'"></div>`).join('\n')}
-</div>` : ''}
+  <div style="font-size:8px;opacity:0.4;margin-top:2px">Photo: ${d.buildingPhotos.source}</div>
+  </div>
+  </div>
+${renderPropertyPhotoGallery(d, { limit: 12, height: 96 })}
 ` : d.latitude && d.longitude ? `
 <div style="border-radius:10px;overflow:hidden;border:1px solid #D5D0C6;height:340px;margin-bottom:16px;position:relative">
 <iframe src="https://www.google.com/maps/embed/v1/streetview?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&location=${d.latitude},${d.longitude}&heading=0&pitch=5&fov=80" width="100%" height="340" style="border:0" allowfullscreen loading="lazy"></iframe>
