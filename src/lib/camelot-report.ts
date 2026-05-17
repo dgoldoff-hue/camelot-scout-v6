@@ -2147,7 +2147,7 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
 }
 
 function buildFloridaReceivershipReport(address: string): MasterReportData {
-  const units = 0;
+  const units = 89;
   const monthlyFee = 0;
   const annualFee = 0;
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -2161,7 +2161,7 @@ function buildFloridaReceivershipReport(address: string): MasterReportData {
       source: 'Miami-Dade Property Appraiser',
       status: 'manual_required',
       count: 0,
-      detail: 'Verify parcel folio, legal description, assessed value, tax roll, owner/association name, building area, and year-built details for the subject condominium.',
+      detail: 'Verify parcel folio, legal description, assessed value, tax roll, owner/association name, building area, 89-unit profile, six-story configuration, and 1972 construction details for the subject condominium.',
       url: 'https://www.miamidade.gov/pa/property_search.asp',
     },
     {
@@ -2242,12 +2242,12 @@ function buildFloridaReceivershipReport(address: string): MasterReportData {
     reportFocus: {
       selectedFocus: ['hoa_recovery', 'property_management', 'accounting', 'automation', 'compliance', 'project_management'],
       inquiryOrganization: 'Three Horizons East Condominium',
-      inquiryNotes: 'Florida receivership takeover. Camelot is coordinating with past board members, board attorney, the court-appointed receiver, unit owners, a licensed CAM operator affiliate partner, engineers, contractors, consultants, and service providers. The report must use Florida, Miami-Dade, and North Miami source paths only.',
+      inquiryNotes: 'Florida receivership takeover. Camelot is coordinating with past board members, board attorney, the court-appointed receiver, unit owners, a licensed CAM operator affiliate partner, engineers, contractors, consultants, and service providers. Three Horizons East is Camelot’s first North Miami management engagement and a strategic South Florida expansion platform. The report must use Florida, Miami-Dade, and North Miami source paths only.',
     },
     units,
-    stories: 0,
-    yearBuilt: 0,
-    buildingClass: 'Florida condominium - verify folio and building records',
+    stories: 6,
+    yearBuilt: 1972,
+    buildingClass: 'Established Florida condominium - Miami-Dade folio and building records to verify',
     taxClass: 'Miami-Dade condominium - verify',
     marketValue: 0,
     assessedValue: 0,
@@ -2294,7 +2294,7 @@ function buildFloridaReceivershipReport(address: string): MasterReportData {
     distressScore: 78,
     distressLevel: 'receivership takeover',
     distressSignals: [
-      { type: 'Receivership', description: 'Property is in receivership and requires immediate operating control, court-aware reporting, owner communication, and coordinated stabilization.', severity: 'high' },
+      { type: 'Receivership', description: 'Property is in receivership and requires immediate operating control, court-aware reporting, owner communication, and coordinated stabilization for an established 89-unit, six-story condominium community.', severity: 'high' },
       { type: 'Budget recovery', description: 'Camelot must help develop a sound operating budget, strengthen collections, improve checks and controls, and bring the association into the black.', severity: 'high' },
       { type: '40-year certification and life-safety compliance', description: 'Building recertification, fire sprinklers, fire monitoring, insurance requirements, and all applicable local compliance items must be organized and driven to completion.', severity: 'high' },
       { type: 'Capital improvement and refinance path', description: 'Repairs, maintenance, capital work, engineering, GC coordination, insurance compliance, and project management support the path toward refinancing out of a high-interest short-term bridge loan into more traditional debt.', severity: 'high' },
@@ -2369,11 +2369,11 @@ function buildFloridaReceivershipReport(address: string): MasterReportData {
     commercialIntel: {
       commercialSignals: ['Receivership operations', 'Condominium association control transition', 'Florida court-aware management', 'Licensed CAM operator affiliate partnership', 'Vendor and contract turnover review', 'Insurance, life-safety, 40-year certification, and restoration review'],
       likelyCommercialUses: [],
-      amenities: ['Condominium common areas to inspect', 'Parking / access control to verify', 'Fire sprinkler and fire monitoring systems to verify', 'Insurance and building-condition files to collect', 'Staffing, cleaning, guard service, maintenance, project management, engineering, and GC support to coordinate'],
+      amenities: ['Gated access', 'Swimming pool', 'Fitness facilities to verify', 'Clubhouse / recreation areas', 'Elevator access', 'Parking', 'Common outdoor spaces', 'Condominium common areas to inspect', 'Fire sprinkler and fire monitoring systems to verify', 'Insurance and building-condition files to collect', 'Staffing, cleaning, guard service, maintenance, project management, engineering, and GC support to coordinate'],
       revenueOpportunities: ['Vendor rebidding', 'Insurance claim and reserve coordination', 'Collections and arrears process cleanup', 'Budget recovery and cash-control review', 'Capital improvement planning', 'Receivership reporting cadence', 'Refinance-readiness support once compliance needs are met'],
       officialWebsite: null,
       brandingTitle: 'Three Horizons East Condominium',
-      brandingDescription: 'North Miami condominium receivership takeover requiring Florida source verification and immediate operating-control workflow.',
+      brandingDescription: 'Three Horizons East is an established 89-unit, six-story North Miami condominium built in 1972. Camelot’s engagement is positioned as both a receivership stabilization mandate and the company’s first North Miami management platform.',
       brandingImages: [...verifiedPropertyImages, streetView, mapImage],
       researchSources: [
         'Miami-Dade Property Appraiser',
@@ -2385,6 +2385,8 @@ function buildFloridaReceivershipReport(address: string): MasterReportData {
         'Florida Division of Corporations - Sunbiz',
         'Miami-Dade Tax Collector',
         'FEMA Flood Map Service Center',
+        'North Miami local market and neighborhood services review',
+        'Property amenity and resident-experience review',
         'Receiver transition files',
         'Past board, board attorney, receiver, unit owner, engineer, GC, insurance, and consultant records',
       ],
@@ -2423,6 +2425,7 @@ function buildFloridaReceivershipReport(address: string): MasterReportData {
       receivership: {
         status: 'In receivership',
         currentManagement: 'Camelot receivership property management takeover and stabilization platform',
+        strategicExpansion: 'Camelot’s first North Miami management engagement and South Florida expansion platform',
         immediatePriorities: [
           'Court order and receiver authority file',
           'Operating budget, banking, collections, payables, and checks and controls',
@@ -3153,6 +3156,8 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
       'court-appointed receiver',
       'past board members',
       'licensed CAM operator',
+      '89-unit',
+      'Built in 1972',
     ];
     const missingFloridaTokens = requiredFloridaTokens.filter(token => !html.includes(token));
     checks.push({
@@ -3719,6 +3724,7 @@ function generateFloridaReceivershipBrochureHTML(d: MasterReportData): string {
 <p>${safe(signal.description)}</p>
 </div>`).join('');
   const sourceChips = (d.commercialIntel?.researchSources || []).map(source => `<span>${safe(source)}</span>`).join('');
+  const amenityChips = (d.commercialIntel?.amenities || []).slice(0, 10).map(item => `<span>${safe(item)}</span>`).join('');
   const photoCandidates = buildSubjectImageCandidates(d);
   const firstPhoto = photoCandidates[0] || buildSubjectStreetViewUrl(d);
   const secondPhoto = photoCandidates[1] || `https://maps.googleapis.com/maps/api/staticmap?center=${encodedAddr}&zoom=16&size=900x500&markers=color:red%7C${encodedAddr}&key=${GOOGLE_MAPS_REPORT_KEY}`;
@@ -3786,7 +3792,7 @@ td a{color:#a89035;font-weight:800}
 <h1>${safe(d.buildingName)}</h1>
 <p style="font-size:22px;max-width:680px;margin-top:18px">${safe(d.address)}</p>
 <div class="callout" style="max-width:720px;margin-top:44px;background:rgba(255,255,255,.08);border-color:#d8b24a;color:#fff">
-Camelot is working with the court-appointed receiver, past board members, board attorney, unit owners, a licensed CAM operator through an affiliate partnership, engineers, contractors, consultants, and local service providers to stabilize Three Horizons East Condominium and bring the property back into operating health.
+Camelot is working with the court-appointed receiver, past board members, board attorney, unit owners, a licensed CAM operator through an affiliate partnership, engineers, contractors, consultants, and local service providers to stabilize Three Horizons East Condominium and bring the property back into operating health. This 89-unit, six-story North Miami community is Camelot's first South Florida management engagement and a strategic expansion platform.
 </div>
 <div class="grid" style="margin-top:36px">
 <div class="photo"><img src="${safe(firstPhoto)}" alt="${safe(d.buildingName)}" onerror="${subjectImageOnErrorChain([secondPhoto], d.buildingName)}"></div>
@@ -3801,6 +3807,7 @@ Camelot is working with the court-appointed receiver, past board members, board 
 <h2>Immediate Takeover Priorities</h2>
 <div class="grid">
 <div>
+<p><strong>Camelot Property Management Services Corp. is expanding into North Miami with Three Horizons East Condominium, an established 89-unit residential community at 12500 NE 15th Avenue.</strong> Built in 1972, the six-story condominium has the bones of a strong owner community: accessibility, affordability, resident amenities, and proximity to North Miami services, retail, dining, airports, Biscayne Bay, and area beaches.</p>
 <p><strong>Three Horizons East Condominium is not a standard management pitch.</strong> The operating posture is a receivership stabilization plan: protect the asset, stabilize communication, secure records, verify court authority, rebuild controls, and create a disciplined property management cadence.</p>
 <p>Camelot's role is to sit at the center of the recovery effort: coordinating with the receiver, past board members, board counsel, unit owners, a licensed CAM operator affiliate partner, engineers, general contractors, insurance parties, maintenance vendors, cleaning, guard service, and project consultants so the building can move from distress toward compliance, solvency, refinance readiness, and long-term board control.</p>
 <div class="callout"><strong>No inherited source mismatch:</strong> this report intentionally excludes city/state source paths that do not govern this Florida property.</div>
@@ -3848,11 +3855,16 @@ Camelot's first job is to create control: file transfer, court-order review, res
 <tr><td><strong>Property</strong></td><td>${safe(d.buildingName)}</td></tr>
 <tr><td><strong>Address</strong></td><td>${safe(d.address)}</td></tr>
 <tr><td><strong>Property Type</strong></td><td>${safe(d.propertyType)}</td></tr>
+<tr><td><strong>Units / Stories / Year</strong></td><td>${d.units} units / ${d.stories} stories / Built ${d.yearBuilt}</td></tr>
 <tr><td><strong>Management Status</strong></td><td>${safe(d.managementCompany)}</td></tr>
 <tr><td><strong>Market Value</strong></td><td>${fmtMoney(d.marketValue)}</td></tr>
 <tr><td><strong>Folio</strong></td><td>${safe(d.bbl)}</td></tr>
 </tbody>
 </table>
+<div class="callout" style="margin-top:18px">
+<strong>Resident amenities and community features to verify:</strong>
+<div class="chips">${amenityChips}</div>
+</div>
 </div>
 <div class="photo"><iframe src="${safe(directionsEmbed)}" loading="lazy" allowfullscreen></iframe></div>
 </div>
@@ -3894,6 +3906,7 @@ Camelot's first job is to create control: file transfer, court-order review, res
 <div class="risk-card"><h3>Technology</h3><p>Cloud files, reporting dashboards, work order tracking, board/receiver packages, and automated reminders for deadlines and closeout items.</p></div>
 </div>
 <div class="callout">Camelot's role is to become the operating nerve center for the receiver: one place for records, money movement, vendor work, owner communication, licensed CAM operator affiliate support, project management, compliance tracking, and status reporting. Three Horizons East is Camelot's North Miami flagship assignment and a pilot platform for long-term expansion in this market.</div>
+<p style="margin-top:16px">The long-term opportunity is a positive stewardship story: stabilize governance, modernize reporting, improve resident service, build a practical capital plan, and preserve property value in a growing South Florida market where Camelot expects to expand thoughtfully.</p>
 <div class="footer">Operational model is tailored to condominium receivership, not a routine new-business proposal.</div><div class="page">8</div>
 </section>
 
