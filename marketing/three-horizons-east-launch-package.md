@@ -4,6 +4,10 @@ Prepared for Camelot Property Management Services Corp.
 
 Subject property: Three Horizons East Condominium, 12500 NE 15th Avenue, North Miami, FL 33161
 
+Press page: `/press/three-horizons-east-launch.html`
+
+Downloadable PDF report: `/downloads/Camelot-Intel-Report-For_12500-NE-15th-Avenue-North-Miami-FL-33161_2026-05-17.pdf`
+
 ## Press Release / Website Post
 
 ### Camelot Property Management Expands into North Miami, Florida
@@ -70,6 +74,10 @@ We are excited to begin building our North Miami platform and look forward to co
 
 #PropertyManagement #CondominiumManagement #NorthMiami #SouthFloridaRealEstate #CamelotPropertyManagement #Receivership #CommunityAssociationManagement
 
+Expanded LinkedIn hashtag set:
+
+#NorthMiami #NorthMiamiRealEstate #MiamiDadeRealEstate #SouthFloridaRealEstate #FloridaRealEstate #FloridaCondominiums #FloridaCondoManagement #FloridaCondominiumManagement #PropertyManagement #CondoManagement #CondominiumManagement #CommunityAssociationManagement #AssociationManagement #Receivership #ReceivershipManagement #CondoTurnaround #BuildingStabilization #CapitalPlanning #VendorManagement #CondoCompliance #PropertyOperations #FloridaCAM #CAMManagement #ResidentExperience #RealEstateOperations #CamelotPropertyManagement #ThreeHorizonsEast
+
 ## LinkedIn Personal Post for David Goldoff
 
 I'm proud to share that Camelot Property Management Services Corp. has begun its first residential management engagement in North Miami, Florida.
@@ -104,6 +112,10 @@ This is the beginning of Camelot's Florida platform, and we are excited for what
 
 #NorthMiami #SouthFloridaRealEstate #PropertyManagement #CondoManagement #CamelotPropertyManagement #FloridaCondominiums #CommunityAssociationManagement
 
+Additional Instagram / Facebook hashtags:
+
+#NorthMiamiFL #MiamiDade #SouthFloridaCondos #CondoAssociation #HOAManagement #CommunityAssociation #PropertyManagers #CondoRecovery #ReceivershipProperty #BuildingOperations #CapitalProjects #LifeSafety #ResidentServices #VendorAccountability #FloridaGrowth #CamelotPropertyManagement
+
 ## Buffer Queue Suggestions
 
 1. Publish LinkedIn company post with `aerial-overview.jpg`.
@@ -127,4 +139,3 @@ Subject: New Camelot Florida Launch Post - Three Horizons East Condominium
 Please publish the attached launch copy and image package for Camelot's first North Miami management engagement at Three Horizons East Condominium. The preferred hero image is `aerial-overview.jpg`. The preferred carousel order is aerial, front entrance, building sign, pool/clubhouse, lobby, hallway, gate entrance.
 
 Please post the website article first, then use that link for LinkedIn, Facebook, and Instagram/Buffer distribution.
-
