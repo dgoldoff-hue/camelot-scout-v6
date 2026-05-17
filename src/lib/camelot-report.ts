@@ -2167,8 +2167,23 @@ function buildFloridaReceivershipReport(address: string): MasterReportData {
   const annualFee = 0;
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const canonicalAddress = '12500 NE 15th Avenue, North Miami, FL 33161';
-  const uploadedExterior = 'https://camelot-scout-v6.onrender.com/images/three-horizons-east/three-horizons-east-condominium.webp';
-  const verifiedPropertyImages = [uploadedExterior];
+  const threeHorizonsImageBase = 'https://camelot-scout-v6.onrender.com/images/three-horizons-east';
+  const verifiedPropertyImages = [
+    `${threeHorizonsImageBase}/aerial-overview.jpg`,
+    `${threeHorizonsImageBase}/three-horizons-east-condominium.webp`,
+    `${threeHorizonsImageBase}/front-entrance.jpg`,
+    `${threeHorizonsImageBase}/front-side.jpg`,
+    `${threeHorizonsImageBase}/side-image.jpg`,
+    `${threeHorizonsImageBase}/gate-entrance.jpg`,
+    `${threeHorizonsImageBase}/building-sign.jpg`,
+    `${threeHorizonsImageBase}/shared-pool-clubhouse.jpg`,
+    `${threeHorizonsImageBase}/pool.jpg`,
+    `${threeHorizonsImageBase}/lobby.jpg`,
+    `${threeHorizonsImageBase}/hallways.jpg`,
+    `${threeHorizonsImageBase}/front-entrance-doors.jpg`,
+  ];
+  const verifiedExteriorImages = verifiedPropertyImages.slice(0, 9);
+  const verifiedInteriorImages = verifiedPropertyImages.slice(9);
   const streetView = `https://maps.googleapis.com/maps/api/streetview?size=1200x700&location=${encodeURIComponent(canonicalAddress)}&fov=82&key=${GOOGLE_MAPS_REPORT_KEY}`;
   const mapImage = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(canonicalAddress)}&zoom=16&size=1200x700&maptype=roadmap&markers=color:red%7C${encodeURIComponent(canonicalAddress)}&key=${GOOGLE_MAPS_REPORT_KEY}`;
   const floridaSources: ComplianceSourceCheck[] = [
@@ -2409,11 +2424,11 @@ function buildFloridaReceivershipReport(address: string): MasterReportData {
       researchStatus: 'verified',
     },
     buildingPhotos: {
-      exterior: [...verifiedPropertyImages, streetView, mapImage],
-      interior: [],
+      exterior: [...verifiedExteriorImages, streetView, mapImage],
+      interior: verifiedInteriorImages,
       streetView,
       satellite: `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_REPORT_KEY}&q=${encodeURIComponent(canonicalAddress)}&zoom=17&maptype=satellite`,
-      source: 'Verified uploaded Three Horizons East property photo plus Google Maps fallback',
+      source: 'Verified uploaded Three Horizons East property photo set plus Google Maps fallback',
     },
     neighborhoodIntel: {
       crimeScore: 0,
