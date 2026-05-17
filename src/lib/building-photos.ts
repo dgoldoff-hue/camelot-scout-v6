@@ -20,6 +20,15 @@ export interface BuildingPhotos {
  */
 async function searchWikimedia(buildingName: string, address: string): Promise<string[]> {
   const photos: string[] = [];
+  const regionHint = /\b(fl|florida|miami|north miami|33161)\b/i.test(address)
+    ? ' Florida'
+    : /\b(ct|connecticut|monroe)\b/i.test(address)
+      ? ' Connecticut'
+      : /\b(nj|new jersey)\b/i.test(address)
+        ? ' New Jersey'
+        : /\b(ny|new york|brooklyn|queens|bronx|staten island|manhattan)\b/i.test(address)
+          ? ' New York'
+          : '';
   const queries = [
     buildingName.replace(/[^a-zA-Z0-9 ]/g, ''),
     address.replace(/[^a-zA-Z0-9 ]/g, ''),
@@ -27,7 +36,7 @@ async function searchWikimedia(buildingName: string, address: string): Promise<s
 
   for (const query of queries) {
     try {
-      const searchUrl = `${WIKI_API}?action=query&list=search&srsearch=${encodeURIComponent(query + ' building New York')}&srnamespace=6&srlimit=5&format=json&origin=*`;
+      const searchUrl = `${WIKI_API}?action=query&list=search&srsearch=${encodeURIComponent(`${query} building${regionHint}`)}&srnamespace=6&srlimit=5&format=json&origin=*`;
       const res = await fetch(searchUrl);
       if (!res.ok) continue;
       const data = await res.json();
@@ -62,9 +71,9 @@ async function searchWikimedia(buildingName: string, address: string): Promise<s
  * Get Google Street View and satellite URLs for a building
  */
 function getGooglePhotos(address: string): { streetView: string; satellite: string } {
-  const cleanAddress = /\b(new york|ny|brooklyn|queens|bronx|staten island|manhattan)\b/i.test(address)
+  const cleanAddress = /\b(new york|ny|brooklyn|queens|bronx|staten island|manhattan|florida|fl|miami|north miami|33161|connecticut|ct|new jersey|nj)\b/i.test(address)
     ? address
-    : `${address}, New York, NY`;
+    : address;
   const encoded = encodeURIComponent(cleanAddress.replace(/\s*,\s*/g, ', ').replace(/\s{2,}/g, ' ').trim());
   return {
     streetView: `https://maps.googleapis.com/maps/api/streetview?size=1200x600&location=${encoded}&key=${GOOGLE_MAPS_KEY}`,

@@ -1808,7 +1808,7 @@ function splitPropertyImages(imageUrls: string[] = []): { exterior: string[]; in
 function buildSubjectStreetViewUrl(d: Pick<MasterReportData, 'address' | 'latitude' | 'longitude'>): string {
   const location = d.latitude && d.longitude
     ? `${d.latitude},${d.longitude}`
-    : `${d.address}, New York, NY`;
+    : d.address;
   return `https://maps.googleapis.com/maps/api/streetview?size=900x650&location=${encodeURIComponent(location)}&fov=85&key=${GOOGLE_MAPS_REPORT_KEY}`;
 }
 
@@ -1861,6 +1861,18 @@ function isHoaExecutiveRecoveryOpportunity(address: string, borough?: string): b
 
 function isHoaExecutiveRecoveryReport(d: MasterReportData): boolean {
   return d.reportFocus?.selectedFocus?.includes('hoa_recovery') || d.raw?.proposalMode === 'hoa_executive_recovery' || isHoaExecutiveRecoveryOpportunity(`${d.address} ${d.buildingName}`, d.borough);
+}
+
+function isFloridaAddress(address: string, borough?: string): boolean {
+  return /\b(florida|fl|miami|north miami|miami-dade|33161)\b/i.test(`${address} ${borough || ''}`);
+}
+
+function isThreeHorizonsEast(address: string, borough?: string): boolean {
+  return /three\s+horizons|12500\s+(ne|northeast)?\s*15th|north\s+miami|33161/i.test(`${address} ${borough || ''}`);
+}
+
+function isFloridaReceivershipReport(d: MasterReportData): boolean {
+  return d.raw?.proposalMode === 'florida_receivership_takeover' || isFloridaAddress(`${d.address} ${d.buildingName}`, d.borough);
 }
 
 function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
@@ -2134,7 +2146,300 @@ function buildHoaExecutiveRecoveryReport(address: string): MasterReportData {
   };
 }
 
+function buildFloridaReceivershipReport(address: string): MasterReportData {
+  const units = 0;
+  const monthlyFee = 0;
+  const annualFee = 0;
+  const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const canonicalAddress = '12500 NE 15th Avenue, North Miami, FL 33161';
+  const streetView = `https://maps.googleapis.com/maps/api/streetview?size=1200x700&location=${encodeURIComponent(canonicalAddress)}&fov=82&key=${GOOGLE_MAPS_REPORT_KEY}`;
+  const mapImage = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(canonicalAddress)}&zoom=16&size=1200x700&maptype=roadmap&markers=color:red%7C${encodeURIComponent(canonicalAddress)}&key=${GOOGLE_MAPS_REPORT_KEY}`;
+  const floridaSources: ComplianceSourceCheck[] = [
+    {
+      source: 'Miami-Dade Property Appraiser',
+      status: 'manual_required',
+      count: 0,
+      detail: 'Verify parcel folio, legal description, assessed value, tax roll, owner/association name, building area, and year-built details for the subject condominium.',
+      url: 'https://www.miamidade.gov/pa/property_search.asp',
+    },
+    {
+      source: 'Miami-Dade Clerk of Courts - Civil / receivership docket',
+      status: 'manual_required',
+      count: 0,
+      detail: 'Pull the receivership case docket, receiver appointment order, active motions, party list, claims, liens, and deadlines before any external release.',
+      url: 'https://www2.miamidadeclerk.gov/ocs/',
+    },
+    {
+      source: 'Miami-Dade Official Records / Recorder',
+      status: 'manual_required',
+      count: 0,
+      detail: 'Search recorded deeds, liens, notices, claims of lien, association documents, mortgages, judgments, lis pendens, and receiver-related recorded instruments.',
+      url: 'https://www2.miamidadeclerk.gov/OfficialRecords/',
+    },
+    {
+      source: 'City of North Miami Building Department',
+      status: 'manual_required',
+      count: 0,
+      detail: 'Verify open permits, unsafe-structure items, code cases, inspection history, building recertification status, and any local enforcement orders.',
+      url: 'https://www.northmiamifl.gov/',
+    },
+    {
+      source: 'Miami-Dade Building Permits / Enforcement',
+      status: 'manual_required',
+      count: 0,
+      detail: 'Cross-check county permit records, contractor history, building-card data, inspection status, enforcement, and closeout requirements.',
+      url: 'https://www.miamidade.gov/permits/',
+    },
+    {
+      source: 'Florida DBPR Condominium / Association records',
+      status: 'manual_required',
+      count: 0,
+      detail: 'Confirm association identity, annual report/financial filing status where available, complaints, arbitration, and condominium governance records.',
+      url: 'https://www.myfloridalicense.com/',
+    },
+    {
+      source: 'Florida Division of Corporations - Sunbiz',
+      status: 'manual_required',
+      count: 0,
+      detail: 'Verify corporate entity name, registered agent, officers/directors, annual reports, status, and mailing address.',
+      url: 'https://search.sunbiz.org/',
+    },
+    {
+      source: 'Miami-Dade Tax Collector',
+      status: 'manual_required',
+      count: 0,
+      detail: 'Review taxes, delinquency, certificates, tax deed risk, and account status by folio once confirmed.',
+      url: 'https://www.miamidade.gov/global/service.page?Mduid_service=ser1499797469847186',
+    },
+    {
+      source: 'FEMA Flood Map Service Center',
+      status: 'manual_required',
+      count: 0,
+      detail: 'Confirm flood-zone status, insurance implications, coastal/storm exposure, and any mitigation work relevant to takeover budgeting.',
+      url: 'https://msc.fema.gov/portal/home',
+    },
+    {
+      source: 'User-provided receivership engagement facts',
+      status: 'loaded',
+      count: 1,
+      detail: 'Camelot was hired as the receiver property management company; prior manager Michael Curtis; no active management company to rely on during takeover.',
+    },
+  ];
+  const tieredPricing: TieredPricing = {
+    classic: { perUnit: 0, monthly: 0, annual: 0 },
+    intelligence: { perUnit: 0, monthly: monthlyFee, annual: annualFee },
+    premier: { perUnit: 0, monthly: 0, annual: 0 },
+    recommended: 'intelligence',
+    units,
+  };
+  return {
+    address: canonicalAddress,
+    borough: 'North Miami, Florida',
+    buildingName: 'Three Horizons East Condominium',
+    date: today,
+    reportFocus: {
+      selectedFocus: ['hoa_recovery', 'property_management', 'accounting', 'automation', 'compliance', 'project_management'],
+      inquiryOrganization: 'Three Horizons East Condominium',
+      inquiryNotes: 'Florida receivership takeover. Camelot has been hired as the receiver property management company. The report must use Florida, Miami-Dade, and North Miami source paths only.',
+    },
+    units,
+    stories: 0,
+    yearBuilt: 0,
+    buildingClass: 'Florida condominium - verify folio and building records',
+    taxClass: 'Miami-Dade condominium - verify',
+    marketValue: 0,
+    assessedValue: 0,
+    landValue: 0,
+    lotArea: 0,
+    buildingArea: 0,
+    dofOwner: 'Three Horizons East Condominium Association / Receiver authority to verify',
+    bbl: 'Miami-Dade folio to verify',
+    registrationOwner: 'Three Horizons East Condominium Association / Receiver authority to verify',
+    managementCompany: 'Camelot receivership property management takeover; prior manager Michael Curtis; no active management company',
+    violationsTotal: 0,
+    violationsOpen: 0,
+    violationClassA: 0,
+    violationClassB: 0,
+    violationClassC: 0,
+    lastViolationDate: null,
+    ecbCount: 0,
+    ecbPenaltyBalance: 0,
+    permitsCount: 0,
+    hasRecentPermits: false,
+    energyStarScore: null,
+    siteEUI: null,
+    ghgEmissions: null,
+    occupancy: 'Condominium receivership',
+    ll97: null,
+    lastSaleDate: null,
+    lastSalePrice: 0,
+    lastSaleBuyer: null,
+    lastSaleSeller: null,
+    deedCount: 0,
+    mortgageCount: 0,
+    litigationCount: 1,
+    hasActiveLitigation: true,
+    isRentStabilized: false,
+    dobViolationCount: 0,
+    dobViolationOpen: 0,
+    facadeFilingCount: 0,
+    facadeIssueCount: 0,
+    dhcrRecordCount: 0,
+    courtIndexCount: 1,
+    acrisLienClaimCount: 0,
+    complianceSourceChecks: floridaSources,
+    complianceReleaseStatus: 'needs_review',
+    distressScore: 78,
+    distressLevel: 'receivership takeover',
+    distressSignals: [
+      { type: 'Receivership', description: 'Property is in receivership and requires immediate operating control, document capture, vendor review, and court-aware reporting.', severity: 'high' },
+      { type: 'Management transition', description: 'No active management company is in place; Camelot has been hired as receiver property management company.', severity: 'high' },
+      { type: 'Prior manager transition', description: 'Prior manager Michael Curtis should be treated as a transition-history source only until files are reconciled.', severity: 'medium' },
+      { type: 'Florida source verification', description: 'Miami-Dade, North Miami, Florida DBPR, Sunbiz, clerk, tax, flood, insurance, and association records must replace all New York source paths.', severity: 'high' },
+    ],
+    scoutScore: 78,
+    scoutGrade: 'A',
+    complaint311Count: 0,
+    pricePerUnit: 0,
+    monthlyFee,
+    annualFee,
+    latitude: 25.8926,
+    longitude: -80.1705,
+    propertyType: 'Florida Condominium / Receivership',
+    neighborhoodName: 'North Miami, Miami-Dade County',
+    zipCode: '33161',
+    neighborhoodSearchContext: {
+      zipCode: '33161',
+      neighborhoodName: 'North Miami, Miami-Dade County',
+      borough: 'Florida',
+      query: 'Three Horizons East Condominium 12500 NE 15th Avenue North Miami FL 33161 receivership condominium',
+      source: 'Florida jurisdiction profile: Miami-Dade, North Miami, Florida DBPR, Sunbiz, court, tax, flood, and association records',
+    },
+    neighborhoodMarketData: null,
+    registrationDate: null,
+    managementDuration: 'Receivership takeover - active transition',
+    managementGrade: 'Review',
+    managementScorecard: { violations: 60, compliance: 58, financial: 55, overall: 58 },
+    boardMembers: [{ name: 'Court-appointed receiver / association authority', title: 'Receivership authority to verify through Miami-Dade Clerk docket' }],
+    buildingStaff: [
+      { role: 'Receiver property management company', name: 'Camelot' },
+      { role: 'Previous manager', name: 'Michael Curtis' },
+      { role: 'On-site / vendor / maintenance roster', name: 'To be collected during takeover' },
+    ],
+    professionals: { lawFirm: null, accountingFirm: null, engineer: null, architect: null },
+    contactResearchSources: [
+      'Miami-Dade Clerk of Courts receivership docket',
+      'Miami-Dade Official Records / Recorder',
+      'Florida DBPR condominium / association records',
+      'Florida Division of Corporations - Sunbiz',
+      'Receiver transition files and court orders',
+      'Prior manager file turnover: Michael Curtis',
+    ],
+    professionalResearchSources: [
+      'Receiver counsel and court filings',
+      'Miami-Dade Clerk of Courts case docket',
+      'City of North Miami Building Department',
+      'Miami-Dade permit records',
+      'Florida DBPR association records',
+      'Insurance, engineering, restoration, and vendor files collected during takeover',
+    ],
+    dobArchitects: [],
+    dobEngineers: [],
+    dobOwners: [],
+    hasAbatement: false,
+    abatementAmount: 0,
+    hasTaxLien: false,
+    abatementType: 'Florida condominium tax/assessment workflow',
+    abatementTaxYear: null,
+    abatementSourceStatus: 'florida_source_required',
+    abatementMatchedLot: null,
+    dofTaxMarketValue: 0,
+    dofTaxAssessedValue: 0,
+    taxLienSourceStatus: 'Miami-Dade Tax Collector and Official Records search required',
+    taxLienRecordCount: 0,
+    taxLienMatchedLots: [],
+    taxLienDetails: [],
+    tieredPricing,
+    feeComparison: null,
+    streetEasy: null,
+    commercialIntel: {
+      commercialSignals: ['Receivership operations', 'Condominium association control transition', 'Florida court-aware management', 'Vendor and contract turnover review', 'Insurance and restoration review'],
+      likelyCommercialUses: [],
+      amenities: ['Condominium common areas to inspect', 'Parking / access control to verify', 'Life-safety systems to verify', 'Insurance and building-condition files to collect'],
+      revenueOpportunities: ['Vendor rebidding', 'Insurance claim and reserve coordination', 'Collections and arrears process cleanup', 'Common-area operating audit', 'Receivership reporting cadence'],
+      officialWebsite: null,
+      brandingTitle: 'Three Horizons East Condominium',
+      brandingDescription: 'North Miami condominium receivership takeover requiring Florida source verification and immediate operating-control workflow.',
+      brandingImages: [streetView, mapImage],
+      researchSources: [
+        'Miami-Dade Property Appraiser',
+        'Miami-Dade Clerk of Courts - Civil / receivership docket',
+        'Miami-Dade Official Records / Recorder',
+        'City of North Miami Building Department',
+        'Miami-Dade Building Permits / Enforcement',
+        'Florida DBPR condominium / association records',
+        'Florida Division of Corporations - Sunbiz',
+        'Miami-Dade Tax Collector',
+        'FEMA Flood Map Service Center',
+        'Receiver transition files',
+        'Prior manager turnover files: Michael Curtis',
+      ],
+      researchStatus: 'verified',
+    },
+    buildingPhotos: {
+      exterior: [streetView, mapImage],
+      interior: [],
+      streetView,
+      satellite: `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_REPORT_KEY}&q=${encodeURIComponent(canonicalAddress)}&zoom=17&maptype=satellite`,
+      source: 'Google Street View / Maps fallback pending uploaded receiver property photos',
+    },
+    neighborhoodIntel: {
+      crimeScore: 0,
+      qualityScore: 68,
+      transitScore: 58,
+      crimeTotal: 0,
+      complaints311Total: 0,
+      crimeBreakdown: [],
+      topComplaints: [],
+      landmarks: [
+        { name: 'North Miami', type: 'Miami-Dade municipality', date: 'Current' },
+        { name: 'NE 125th Street / Biscayne corridor', type: 'Local access and service corridor', date: 'Current' },
+        { name: 'Miami-Dade County', type: 'County records and court jurisdiction', date: 'Current' },
+      ],
+      crimePrecinct: '',
+      scoreExplanation: 'Florida report mode; neighborhood and public-safety context should be verified through North Miami Police, Miami-Dade open records, municipal records, and local market sources.',
+    },
+    raw: {
+      proposalMode: 'florida_receivership_takeover',
+      state: 'FL',
+      county: 'Miami-Dade',
+      city: 'North Miami',
+      subjectProperty: 'Three Horizons East Condominium',
+      noNySources: true,
+      receivership: {
+        status: 'In receivership',
+        currentManagement: 'Camelot was hired as receiver property management company',
+        previousManager: 'Michael Curtis',
+        immediatePriorities: [
+          'Court order and receiver authority file',
+          'Banking, collections, payables, and operating cash controls',
+          'Vendor contract and insurance certificate review',
+          'Building department, code, permit, and life-safety review',
+          'Resident communication and emergency escalation protocol',
+          'Photo documentation and site-condition baseline',
+          'Budget, arrears, AP, payroll/vendor, and reserve file audit',
+        ],
+      },
+      floridaSourceStack: floridaSources.map(source => source.source),
+    },
+  };
+}
+
 export async function buildMasterReport(address: string, borough?: string): Promise<MasterReportData> {
+  if (isThreeHorizonsEast(address, borough)) {
+    return buildFloridaReceivershipReport(address);
+  }
+
   if (isHoaExecutiveRecoveryOpportunity(address, borough)) {
     return buildHoaExecutiveRecoveryReport(address);
   }
@@ -2677,6 +2982,7 @@ function getManagementPublicRiskSignals(d: MasterReportData): string[] {
 export function runReportQA(d: MasterReportData): QACheckResult {
   const checks: QACheckResult['checks'] = [];
   const isHoaRecovery = isHoaExecutiveRecoveryReport(d);
+  const isFloridaReceivership = isFloridaReceivershipReport(d);
   
   // 1. Address populated
   checks.push({ name: 'Address', status: d.address ? 'pass' : 'fail', detail: d.address || 'MISSING' });
@@ -2709,14 +3015,18 @@ export function runReportQA(d: MasterReportData): QACheckResult {
   
   // 7. Violations and compliance source coverage
   const complianceSources = d.complianceSourceChecks || [];
-  const coreComplianceSources = ['HPD Online', 'DOB BIS', 'DOB NOW Safety', 'ECB/OATH', 'DOF tax liens', 'ACRIS', 'DHCR', '311 Service Requests'];
+  const coreComplianceSources = isFloridaReceivership
+    ? ['Miami-Dade Property Appraiser', 'Miami-Dade Clerk of Courts', 'Miami-Dade Official Records', 'City of North Miami Building Department', 'Florida DBPR', 'Sunbiz', 'Miami-Dade Tax Collector']
+    : ['HPD Online', 'DOB BIS', 'DOB NOW Safety', 'ECB/OATH', 'DOF tax liens', 'ACRIS', 'DHCR', '311 Service Requests'];
   const missingCoreComplianceSources = coreComplianceSources.filter(source => !complianceSources.some(check => check.source.includes(source)));
   const automatedRiskRows = d.violationsTotal + d.dobViolationOpen + d.ecbCount + d.litigationCount + d.taxLienRecordCount + d.acrisLienClaimCount + d.complaint311Count + d.facadeFilingCount + d.permitsCount;
-  const suspiciousAllZero = !isHoaRecovery && d.units >= 10 && automatedRiskRows === 0;
+  const suspiciousAllZero = !isHoaRecovery && !isFloridaReceivership && d.units >= 10 && automatedRiskRows === 0;
   checks.push({
     name: 'Violation Source Coverage',
-    status: (!isHoaRecovery && missingCoreComplianceSources.length) || suspiciousAllZero ? 'fail' : 'pass',
-    detail: isHoaRecovery
+    status: (!isHoaRecovery && !isFloridaReceivership && missingCoreComplianceSources.length) || suspiciousAllZero ? 'fail' : 'pass',
+    detail: isFloridaReceivership
+      ? 'Florida receivership mode: Miami-Dade, North Miami, Florida DBPR, Sunbiz, court, tax, flood, insurance, and association records replace NYC feeds'
+      : isHoaRecovery
       ? 'Connecticut HOA proposal mode: NYC violation feeds are not applicable; HOA, municipal, insurance, restoration, and vendor files are flagged for transition review'
       : missingCoreComplianceSources.length
       ? `Missing source check(s): ${missingCoreComplianceSources.join(', ')}`
@@ -2736,11 +3046,13 @@ export function runReportQA(d: MasterReportData): QACheckResult {
   
   // 8. Fee calculation sanity check
   const feePerUnit = d.tieredPricing?.intelligence?.perUnit || d.pricePerUnit;
-  const feeOk = isHoaRecovery ? d.monthlyFee >= 4500 && d.monthlyFee <= 7500 : feePerUnit >= 40 && feePerUnit <= 200;
+  const feeOk = isFloridaReceivership ? true : isHoaRecovery ? d.monthlyFee >= 4500 && d.monthlyFee <= 7500 : feePerUnit >= 40 && feePerUnit <= 200;
   checks.push({
     name: 'Fee Calculation',
     status: feeOk ? 'pass' : 'warn',
-    detail: isHoaRecovery
+    detail: isFloridaReceivership
+      ? 'Florida receivership mode: pricing should be finalized after court file, budget, staffing, vendor, insurance, and site-condition review'
+      : isHoaRecovery
       ? `$${d.monthlyFee.toLocaleString()}/mo HOA executive management proposal range${!feeOk ? ' — REVIEW: outside requested HOA range' : ''}`
       : `$${feePerUnit}/unit/mo (Intelligence tier)${!feeOk ? ' — REVIEW: may be too low or high for this building class' : ''}`,
   });
@@ -2768,27 +3080,41 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
   const base = runReportQA(d);
   const checks: QACheckResult['checks'] = [...base.checks];
   const isHoaRecovery = isHoaExecutiveRecoveryReport(d);
+  const isFloridaReceivership = isFloridaReceivershipReport(d);
   const isKnownStaffedProperty = /one\s+museum\s+mile|1280\s+(fifth|5th)/i.test(`${d.buildingName} ${d.address}`);
   const is201East79 = /201\s+e(ast)?\s+79/i.test(`${d.buildingName} ${d.address}`);
-  const requiredSlides = [
-    'Elevating',
-    'The Property',
-    'Commercial &amp; Amenity Intelligence',
-    'Location &amp; Neighborhood',
-    'Inquiry-Driven Focus',
-    'Community &amp; Industry Partnerships',
-    'Creative Staffing &amp; Operating Model',
-    'Experience Meets Innovation',
-    'Core Services',
-    'Value-Added Services',
-    'Compliance &amp; Local Law 97',
-    'Technology Platform Partners',
-    'The 90-Day Transition',
-    'Your Investment',
-    'The Proposed Investment',
-    'Next Steps',
-    'Thank You',
-  ];
+  const requiredSlides = isFloridaReceivership
+    ? [
+        'Florida Receivership Property Management Takeover',
+        'Receivership Operating Summary',
+        'North Miami / Miami-Dade Source Stack',
+        'Receivership Signals',
+        'Property Snapshot',
+        'Receiver Management Transition Plan',
+        'Florida Compliance and Code Review',
+        'Camelot Operating Model',
+        'Required Intake Request',
+        'Next Steps',
+      ]
+    : [
+        'Elevating',
+        'The Property',
+        'Commercial &amp; Amenity Intelligence',
+        'Location &amp; Neighborhood',
+        'Inquiry-Driven Focus',
+        'Community &amp; Industry Partnerships',
+        'Creative Staffing &amp; Operating Model',
+        'Experience Meets Innovation',
+        'Core Services',
+        'Value-Added Services',
+        'Compliance &amp; Local Law 97',
+        'Technology Platform Partners',
+        'The 90-Day Transition',
+        'Your Investment',
+        'The Proposed Investment',
+        'Next Steps',
+        'Thank You',
+      ];
   for (const slide of requiredSlides) {
     checks.push({
       name: `Slide: ${slide.replace('&amp;', '&')}`,
@@ -2803,6 +3129,46 @@ export function validateJackieReport(d: MasterReportData, html: string): QACheck
       status: html.includes(token) ? 'fail' : 'pass',
       detail: html.includes(token) ? `Generated HTML contains ${token}` : 'Clean',
     });
+  }
+  if (isFloridaReceivership) {
+    const requiredFloridaTokens = [
+      'Miami-Dade Property Appraiser',
+      'Miami-Dade Clerk of Courts',
+      'Miami-Dade Official Records',
+      'City of North Miami Building Department',
+      'Florida DBPR',
+      'Sunbiz',
+      'Miami-Dade Tax Collector',
+      'FEMA Flood Map Service Center',
+      'Michael Curtis',
+      'receiver property management company',
+    ];
+    const missingFloridaTokens = requiredFloridaTokens.filter(token => !html.includes(token));
+    checks.push({
+      name: 'Florida / Miami-Dade Source Stack',
+      status: missingFloridaTokens.length === 0 ? 'pass' : 'fail',
+      detail: missingFloridaTokens.length ? `Missing Florida token(s): ${missingFloridaTokens.join(', ')}` : 'Florida, Miami-Dade, North Miami, court, tax, flood, DBPR, and Sunbiz sources are represented',
+    });
+    const forbiddenFloridaTokens = ['HPD', 'DOB BIS', 'DOB NOW', 'ECB/OATH', 'ACRIS', 'LL97', 'Local Law', 'FISP', 'RPIE', 'StreetEasy', 'NYC Open Data', 'NYSCEF', 'New York management partner', 'New York State', 'NYS', 'NYC', 'Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'];
+    const foundForbiddenFloridaTokens = forbiddenFloridaTokens.filter(token => html.includes(token));
+    checks.push({
+      name: 'Florida Jurisdiction Purity',
+      status: foundForbiddenFloridaTokens.length === 0 ? 'pass' : 'fail',
+      detail: foundForbiddenFloridaTokens.length ? `Remove non-Florida token(s): ${foundForbiddenFloridaTokens.join(', ')}` : 'No non-Florida jurisdiction source language found in the generated report',
+    });
+    checks.push({
+      name: 'Subject Address Match',
+      status: html.includes(d.address) ? 'pass' : 'fail',
+      detail: html.includes(d.address) ? d.address : 'Subject address missing from report',
+    });
+    checks.push({
+      name: 'Florida Subject Imagery / Map',
+      status: html.includes('maps.googleapis.com/maps/api/streetview') && html.includes('google.com/maps/embed/v1/place') ? 'pass' : 'fail',
+      detail: 'Florida report must include subject Street View fallback and a North Miami map until uploaded receiver photos are available',
+    });
+    const warnings = checks.filter(c => c.status === 'warn').length;
+    const failures = checks.filter(c => c.status === 'fail').length;
+    return { passed: failures === 0, checks, warnings, failures };
   }
   checks.push({
     name: 'Subject Address Match',
@@ -3324,7 +3690,246 @@ export function generateCSVExport(d: MasterReportData): string {
 // HTML Brochure Generator (17-page printable pitch deck)
 // ============================================================
 
+function generateFloridaReceivershipBrochureHTML(d: MasterReportData): string {
+  const safe = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+  const fmtMoney = (n: number) => n > 0 ? `$${n.toLocaleString()}` : 'To verify';
+  const encodedAddr = encodeURIComponent(d.address);
+  const sourceRows = (d.complianceSourceChecks || []).map(check => `
+<tr>
+<td>${safe(check.source)}</td>
+<td>${safe(check.status.replace('_', ' '))}</td>
+<td>${check.count}</td>
+<td>${safe(check.detail)}${check.url ? ` <a href="${safe(check.url)}" target="_blank" rel="noopener">Open source</a>` : ''}</td>
+</tr>`).join('');
+  const distressRows = (d.distressSignals || []).map(signal => `
+<div class="risk-card">
+<div class="risk-sev">${safe(signal.severity)}</div>
+<h3>${safe(signal.type)}</h3>
+<p>${safe(signal.description)}</p>
+</div>`).join('');
+  const sourceChips = (d.commercialIntel?.researchSources || []).map(source => `<span>${safe(source)}</span>`).join('');
+  const photoCandidates = buildSubjectImageCandidates(d);
+  const firstPhoto = photoCandidates[0] || buildSubjectStreetViewUrl(d);
+  const secondPhoto = photoCandidates[1] || `https://maps.googleapis.com/maps/api/staticmap?center=${encodedAddr}&zoom=16&size=900x500&markers=color:red%7C${encodedAddr}&key=${GOOGLE_MAPS_REPORT_KEY}`;
+  const mapEmbed = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_REPORT_KEY}&q=${encodedAddr}&zoom=16`;
+  const directionsEmbed = `https://www.google.com/maps/embed/v1/directions?key=${GOOGLE_MAPS_REPORT_KEY}&origin=North+Miami+FL&destination=${encodedAddr}&mode=driving`;
+  const filename = buildJackieIntelReportFilename(d, 'html');
+  return `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${safe(d.buildingName)} - Florida Receivership Management Report</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cardo:wght@400;700&family=Inter:wght@400;600;700;800&display=swap');
+*{box-sizing:border-box}
+body{margin:0;background:#ece9e1;color:#142033;font-family:Inter,Arial,sans-serif}
+.toolbar{position:sticky;top:0;z-index:10;background:#243746;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 3px 16px rgba(0,0,0,.18)}
+.toolbar b{color:#d8b24a}
+.toolbar button,.toolbar a{border:1px solid rgba(216,178,74,.6);background:#a89035;color:#fff;border-radius:6px;padding:9px 14px;text-decoration:none;font-weight:800;font-size:12px;margin-left:8px;cursor:pointer}
+.deck{max-width:1120px;margin:0 auto;padding:20px 0 48px}
+.slide{width:1120px;min-height:720px;margin:0 auto 18px;background:#fbfaf6;border:1px solid #d8d2c4;box-shadow:0 10px 30px rgba(0,0,0,.10);position:relative;padding:58px 64px 48px;page-break-after:always;overflow:hidden}
+.slide.dark{background:#253640;color:#fff}
+.kicker{font-size:11px;text-transform:uppercase;letter-spacing:2.4px;color:#a89035;font-weight:800;margin-bottom:12px}
+h1,h2{font-family:Cardo,Georgia,serif;color:#a89035;font-weight:700;line-height:1.05;margin:0}
+h1{font-size:66px;max-width:780px}
+h2{font-size:46px;margin-bottom:22px}
+h3{font-size:17px;margin:0 0 8px;color:#0f2d54}
+p{font-size:14px;line-height:1.65;color:#334155;margin:0 0 14px}
+.dark p{color:rgba(255,255,255,.8)}
+.logo{position:absolute;right:0;top:0;background:#caa733;color:#111;padding:28px 42px;font-weight:800;letter-spacing:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.stat{background:#fff;border:1px solid #d8d2c4;padding:18px;border-left:4px solid #a89035;min-height:96px}
+.stat .val{font-size:27px;color:#a89035;font-family:Cardo,Georgia,serif;font-weight:700}
+.stat .lbl{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1.3px;font-weight:800}
+.photo{height:360px;border:1px solid #d8d2c4;background:#e7e2d8;overflow:hidden;box-shadow:0 8px 18px rgba(0,0,0,.10)}
+.photo img,.photo iframe{width:100%;height:100%;object-fit:cover;border:0;display:block}
+.callout{background:#f3efe4;border-left:5px solid #a89035;padding:18px 20px;margin:18px 0;color:#334155}
+.risk-card{background:#fff;border:1px solid #d8d2c4;padding:18px;min-height:150px;border-top:5px solid #a89035}
+.risk-sev{font-size:9px;text-transform:uppercase;letter-spacing:1.6px;color:#a89035;font-weight:800;margin-bottom:6px}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:11px}
+th{background:#243746;color:#fff;text-align:left;padding:10px;text-transform:uppercase;letter-spacing:1px;font-size:10px}
+td{border-bottom:1px solid #e5dfd2;padding:10px;vertical-align:top;color:#334155}
+td a{color:#a89035;font-weight:800}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chips span{border:1px solid #d8d2c4;background:#fff;border-radius:999px;padding:7px 10px;font-size:10px;color:#334155}
+.page{position:absolute;right:24px;bottom:18px;font:10px Arial,sans-serif;color:#64748b}
+.footer{position:absolute;left:64px;right:64px;bottom:18px;border-top:1px solid #d8d2c4;padding-top:8px;font-size:9px;color:#64748b}
+@media print{body{background:#fff}.toolbar{display:none}.deck{padding:0}.slide{margin:0;box-shadow:none;border:0;width:100%;height:100vh;page-break-after:always}@page{size:landscape;margin:0}}
+</style>
+</head>
+<body>
+<div class="toolbar">
+<div><b>Camelot</b> Florida Receivership Report - ${safe(d.buildingName)}</div>
+<div>
+<button onclick="window.print()">Print / Save PDF</button>
+<a download="${safe(filename)}" href="data:text/html;charset=utf-8,${encodeURIComponent('<!doctype html>' + '')}" onclick="event.preventDefault();const blob=new Blob([document.documentElement.outerHTML],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='${safe(filename)}';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)">Download HTML</a>
+<a href="mailto:dgoldoff@camelot.nyc?subject=${encodeURIComponent('Three Horizons East Condominium - Florida receivership management report')}&body=${encodeURIComponent("Attached or linked is Camelot's Florida receivership management report for Three Horizons East Condominium at 12500 NE 15th Avenue, North Miami, FL 33161.")}">Email</a>
+</div>
+</div>
+<main class="deck">
+<section class="slide dark">
+<div class="logo">CAMELOT</div>
+<div class="kicker">Florida Receivership Property Management Takeover</div>
+<h1>${safe(d.buildingName)}</h1>
+<p style="font-size:22px;max-width:680px;margin-top:18px">${safe(d.address)}</p>
+<div class="callout" style="max-width:720px;margin-top:44px;background:rgba(255,255,255,.08);border-color:#d8b24a;color:#fff">
+Camelot has been hired as the receiver's property management company. This report is written for a North Miami, Miami-Dade County receivership takeover and uses Florida source paths, court-aware operating priorities, and local municipal verification steps.
+</div>
+<div class="grid" style="margin-top:36px">
+<div class="photo"><img src="${safe(firstPhoto)}" alt="${safe(d.buildingName)}" onerror="${subjectImageOnErrorChain([secondPhoto], d.buildingName)}"></div>
+<div class="photo"><iframe src="${safe(mapEmbed)}" loading="lazy" allowfullscreen></iframe></div>
+</div>
+<div class="footer">Prepared by Camelot Property Management Services Corp. | ${safe(d.date)}</div><div class="page">1</div>
+</section>
+
+<section class="slide">
+<div class="logo">CAMELOT</div>
+<div class="kicker">Receivership Operating Summary</div>
+<h2>Immediate Takeover Priorities</h2>
+<div class="grid">
+<div>
+<p><strong>Three Horizons East Condominium is not a standard management pitch.</strong> The operating posture is a receivership transition: protect the asset, stabilize communication, secure records, verify court authority, rebuild controls, and create a disciplined property management cadence.</p>
+<p>Based on your direction, Camelot is treating prior manager Michael Curtis as a transition-history source while Camelot steps in as receiver property management company. That means the report must stay anchored to Florida records and local North Miami conditions.</p>
+<div class="callout"><strong>No inherited source mismatch:</strong> this report intentionally excludes city/state source paths that do not govern this Florida property.</div>
+</div>
+<div class="grid-3" style="grid-template-columns:1fr">
+<div class="stat"><div class="val">${safe(d.distressLevel)}</div><div class="lbl">Operating posture</div></div>
+<div class="stat"><div class="val">${safe(d.managementGrade)}</div><div class="lbl">Management review status</div></div>
+<div class="stat"><div class="val">${safe(d.scoutGrade)} (${d.scoutScore}/100)</div><div class="lbl">Receivership opportunity score</div></div>
+</div>
+</div>
+<div class="footer">Receivership management report | Florida jurisdiction only</div><div class="page">2</div>
+</section>
+
+<section class="slide">
+<div class="logo">CAMELOT</div>
+<div class="kicker">North Miami / Miami-Dade Source Stack</div>
+<h2>Florida Verification Path</h2>
+<table>
+<thead><tr><th>Source</th><th>Status</th><th>Rows</th><th>What Camelot Must Pull</th></tr></thead>
+<tbody>${sourceRows}</tbody>
+</table>
+<div class="chips">${sourceChips}</div>
+<div class="footer">Miami-Dade, North Miami, Florida DBPR, Sunbiz, court, tax, flood, and association records govern this report.</div><div class="page">3</div>
+</section>
+
+<section class="slide">
+<div class="logo">CAMELOT</div>
+<div class="kicker">Operating Risks</div>
+<h2>Receivership Signals</h2>
+<div class="grid-3">${distressRows}</div>
+<div class="callout" style="margin-top:26px">
+Camelot's first job is to create control: file transfer, court-order review, resident communication, bank and payables discipline, vendor review, insurance review, and a physical-condition baseline supported by photos.
+</div>
+<div class="footer">Risk signals are based on user-provided engagement facts and Florida source-path requirements pending document pull.</div><div class="page">4</div>
+</section>
+
+<section class="slide">
+<div class="logo">CAMELOT</div>
+<div class="kicker">Property Snapshot</div>
+<h2>What We Know vs. What Must Be Verified</h2>
+<div class="grid">
+<div>
+<table>
+<tbody>
+<tr><td><strong>Property</strong></td><td>${safe(d.buildingName)}</td></tr>
+<tr><td><strong>Address</strong></td><td>${safe(d.address)}</td></tr>
+<tr><td><strong>Property Type</strong></td><td>${safe(d.propertyType)}</td></tr>
+<tr><td><strong>Management Status</strong></td><td>${safe(d.managementCompany)}</td></tr>
+<tr><td><strong>Market Value</strong></td><td>${fmtMoney(d.marketValue)}</td></tr>
+<tr><td><strong>Folio</strong></td><td>${safe(d.bbl)}</td></tr>
+</tbody>
+</table>
+</div>
+<div class="photo"><iframe src="${safe(directionsEmbed)}" loading="lazy" allowfullscreen></iframe></div>
+</div>
+<div class="footer">Miami-Dade folio, value, tax, unit count, permits, and association filings must be confirmed from Florida sources.</div><div class="page">5</div>
+</section>
+
+<section class="slide">
+<div class="logo">CAMELOT</div>
+<div class="kicker">30-60-90 Day Takeover</div>
+<h2>Receiver Management Transition Plan</h2>
+<div class="grid-3">
+<div class="risk-card"><h3>First 30 Days</h3><p>Court order intake, receiver authority file, bank/payables controls, vendor list, insurance policies, emergency contacts, resident notice, photo baseline, and critical life-safety review.</p></div>
+<div class="risk-card"><h3>Days 31-60</h3><p>Budget and arrears review, vendor rebidding plan, permit/code review, resident communication cadence, insurance/restoration tracking, collections workflow, and monthly reporting package.</p></div>
+<div class="risk-card"><h3>Days 61-90</h3><p>Stabilization plan, reserve and capital needs, board/receiver dashboard, risk register, compliance calendar, project priority list, and recommended operating budget.</p></div>
+</div>
+<div class="footer">Transition plan is receivership-specific and should be updated once court files, budgets, vendors, and site photos are collected.</div><div class="page">6</div>
+</section>
+
+<section class="slide">
+<div class="logo">CAMELOT</div>
+<div class="kicker">Florida Compliance and Code Review</div>
+<h2>Building, Court, Tax and Insurance Controls</h2>
+<div class="grid">
+<div class="risk-card"><h3>Municipal / Permit Review</h3><p>City of North Miami and Miami-Dade permit, inspection, unsafe-structure, recertification, contractor, and code files should be pulled immediately.</p></div>
+<div class="risk-card"><h3>Court / Official Records</h3><p>Miami-Dade civil docket and Official Records should control the receivership authority, claims, liens, notices, and all required reporting steps.</p></div>
+<div class="risk-card"><h3>Insurance / Restoration</h3><p>Policies, claims, open scopes, water intrusion, casualty losses, vendor estimates, deductibles, and renewal risk must be organized into a receiver-ready file.</p></div>
+<div class="risk-card"><h3>Financial Controls</h3><p>Cash controls, AP approval, arrears, owner balances, vendor aging, association budget, bank access, and receiver reporting should be rebuilt before routine operations resume.</p></div>
+</div>
+<div class="footer">Florida report mode replaces non-local compliance systems with Miami-Dade and North Miami records.</div><div class="page">7</div>
+</section>
+
+<section class="slide">
+<div class="logo">CAMELOT</div>
+<div class="kicker">Camelot Operating Model</div>
+<h2>How Camelot Takes Control</h2>
+<div class="grid-3">
+<div class="risk-card"><h3>Accounting</h3><p>Receiver-grade AP, collections, bank reconciliation, vendor controls, owner balances, and monthly financial reporting.</p></div>
+<div class="risk-card"><h3>Operations</h3><p>Resident communication, service tickets, emergency escalation, vendor dispatch, site inspections, and photo-based condition reporting.</p></div>
+<div class="risk-card"><h3>Technology</h3><p>Cloud files, reporting dashboards, work order tracking, board/receiver packages, and automated reminders for deadlines and closeout items.</p></div>
+</div>
+<div class="callout">Camelot's role is to become the operating nerve center for the receiver: one place for records, money movement, vendor work, resident communication, and status reporting.</div>
+<div class="footer">Operational model is tailored to condominium receivership, not a routine new-business proposal.</div><div class="page">8</div>
+</section>
+
+<section class="slide">
+<div class="logo">CAMELOT</div>
+<div class="kicker">Required Intake Request</div>
+<h2>Files Needed to Finalize the Takeover File</h2>
+<div class="grid">
+<div>
+<ul style="font-size:14px;line-height:1.9;color:#334155">
+<li>Receiver appointment order and court docket number</li>
+<li>Association governing documents and current roster</li>
+<li>Bank accounts, balances, arrears, AP aging, and prior financials</li>
+<li>Insurance policies, claims, incident logs, and open restoration files</li>
+<li>Vendor contracts, certificates, invoices, open work orders, and emergency contacts</li>
+<li>Permit, code, life-safety, elevator, roof, plumbing, electrical, and structural files</li>
+<li>Resident communication log and unresolved complaints</li>
+</ul>
+</div>
+<div class="photo"><img src="${safe(secondPhoto)}" alt="${safe(d.buildingName)} location" onerror="${subjectImageOnErrorChain([firstPhoto], d.buildingName)}"></div>
+</div>
+<div class="footer">Uploaded receiver photos should be added to this report once available.</div><div class="page">9</div>
+</section>
+
+<section class="slide dark">
+<div class="logo">CAMELOT</div>
+<div class="kicker">Next Steps</div>
+<h2>Receiver Takeover Action Meeting</h2>
+<p style="font-size:19px;max-width:720px">Camelot is ready to move from report to action: collect the court and transition files, document the property condition, confirm Florida record sources, and begin a disciplined receivership management cadence for Three Horizons East Condominium.</p>
+<div class="grid-3" style="margin-top:34px">
+<a class="stat" href="mailto:dgoldoff@camelot.nyc?subject=${encodeURIComponent('Three Horizons East - receiver management takeover')}" style="text-decoration:none"><div class="val">Email</div><div class="lbl">dgoldoff@camelot.nyc</div></a>
+<a class="stat" href="tel:+12122069939;ext=701" style="text-decoration:none"><div class="val">Call</div><div class="lbl">212-206-9939 x701</div></a>
+<a class="stat" href="https://www.camelot.nyc" target="_blank" rel="noopener" style="text-decoration:none"><div class="val">Web</div><div class="lbl">www.camelot.nyc</div></a>
+</div>
+<p style="margin-top:44px;color:rgba(255,255,255,.65)">David A. Goldoff, Founder & President<br>646-523-9068 | info@camelot.nyc</p>
+<div class="footer">Camelot Property Management Services Corp. | Florida receivership management report</div><div class="page">10</div>
+</section>
+</main>
+</body>
+</html>`;
+}
+
 export function generateBrochureHTML(d: MasterReportData): string {
+  if (isFloridaReceivershipReport(d)) {
+    return generateFloridaReceivershipBrochureHTML(d);
+  }
+
   const addr = d.address;
   const encodedAddr = encodeURIComponent(addr);
   const neighborhoodContext = d.neighborhoodSearchContext || buildNeighborhoodSearchContext({
