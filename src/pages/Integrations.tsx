@@ -367,14 +367,13 @@ export default function Integrations() {
                 SCOUT_WORKSPACE_ID, HUBSPOT_API_KEY. Deal sync is opt-in with HUBSPOT_CREATE_DEALS,
                 HUBSPOT_PIPELINE_ID, and HUBSPOT_DEAL_STAGE_ID.
               </p>
-              <a
-                href="/api/integrations/status"
-                target="_blank"
-                rel="noreferrer"
+              <button
+                type="button"
+                onClick={refreshStatus}
                 className="inline-flex items-center gap-2 text-sm text-camelot-gold mt-4"
               >
-                Open raw status <ExternalLink size={14} />
-              </a>
+                Refresh status <ExternalLink size={14} />
+              </button>
             </section>
           </aside>
         </div>

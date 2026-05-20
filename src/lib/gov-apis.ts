@@ -69,7 +69,6 @@ export interface RentStabilization {
 const NY_DOS_ENDPOINT = 'https://data.ny.gov/resource/n9v6-gdp6.json';
 const NYC_ECB_ENDPOINT = 'https://data.cityofnewyork.us/resource/6bgk-3dad.json';
 const NYC_LITIGATION_ENDPOINT = 'https://data.cityofnewyork.us/resource/59kj-x8nc.json';
-const NYC_RENT_STAB_ENDPOINT = 'https://data.cityofnewyork.us/resource/4xyc-jm4k.json';
 
 // ============================================================
 // 1. NY Secretary of State — Active Corporations
@@ -88,7 +87,7 @@ export async function searchNYDOSCorporation(name: string): Promise<NYDOSCorpora
     if (!res.ok) throw new Error(`NY DOS API error: ${res.status}`);
     return await res.json();
   } catch (err) {
-    console.error('NY DOS Corporation search error:', err);
+    console.warn('NY DOS Corporation search unavailable:', err);
     return [];
   }
 }
@@ -104,12 +103,17 @@ export async function searchNYDOSCorporation(name: string): Promise<NYDOSCorpora
 export async function fetchECBViolations(boro: string, block: string, lot: string): Promise<ECBViolation[]> {
   try {
     const where = `boro='${boro}' AND block='${block}' AND lot='${lot}'`;
-    const url = `${NYC_ECB_ENDPOINT}?$limit=200&$order=violation_date DESC&$where=${where}`;
+    const params = new URLSearchParams({
+      $limit: '200',
+      $order: 'issue_date DESC',
+      $where: where,
+    });
+    const url = `${NYC_ECB_ENDPOINT}?${params.toString()}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`ECB API error: ${res.status}`);
     return await res.json();
   } catch (err) {
-    console.error('ECB Violations fetch error:', err);
+    console.warn('ECB Violations source unavailable:', err);
     return [];
   }
 }
@@ -136,7 +140,7 @@ export async function fetchHousingLitigation(boroid: string, housenumber: string
     if (!res.ok) throw new Error(`Housing Litigation API error: ${res.status}`);
     return await res.json();
   } catch (err) {
-    console.error('Housing Litigation fetch error:', err);
+    console.warn('Housing Litigation source unavailable:', err);
     return [];
   }
 }
@@ -150,18 +154,13 @@ export async function fetchHousingLitigation(boroid: string, housenumber: string
  * Identifies rent-stabilized buildings (more complex to manage = opportunity).
  */
 export async function fetchRentStabilization(boro: string, block: string, lot: string): Promise<RentStabilization[]> {
-  try {
-    const boroStr = boro.toString();
-    // The rent stabilization dataset uses borough, block, lot
-    const where = `borough='${boroStr}' AND block='${block}' AND lot='${lot}'`;
-    const url = `${NYC_RENT_STAB_ENDPOINT}?$limit=100&$where=${where}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Rent Stabilization API error: ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.error('Rent Stabilization fetch error:', err);
-    return [];
-  }
+  void boro;
+  void block;
+  void lot;
+  // The previously used NYC Open Data endpoint was retired. Keep this as a
+  // quiet no-op until a verified DHCR/NYC replacement source is wired in so
+  // Jackie reports do not freeze or show browser 404 noise.
+  return [];
 }
 
 // ============================================================

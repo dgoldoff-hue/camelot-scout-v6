@@ -1268,20 +1268,39 @@ ${caseStudyHTML}
 // Data Builder
 // ============================================================
 
+function withReportTimeout<T>(promise: Promise<T>, fallback: T, ms = 9000): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<T>((resolve) => {
+    timer = setTimeout(() => resolve(fallback), ms);
+  });
+  return Promise.race([promise, timeout])
+    .catch(() => fallback)
+    .finally(() => {
+      if (timer) clearTimeout(timer);
+    });
+}
+
 async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    const res = await fetch(`https://geosearch.planninglabs.nyc/v2/search?text=${encodeURIComponent(address)}&size=1`);
+    const controller = new AbortController();
+    timer = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`https://geosearch.planninglabs.nyc/v2/search?text=${encodeURIComponent(address)}&size=1`, { signal: controller.signal });
     if (!res.ok) return null;
     const data = await res.json();
     const coords = data?.features?.[0]?.geometry?.coordinates;
     if (coords && coords.length === 2) return { lat: coords[1], lng: coords[0] };
     return null;
   } catch { return null; }
+  finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 async function fetchOfficialBuildingBranding(address: string, buildingName: string): Promise<any | null> {
   try {
     if (typeof window === 'undefined') return null;
+    if (String(import.meta.env.VITE_ENABLE_SERVER_INTEGRATIONS || '').toLowerCase() !== 'true') return null;
     const params = new URLSearchParams({ address, name: buildingName || address });
     const res = await fetch(`/api/building/brand?${params.toString()}`);
     if (!res.ok) return null;
@@ -2508,10 +2527,10 @@ export async function buildMasterReport(address: string, borough?: string): Prom
   const preKnownFacts = getKnownPropertyFacts(address);
   const lookupAddress = preKnownFacts?.canonicalAddress || address;
   const [raw, geo, buildingPhotos, streetEasy] = await Promise.all([
-    fetchFullBuildingReport(lookupAddress, borough),
-    geocodeAddress(lookupAddress + (borough ? ', ' + borough + ', New York' : ', New York, NY')),
-    findBuildingPhotos(lookupAddress, lookupAddress).catch(() => null),
-    fetchStreetEasyBuilding(lookupAddress, borough).catch(() => null),
+    withReportTimeout(fetchFullBuildingReport(lookupAddress, borough), {} as Awaited<ReturnType<typeof fetchFullBuildingReport>>, 18000),
+    withReportTimeout(geocodeAddress(lookupAddress + (borough ? ', ' + borough + ', New York' : ', New York, NY')), null, 6000),
+    withReportTimeout(findBuildingPhotos(lookupAddress, lookupAddress).catch(() => null), null, 6000),
+    withReportTimeout(fetchStreetEasyBuilding(lookupAddress, borough).catch(() => null), null, 3000),
   ]);
 
   // Fetch neighborhood intelligence (crime, 311, landmarks)

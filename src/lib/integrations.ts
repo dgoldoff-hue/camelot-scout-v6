@@ -50,6 +50,12 @@ export interface ServicePushResult {
 
 const LOCAL_INTEGRATION_QUEUE_KEY = 'camelot:scout-integration-local-queue';
 
+function isStaticRenderClient() {
+  if (typeof window === 'undefined') return false;
+  const serverMode = String(import.meta.env.VITE_ENABLE_SERVER_INTEGRATIONS || '').toLowerCase() === 'true';
+  return !serverMode;
+}
+
 function getLocalQueue(): unknown[] {
   if (typeof window === 'undefined') return [];
   try {
@@ -269,6 +275,8 @@ export function buildIntegrationLeadPayload(building: Building) {
 }
 
 export async function getIntegrationStatus(): Promise<IntegrationStatus> {
+  if (isStaticRenderClient()) return clientOnlyIntegrationStatus();
+
   try {
     const response = await fetch('/api/integrations/status');
     if (!response.ok) {
@@ -284,6 +292,24 @@ export async function getIntegrationStatus(): Promise<IntegrationStatus> {
 
 export async function pushBuildingToIntegrations(building: Building): Promise<IntegrationPushResult> {
   const payload = buildIntegrationLeadPayload(building);
+
+  if (isStaticRenderClient()) {
+    const localQueueSize = queueLocalIntegrationLead(payload);
+    return {
+      status: 'partial',
+      quality: payload.quality,
+      routing: payload.routing,
+      scout: {
+        status: 'skipped',
+        message: `Scout API is not available on this static Render site. Lead saved to local queue (${localQueueSize}).`,
+      },
+      hubspot: {
+        status: 'skipped',
+        message: 'HubSpot server endpoint is not available on this static Render site. Export CSV or deploy API server to sync.',
+      },
+    };
+  }
+
   try {
     const response = await fetch('/api/integrations/push-building', {
       method: 'POST',

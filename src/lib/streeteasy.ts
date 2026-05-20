@@ -295,6 +295,11 @@ export async function fetchStreetEasyBuilding(
   address: string,
   borough?: string
 ): Promise<StreetEasyBuilding | null> {
+  // StreetEasy blocks direct browser-origin fetches with CORS. Keep this
+  // integration available for a future server/proxy context, but never let the
+  // client app spam failed requests or stall a Jackie report.
+  if (typeof window !== 'undefined') return null;
+
   const slugs = generateSlugs(address, borough);
   
   for (const slug of slugs) {

@@ -74,14 +74,10 @@ export function useTour() {
     localStorage.setItem(STORAGE_KEY, 'true');
   }, []);
 
-  // Auto-show on first visit
+  // Keep the tour opt-in. Auto-opening this modal blocks every primary workflow
+  // for first-time users, including report generation and integrations.
   useEffect(() => {
-    const completed = localStorage.getItem(STORAGE_KEY);
-    if (!completed) {
-      // Small delay to let layout render
-      const timer = setTimeout(() => setIsOpen(true), 800);
-      return () => clearTimeout(timer);
-    }
+    localStorage.setItem(STORAGE_KEY, 'true');
   }, []);
 
   return { isOpen, startTour, closeTour };

@@ -38,6 +38,18 @@ function escapeSoql(value: string): string {
   return value.replace(/'/g, "''");
 }
 
+function withTimeout<T>(promise: Promise<T>, fallback: T, ms = 9000): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<T>((resolve) => {
+    timer = setTimeout(() => resolve(fallback), ms);
+  });
+  return Promise.race([promise, timeout])
+    .catch(() => fallback)
+    .finally(() => {
+      if (timer) clearTimeout(timer);
+    });
+}
+
 function isHPDViolationOpen(v: HPDViolation): boolean {
   const status = `${v.violationstatus || ''} ${v.currentstatus || ''}`.toUpperCase();
   return !/\bCLOSE\b|DISMISSED|COMPLIED|RESCINDED|CANCELLED/.test(status);
@@ -893,16 +905,16 @@ export function extractDOBProfessionals(permits: DOBPermit[]): { professionals: 
  */
 export async function fetchFullBuildingReport(address: string, borough?: string) {
   let [violations, registration, dofData, permits, energy] = await Promise.all([
-    fetchHPDViolations(address, borough),
-    fetchHPDRegistration(address, borough),
-    fetchDOFProperty(address, borough),
-    fetchDOBPermits(address, borough),
-    fetchLL97Energy(address),
+    withTimeout(fetchHPDViolations(address, borough), [] as HPDViolation[]),
+    withTimeout(fetchHPDRegistration(address, borough), [] as any[]),
+    withTimeout(fetchDOFProperty(address, borough), [] as DOFProperty[]),
+    withTimeout(fetchDOBPermits(address, borough), [] as DOBPermit[]),
+    withTimeout(fetchLL97Energy(address), [] as LL97Energy[]),
   ]);
 
   // Extract key data from DOF
   const dof = dofData[0];
-  const facadeFilings = await fetchFacadeFilings(address, borough, dof?.bbl).catch((err) => {
+  const facadeFilings = await withTimeout(fetchFacadeFilings(address, borough, dof?.bbl), [] as any[]).catch((err) => {
     console.error('Facade filings fetch in report failed:', err);
     return [] as any[];
   });
@@ -910,7 +922,7 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
   // Address matching can miss condo parent lots when users include city/state
   // variations. If DOF found the BBL, use it as the authoritative HPD fallback.
   if (violations.length === 0 && dof?.bbl) {
-    violations = await fetchHPDViolationsByBBL(dof.bbl);
+    violations = await withTimeout(fetchHPDViolationsByBBL(dof.bbl), [] as HPDViolation[]);
   }
 
   // Extract registration info
@@ -936,29 +948,29 @@ export async function fetchFullBuildingReport(address: string, borough?: string)
 
       // Fetch ACRIS, ECB, Litigation, Rent Stabilization, Abatements, and Tax Liens in parallel
       const [acrisResult, ecbResult, litigationResult, rentStabResult, abatementResult, lienResult] = await Promise.all([
-        fetchACRISRecords(bblParts.borough, bblParts.block, bblParts.lot).catch((err) => {
+        withTimeout(fetchACRISRecords(bblParts.borough, bblParts.block, bblParts.lot), null).catch((err) => {
           console.error('ACRIS fetch in report failed:', err);
           return null;
         }),
-        fetchECBViolations(bblParts.borough, bblParts.block, bblParts.lot).catch((err) => {
+        withTimeout(fetchECBViolations(bblParts.borough, bblParts.block, bblParts.lot), [] as ECBViolation[]).catch((err) => {
           console.error('ECB fetch in report failed:', err);
           return [] as ECBViolation[];
         }),
         parsedAddr.number
-          ? fetchHousingLitigation(boroCode, parsedAddr.number, parsedAddr.street).catch((err) => {
+          ? withTimeout(fetchHousingLitigation(boroCode, parsedAddr.number, parsedAddr.street), [] as HousingLitigation[]).catch((err) => {
               console.error('Litigation fetch in report failed:', err);
               return [] as HousingLitigation[];
             })
           : Promise.resolve([] as HousingLitigation[]),
-        fetchRentStabilization(bblParts.borough, bblParts.block, bblParts.lot).catch((err) => {
+        withTimeout(fetchRentStabilization(bblParts.borough, bblParts.block, bblParts.lot), [] as RentStabilization[]).catch((err) => {
           console.error('Rent stabilization fetch in report failed:', err);
           return [] as RentStabilization[];
         }),
-        fetchDOFExemptions(bblParts.borough, bblParts.block, bblParts.lot, address).catch((err) => {
+        withTimeout(fetchDOFExemptions(bblParts.borough, bblParts.block, bblParts.lot, address), null).catch((err) => {
           console.error('DOF Abatement fetch in report failed:', err);
           return null;
         }),
-        fetchTaxLiens(bblParts.borough, bblParts.block, bblParts.lot, address).catch((err) => {
+        withTimeout(fetchTaxLiens(bblParts.borough, bblParts.block, bblParts.lot, address), { hasLien: false, sourceStatus: 'DOF tax lien timed out', sourceQuery: '', recordCount: 0, matchedLots: [], liens: [] } as TaxLienData).catch((err) => {
           console.error('Tax Lien fetch in report failed:', err);
           return { hasLien: false, sourceStatus: 'DOF tax lien fetch failed', sourceQuery: '', recordCount: 0, matchedLots: [], liens: [] } as TaxLienData;
         }),
