@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: camelot-scout
+    name: camelot-os-v10
     env: static
     buildCommand: npm ci && npm run build
     staticPublishPath: dist

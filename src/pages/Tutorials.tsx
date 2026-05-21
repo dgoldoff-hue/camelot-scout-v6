@@ -2,8 +2,9 @@ import { useState } from 'react';
 import {
   Search, LayoutGrid, GitBranch, Mail, MessageSquare, Upload, Download,
   Settings, ChevronDown, ChevronRight, Clock, BookOpen, Sparkles,
-  MapPin, Filter, GripVertical, FileText, Zap,
+  MapPin, Filter, GripVertical, FileText, Zap, PlayCircle, Video,
 } from 'lucide-react';
+import { APP_NAME, V10_RELEASE_NOTE } from '@/lib/app-brand';
 
 interface Tutorial {
   id: string;
@@ -647,21 +648,22 @@ export default function Tutorials() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-camelot-navy text-white px-8 py-10">
+      <div className="bg-white text-slate-950 px-8 py-10 border-b border-slate-200">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 bg-camelot-gold/20 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-camelot-gold/15 rounded-xl flex items-center justify-center">
               <BookOpen size={24} className="text-camelot-gold" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Camelot OS Academy</h1>
-              <p className="text-gray-400">Learn Camelot OS — master every feature</p>
+              <h1 className="text-3xl font-bold">{APP_NAME} Academy</h1>
+              <p className="text-slate-500">Video-ready tutorials for every bot, report, and workflow.</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 mt-4 text-sm text-gray-400">
+          <p className="text-sm text-slate-600 max-w-3xl leading-relaxed">{V10_RELEASE_NOTE}</p>
+          <div className="flex items-center gap-4 mt-4 text-sm text-slate-500">
             <span className="flex items-center gap-1"><FileText size={14} /> {TUTORIALS.length} tutorials</span>
             <span className="flex items-center gap-1"><Clock size={14} /> ~20 minutes total</span>
-            <span className="flex items-center gap-1"><Zap size={14} /> Interactive walkthroughs</span>
+            <span className="flex items-center gap-1"><Video size={14} /> Video slots for every section</span>
           </div>
         </div>
       </div>
@@ -693,6 +695,10 @@ export default function Tutorials() {
                     </span>
                   </div>
                   <p className="text-sm text-gray-500 leading-relaxed">{tutorial.description}</p>
+                  <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#F8F6EF] px-3 py-1 text-[11px] font-semibold text-camelot-gold">
+                    <PlayCircle size={12} />
+                    Video tutorial ready
+                  </div>
                 </div>
               </div>
             </button>
@@ -730,6 +736,17 @@ export default function Tutorials() {
 
               {/* Tutorial sections */}
               <div className="p-6 space-y-6">
+                <div className="rounded-xl border border-camelot-gold/30 bg-[#F8F6EF] p-4 flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-camelot-gold flex-shrink-0">
+                    <PlayCircle size={20} />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-slate-950">Video walkthrough slot</div>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      Upload a matching video into <code className="bg-white px-1.5 py-0.5 rounded">public/tutorials/{tutorial.id}.mp4</code> to turn this written guide into a playable V10 walkthrough.
+                    </p>
+                  </div>
+                </div>
                 {tutorial.content.map((section, si) => (
                   <div key={si}>
                     <h3 className="text-lg font-semibold text-gray-900 mb-3">{section.heading}</h3>
